@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/32041895/README.md)
 # Personal Wealthplanner — Dashboard
 
 Website dashboard keuangan personal, dibangun dari brief "Personal Finance
