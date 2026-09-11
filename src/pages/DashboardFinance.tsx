@@ -1,13 +1,91 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark } from "lucide-react";
+import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { StatCard } from "../components/StatCard";
 import { ChartCard, Card } from "../components/Card";
 import { BudgetProgressBar, StatusBadge } from "../components/ProgressBar";
 import { DataStatusBanner } from "../components/DataStatusBanner";
 import { formatRupiah, formatCompact, formatPercent } from "../lib/format";
 import { usagePercentage, budgetStatus } from "../data/types";
-import { useFinanceData } from "../lib/useFinanceData";
+import { useFinanceData, getStoredToken } from "../lib/useFinanceData";
 import { usdRate } from "../data/assets";
+
+function EditableAssetItem({
+  name,
+  value,
+  section,
+  isRealData,
+}: {
+  name: string;
+  value: number;
+  section: "liquid" | "investment";
+  isRealData: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [input, setInput] = useState(String(value));
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(value);
+  const [err, setErr] = useState("");
+
+  async function handleSave() {
+    const amount = Number(input.replace(/\D/g, ""));
+    if (isNaN(amount) || amount < 0) {
+      setErr("Angka nggak valid.");
+      return;
+    }
+    setErr("");
+    setSaving(true);
+    try {
+      const token = getStoredToken();
+      const res = await fetch(`${import.meta.env.BASE_URL}api/update-asset`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, section, name, value: amount }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Gagal menyimpan");
+      setSaved(amount);
+      setEditing(false);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Gagal menyimpan");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-2 py-1">
+        <span className="text-[13px] text-charcoal/70 flex-1">{name}</span>
+        <input
+          autoFocus
+          inputMode="numeric"
+          value={input}
+          onChange={(e) => setInput(e.target.value.replace(/\D/g, ""))}
+          className="w-28 border border-charcoal/15 rounded px-2 py-1 text-[12px]"
+        />
+        <button onClick={handleSave} disabled={saving} className="bg-forest-600 text-white rounded p-1 hover:bg-forest-700 disabled:opacity-50">
+          {saving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between text-[13px] py-1 group">
+      <span className="text-charcoal/70">{name}</span>
+      <span className="flex items-center gap-2">
+        <span className="font-medium">{formatRupiah(saved)}</span>
+        {isRealData && (
+          <button onClick={() => { setInput(String(saved)); setEditing(true); }} className="opacity-0 group-hover:opacity-100 text-charcoal/40 hover:text-forest-700">
+            <Pencil size={11} />
+          </button>
+        )}
+      </span>
+      {err && <span className="text-[11px] text-rose-600 ml-2">{err}</span>}
+    </div>
+  );
+}
 
 const PIE_COLORS = ["#285C49", "#4C8570", "#D44F76", "#E17E9B", "#B58900"];
 
@@ -156,10 +234,7 @@ export function DashboardFinance() {
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Liquid Assets</p>
                 {assets.liquidAssets.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between text-[13px] py-1">
-                    <span className="text-charcoal/70">{item.name}</span>
-                    <span className="font-medium">{formatRupiah(item.value)}</span>
-                  </div>
+                  <EditableAssetItem key={item.name} name={item.name} value={item.value} section="liquid" isRealData={isRealData} />
                 ))}
               </div>
             )}
@@ -167,10 +242,7 @@ export function DashboardFinance() {
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Investment Assets</p>
                 {assets.investmentAssets.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between text-[13px] py-1">
-                    <span className="text-charcoal/70">{item.name}</span>
-                    <span className="font-medium">{formatRupiah(item.value)}</span>
-                  </div>
+                  <EditableAssetItem key={item.name} name={item.name} value={item.value} section="investment" isRealData={isRealData} />
                 ))}
               </div>
             )}
