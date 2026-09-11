@@ -25,10 +25,10 @@ type ToolLink =
 
 const toolLinks: ToolLink[] = [
   {
-    to: "/calculator",
+    href: "https://www.wealthplanner.id",
     label: "Kalkulator Finansial",
     icon: Calculator,
-    external: false,
+    external: true,
   },
   {
     to: "/protection",
@@ -61,7 +61,7 @@ function ExternalItem({ href, label, icon: Icon }: { href: string; label: string
   return (
     <a
       href={href}
-      target="_blank"
+      target="_self"
       rel="noopener noreferrer"
       className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-[14px] text-charcoal/70 hover:bg-rose-50 hover:text-rose-700 transition-colors"
     >
