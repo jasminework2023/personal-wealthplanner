@@ -50,6 +50,7 @@ interface FinanceData {
   error: string | null;
   isRealData: boolean;
   username: string | null;
+  month: string;
   transactions: Transaction[];
   totalIncome: number;
   totalExpense: number;
@@ -98,10 +99,13 @@ interface RawState {
   error: string | null;
   isRealData: boolean;
   username: string | null;
+  month: string;
   transactions: Transaction[];
   budgetByCategory: Record<string, number>;
   assets: AssetData;
 }
+
+const CURRENT_MONTH_NAME = new Date().toLocaleString("en-US", { month: "long" });
 
 export function useFinanceData(): FinanceData {
   const [state, setState] = useState<RawState>({
@@ -109,6 +113,7 @@ export function useFinanceData(): FinanceData {
     error: null,
     isRealData: false,
     username: null,
+    month: CURRENT_MONTH_NAME,
     transactions: mockTransactions,
     budgetByCategory: mockAllocationMap(),
     assets: mockAssetData(),
@@ -134,6 +139,7 @@ export function useFinanceData(): FinanceData {
             error: null,
             isRealData: true,
             username: data.username,
+            month: data.month || CURRENT_MONTH_NAME,
             transactions: data.transactions || [],
             budgetByCategory: data.budgetByCategory || {},
             assets: data.assets || mockAssetData(),
