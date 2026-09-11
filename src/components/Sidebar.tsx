@@ -25,10 +25,10 @@ type ToolLink =
 
 const toolLinks: ToolLink[] = [
   {
-    href: "https://www.wealthplanner.id",
+    to: "/calculator",
     label: "Kalkulator Finansial",
     icon: Calculator,
-    external: true,
+    external: false,
   },
   {
     to: "/protection",
