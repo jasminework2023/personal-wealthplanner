@@ -14,7 +14,7 @@ import {
 
 const mainLinks = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/dashboard", label: "Dashboard Finance", icon: LayoutDashboard },
+  { to: "/finance", label: "Dashboard Finance", icon: LayoutDashboard },
   { to: "/transactions", label: "Transaction Report", icon: Receipt },
   { to: "/budgeting", label: "Monthly Budgeting", icon: CalendarRange },
 ];
