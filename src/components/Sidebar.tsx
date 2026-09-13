@@ -8,7 +8,6 @@ import {
   Shield,
   Settings,
   User,
-  ExternalLink,
   X,
 } from "lucide-react";
 
@@ -19,23 +18,11 @@ const mainLinks = [
   { to: "/budgeting", label: "Monthly Budgeting", icon: CalendarRange },
 ];
 
-type ToolLink =
-  | { href: string; to?: never; label: string; icon: any; external: true }
-  | { href?: never; to: string; label: string; icon: any; external: false };
+type ToolLink = { to: string; label: string; icon: any };
 
 const toolLinks: ToolLink[] = [
-  {
-    href: "https://www.wealthplanner.id",
-    label: "Kalkulator Finansial",
-    icon: Calculator,
-    external: true,
-  },
-  {
-    to: "/protection",
-    label: "Proteksi Finansial",
-    icon: Shield,
-    external: false,
-  },
+  { to: "/calculator", label: "Kalkulator Finansial", icon: Calculator },
+  { to: "/protection", label: "Proteksi Finansial", icon: Shield },
 ];
 
 function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: any }) {
@@ -54,21 +41,6 @@ function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: a
       <Icon size={18} strokeWidth={2} />
       {label}
     </NavLink>
-  );
-}
-
-function ExternalItem({ href, label, icon: Icon }: { href: string; label: string; icon: any }) {
-  return (
-    <a
-      href={href}
-      target="_self"
-      rel="noopener noreferrer"
-      className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-[14px] text-charcoal/70 hover:bg-rose-50 hover:text-rose-700 transition-colors"
-    >
-      <Icon size={18} strokeWidth={2} />
-      <span className="flex-1">{label}</span>
-      <ExternalLink size={13} className="opacity-50" />
-    </a>
   );
 }
 
@@ -94,13 +66,7 @@ function SidebarContent() {
           Tools
         </p>
         <nav className="flex flex-col gap-0.5">
-          {toolLinks.map((l) =>
-            l.external ? (
-              <ExternalItem key={l.href} {...l} />
-            ) : (
-              <NavItem key={l.to} to={l.to} label={l.label} icon={l.icon} />
-            ),
-          )}
+          {toolLinks.map((l) => <NavItem key={l.to} to={l.to} label={l.label} icon={l.icon} />)}
         </nav>
       </div>
 
