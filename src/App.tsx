@@ -14,7 +14,7 @@ export default function App() {
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={<DashboardFinance />} />
+          <Route path="/finance" element={<DashboardFinance />} />
           <Route path="/transactions" element={<TransactionReport />} />
           <Route path="/budgeting" element={<MonthlyBudgeting />} />
           <Route path="/protection" element={<FinancialProtection />} />
