@@ -8,6 +8,7 @@ import { DataStatusBanner } from "../components/DataStatusBanner";
 import { formatRupiah, formatCompact, formatPercent } from "../lib/format";
 import { usagePercentage, budgetStatus } from "../data/types";
 import { useFinanceData, getStoredToken } from "../lib/useFinanceData";
+import { AddItemForm } from "../components/AddItemForm";
 import { usdRate } from "../data/assets";
 
 function EditableAssetItem({
@@ -230,20 +231,52 @@ export function DashboardFinance() {
               </>
             )}
 
-            {assets.liquidAssets.length > 0 && (
+            {(assets.liquidAssets.length > 0 || isRealData) && (
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Liquid Assets</p>
                 {assets.liquidAssets.map((item) => (
                   <EditableAssetItem key={item.name} name={item.name} value={item.value} section="liquid" isRealData={isRealData} />
                 ))}
+                {isRealData && (
+                  <AddItemForm
+                    placeholder="Tambah liquid asset baru"
+                    onSubmit={async (name, amount) => {
+                      const token = getStoredToken();
+                      const res = await fetch(`${import.meta.env.BASE_URL}api/add-asset-item`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ token, section: "liquid", name, value: amount }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error || "Gagal menambah item");
+                      window.location.reload();
+                    }}
+                  />
+                )}
               </div>
             )}
-            {assets.investmentAssets.length > 0 && (
+            {(assets.investmentAssets.length > 0 || isRealData) && (
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Investment Assets</p>
                 {assets.investmentAssets.map((item) => (
                   <EditableAssetItem key={item.name} name={item.name} value={item.value} section="investment" isRealData={isRealData} />
                 ))}
+                {isRealData && (
+                  <AddItemForm
+                    placeholder="Tambah investment asset baru"
+                    onSubmit={async (name, amount) => {
+                      const token = getStoredToken();
+                      const res = await fetch(`${import.meta.env.BASE_URL}api/add-asset-item`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ token, section: "investment", name, value: amount }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error || "Gagal menambah item");
+                      window.location.reload();
+                    }}
+                  />
+                )}
               </div>
             )}
           </div>
