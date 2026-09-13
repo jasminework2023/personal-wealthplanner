@@ -8,6 +8,7 @@ const titles: Record<string, string> = {
   "/finance": "Dashboard Finance",
   "/transactions": "Transaction Report",
   "/budgeting": "Monthly Budgeting",
+  "/calculator": "Kalkulator Finansial",
   "/protection": "Proteksi Finansial",
   "/settings": "Settings",
   "/profile": "Profile",
