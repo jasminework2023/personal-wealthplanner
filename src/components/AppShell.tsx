@@ -5,7 +5,7 @@ import { Topbar } from "./Topbar";
 
 const titles: Record<string, string> = {
   "/": "Home",
-  "/dashboard": "Dashboard Finance",
+  "/finance": "Dashboard Finance",
   "/transactions": "Transaction Report",
   "/budgeting": "Monthly Budgeting",
   "/protection": "Proteksi Finansial",
