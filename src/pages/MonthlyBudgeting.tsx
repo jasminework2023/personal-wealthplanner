@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, Pencil, Loader2 } from "lucide-react";
 import { StatCard } from "../components/StatCard";
 import { ChartCard } from "../components/Card";
@@ -107,9 +107,25 @@ function EditableBudgetCard({
   );
 }
 
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+const MONTH_LABELS: Record<string, string> = {
+  January: "Januari", February: "Februari", March: "Maret", April: "April",
+  May: "Mei", June: "Juni", July: "Juli", August: "Agustus",
+  September: "September", October: "Oktober", November: "November", December: "Desember",
+};
+
 export function MonthlyBudgeting() {
-  const { isRealData, month, totalIncome, totalExpense, byCategory } = useFinanceData();
+  const currentMonth = new Date().toLocaleString("en-US", { month: "long" });
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const { isRealData, loading, month, totalIncome, totalExpense, byCategory } = useFinanceData(selectedMonth);
   const [overrides, setOverrides] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    setOverrides({});
+  }, [selectedMonth]);
 
   const expenseRows = byCategory("Expense").map((c) => ({
     ...c,
@@ -123,13 +139,18 @@ export function MonthlyBudgeting() {
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-forest-900">Monthly Budgeting</h1>
-          <p className="text-[14px] text-charcoal/60 mt-0.5">
-            Pantau anggaran {month}mu per kategori.
-            {isRealData && " Klik \u201cEdit\u201d buat ubah budget, otomatis update ke spreadsheet."}
+<p className="text-[14px] text-charcoal/60 mt-0.5">
+            Pantau anggaran {MONTH_LABELS[month] || month} per kategori.
+            {loading && " Memuat data..."}
           </p>
         </div>
+        <label className="flex items-center gap-2 rounded-xl border border-forest-100 bg-white px-3 py-2 shadow-sm">
+          <span className="text-[12px] font-medium text-charcoal/55">Bulan</span>
+          <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="bg-transparent text-[13px] font-semibold text-forest-800 outline-none">
+            {MONTHS.map((m) => <option key={m} value={m}>{MONTH_LABELS[m]}</option>)}
+          </select>
+        </label>
       </div>
-
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Monthly Income" value={formatRupiah(totalIncome)} tone="forest" />
         <StatCard label="Budget" value={formatRupiah(budgetExpensePlan)} tone="neutral" />
