@@ -19,16 +19,9 @@ import { AddTransactionModal } from "../components/AddTransactionModal";
 import { DataStatusBanner } from "../components/DataStatusBanner";
 import { formatRupiah, formatCompact, formatPercent } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
+import { getDisplayName, greetingWord } from "../lib/settings";
 import { totalAssets, assetTarget } from "../data/assets";
 import type { Transaction } from "../data/types";
-
-function greeting() {
-  const h = new Date().getHours();
-  if (h < 11) return "Selamat pagi";
-  if (h < 15) return "Selamat siang";
-  if (h < 18) return "Selamat sore";
-  return "Selamat malam";
-}
 
 const PIE_COLORS = ["#285C49", "#4C8570", "#D44F76", "#E17E9B", "#B58900", "#7A7A7A", "#3E7CB1", "#A93A5C"];
 
@@ -37,6 +30,8 @@ export function Home() {
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
+
+  const displayName = getDisplayName() || username;
 
   const allTxs = [...transactions, ...extraTxs];
   const recent = [...allTxs].reverse().slice(0, 5);
@@ -56,7 +51,9 @@ export function Home() {
 
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-forest-900">{greeting()}</h1>
+          <h1 className="text-2xl font-semibold text-forest-900">
+            {greetingWord()}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span>
+          </h1>
           <p className="text-[14px] text-charcoal/60 mt-0.5">Berikut ringkasan kondisi keuanganmu.</p>
         </div>
         <div className="flex gap-2">
@@ -85,7 +82,7 @@ export function Home() {
         <StatCard label="Total Assets" value={formatRupiah(totalAssets)} icon={Wallet} tone="forest" />
         <StatCard label="Total Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
         <StatCard label="Total Spending" value={formatRupiah(totalExpense)} icon={TrendingDown} tone="rose" />
-        <StatCard label="Monthly Savings" value={formatRupiah(totalSaving)} icon={PiggyBank} tone="forest" />
+        <StatCard label="Monthly Savings" value={formatRupiah(totalSaving)} icon={PiggyBank} tone="lilac" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
