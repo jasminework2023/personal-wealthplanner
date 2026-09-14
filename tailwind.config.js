@@ -23,6 +23,9 @@ export default {
         },
         cream: "#FBF8F3",
         charcoal: "#232323",
+        lilac: { 50: "#F5EEFF", 100: "#E8D7FF", 400: "#B98AE8", 600: "#8E5CC7" },
+        yellow: { 50: "#FFF8E1", 100: "#FFE8A3", 500: "#FFB800" },
+        orange: { 50: "#FFF1E9", 100: "#FFD6C2", 500: "#FF9A6B" },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
