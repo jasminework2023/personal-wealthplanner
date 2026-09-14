@@ -26,7 +26,8 @@ export function FinancialProtection() {
   const location = useLocation();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<FinancialPlan[]>(() => loadFinancialPlans());
-  const [adding, setAdding] = useState(false);\n  const [editingId, setEditingId] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [target, setTarget] = useState(0);
   const [prepared, setPrepared] = useState(0);
