@@ -107,14 +107,15 @@ interface RawState {
 
 const CURRENT_MONTH_NAME = new Date().toLocaleString("en-US", { month: "long" });
 
-export function useFinanceData(): FinanceData {
+export function useFinanceData(monthOverride?: string): FinanceData {
+  const initialMonth = monthOverride || CURRENT_MONTH_NAME;
   const [state, setState] = useState<RawState>({
     loading: true,
     error: null,
     isRealData: false,
     username: null,
-    month: CURRENT_MONTH_NAME,
-    transactions: mockTransactions,
+    month: initialMonth,
+    transactions: mockTransactions.filter((t) => t.month.toLowerCase() === initialMonth.toLowerCase()),
     budgetByCategory: mockAllocationMap(),
     assets: mockAssetData(),
   });
@@ -124,11 +125,18 @@ export function useFinanceData(): FinanceData {
     const token = getStoredToken();
 
     if (!token) {
-      setState((s) => ({ ...s, loading: false }));
+      setState((s) => ({
+        ...s,
+        loading: false,
+        month: monthOverride || CURRENT_MONTH_NAME,
+        transactions: mockTransactions.filter((t) => t.month.toLowerCase() === (monthOverride || CURRENT_MONTH_NAME).toLowerCase()),
+      }));
       return;
     }
 
-    fetch(`${import.meta.env.BASE_URL}api/dashboard?token=${encodeURIComponent(token)}`)
+    setState((s) => ({ ...s, loading: true, error: null, month: monthOverride || CURRENT_MONTH_NAME }));
+    const requestedMonth = monthOverride || CURRENT_MONTH_NAME;
+    fetch(`${import.meta.env.BASE_URL}api/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}`)
       .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
       .then(({ ok, data }) => {
         if (!ok) {
@@ -139,8 +147,8 @@ export function useFinanceData(): FinanceData {
             error: null,
             isRealData: true,
             username: data.username,
-            month: data.month || CURRENT_MONTH_NAME,
-            transactions: data.transactions || [],
+            month: data.month || requestedMonth,
+            transactions: (data.transactions || []).filter((t: Transaction) => String(t.month || "").toLowerCase() === String(data.month || requestedMonth).toLowerCase()),
             budgetByCategory: data.budgetByCategory || {},
             assets: data.assets || mockAssetData(),
           });
@@ -149,7 +157,7 @@ export function useFinanceData(): FinanceData {
       .catch(() => {
         setState((s) => ({ ...s, loading: false, error: "Gagal memuat data" }));
       });
-  }, []);
+  }, [monthOverride]);
 
   const totalIncome = state.transactions.filter((t) => t.type === "Income").reduce((s, t) => s + t.amount, 0);
   const totalExpense = state.transactions.filter((t) => t.type === "Expense").reduce((s, t) => s + t.amount, 0);
