@@ -138,7 +138,7 @@ export function MonthlyBudgeting() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-forest-900">Monthly Budgeting</h1>
+          <h1 className="text-2xl font-semibold text-forest-900">Budgeting &amp; Realization</h1>
 <p className="text-[14px] text-charcoal/60 mt-0.5">
             Pantau anggaran {MONTH_LABELS[month] || month} per kategori.
             {loading && " Memuat data..."}
@@ -158,7 +158,7 @@ export function MonthlyBudgeting() {
         <StatCard label="Remaining Budget" value={formatRupiah(remaining)} tone={remaining < 0 ? "rose" : "forest"} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex flex-col gap-3">
         {expenseRows.map((c) => (
           <EditableBudgetCard
             key={c.category}
