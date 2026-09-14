@@ -9,7 +9,6 @@ import {
   Settings,
   User,
   BookOpen,
-  ExternalLink,
   X,
 } from "lucide-react";
 
@@ -20,23 +19,9 @@ const mainLinks = [
   { to: "/budgeting", label: "Monthly Budgeting", icon: CalendarRange },
 ];
 
-type ToolLink =
-  | { href: string; to?: never; label: string; icon: any; external: true }
-  | { href?: never; to: string; label: string; icon: any; external: false };
-
-const toolLinks: ToolLink[] = [
-  {
-    href: "https://www.wealthplanner.id",
-    label: "Kalkulator Finansial",
-    icon: Calculator,
-    external: true,
-  },
-  {
-    to: "/protection",
-    label: "Proteksi Finansial",
-    icon: Shield,
-    external: false,
-  },
+const toolLinks = [
+  { to: "/calculator", label: "Kalkulator Finansial", icon: Calculator },
+  { to: "/protection", label: "Proteksi Finansial", icon: Shield },
 ];
 
 function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: any }) {
@@ -45,16 +30,21 @@ function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: a
       to={to}
       end={to === "/"}
       className={({ isActive }) =>
-        `group flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-[14px] transition-colors ${
+        `group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] transition-all ${
           isActive
-            ? "bg-forest-600 text-white font-medium shadow-sm"
-            : "text-charcoal/70 hover:bg-forest-50 hover:text-forest-700"
+            ? "bg-white/12 text-white font-semibold shadow-sm"
+            : "text-white/78 hover:bg-white/10 hover:text-white"
         }`
       }
     >
-      {({ isActive }: { isActive: boolean }) => (
+      {({ isActive }) => (
         <>
-          <Icon size={18} strokeWidth={2} className={isActive ? "text-rose-200" : "text-charcoal/40 group-hover:text-forest-600"} />
+          {isActive && <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-rose-300" />}
+          <Icon
+            size={18}
+            strokeWidth={2}
+            className={isActive ? "text-rose-200" : "text-white/55 group-hover:text-rose-200"}
+          />
           {label}
         </>
       )}
@@ -62,57 +52,30 @@ function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: a
   );
 }
 
-function ExternalItem({ href, label, icon: Icon }: { href: string; label: string; icon: any }) {
-  return (
-    <a
-      href={href}
-      target="_self"
-      rel="noopener noreferrer"
-      className="group flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-[14px] text-charcoal/70 hover:bg-rose-50 hover:text-rose-700 transition-colors"
-    >
-      <Icon size={18} strokeWidth={2} className="text-charcoal/40 group-hover:text-rose-600" />
-      <span className="flex-1">{label}</span>
-      <ExternalLink size={13} className="opacity-50" />
-    </a>
-  );
-}
-
 function SidebarContent() {
   return (
     <div className="flex flex-col h-full">
       <div className="px-4 pt-6 pb-4">
-        <p className="text-[15px] font-semibold text-forest-900 tracking-tight">Wealthplanner</p>
-        <p className="text-[12px] text-charcoal/50">Personal Finance</p>
+        <p className="text-[15px] font-semibold text-white tracking-tight">Wealthplanner</p>
+        <p className="text-[12px] text-white/60">Personal Finance</p>
       </div>
 
       <div className="px-2 flex-1 overflow-y-auto">
-        <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-charcoal/40 mt-2 mb-1.5">
-          Main
-        </p>
+        <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-white/50 mt-2 mb-1.5">Main</p>
         <nav className="flex flex-col gap-0.5 mb-4">
-          {mainLinks.map((l) => (
-            <NavItem key={l.to} {...l} />
-          ))}
+          {mainLinks.map((l) => <NavItem key={l.to} {...l} />)}
         </nav>
 
-        <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-charcoal/40 mt-2 mb-1.5">
-          Tools
-        </p>
+        <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-white/50 mt-2 mb-1.5">Tools</p>
         <nav className="flex flex-col gap-0.5">
-          {toolLinks.map((l) =>
-            l.external ? (
-              <ExternalItem key={l.href} {...l} />
-            ) : (
-              <NavItem key={l.to} to={l.to} label={l.label} icon={l.icon} />
-            ),
-          )}
+          {toolLinks.map((l) => <NavItem key={l.to} {...l} />)}
         </nav>
       </div>
 
-      <div className="px-2 pb-4 pt-2 border-t border-charcoal/8 flex flex-col gap-0.5">
+      <div className="px-2 pb-4 pt-2 border-t border-white/12 flex flex-col gap-0.5">
+        <NavItem to="/guidance" label="Guidance" icon={BookOpen} />
         <NavItem to="/settings" label="Settings" icon={Settings} />
         <NavItem to="/profile" label="Profile" icon={User} />
-        <NavItem to="/guidance" label="Guidance" icon={BookOpen} />
       </div>
     </div>
   );
@@ -120,7 +83,7 @@ function SidebarContent() {
 
 export function DesktopSidebar() {
   return (
-    <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 h-screen sticky top-0 bg-white border-r border-charcoal/8">
+    <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 h-screen sticky top-0 bg-forest-700 border-r border-white/10">
       <SidebarContent />
     </aside>
   );
@@ -131,12 +94,8 @@ export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () =>
   return (
     <div className="lg:hidden fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="absolute left-0 top-0 h-full w-72 bg-white shadow-xl">
-        <button
-          onClick={onClose}
-          aria-label="Tutup menu"
-          className="absolute right-3 top-4 p-1.5 rounded-lg hover:bg-charcoal/5"
-        >
+      <div className="absolute left-0 top-0 h-full w-72 bg-forest-700 shadow-xl">
+        <button onClick={onClose} aria-label="Tutup menu" className="absolute right-3 top-4 p-1.5 rounded-lg hover:bg-white/10 text-white">
           <X size={18} />
         </button>
         <SidebarContent />
