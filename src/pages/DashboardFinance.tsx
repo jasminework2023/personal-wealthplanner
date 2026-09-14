@@ -235,14 +235,14 @@ export function DashboardFinance() {
 
       {/* A. Ringkasan Bulanan */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
+        <StatCard label="Monthly Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
         <StatCard
           label="Budget Expense"
           value={budgetExpensePlan > 0 ? formatRupiah(budgetExpensePlan) : "Belum diatur"}
           icon={Landmark}
           tone="neutral"
         />
-        <StatCard label="Total Spending" value={formatRupiah(totalExpense)} icon={TrendingDown} tone="rose" />
+        <StatCard label="Monthly Spending" value={formatRupiah(totalExpense)} icon={TrendingDown} tone="rose" />
         <StatCard label="Monthly Savings" value={formatRupiah(totalSaving)} icon={PiggyBank} tone="forest" />
       </div>
 
@@ -274,19 +274,21 @@ export function DashboardFinance() {
       </ChartCard>
 
       {/* E. Asset Tracker */}
-      <ChartCard title="Asset Tracker" subtitle={assets.target > 0 ? `Target ${formatRupiah(assets.target)}` : "Target belum diatur"}>
+      <ChartCard title="Asset Tracker" subtitle="Pantau aset saat ini dan progres menuju target.">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div>
-                <p className="text-[12px] text-charcoal/55">Total Assets</p>
-                <p className="text-[18px] font-semibold text-forest-900">{formatRupiah(assets.totalAssets)}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <div className="rounded-xl bg-forest-50/70 p-3">
+                <p className="text-[11px] text-charcoal/55">Aset Saat Ini</p>
+                <p className="mt-1 text-[17px] font-semibold text-forest-900">{formatRupiah(assets.totalAssets)}</p>
               </div>
-              <div>
-                <p className="text-[12px] text-charcoal/55">Equivalent USD</p>
-                <p className="text-[18px] font-semibold text-forest-900">
-                  ${Math.round(assets.totalAssets / usdRate).toLocaleString("en-US")}
-                </p>
+              <div className="rounded-xl bg-white border border-charcoal/8 p-3">
+                <p className="text-[11px] text-charcoal/55">Target</p>
+                <p className="mt-1 text-[17px] font-semibold text-forest-900">{assets.target > 0 ? formatRupiah(assets.target) : "Belum diatur"}</p>
+              </div>
+              <div className="rounded-xl bg-white border border-charcoal/8 p-3">
+                <p className="text-[11px] text-charcoal/55">Progress ke Target</p>
+                <p className="mt-1 text-[17px] font-semibold text-forest-700">{assets.target > 0 ? formatPercent(assetProgress) : "—"}</p>
               </div>
             </div>
             {assets.target > 0 && (
@@ -370,92 +372,7 @@ export function DashboardFinance() {
         </div>
       </ChartCard>
 
-      {/* F. Stock Net Worth */}
-      {(assets.stocksID.length > 0 || assets.stocksUS.length > 0 || manualStocks.length > 0) && (
-        <ChartCard title="Stock Net Worth" subtitle="Ringkasan portofolio saham Indonesia & US">
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart
-              data={[...allStocksID, ...allStocksUS.map((s) => ({ ...s, value: s.value * usdRate }))].map((s) => ({
-                ticker: s.ticker,
-                value: s.value,
-              }))}
-            >
-              <XAxis dataKey="ticker" tick={{ fontSize: 11, fill: "#6b6b6b" }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={(v) => formatCompact(v)} tick={{ fontSize: 11, fill: "#6b6b6b" }} axisLine={false} tickLine={false} width={50} />
-              <Tooltip formatter={(v: number) => formatRupiah(v)} />
-              <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="#285C49" />
-            </BarChart>
-          </ResponsiveContainer>
-
-          <div className="overflow-x-auto mt-4">
-            <table className="w-full text-[13px] min-w-[520px]">
-              <thead>
-                <tr className="text-left text-charcoal/50 text-[12px] border-b border-charcoal/8">
-                  <th className="py-2 font-medium">Stock</th>
-                  <th className="py-2 font-medium">Price</th>
-                  <th className="py-2 font-medium">Shares</th>
-                  <th className="py-2 font-medium">Avg price</th>
-                  <th className="py-2 font-medium text-right">Value</th>
-                  <th className="py-2 font-medium text-right">P/L</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ...allStocksID.map((s) => ({ ...s, market: "ID" as const })),
-                  ...allStocksUS.map((s) => ({ ...s, market: "US" as const })),
-                ].map((s) => (
-                  <tr key={s.ticker} className="border-b border-charcoal/8 last:border-0">
-                    <td className="py-2 font-medium">
-                      {s.ticker} <span className="text-charcoal/40 text-[11px]">{s.market}</span>
-                    </td>
-                    <td className="py-2">{s.market === "US" ? "$" + s.currentPrice : formatRupiah(s.currentPrice)}</td>
-                    <td className="py-2">{s.shares}</td>
-                    <td className="py-2">{s.market === "US" ? "$" + s.avgPrice : formatRupiah(s.avgPrice)}</td>
-                    <td className="py-2 text-right font-medium">
-                      {formatRupiah(s.market === "US" ? s.value * usdRate : s.value)}
-                    </td>
-                    <td className={`py-2 text-right font-medium ${s.pl >= 0 ? "text-forest-700" : "text-rose-600"}`}>
-                      {s.pl >= 0 ? "+" : ""}
-                      {s.market === "US" ? "$" + s.pl.toFixed(0) : formatRupiah(s.pl)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <ManualStockForm onSaved={(stock) => setManualStocks((current) => {
-            const withoutSame = current.filter((item) => !(item.ticker === stock.ticker && item.market === stock.market));
-            return [...withoutSame, stock];
-          })} />
-
-          {manualStocks.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {manualStocks.map((stock) => (
-                <span key={`${stock.market}-${stock.ticker}`} className="inline-flex items-center gap-2 rounded-full bg-lilac-50 px-3 py-1.5 text-[11px] text-forest-800">
-                  Manual · {stock.ticker}
-                  <button type="button" onClick={() => setManualStocks((items) => items.filter((x) => !(x.ticker === stock.ticker && x.market === stock.market)))} className="font-bold text-charcoal/40 hover:text-rose-600" aria-label={`Hapus ${stock.ticker}`}>×</button>
-                </span>
-              ))}
-            </div>
-          )}
-
-          <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-charcoal/8">
-            <div>
-              <p className="text-[12px] text-charcoal/55">Subtotal ID</p>
-              <p className="text-[15px] font-semibold">{formatRupiah(idValue)}</p>
-            </div>
-            <div>
-              <p className="text-[12px] text-charcoal/55">Subtotal US</p>
-              <p className="text-[15px] font-semibold">{formatRupiah(usValueIDR)}</p>
-            </div>
-            <div>
-              <p className="text-[12px] text-charcoal/55">Total Portfolio</p>
-              <p className="text-[15px] font-semibold text-forest-800">{formatRupiah(totalPortfolio)}</p>
-            </div>
-          </div>
-        </ChartCard>
-      )}
+      {/* Stock Net Worth hidden in Phase 1 until live market-price data is available. */}
     </div>
   );
 }
