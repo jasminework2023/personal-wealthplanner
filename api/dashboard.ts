@@ -221,11 +221,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: "Data belum tersedia" });
     }
 
-    const currentMonth = new Date().toLocaleString("en-US", { month: "long" });
+    const requestedMonth = typeof req.query.month === "string" && req.query.month
+      ? req.query.month
+      : new Date().toLocaleString("en-US", { month: "long" });
 
     const [transactions, budgetByCategory, assets] = await Promise.all([
       getTransactions(user.spreadsheet_id),
-      getBudgetByCategory(user.spreadsheet_id, currentMonth).catch(() => ({})),
+      getBudgetByCategory(user.spreadsheet_id, requestedMonth).catch(() => ({})),
       getAssetTracker(user.spreadsheet_id).catch(() => null),
     ]);
 
@@ -234,7 +236,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       transactions,
       budgetByCategory,
       assets,
-      month: currentMonth,
+      month: requestedMonth,
     });
   } catch (err) {
     console.error("Dashboard API error:", (err as Error).message);
