@@ -83,7 +83,7 @@ export function FinancialProtection() {
   }
 
   return <div className="flex flex-col gap-6">
-    <div><h1 className="text-2xl font-semibold text-forest-900">Proteksi Finansial</h1><p className="mt-1 text-[14px] text-charcoal/60">Lihat rencana yang ingin kamu jaga dan bagian yang masih perlu dipersiapkan.</p></div>
+    <div><h1 className="text-2xl font-semibold text-forest-900">Financial Protection</h1><p className="mt-1 text-[14px] text-charcoal/60">Lihat rencana yang ingin kamu jaga dan bagian yang masih perlu dipersiapkan.</p></div>
 
     <Card className="overflow-hidden border-forest-100 bg-gradient-to-br from-white via-forest-50/50 to-rose-50/30">
       <div className="flex flex-col gap-5">
