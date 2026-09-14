@@ -17,26 +17,26 @@ import { ChartCard, Card } from "../components/Card";
 import { TransactionBadge } from "../components/TransactionBadge";
 import { AddTransactionModal } from "../components/AddTransactionModal";
 import { DataStatusBanner } from "../components/DataStatusBanner";
-import { formatRupiah, formatCompact, formatPercent } from "../lib/format";
+import { formatRupiah, formatCompact } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
 import { getDisplayName, greetingWord } from "../lib/settings";
-import { totalAssets, assetTarget } from "../data/assets";
+import { totalAssets } from "../data/assets";
 import type { Transaction } from "../data/types";
 
 const PIE_COLORS = ["#285C49", "#4C8570", "#D44F76", "#E17E9B", "#B58900", "#7A7A7A", "#3E7CB1", "#A93A5C"];
 
 export function Home() {
-  const { loading, error, isRealData, username, transactions, totalIncome, totalExpense, totalSaving, byCategory } = useFinanceData();
+  const { loading, error, isRealData, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month } = useFinanceData();
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
 
   const displayName = getDisplayName() || username;
+  const currentYear = new Date().getFullYear();
 
   const allTxs = [...transactions, ...extraTxs];
   const recent = [...allTxs].reverse().slice(0, 5);
-  const progress = (totalAssets / assetTarget) * 100;
-
+  
   const cashFlowData = [
     { name: "Income", value: totalIncome },
     { name: "Expense", value: totalExpense },
@@ -54,7 +54,7 @@ export function Home() {
           <h1 className="text-2xl font-semibold text-forest-900">
             {greetingWord()}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span>
           </h1>
-          <p className="text-[14px] text-charcoal/60 mt-0.5">Berikut ringkasan kondisi keuanganmu.</p>
+          <p className="text-[14px] text-charcoal/60 mt-0.5">Ringkasan keuangan untuk {month} {currentYear}.</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -80,8 +80,8 @@ export function Home() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Assets" value={formatRupiah(totalAssets)} icon={Wallet} tone="forest" />
-        <StatCard label="Total Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
-        <StatCard label="Total Spending" value={formatRupiah(totalExpense)} icon={TrendingDown} tone="rose" />
+        <StatCard label="Monthly Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
+        <StatCard label="Monthly Spending" value={formatRupiah(totalExpense)} icon={TrendingDown} tone="rose" />
         <StatCard label="Monthly Savings" value={formatRupiah(totalSaving)} icon={PiggyBank} tone="lilac" />
       </div>
 
@@ -115,16 +115,6 @@ export function Home() {
           </ResponsiveContainer>
         </ChartCard>
       </div>
-
-      <ChartCard title="Financial Goal" subtitle={`Target ${formatRupiah(assetTarget)} (contoh — belum ada fitur pencatatan aset)`}>
-        <div className="flex items-center justify-between mb-2 text-[13px]">
-          <span className="text-charcoal/60">Current assets: {formatRupiah(totalAssets)}</span>
-          <span className="font-medium text-forest-700">{formatPercent(progress)}</span>
-        </div>
-        <div className="w-full h-2.5 rounded-full bg-charcoal/8 overflow-hidden">
-          <div className="h-full bg-forest-600 rounded-full" style={{ width: `${Math.min(progress, 100)}%` }} />
-        </div>
-      </ChartCard>
 
       <Card>
         <div className="flex items-center justify-between mb-3">
