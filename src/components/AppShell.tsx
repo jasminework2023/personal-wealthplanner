@@ -8,7 +8,9 @@ const titles: Record<string, string> = {
   "/": "Home",
   "/finance": "Dashboard Finance",
   "/transactions": "Transaction Report",
-  "/budgeting": "Monthly Budgeting",
+  "/budgeting": "Budgeting & Realization",
+  "/calculator": "Financial Calculator",
+  "/protection": "Financial Protection",
   "/protection": "Proteksi Finansial",
   "/settings": "Settings",
   "/profile": "Profile",
@@ -18,7 +20,7 @@ const titles: Record<string, string> = {
 export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const title = titles[location.pathname] ?? "Wealthplanner";
+  const title = location.pathname.startsWith("/calculator/") ? "Financial Calculator" : (titles[location.pathname] ?? "Wealthplanner");
 
   return (
     <div className="min-h-screen flex bg-cream">
