@@ -165,18 +165,30 @@ export function useFinanceData(monthOverride?: string): FinanceData {
 
   function byCategory(type: Transaction["type"]) {
     const map = new Map<string, number>();
+    const categorySource =
+      type === "Income" ? incomeCategories :
+      type === "Saving" ? savingCategories :
+      expenseCategories;
+
     for (const t of state.transactions) {
       if (t.type !== type) continue;
       map.set(t.category, (map.get(t.category) || 0) + t.amount);
     }
-    for (const category of Object.keys(state.budgetByCategory)) {
-      if (!map.has(category) && state.budgetByCategory[category] > 0) {
+
+    // Only show categories belonging to the selected transaction type.
+    // This prevents expense categories (e.g. Food & Groceries) from appearing
+    // inside Income or Savings Overview.
+    for (const item of categorySource) {
+      const category = item.category;
+      const allocation = state.budgetByCategory[category] ?? item.allocation ?? 0;
+      if (!map.has(category) && allocation > 0) {
         map.set(category, 0);
       }
     }
+
     return Array.from(map.entries()).map(([category, realization]) => ({
       category,
-      allocation: state.budgetByCategory[category] || 0,
+      allocation: state.budgetByCategory[category] ?? categorySource.find((c) => c.category === category)?.allocation ?? 0,
       realization,
     }));
   }
