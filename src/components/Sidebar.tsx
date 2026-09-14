@@ -8,6 +8,7 @@ import {
   Shield,
   Settings,
   User,
+  BookOpen,
   ExternalLink,
   X,
 } from "lucide-react";
@@ -44,15 +45,19 @@ function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: a
       to={to}
       end={to === "/"}
       className={({ isActive }) =>
-        `flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-[14px] transition-colors ${
+        `group flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-[14px] transition-colors ${
           isActive
-            ? "bg-forest-600 text-white font-medium"
+            ? "bg-forest-600 text-white font-medium shadow-sm"
             : "text-charcoal/70 hover:bg-forest-50 hover:text-forest-700"
         }`
       }
     >
-      <Icon size={18} strokeWidth={2} />
-      {label}
+      {({ isActive }: { isActive: boolean }) => (
+        <>
+          <Icon size={18} strokeWidth={2} className={isActive ? "text-rose-200" : "text-charcoal/40 group-hover:text-forest-600"} />
+          {label}
+        </>
+      )}
     </NavLink>
   );
 }
@@ -63,9 +68,9 @@ function ExternalItem({ href, label, icon: Icon }: { href: string; label: string
       href={href}
       target="_self"
       rel="noopener noreferrer"
-      className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-[14px] text-charcoal/70 hover:bg-rose-50 hover:text-rose-700 transition-colors"
+      className="group flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-[14px] text-charcoal/70 hover:bg-rose-50 hover:text-rose-700 transition-colors"
     >
-      <Icon size={18} strokeWidth={2} />
+      <Icon size={18} strokeWidth={2} className="text-charcoal/40 group-hover:text-rose-600" />
       <span className="flex-1">{label}</span>
       <ExternalLink size={13} className="opacity-50" />
     </a>
@@ -104,9 +109,10 @@ function SidebarContent() {
         </nav>
       </div>
 
-      <div className="px-2 pb-4 pt-2 border-t border-charcoal/8">
+      <div className="px-2 pb-4 pt-2 border-t border-charcoal/8 flex flex-col gap-0.5">
         <NavItem to="/settings" label="Settings" icon={Settings} />
         <NavItem to="/profile" label="Profile" icon={User} />
+        <NavItem to="/guidance" label="Guidance" icon={BookOpen} />
       </div>
     </div>
   );
