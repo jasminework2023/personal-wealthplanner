@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { DesktopSidebar, MobileSidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { DateHeader } from "./DateHeader";
 
 const titles: Record<string, string> = {
   "/": "Home",
@@ -11,6 +12,7 @@ const titles: Record<string, string> = {
   "/protection": "Proteksi Finansial",
   "/settings": "Settings",
   "/profile": "Profile",
+  "/guidance": "Guidance",
 };
 
 export function AppShell() {
@@ -25,6 +27,9 @@ export function AppShell() {
       <div className="flex-1 min-w-0">
         <Topbar title={title} onMenuClick={() => setMobileOpen(true)} />
         <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+          <div className="hidden lg:flex justify-end mb-2">
+            <DateHeader />
+          </div>
           <Outlet />
         </main>
       </div>
