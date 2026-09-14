@@ -11,13 +11,14 @@ export function StatCard({
   label: string;
   value: string;
   icon?: LucideIcon;
-  tone?: "forest" | "rose" | "neutral";
+  tone?: "forest" | "rose" | "neutral" | "lilac";
   trend?: string;
 }) {
   const toneClasses = {
     forest: "bg-forest-50 text-forest-700",
     rose: "bg-rose-50 text-rose-700",
     neutral: "bg-charcoal/5 text-charcoal/70",
+    lilac: "bg-lilac-50 text-lilac-700",
   }[tone];
 
   return (
