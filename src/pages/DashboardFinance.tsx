@@ -1,6 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StatCard } from "../components/StatCard";
 import { ChartCard, Card } from "../components/Card";
 import { BudgetProgressBar, StatusBadge } from "../components/ProgressBar";
@@ -10,6 +10,69 @@ import { usagePercentage, budgetStatus } from "../data/types";
 import { useFinanceData, getStoredToken } from "../lib/useFinanceData";
 import { AddItemForm } from "../components/AddItemForm";
 import { usdRate } from "../data/assets";
+
+
+
+type ManualStock = {
+  ticker: string;
+  market: "ID" | "US";
+  shares: number;
+  avgPrice: number;
+  currentPrice: number;
+};
+
+const MANUAL_STOCKS_KEY = "wealthplanner_manual_stocks_v1";
+
+function loadManualStocks(): ManualStock[] {
+  try {
+    const raw = localStorage.getItem(MANUAL_STOCKS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function ManualStockForm({ onSaved }: { onSaved: (stock: ManualStock) => void }) {
+  const [ticker, setTicker] = useState("");
+  const [market, setMarket] = useState<"ID" | "US">("ID");
+  const [shares, setShares] = useState("");
+  const [avgPrice, setAvgPrice] = useState("");
+  const [currentPrice, setCurrentPrice] = useState("");
+
+  function save() {
+    const stock: ManualStock = {
+      ticker: ticker.trim().toUpperCase(),
+      market,
+      shares: Number(shares) || 0,
+      avgPrice: Number(avgPrice) || 0,
+      currentPrice: Number(currentPrice) || 0,
+    };
+    if (!stock.ticker || stock.shares <= 0 || stock.avgPrice < 0 || stock.currentPrice < 0) return;
+    onSaved(stock);
+    setTicker(""); setShares(""); setAvgPrice(""); setCurrentPrice("");
+  }
+
+  const inputClass = "w-full rounded-lg border border-charcoal/12 bg-white px-2.5 py-2 text-[12px] outline-none focus:border-forest-400";
+  return (
+    <div className="mt-4 rounded-xl border border-dashed border-forest-100 bg-forest-50/40 p-4">
+      <p className="text-[12px] font-semibold text-forest-900">Tambah saham manual</p>
+      <p className="mt-0.5 text-[11px] text-charcoal/50">V1: harga saat ini diinput manual. Belum terhubung ke market-price API.</p>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        <input value={ticker} onChange={(e) => setTicker(e.target.value)} placeholder="Stock Code" className={inputClass} />
+        <select value={market} onChange={(e) => setMarket(e.target.value as "ID" | "US")} className={inputClass}>
+          <option value="ID">Indonesia</option><option value="US">US</option>
+        </select>
+        <input value={shares} onChange={(e) => setShares(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="Quantity" inputMode="decimal" className={inputClass} />
+        <input value={avgPrice} onChange={(e) => setAvgPrice(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="Average Price" inputMode="decimal" className={inputClass} />
+        <div className="flex gap-2">
+          <input value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="Current Price" inputMode="decimal" className={`${inputClass} min-w-0`} />
+          <button type="button" onClick={save} className="shrink-0 rounded-lg bg-forest-600 px-3 text-[12px] font-semibold text-white hover:bg-forest-700">Tambah</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function EditableAssetItem({
   name,
@@ -138,10 +201,17 @@ function BudgetRow({
 
 export function DashboardFinance() {
   const { loading, error, isRealData, username, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData();
+  const [manualStocks, setManualStocks] = useState<ManualStock[]>(() => loadManualStocks());
+
+  useEffect(() => {
+    localStorage.setItem(MANUAL_STOCKS_KEY, JSON.stringify(manualStocks));
+  }, [manualStocks]);
 
   const assetProgress = assets.target > 0 ? (assets.totalAssets / assets.target) * 100 : 0;
-  const idValue = assets.stocksID.reduce((s, x) => s + x.value, 0);
-  const usValueIDR = assets.stocksUS.reduce((s, x) => s + x.value, 0) * usdRate;
+  const allStocksID = [...assets.stocksID, ...manualStocks.filter((s) => s.market === "ID").map((s) => ({ ...s, value: s.currentPrice * s.shares, pl: (s.currentPrice - s.avgPrice) * s.shares }))];
+  const allStocksUS = [...assets.stocksUS, ...manualStocks.filter((s) => s.market === "US").map((s) => ({ ...s, value: s.currentPrice * s.shares, pl: (s.currentPrice - s.avgPrice) * s.shares }))];
+  const idValue = allStocksID.reduce((s, x) => s + x.value, 0);
+  const usValueIDR = allStocksUS.reduce((s, x) => s + x.value, 0) * usdRate;
   const totalPortfolio = idValue + usValueIDR;
 
   const assetChartData = [
@@ -301,11 +371,11 @@ export function DashboardFinance() {
       </ChartCard>
 
       {/* F. Stock Net Worth */}
-      {(assets.stocksID.length > 0 || assets.stocksUS.length > 0) && (
+      {(assets.stocksID.length > 0 || assets.stocksUS.length > 0 || manualStocks.length > 0) && (
         <ChartCard title="Stock Net Worth" subtitle="Ringkasan portofolio saham Indonesia & US">
           <ResponsiveContainer width="100%" height={200}>
             <BarChart
-              data={[...assets.stocksID, ...assets.stocksUS.map((s) => ({ ...s, value: s.value * usdRate }))].map((s) => ({
+              data={[...allStocksID, ...allStocksUS.map((s) => ({ ...s, value: s.value * usdRate }))].map((s) => ({
                 ticker: s.ticker,
                 value: s.value,
               }))}
@@ -331,8 +401,8 @@ export function DashboardFinance() {
               </thead>
               <tbody>
                 {[
-                  ...assets.stocksID.map((s) => ({ ...s, market: "ID" as const })),
-                  ...assets.stocksUS.map((s) => ({ ...s, market: "US" as const })),
+                  ...allStocksID.map((s) => ({ ...s, market: "ID" as const })),
+                  ...allStocksUS.map((s) => ({ ...s, market: "US" as const })),
                 ].map((s) => (
                   <tr key={s.ticker} className="border-b border-charcoal/8 last:border-0">
                     <td className="py-2 font-medium">
@@ -353,6 +423,22 @@ export function DashboardFinance() {
               </tbody>
             </table>
           </div>
+
+          <ManualStockForm onSaved={(stock) => setManualStocks((current) => {
+            const withoutSame = current.filter((item) => !(item.ticker === stock.ticker && item.market === stock.market));
+            return [...withoutSame, stock];
+          })} />
+
+          {manualStocks.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {manualStocks.map((stock) => (
+                <span key={`${stock.market}-${stock.ticker}`} className="inline-flex items-center gap-2 rounded-full bg-lilac-50 px-3 py-1.5 text-[11px] text-forest-800">
+                  Manual · {stock.ticker}
+                  <button type="button" onClick={() => setManualStocks((items) => items.filter((x) => !(x.ticker === stock.ticker && x.market === stock.market)))} className="font-bold text-charcoal/40 hover:text-rose-600" aria-label={`Hapus ${stock.ticker}`}>×</button>
+                </span>
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-charcoal/8">
             <div>
