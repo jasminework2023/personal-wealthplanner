@@ -45,6 +45,8 @@ export interface AssetData {
   stocksUS: StockItem[];
 }
 
+interface SetupCategory { name: string; active: boolean }
+
 interface FinanceData {
   loading: boolean;
   error: string | null;
@@ -56,6 +58,7 @@ interface FinanceData {
   totalExpense: number;
   totalSaving: number;
   assets: AssetData;
+  setup: Record<"income" | "expense" | "saving" | "bank", SetupCategory[]>;
   byCategory: (type: Transaction["type"]) => { category: string; allocation: number; realization: number }[];
 }
 
@@ -103,6 +106,7 @@ interface RawState {
   transactions: Transaction[];
   budgetByCategory: Record<string, number>;
   assets: AssetData;
+  setup: Record<"income" | "expense" | "saving" | "bank", SetupCategory[]>;
 }
 
 const CURRENT_MONTH_NAME = new Date().toLocaleString("en-US", { month: "long" });
@@ -118,6 +122,12 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
     transactions: mockTransactions.filter((t) => t.month.toLowerCase() === initialMonth.toLowerCase()),
     budgetByCategory: mockAllocationMap(),
     assets: mockAssetData(),
+    setup: {
+      income: incomeCategories.map((c) => ({ name: c.category, active: true })),
+      expense: expenseCategories.map((c) => ({ name: c.category, active: true })),
+      saving: savingCategories.map((c) => ({ name: c.category, active: true })),
+      bank: [],
+    },
   });
 
   useEffect(() => {
@@ -140,14 +150,22 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
       }
 
       setState((s) => ({ ...s, loading: true, error: null, month: requestedMonth }));
-      fetch(`${import.meta.env.BASE_URL}api/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}`)
-        .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
-        .then(({ ok, data }) => {
+      Promise.all([
+        fetch(`${import.meta.env.BASE_URL}api/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}`),
+        fetch(`${import.meta.env.BASE_URL}api/setup?token=${encodeURIComponent(token)}`),
+      ])
+        .then(async ([dashboardResponse, setupResponse]) => ({
+          dashboard: { ok: dashboardResponse.ok, data: await dashboardResponse.json() },
+          setup: { ok: setupResponse.ok, data: await setupResponse.json() },
+        }))
+        .then(({ dashboard, setup }) => {
+          const { ok, data } = dashboard;
           if (cancelled) return;
           if (!ok) {
             setState((s) => ({ ...s, loading: false, error: data.error || "Gagal memuat data" }));
           } else {
-            setState({
+            setState((s) => ({
+              ...s,
               loading: false,
               error: null,
               isRealData: true,
@@ -158,7 +176,8 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
                 : (data.transactions || []).filter((t: Transaction) => String(t.month || "").toLowerCase() === String(data.month || requestedMonth).toLowerCase()),
               budgetByCategory: data.budgetByCategory || {},
               assets: data.assets || mockAssetData(),
-            });
+              setup: setup.ok && setup.data?.sections ? setup.data.sections : s.setup,
+            }));
           }
         })
         .catch(() => {
@@ -185,6 +204,9 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
       type === "Income" ? incomeCategories :
       type === "Saving" ? savingCategories :
       expenseCategories;
+    const setupKey = type === "Income" ? "income" : type === "Saving" ? "saving" : "expense";
+    const activeSetup = state.setup[setupKey] || [];
+    const activeNames = new Set(activeSetup.filter((item) => item.active).map((item) => item.name.toLowerCase()));
 
     for (const t of state.transactions) {
       if (t.type !== type) continue;
@@ -202,11 +224,13 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
       }
     }
 
-    return Array.from(map.entries()).map(([category, realization]) => ({
-      category,
-      allocation: state.budgetByCategory[category] ?? categorySource.find((c) => c.category === category)?.allocation ?? 0,
-      realization,
-    }));
+    return Array.from(map.entries())
+      .filter(([category]) => activeNames.size === 0 || activeNames.has(category.toLowerCase()))
+      .map(([category, realization]) => ({
+        category,
+        allocation: state.budgetByCategory[category] ?? categorySource.find((c) => c.category === category)?.allocation ?? 0,
+        realization,
+      }));
   }
 
   return {
