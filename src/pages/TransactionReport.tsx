@@ -9,7 +9,7 @@ import { useFinanceData } from "../lib/useFinanceData";
 import type { Transaction, TransactionType } from "../data/types";
 
 export function TransactionReport() {
-  const { isRealData, username, error, transactions } = useFinanceData(undefined, true);
+  const { isRealData, username, error, transactions, setup } = useFinanceData(undefined, true);
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TransactionType | "All">("All");
@@ -19,13 +19,44 @@ export function TransactionReport() {
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
 
   const allTxs = [...transactions, ...extraTxs];
-  const categories = useMemo(() => Array.from(new Set(allTxs.map((t) => t.category))), [allTxs]);
-  const months = useMemo(() => Array.from(new Set(allTxs.map((t) => t.month))).sort((a, b) => a.localeCompare(b)), [allTxs]);
+  const categories = useMemo(() => {
+    const setupCategories = [
+      ...setup.income.filter((x) => x.active).map((x) => x.name),
+      ...setup.expense.filter((x) => x.active).map((x) => x.name),
+      ...setup.saving.filter((x) => x.active).map((x) => x.name),
+    ];
+    return Array.from(new Set([...setupCategories, ...allTxs.map((t) => t.category)]));
+  }, [allTxs, setup]);
+
+  const parseDate = (date: string) => {
+    const [d, m, y] = date.split("/").map(Number);
+    return new Date(y || 0, (m || 1) - 1, d || 1).getTime();
+  };
+
+  const monthGroup = (t: Transaction) => {
+    const [d, m, y] = t.date.split("/").map(Number);
+    if (d && m && y) {
+      return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    }
+    return t.month || "Tanpa Bulan";
+  };
+
+  const months = useMemo(() => {
+    const groups = new Map<string, number>();
+    allTxs.forEach((t) => {
+      const key = monthGroup(t);
+      const timestamp = parseDate(t.date);
+      groups.set(key, Math.max(groups.get(key) ?? 0, timestamp));
+    });
+    return Array.from(groups.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([label]) => label);
+  }, [allTxs]);
 
   const filtered = allTxs.filter((t) => {
     if (typeFilter !== "All" && t.type !== typeFilter) return false;
     if (categoryFilter !== "All" && t.category !== categoryFilter) return false;
-    if (monthFilter !== "All" && t.month !== monthFilter) return false;
+    if (monthFilter !== "All" && monthGroup(t) !== monthFilter) return false;
     if (search && !t.description.toLowerCase().includes(search.toLowerCase()) && !t.category.toLowerCase().includes(search.toLowerCase())) {
       return false;
     }
@@ -104,49 +135,56 @@ export function TransactionReport() {
           </select>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-[13px] min-w-[640px]">
-            <thead>
-              <tr className="text-left text-charcoal/50 text-[12px] border-b border-charcoal/8">
-                <th className="py-2.5 font-medium">Date</th>
-                <th className="py-2.5 font-medium">Type</th>
-                <th className="py-2.5 font-medium">Category</th>
-                <th className="py-2.5 font-medium">Description</th>
-                <th className="py-2.5 font-medium text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-charcoal/40">
-                    Nggak ada transaksi yang cocok.
-                  </td>
-                </tr>
-              ) : (
-                [...filtered].sort((a, b) => {
-                  const parse = (date: string) => {
-                    const [d, m, y] = date.split("/").map(Number);
-                    return new Date(y || 0, (m || 1) - 1, d || 1).getTime();
-                  };
-                  return parse(b.date) - parse(a.date);
-                }).map((t, i) => (
-                  <tr key={i} className="border-b border-charcoal/8 last:border-0">
-                    <td className="py-2.5 whitespace-nowrap">{t.date}</td>
-                    <td className="py-2.5">
-                      <TransactionBadge type={t.type} />
-                    </td>
-                    <td className="py-2.5">{t.category}</td>
-                    <td className="py-2.5">{t.description}</td>
-                    <td className={`py-2.5 text-right font-medium ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>
-                      {t.type === "Expense" ? "-" : "+"}
-                      {formatRupiah(t.amount)}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        {filtered.length === 0 ? (
+          <div className="py-8 text-center text-charcoal/40 text-[13px]">Nggak ada transaksi yang cocok.</div>
+        ) : (
+          <div className="flex flex-col gap-5">
+            {months
+              .filter((month) => month === "All" || filtered.some((t) => monthGroup(t) === month))
+              .map((month) => {
+                const monthTxs = filtered
+                  .filter((t) => monthGroup(t) === month)
+                  .sort((a, b) => parseDate(b.date) - parseDate(a.date));
+
+                return (
+                  <div key={month} className="overflow-hidden rounded-xl border border-charcoal/8">
+                    <div className="flex items-center justify-between gap-3 bg-charcoal/[0.025] px-4 py-3 border-b border-charcoal/8">
+                      <div>
+                        <p className="text-[14px] font-semibold text-forest-900">{month}</p>
+                        <p className="text-[11px] text-charcoal/45 mt-0.5">{monthTxs.length} transaksi</p>
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-[13px] min-w-[640px]">
+                        <thead>
+                          <tr className="text-left text-charcoal/50 text-[12px] border-b border-charcoal/8">
+                            <th className="py-2.5 px-4 font-medium">Date</th>
+                            <th className="py-2.5 font-medium">Type</th>
+                            <th className="py-2.5 font-medium">Category</th>
+                            <th className="py-2.5 font-medium">Description</th>
+                            <th className="py-2.5 px-4 font-medium text-right">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {monthTxs.map((t, i) => (
+                            <tr key={`${t.date}-${t.category}-${t.description}-${i}`} className="border-b border-charcoal/8 last:border-0">
+                              <td className="py-2.5 px-4 whitespace-nowrap">{t.date}</td>
+                              <td className="py-2.5"><TransactionBadge type={t.type} /></td>
+                              <td className="py-2.5">{t.category}</td>
+                              <td className="py-2.5">{t.description}</td>
+                              <td className={`py-2.5 px-4 text-right font-medium ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>
+                                {t.type === "Expense" ? "-" : "+"}{formatRupiah(t.amount)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        )}
       </Card>
 
       <AddTransactionModal
