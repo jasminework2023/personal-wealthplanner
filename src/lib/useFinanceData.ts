@@ -186,11 +186,17 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
     };
 
     loadData();
-    const handleTransactionAdded = () => loadData();
-    window.addEventListener("wealthplanner:transaction-added", handleTransactionAdded);
+    const handleRefresh = () => loadData();
+    window.addEventListener("wealthplanner:transaction-added", handleRefresh);
+    window.addEventListener("wealthplanner:setup-changed", handleRefresh);
+    window.addEventListener("visibilitychange", handleRefresh);
+    const interval = window.setInterval(loadData, 15000);
     return () => {
       cancelled = true;
-      window.removeEventListener("wealthplanner:transaction-added", handleTransactionAdded);
+      window.clearInterval(interval);
+      window.removeEventListener("wealthplanner:transaction-added", handleRefresh);
+      window.removeEventListener("wealthplanner:setup-changed", handleRefresh);
+      window.removeEventListener("visibilitychange", handleRefresh);
     };
   }, [monthOverride, includeAllMonths]);
 
@@ -205,32 +211,26 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
       type === "Saving" ? savingCategories :
       expenseCategories;
     const setupKey = type === "Income" ? "income" : type === "Saving" ? "saving" : "expense";
-    const activeSetup = state.setup[setupKey] || [];
-    const activeNames = new Set(activeSetup.filter((item) => item.active).map((item) => item.name.toLowerCase()));
+    const configured = state.setup[setupKey] || [];
+    const activeSetup = configured.filter((item) => item.active && item.name.trim());
 
     for (const t of state.transactions) {
       if (t.type !== type) continue;
       map.set(t.category, (map.get(t.category) || 0) + t.amount);
     }
 
-    // Only show categories belonging to the selected transaction type.
-    // This prevents expense categories (e.g. Food & Groceries) from appearing
-    // inside Income or Savings Overview.
-    for (const item of categorySource) {
-      const category = item.category;
-      const allocation = state.budgetByCategory[category] ?? item.allocation ?? 0;
-      if (!map.has(category) && allocation > 0) {
-        map.set(category, 0);
-      }
+    // Setup is the source of truth for which categories are active. Include
+    // custom categories too, not only the original built-in category list.
+    for (const item of activeSetup) {
+      if (!map.has(item.name)) map.set(item.name, 0);
     }
 
-    return Array.from(map.entries())
-      .filter(([category]) => activeNames.size === 0 || activeNames.has(category.toLowerCase()))
-      .map(([category, realization]) => ({
-        category,
-        allocation: state.budgetByCategory[category] ?? categorySource.find((c) => c.category === category)?.allocation ?? 0,
-        realization,
-      }));
+    const fallbackAllocation = new Map(categorySource.map((c) => [c.category.toLowerCase(), c.allocation]));
+    return Array.from(map.entries()).map(([category, realization]) => ({
+      category,
+      allocation: state.budgetByCategory[category] ?? fallbackAllocation.get(category.toLowerCase()) ?? 0,
+      realization,
+    }));
   }
 
   return {
