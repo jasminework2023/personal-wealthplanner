@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { Modal } from "./Modal";
 import type { Transaction, TransactionType } from "../data/types";
+import { getStoredToken } from "../lib/useFinanceData";
 
 const categories = [
   "Gajian",
@@ -21,33 +22,66 @@ const categories = [
   "Deposito",
 ];
 
-// Mock "AI" parser -- pola kata kunci sederhana, jadi placeholder sampai
-// backend AI (bot Telegram yang sudah ada) beneran disambungkan ke sini.
+function parseAmount(text: string): number | null {
+  const match = text.match(/(\d+(?:[.,]\d+)?)\s*(juta|jt|j|miliar|m|ribu|rb|k)?/i);
+  if (!match) return null;
+
+  const raw = Number(match[1].replace(/\./g, "").replace(",", "."));
+  if (!Number.isFinite(raw)) return null;
+
+  const unit = (match[2] || "").toLowerCase();
+  if (["juta", "jt", "j"].includes(unit)) return Math.round(raw * 1_000_000);
+  if (["miliar", "m"].includes(unit)) return Math.round(raw * 1_000_000_000);
+  if (["ribu", "rb", "k"].includes(unit)) return Math.round(raw * 1_000);
+  return Math.round(raw);
+}
+
 function mockParseAI(text: string): Partial<Transaction> | null {
-  const amountMatch = text.match(/(\d+)\s*(rb|ribu|k)?/i);
-  if (!amountMatch) return null;
-  let amount = parseInt(amountMatch[1], 10);
-  if (/rb|ribu|k/i.test(amountMatch[2] ?? "")) amount *= 1000;
+  const amount = parseAmount(text);
+  if (amount === null) return null;
 
   const lower = text.toLowerCase();
   let category = "Food & Groceries";
   let type: TransactionType = "Expense";
-  if (lower.includes("gaji")) {
-    category = "Gajian";
+
+  if (/\b(gaji|gajian|salary|honor|fee|freelance|pendapatan|income|dividen|bunga)\b/i.test(lower)) {
     type = "Income";
-  } else if (lower.includes("bensin") || lower.includes("ojek") || lower.includes("grab")) {
+    if (/\b(freelance|honor|fee)\b/i.test(lower)) category = "Freelance Income";
+    else if (/\b(bisnis|business|jualan|omzet)\b/i.test(lower)) category = "Business Income";
+    else if (/\b(dividen|bunga|interest)\b/i.test(lower)) category = "Dividend / Interest";
+    else category = "Gajian";
+  } else if (/\b(nabung|tabungan|saving|savings|emas|gold|deposito|reksadana|mutual fund|investasi)\b/i.test(lower)) {
+    type = "Saving";
+    if (/\b(emas|gold)\b/i.test(lower)) category = "Gold";
+    else if (/\b(deposito)\b/i.test(lower)) category = "Deposito";
+    else if (/\b(reksadana|mutual fund)\b/i.test(lower)) category = "Mutual Funds";
+    else category = "Deposito";
+  } else if (/\b(bensin|tol|ojek|grab|gojek|transport|parkir)\b/i.test(lower)) {
     category = "Transport";
-  } else if (lower.includes("nonton") || lower.includes("main")) {
+  } else if (/\b(nonton|bioskop|hiburan|entertainment|main)\b/i.test(lower)) {
     category = "Entertainment";
-  } else if (lower.includes("pulsa") || lower.includes("kuota") || lower.includes("internet")) {
+  } else if (/\b(pulsa|kuota|internet|wifi|phone)\b/i.test(lower)) {
     category = "Internet & Phone";
+  } else if (/\b(listrik|air|pln|utilitas|utilities)\b/i.test(lower)) {
+    category = "Utilities";
+  } else if (/\b(asuransi|premi)\b/i.test(lower)) {
+    category = "Insurance Premium";
+  } else if (/\b(sekolah|kuliah|pendidikan|education)\b/i.test(lower)) {
+    category = "Education";
+  } else if (/\b(zakat|sedekah|donasi|charity)\b/i.test(lower)) {
+    category = "Charity";
   }
+
+  const description = text
+    .replace(/\d+(?:[.,]\d+)?\s*(juta|jt|j|miliar|m|ribu|rb|k)?/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
 
   return {
     type,
     category,
     amount,
-    description: text.replace(/\d+\s*(rb|ribu|k)?/i, "").trim() || category,
+    description: description || category,
   };
 }
 
@@ -66,6 +100,7 @@ export function AddTransactionModal({
   const [aiText, setAiText] = useState("");
   const [aiPreview, setAiPreview] = useState<Partial<Transaction> | null>(null);
   const [aiError, setAiError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
     type: "Expense" as TransactionType,
@@ -88,7 +123,34 @@ export function AddTransactionModal({
     onClose();
   }
 
-  function handleManualSubmit() {
+  async function persistTransaction(transaction: Transaction) {
+    const token = getStoredToken();
+    setSaving(true);
+    setFormError("");
+    setAiError("");
+    try {
+      if (token) {
+        const response = await fetch(`${import.meta.env.BASE_URL}api/add-transaction`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, transaction }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Gagal menyimpan transaksi");
+      }
+      onAdd(transaction);
+      window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added", { detail: transaction }));
+      handleClose();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Gagal menyimpan transaksi";
+      setFormError(message);
+      setAiError(message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleManualSubmit() {
     if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
       setFormError("Masukkan jumlah yang valid.");
       return;
@@ -98,7 +160,7 @@ export function AddTransactionModal({
       return;
     }
     const now = new Date();
-    onAdd({
+    await persistTransaction({
       date: now.toLocaleDateString("id-ID"),
       month: now.toLocaleString("en-US", { month: "long" }),
       type: form.type,
@@ -106,7 +168,6 @@ export function AddTransactionModal({
       description: form.description.trim(),
       amount: Number(form.amount),
     });
-    handleClose();
   }
 
   function handleAiParse() {
@@ -123,10 +184,10 @@ export function AddTransactionModal({
     setAiPreview(parsed);
   }
 
-  function handleAiConfirm() {
+  async function handleAiConfirm() {
     if (!aiPreview) return;
     const now = new Date();
-    onAdd({
+    await persistTransaction({
       date: now.toLocaleDateString("id-ID"),
       month: now.toLocaleString("en-US", { month: "long" }),
       type: (aiPreview.type as TransactionType) ?? "Expense",
@@ -134,7 +195,6 @@ export function AddTransactionModal({
       description: aiPreview.description ?? "Transaksi",
       amount: aiPreview.amount ?? 0,
     });
-    handleClose();
   }
 
   return (
@@ -248,10 +308,11 @@ export function AddTransactionModal({
                   Ulangi
                 </button>
                 <button
+                  disabled={saving}
                   onClick={handleAiConfirm}
                   className="flex-1 bg-forest-600 text-white rounded-lg py-2 text-[13px] font-medium hover:bg-forest-700"
                 >
-                  Konfirmasi & simpan
+                  {saving ? <><Loader2 size={14} className="inline animate-spin" /> Menyimpan...</> : "Konfirmasi & simpan"}
                 </button>
               </div>
             </div>
