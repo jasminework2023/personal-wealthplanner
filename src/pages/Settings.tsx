@@ -88,6 +88,7 @@ export function Settings() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan setup");
       setSetup(cleaned); setOriginal(cloneSetup(cleaned)); setMessage("Setup tersimpan ke spreadsheet.");
+      window.dispatchEvent(new CustomEvent("wealthplanner:setup-changed"));
       setTimeout(() => setMessage(""), 2500);
     } catch (e) { setError(e instanceof Error ? e.message : "Gagal menyimpan setup"); }
     finally { setSaving(false); }
@@ -147,7 +148,7 @@ function SetupSection({ meta, items, onAdd, onRemove, onUpdate }: { meta: typeof
       <div className="px-2 py-1.5 bg-charcoal/[0.025] border-b border-charcoal/8 flex items-center justify-between text-[10px] font-semibold text-charcoal/50 uppercase tracking-wide"><span>Category</span><span>Status</span></div>
       <div className="p-1.5 max-h-[420px] overflow-y-auto">
         {items.map((item, index) => (
-          <div key={`${item.name}-${index}`} className="group flex items-center gap-1.5 rounded-md px-1.5 py-1 hover:bg-charcoal/[0.035]">
+          <div key={index} className="group flex items-center gap-1.5 rounded-md px-1.5 py-1 hover:bg-charcoal/[0.035]">
             <GripVertical size={12} className="text-charcoal/20 shrink-0" />
             <input value={item.name} onChange={(e) => onUpdate(index, { name: e.target.value })} placeholder="Nama kategori" className="min-w-0 flex-1 bg-transparent text-[12px] text-charcoal outline-none border-b border-transparent focus:border-forest-300 py-0.5" />
             <button type="button" onClick={() => onUpdate(index, { active: !item.active })} aria-label={item.active ? "Nonaktifkan" : "Aktifkan"} className={`relative shrink-0 h-5 w-5 rounded border transition ${item.active ? "border-forest-500 bg-forest-600 text-white" : "border-charcoal/30 bg-white text-transparent"}`}><Check size={13} className="absolute inset-0 m-auto" /></button>
