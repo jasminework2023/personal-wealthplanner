@@ -35,7 +35,11 @@ export function Home() {
   const currentYear = new Date().getFullYear();
 
   const allTxs = [...transactions, ...extraTxs];
-  const recent = [...allTxs].reverse().slice(0, 5);
+  const parseDate = (date: string) => {
+    const [d, m, y] = date.split("/").map(Number);
+    return new Date(y || 1970, (m || 1) - 1, d || 1).getTime();
+  };
+  const recent = [...allTxs].sort((a, b) => parseDate(b.date) - parseDate(a.date)).slice(0, 5);
   
   const cashFlowData = [
     { name: "Income", value: totalIncome },
