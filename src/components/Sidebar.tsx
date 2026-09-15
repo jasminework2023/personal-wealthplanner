@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import logoMark from "../assets/logo-mark-white.png";
 import {
   Home,
   LayoutDashboard,
@@ -57,11 +58,8 @@ function Brand() {
   return (
     <div className="px-4 pt-5 pb-5">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 shadow-sm" aria-hidden>
-          <svg viewBox="0 0 40 40" className="h-7 w-7" fill="none">
-            <path d="M8 25.5 13.5 14l6 11.5L25 14l7 11.5" stroke="white" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M10 30h20" stroke="white" strokeWidth="2.4" strokeLinecap="round" opacity=".7"/>
-          </svg>
+        <div className="flex h-10 w-14 shrink-0 items-center justify-center" aria-hidden>
+          <img src={logoMark} alt="" className="h-8 w-auto object-contain" />
         </div>
         <div className="min-w-0">
           <p className="text-[15px] font-semibold text-white tracking-tight">Wealthplanner</p>
