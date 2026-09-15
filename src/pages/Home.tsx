@@ -142,7 +142,9 @@ export function Home() {
       <AddTransactionModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onAdd={(t) => setExtraTxs((prev) => [...prev, t])}
+        onAdd={(t) => {
+          if (!isRealData) setExtraTxs((prev) => [...prev, t]);
+        }}
         initialMode={modalMode}
       />
     </div>
