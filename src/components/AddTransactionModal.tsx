@@ -1,89 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { Modal } from "./Modal";
 import type { Transaction, TransactionType } from "../data/types";
 import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
+import { parseTransactionText } from "../lib/transactionParser";
 
-const categories = [
-  "Gajian",
-  "Freelance Income",
-  "Business Income",
-  "Dividend / Interest",
-  "Utilities",
-  "Internet & Phone",
-  "Insurance Premium",
-  "Food & Groceries",
-  "Transport",
-  "Entertainment",
-  "Education",
-  "Charity",
-  "Mutual Funds",
-  "Gold",
-  "Deposito",
+const fallbackCategories = [
+  "Gajian", "Freelance Income", "Business Income", "Commission", "Dividend / Interest", "Side Hustle",
+  "Utilities", "Internet & Phone", "Insurance Premium", "Food & Groceries", "Transport", "Entertainment", "Education", "Charity",
+  "Mutual Funds", "Bonds", "Gold", "Deposito",
 ];
-
-function parseAmount(text: string): number | null {
-  const match = text.match(/(\d+(?:[.,]\d+)?)\s*(juta|jt|j|miliar|m|ribu|rb|k)?/i);
-  if (!match) return null;
-
-  const raw = Number(match[1].replace(/\./g, "").replace(",", "."));
-  if (!Number.isFinite(raw)) return null;
-
-  const unit = (match[2] || "").toLowerCase();
-  if (["juta", "jt", "j"].includes(unit)) return Math.round(raw * 1_000_000);
-  if (["miliar", "m"].includes(unit)) return Math.round(raw * 1_000_000_000);
-  if (["ribu", "rb", "k"].includes(unit)) return Math.round(raw * 1_000);
-  return Math.round(raw);
-}
-
-function mockParseAI(text: string): Partial<Transaction> | null {
-  const amount = parseAmount(text);
-  if (amount === null) return null;
-
-  const lower = text.toLowerCase();
-  let category = "Food & Groceries";
-  let type: TransactionType = "Expense";
-
-  if (/\b(gaji|gajian|salary|honor|fee|freelance|pendapatan|income|dividen|bunga)\b/i.test(lower)) {
-    type = "Income";
-    if (/\b(freelance|honor|fee)\b/i.test(lower)) category = "Freelance Income";
-    else if (/\b(bisnis|business|jualan|omzet)\b/i.test(lower)) category = "Business Income";
-    else if (/\b(dividen|bunga|interest)\b/i.test(lower)) category = "Dividend / Interest";
-    else category = "Gajian";
-  } else if (/\b(nabung|tabungan|saving|savings|emas|gold|deposito|reksadana|mutual fund|investasi)\b/i.test(lower)) {
-    type = "Saving";
-    if (/\b(emas|gold)\b/i.test(lower)) category = "Gold";
-    else if (/\b(deposito)\b/i.test(lower)) category = "Deposito";
-    else if (/\b(reksadana|mutual fund)\b/i.test(lower)) category = "Mutual Funds";
-    else category = "Deposito";
-  } else if (/\b(bensin|tol|ojek|grab|gojek|transport|parkir)\b/i.test(lower)) {
-    category = "Transport";
-  } else if (/\b(nonton|bioskop|hiburan|entertainment|main)\b/i.test(lower)) {
-    category = "Entertainment";
-  } else if (/\b(pulsa|kuota|internet|wifi|phone)\b/i.test(lower)) {
-    category = "Internet & Phone";
-  } else if (/\b(listrik|air|pln|utilitas|utilities)\b/i.test(lower)) {
-    category = "Utilities";
-  } else if (/\b(asuransi|premi)\b/i.test(lower)) {
-    category = "Insurance Premium";
-  } else if (/\b(sekolah|kuliah|pendidikan|education)\b/i.test(lower)) {
-    category = "Education";
-  } else if (/\b(zakat|sedekah|donasi|charity)\b/i.test(lower)) {
-    category = "Charity";
-  }
-
-  const description = text
-    .replace(/\d+(?:[.,]\d+)?\s*(juta|jt|j|miliar|m|ribu|rb|k)?/i, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  return {
-    type,
-    category,
-    amount,
-    description: description || category,
-  };
-}
 
 export function AddTransactionModal({
   open,
@@ -108,20 +34,47 @@ export function AddTransactionModal({
     Saving: setup.saving.filter((x) => x.active && x.name.trim()).map((x) => x.name),
   }), [setup]);
 
+  function resolveCategory(type: TransactionType, parsedCategory: string) {
+    const options = activeCategories[type];
+    if (!options.length) return parsedCategory;
+    const exact = options.find((c) => c.toLowerCase() === parsedCategory.toLowerCase());
+    if (exact) return exact;
+    const aliases: Record<string, string[]> = {
+      "Gajian": ["gaji", "gajian", "salary"],
+      "Freelance Income": ["freelance", "honor", "fee"],
+      "Business Income": ["business", "bisnis", "usaha", "jualan"],
+      "Dividend / Interest": ["dividen", "interest", "bunga"],
+      "Mutual Funds": ["reksadana", "mutual"],
+      "Bonds": ["bond", "obligasi"],
+      "Gold": ["emas", "gold"],
+      "Deposito": ["deposito"],
+    };
+    const keys = aliases[parsedCategory] || [];
+    const matched = options.find((c) => keys.some((k) => c.toLowerCase().includes(k)));
+    return matched || options[0];
+  }
+
   const [form, setForm] = useState({
     type: "Expense" as TransactionType,
-    category: categories[7],
+    category: fallbackCategories[9],
     description: "",
     amount: "",
   });
   const [formError, setFormError] = useState("");
+
+  useEffect(() => {
+    const options = activeCategories[form.type];
+    if (options.length && !options.includes(form.category)) {
+      setForm((f) => ({ ...f, category: options[0] }));
+    }
+  }, [activeCategories, form.type, form.category]);
 
   function reset() {
     setAiText("");
     setAiPreview(null);
     setAiError("");
     setFormError("");
-    setForm({ type: "Expense", category: categories[7], description: "", amount: "" });
+    setForm({ type: "Expense", category: activeCategories.Expense[0] || fallbackCategories[9], description: "", amount: "" });
   }
 
   function handleClose() {
@@ -181,7 +134,7 @@ export function AddTransactionModal({
       setAiError("Ketik dulu transaksinya, misalnya: Tadi beli makan 35 ribu");
       return;
     }
-    const parsed = mockParseAI(aiText);
+    const parsed = parseTransactionText(aiText);
     if (!parsed) {
       setAiError("Nggak ketemu nominalnya. Coba sertakan angka, misal '35 ribu'.");
       return;
@@ -193,11 +146,15 @@ export function AddTransactionModal({
   async function handleAiConfirm() {
     if (!aiPreview) return;
     const now = new Date();
+    const type = (aiPreview.type as TransactionType) ?? "Expense";
+    const parsedDate = aiPreview.date || now.toLocaleDateString("id-ID");
+    const [day, monthNumber, year] = parsedDate.split("/").map(Number);
+    const parsed = day && monthNumber && year ? new Date(year, monthNumber - 1, day) : now;
     await persistTransaction({
-      date: now.toLocaleDateString("id-ID"),
-      month: now.toLocaleString("en-US", { month: "long" }),
-      type: (aiPreview.type as TransactionType) ?? "Expense",
-      category: aiPreview.category ?? "Food & Groceries",
+      date: parsedDate,
+      month: parsed.toLocaleString("en-US", { month: "long" }),
+      type,
+      category: resolveCategory(type, aiPreview.category ?? fallbackCategories[9]),
       description: aiPreview.description ?? "Transaksi",
       amount: aiPreview.amount ?? 0,
     });
@@ -246,7 +203,7 @@ export function AddTransactionModal({
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
             className="w-full border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] bg-white"
           >
-            {(activeCategories[form.type].length ? activeCategories[form.type] : categories).map((c) => (
+            {(activeCategories[form.type].length ? activeCategories[form.type] : fallbackCategories).map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>
