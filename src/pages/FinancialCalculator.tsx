@@ -5,8 +5,8 @@ import { ArrowRight, Check, Gift, Plus } from "lucide-react";
 
 export const CALCULATOR_META = [
   { id: "checkup", title: "Financial Check-Up", desc: "Cek kesehatan cashflow, utang, dana darurat, dan likuiditas." },
-  { id: "rumah", title: "Simulasi Rumah", desc: "Bandingkan KPR dan sewa serta lihat beban cicilan." },
-  { id: "edu", title: "Dana Pendidikan", desc: "Hitung kebutuhan dana pendidikan dan setoran bulanan." },
+  { id: "rumah", title: "Simulasi KPR", desc: "Simulasikan KPR konvensional atau syariah dengan skenario cicilan." },
+  { id: "edu", title: "Simulasi Dana Pendidikan", desc: "Hitung kebutuhan biaya pendidikan sampai anak lulus." },
   { id: "pension", title: "Dana Pensiun", desc: "Proyeksikan kebutuhan pensiun dan tabungan bulanan." },
   { id: "warisan", title: "Perencanaan Warisan", desc: "Simulasikan pembagian aset berdasarkan input ahli waris." },
   { id: "haji", title: "Haji & Umroh", desc: "Rencanakan target biaya dan budget pelunasan." },
@@ -152,34 +152,110 @@ function ScoreRow({ label, value, status, target }) {
 // 2. SIMULASI RUMAH (KPR vs Sewa Comparison)
 // ============================================================
 function RumahCalc({ onSaveResult, onNavigate }) {
-  const [homePrice, setHomePrice] = React.useState(500000000);
-  const [downPayment, setDownPayment] = React.useState(100000000);
-  const [loanAmount, setLoanAmount] = React.useState(400000000);
-  const [interestRate, setInterestRate] = React.useState(5.5);
+  const [homePrice, setHomePrice] = React.useState(1000000000);
+  const [downPayment, setDownPayment] = React.useState(200000000);
+  const [loanAmount, setLoanAmount] = React.useState(800000000);
+  const [financingType, setFinancingType] = React.useState("conventional");
+  const [fixedRate, setFixedRate] = React.useState(5.5);
+  const [fixedYears, setFixedYears] = React.useState(5);
+  const [floatingRate, setFloatingRate] = React.useState(9);
   const [tenor, setTenor] = React.useState(20);
+  const [syariahMargin, setSyariahMargin] = React.useState(5);
   const [rentalPrice, setRentalPrice] = React.useState(5000000);
 
-  const monthlyRate = interestRate / 100 / 12;
-  const numPayments = tenor * 12;
-  const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
-  const totalPaid = monthlyPayment * numPayments;
-  const totalInterest = totalPaid - loanAmount;
+  React.useEffect(() => {
+    const nextLoan = Math.max(0, Number(homePrice || 0) - Number(downPayment || 0));
+    setLoanAmount(nextLoan);
+  }, [homePrice, downPayment]);
+
+  const safeLoan = Math.max(0, Math.min(Number(loanAmount || 0), Number(homePrice || 0)));
+  const months = Math.max(1, Number(tenor || 1) * 12);
+
+  const monthlyPaymentFor = (principal, annualRate, remainingMonths) => {
+    if (principal <= 0 || remainingMonths <= 0) return 0;
+    const r = annualRate / 100 / 12;
+    if (r === 0) return principal / remainingMonths;
+    return principal * (r * Math.pow(1 + r, remainingMonths)) / (Math.pow(1 + r, remainingMonths) - 1);
+  };
+  const balanceAfterPayments = (principal, annualRate, payment, periods) => {
+    if (principal <= 0 || periods <= 0) return principal;
+    const r = annualRate / 100 / 12;
+    if (r === 0) return Math.max(0, principal - payment * periods);
+    return Math.max(0, principal * Math.pow(1 + r, periods) - payment * ((Math.pow(1 + r, periods) - 1) / r));
+  };
+
+  let monthlyPayment = 0;
+  let totalPaid = 0;
+  let totalInterest = 0;
+  let schedule = [];
+
+  if (financingType === "conventional") {
+    const fixedMonths = Math.min(months, Math.max(0, Number(fixedYears || 0) * 12));
+    const initialRate = fixedMonths > 0 ? fixedRate : floatingRate;
+    const initialPayment = monthlyPaymentFor(safeLoan, initialRate, months);
+    let balance = safeLoan;
+    let totalPrincipal = 0;
+    let totalInterestAccrued = 0;
+    let currentPayment = initialPayment;
+
+    for (let month = 1; month <= months; month++) {
+      const isFixed = fixedMonths > 0 && month <= fixedMonths;
+      const rate = isFixed ? fixedRate : floatingRate;
+      const remainingMonths = months - month + 1;
+      if (!isFixed && month === fixedMonths + 1) currentPayment = monthlyPaymentFor(balance, floatingRate, remainingMonths);
+      const monthlyRate = rate / 100 / 12;
+      const interest = monthlyRate > 0 ? balance * monthlyRate : 0;
+      let principal = currentPayment - interest;
+      if (month === months || principal > balance) principal = balance;
+      const actualPayment = principal + interest;
+      balance = Math.max(0, balance - principal);
+      totalPrincipal += principal;
+      totalInterestAccrued += interest;
+      totalPaid += actualPayment;
+
+      if (month === 1 || month === 12 || month === fixedMonths || month === fixedMonths + 1 || month === months) {
+        schedule.push({ month, label: month === 1 ? "Bulan 1" : month % 12 === 0 ? `Tahun ${month / 12}` : `Bulan ${month}`, rate, payment: actualPayment, principal, interest, balance });
+      }
+    }
+    monthlyPayment = initialPayment;
+    totalInterest = totalInterestAccrued;
+  } else {
+    // Illustrative murabahah model: the agreed margin is treated as a fixed
+    // total margin over the original financing amount, then paid in equal instalments.
+    const totalMargin = safeLoan * (syariahMargin / 100) * Number(tenor || 0);
+    const sellingPrice = safeLoan + totalMargin;
+    monthlyPayment = sellingPrice / months;
+    totalPaid = sellingPrice;
+    totalInterest = totalMargin;
+    let remaining = sellingPrice;
+    schedule = [1, 12, 60, 120, months].filter((m, i, arr) => m > 0 && m <= months && arr.indexOf(m) === i).map((month) => {
+      const paid = monthlyPayment * month;
+      const remainingAmount = Math.max(0, sellingPrice - paid);
+      return { month, label: month === 1 ? "Bulan 1" : month % 12 === 0 ? `Tahun ${month / 12}` : `Bulan ${month}`, rate: syariahMargin, payment: monthlyPayment, principal: (safeLoan / months), interest: (totalMargin / months), balance: remainingAmount };
+    });
+  }
+
+  const initialPayment = financingType === "conventional"
+    ? monthlyPaymentFor(safeLoan, (fixedYears > 0 ? fixedRate : floatingRate), months)
+    : monthlyPayment;
+  const fixedPayment = initialPayment;
+  const fixedMonthsForSummary = Math.min(months, Math.max(0, Number(fixedYears || 0) * 12));
+  const remainingAfterFixed = Math.max(0, months - fixedMonthsForSummary);
+  const balanceAfterFixed = financingType === "conventional" && fixedMonthsForSummary > 0
+    ? balanceAfterPayments(safeLoan, fixedRate, fixedPayment, fixedMonthsForSummary)
+    : safeLoan;
+  const floatingPayment = financingType === "conventional" && remainingAfterFixed > 0
+    ? monthlyPaymentFor(balanceAfterFixed, floatingRate, remainingAfterFixed)
+    : fixedPayment;
 
   const comparisonData = [];
-  let cumulativeKPR = downPayment;
+  let cumulativeKPR = Math.max(0, Number(downPayment || 0));
   let cumulativeRental = 0;
-  for (let month = 1; month <= numPayments; month++) {
+  for (let month = 1; month <= months; month++) {
     cumulativeKPR += monthlyPayment;
     cumulativeRental += rentalPrice;
-    if (month === 1 || month === 12 || month === 60 || month === 120 || month === 180 || month === numPayments) {
-      comparisonData.push({
-        month,
-        monthLabel: month === 1 ? "Bulan 1" : month === 12 ? "Tahun 1" : `Tahun ${Math.ceil(month / 12)}`,
-        kprCumulative: cumulativeKPR,
-        rentalCumulative: cumulativeRental,
-        monthlyKPR: monthlyPayment,
-        monthlyRental: rentalPrice,
-      });
+    if (month === 1 || month === 12 || month === 60 || month === 120 || month === 180 || month === months) {
+      comparisonData.push({ month, monthLabel: month === 1 ? "Bulan 1" : month % 12 === 0 ? `Tahun ${month / 12}` : `Bulan ${month}`, kprCumulative: cumulativeKPR, rentalCumulative: cumulativeRental });
     }
   }
 
@@ -187,93 +263,74 @@ function RumahCalc({ onSaveResult, onNavigate }) {
     <CalcLayout
       inputs={
         <>
-          <NumberInput label="Harga rumah" prefix="Rp" value={homePrice} onChange={setHomePrice} step={10000000} />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 8 }}>
+            {[['conventional', 'KPR Konvensional'], ['syariah', 'KPR Syariah']].map(([value, label]) => (
+              <button key={value} type="button" onClick={() => setFinancingType(value)} style={{ padding: "11px 10px", borderRadius: 10, border: financingType === value ? "2px solid #0f5d46" : "1px solid rgba(20,50,40,.12)", background: financingType === value ? "#eef8f3" : "white", color: "#173b32", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{label}</button>
+            ))}
+          </div>
+          <NumberInput label="Harga rumah / nilai properti" prefix="Rp" value={homePrice} onChange={setHomePrice} step={10000000} />
           <NumberInput label="Down payment" prefix="Rp" value={downPayment} onChange={setDownPayment} step={10000000} />
-          <NumberInput label="Jumlah pinjaman" prefix="Rp" value={loanAmount} onChange={setLoanAmount} step={10000000} />
-          <Slider label="Suku bunga" value={interestRate} onChange={setInterestRate} min={2} max={10} step={0.5} format={(v) => `${v}%`} />
-          <Slider label="Tenor" value={tenor} onChange={setTenor} min={1} max={30} step={1} format={(v) => `${v} tahun`} />
-          <div className="divider" style={{ margin: "16px 0" }} />
-          <NumberInput label="Sewa rumah per bulan (untuk comparison)" prefix="Rp" value={rentalPrice} onChange={setRentalPrice} step={500000} />
+          <NumberInput label="Nilai pinjaman / pembiayaan" prefix="Rp" value={loanAmount} onChange={setLoanAmount} step={10000000} hint="Otomatis mengikuti harga rumah − DP; tetap bisa disesuaikan." />
+          <Slider label="Tenor" value={tenor} onChange={setTenor} min={1} max={30} format={(v) => `${v} tahun`} />
+          {financingType === "conventional" ? (
+            <>
+              <Slider label="Fixed interest" value={fixedRate} onChange={setFixedRate} min={0} max={15} step={0.25} format={(v) => `${v}%/tahun`} />
+              <Slider label="Periode fixed" value={fixedYears} onChange={setFixedYears} min={0} max={Math.max(1, tenor)} step={1} format={(v) => v === 0 ? "Tidak ada fixed" : `${v} tahun`} />
+              <Slider label="Floating interest setelah fixed" value={floatingRate} onChange={setFloatingRate} min={0} max={20} step={0.25} format={(v) => `${v}%/tahun`} />
+            </>
+          ) : (
+            <Slider label="Estimasi margin murabahah" value={syariahMargin} onChange={setSyariahMargin} min={0} max={15} step={0.25} format={(v) => `${v}%/tahun (ilustrasi)`} />
+          )}
+          <div className="divider" style={{ margin: "4px 0" }} />
+          <NumberInput label="Sewa rumah per bulan (opsional comparison)" prefix="Rp" value={rentalPrice} onChange={setRentalPrice} step={500000} />
         </>
       }
       results={
         <>
-          <div className="row" style={{ gap: 16, marginBottom: 16 }}>
-            <div className="card" style={{ flex: 1, background: "var(--surface-2)" }}>
-              <div className="muted" style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>CICILAN KPR BULANAN</div>
-              <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontSize: 32, fontWeight: 700, lineHeight: 1, marginBottom: 4 }}>
-                {formatIDR(Math.round(monthlyPayment))}
+          <div className="row" style={{ gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+            <ResultTile label={financingType === "conventional" ? "ESTIMASI CICILAN AWAL / BULAN" : "ESTIMASI ANGSURAN / BULAN"} value={`Rp ${formatIDR(Math.round(monthlyPayment))}`} sub={`${tenor} tahun · ${financingType === "conventional" ? `fixed ${fixedRate}%` : "margin tetap ilustratif"}`} />
+          </div>
+          <div className="card" style={{ marginTop: 16 }}>
+            <h4 style={{ marginBottom: 14 }}>Ringkasan Pembiayaan</h4>
+            <div className="stack" style={{ gap: 4 }}>
+              <BreakdownRow label="Harga properti" value={`Rp ${formatIDR(homePrice)}`} />
+              <BreakdownRow label="Down payment" value={`Rp ${formatIDR(downPayment)}`} />
+              <BreakdownRow label="Total pinjaman / pembiayaan" value={`Rp ${formatIDR(Math.round(safeLoan))}`} highlight />
+              <BreakdownRow label={financingType === "conventional" ? "Total bunga" : "Total margin ilustratif"} value={`Rp ${formatIDR(Math.round(totalInterest))}`} />
+              <BreakdownRow label="Total pembayaran pembiayaan" value={`Rp ${formatIDR(Math.round(totalPaid))}`} highlight />
+              {financingType === "conventional" && fixedYears > 0 && fixedYears < tenor && <BreakdownRow label="Estimasi cicilan setelah fixed" value={`Rp ${formatIDR(Math.round(floatingPayment))}/bln`} sub={`Skenario floating ${floatingRate}%/tahun mulai tahun ke-${fixedYears + 1}`} />}
+            </div>
+          </div>
+
+          {financingType === "conventional" && (
+            <div className="card" style={{ marginTop: 16 }}>
+              <h4 style={{ marginBottom: 8 }}>Fixed → Floating</h4>
+              <p className="muted" style={{ fontSize: 12, lineHeight: 1.55, marginTop: 0 }}>Simulator menggunakan fixed rate untuk periode awal, lalu menghitung ulang cicilan berdasarkan sisa pokok dan asumsi floating rate setelah periode fixed. Floating sebenarnya dapat berubah berkala; angka ini hanya skenario.</p>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                  <thead><tr style={{ borderBottom: "1px solid var(--border)" }}><th style={{ textAlign: "left", padding: "8px 0" }}>Periode</th><th style={{ textAlign: "right", padding: "8px 0" }}>Rate</th><th style={{ textAlign: "right", padding: "8px 0" }}>Cicilan</th><th style={{ textAlign: "right", padding: "8px 0" }}>Bunga</th><th style={{ textAlign: "right", padding: "8px 0" }}>Pokok</th></tr></thead>
+                  <tbody>{schedule.map((row, i) => <tr key={`${row.month}-${i}`} style={{ borderBottom: "1px solid var(--border)" }}><td style={{ padding: "8px 0" }}>{row.label}</td><td style={{ textAlign: "right", padding: "8px 0" }}>{row.rate}%</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(row.payment))}</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(row.interest))}</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(row.principal))}</td></tr>)}</tbody>
+                </table>
               </div>
-              <div className="muted" style={{ fontSize: 12 }}>{tenor} tahun, bunga {interestRate}%</div>
             </div>
-            <div className="card" style={{ flex: 1, background: "var(--surface-2)" }}>
-              <div className="muted" style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>SEWA RUMAH BULANAN</div>
-              <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontSize: 32, fontWeight: 700, lineHeight: 1, marginBottom: 4 }}>
-                {formatIDR(rentalPrice)}
-              </div>
-              <div className="muted" style={{ fontSize: 12 }}>Selisih: {monthlyPayment > rentalPrice ? "KPR lebih mahal" : "Sewa lebih mahal"}</div>
-            </div>
-          </div>
+          )}
 
-          <div className="card" style={{ marginTop: 16, padding: 20 }}>
-            <h4 style={{ marginBottom: 16 }}>Perbandingan KPR vs Sewa</h4>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: 14,
-              }}>
-                <thead>
-                  <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                    <th style={{ textAlign: "left", padding: "10px 0", fontWeight: 600, color: "var(--ink-2)" }}>Timeline</th>
-                    <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "var(--ink-2)" }}>Cicilan KPR (Total)</th>
-                    <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "var(--ink-2)" }}>Sewa (Total)</th>
-                    <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "var(--ink-2)" }}>Lebih murah?</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {comparisonData.map((row, idx) => {
-                    const kprCheaper = row.rentalCumulative > row.kprCumulative;
-                    return (
-                      <tr key={idx} style={{ borderBottom: "1px solid var(--border)", color: kprCheaper ? "var(--positive)" : "var(--accent)" }}>
-                        <td style={{ padding: "10px 0" }}>{row.monthLabel}</td>
-                        <td style={{ textAlign: "right", padding: "10px 0", fontFamily: "JetBrains Mono, monospace", fontSize: 12 }}>
-                          {formatIDR(Math.round(row.kprCumulative))}
-                        </td>
-                        <td style={{ textAlign: "right", padding: "10px 0", fontFamily: "JetBrains Mono, monospace", fontSize: 12 }}>
-                          {formatIDR(Math.round(row.rentalCumulative))}
-                        </td>
-                        <td style={{ textAlign: "right", padding: "10px 0", fontWeight: 600 }}>
-                          {kprCheaper ? "Beli ✓" : "Sewa ✓"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+          {financingType === "syariah" && (
+            <div className="card" style={{ marginTop: 16, background: "#f6fbf8" }}>
+              <h4 style={{ marginBottom: 8 }}>Bagaimana KPR Syariah bekerja?</h4>
+              <p style={{ fontSize: 12, lineHeight: 1.6, color: "#55766a", margin: 0 }}>Pada skenario murabahah, bank/lembaga pembiayaan membeli aset lalu menjualnya kepada nasabah dengan harga jual yang sudah mencakup margin yang disepakati. Angsuran pada model ilustrasi ini tetap selama tenor; tidak menggunakan bunga floating. Struktur akad, margin, biaya, uang muka, dan metode perhitungan dapat berbeda antar lembaga dan produk.</p>
+              <div style={{ marginTop: 10, padding: "10px 12px", background: "white", borderRadius: 10, fontSize: 11, lineHeight: 1.5, color: "#667a72" }}>⚠️ Angka margin di atas adalah asumsi edukatif, bukan simulasi penawaran bank syariah tertentu.</div>
             </div>
-            <div style={{ marginTop: 16, padding: "12px 16px", background: "var(--surface)", borderRadius: 14, fontSize: 13 }}>
-              <span className="muted">💡 </span>
-              {monthlyPayment > rentalPrice
-                ? `Sewa lebih hemat dalam jangka pendek. Tapi setelah ~${Math.ceil(numPayments / 12)} tahun, investasi rumah lebih menguntungkan.`
-                : `Membeli sudah lebih hemat dari sekarang. Setelah ${tenor} tahun, kamu punya aset rumah, bukan cicilan.`}
-            </div>
-          </div>
+          )}
 
-          <div className="stack" style={{ gap: 12, marginTop: 16 }}>
-            <ResultTile
-              label="TOTAL BUNGA / MARGIN DIBAYAR"
-              value={formatIDR(Math.round(totalInterest))}
-              sub={`Dari total cicilan ${formatIDR(Math.round(totalPaid))}`}
-            />
+          <div className="card" style={{ marginTop: 16 }}>
+            <h4 style={{ marginBottom: 12 }}>KPR vs Sewa</h4>
+            <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}><thead><tr style={{ borderBottom: "1px solid var(--border)" }}><th style={{ textAlign: "left", padding: "8px 0" }}>Timeline</th><th style={{ textAlign: "right", padding: "8px 0" }}>KPR</th><th style={{ textAlign: "right", padding: "8px 0" }}>Sewa</th></tr></thead><tbody>{comparisonData.map((row, i) => <tr key={`${row.month}-${i}`} style={{ borderBottom: "1px solid var(--border)" }}><td style={{ padding: "8px 0" }}>{row.monthLabel}</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(row.kprCumulative))}</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(row.rentalCumulative))}</td></tr>)}</tbody></table></div>
           </div>
-
-          <div style={{ marginTop: 16, padding: "12px 16px", background: "var(--surface-2)", borderRadius: 14, fontSize: 13, color: "var(--ink-2)", lineHeight: 1.55 }}>
-            ℹ️ <span style={{ marginLeft: 8 }}>Di KPR Syariah (akad murabahah), margin bersifat flat hingga akhir tenor — tidak naik turun seperti bunga floating. Lebih detail ada di produk digital.</span>
-          </div>
+          <div style={{ marginTop: 16, padding: "12px 16px", background: "#f8f8f5", borderRadius: 14, fontSize: 11, color: "#71827b", lineHeight: 1.55 }}>Disclaimer: hasil di atas adalah simulasi/estimasi edukatif, bukan penawaran pembiayaan. Belum memperhitungkan seluruh biaya seperti provisi, administrasi, asuransi, pajak, notaris, dan biaya lain yang mungkin berlaku.</div>
         </>
       }
-      onSave={() => onSaveResult({ id: "rumah", title: "Simulasi Rumah", value: `${formatIDR(Math.round(monthlyPayment))}/bln × ${tenor}th`, plan: { type: "home", targetAmount: homePrice, obligationAmount: loanAmount, monthlyAmount: monthlyPayment, timeframe: tenor, preparedAssets: downPayment } })}
+      onSave={() => onSaveResult({ id: "rumah", title: "Simulasi KPR", value: `${formatIDR(Math.round(monthlyPayment))}/bln × ${tenor}th`, plan: { type: "home", targetAmount: homePrice, obligationAmount: safeLoan, monthlyAmount: monthlyPayment, timeframe: tenor, preparedAssets: downPayment, financingType } })}
       onNavigate={onNavigate}
       calcId="rumah"
       relatedId="kpr"
@@ -406,44 +463,63 @@ function BreakdownRow({ label, value, sub, highlight, muted }) {
 // 5. EDUCATION FUND CALCULATOR
 // ============================================================
 function EduCalc({ onSaveResult, onNavigate }) {
-  const [monthlyNeeded, setMonthlyNeeded] = React.useState(5000000);
-  const [yearsAhead, setYearsAhead] = React.useState(15);
+  const [currentCost, setCurrentCost] = React.useState(50000000);
+  const [educationLevel, setEducationLevel] = React.useState("Kuliah");
   const [inflation, setInflation] = React.useState(6);
-  const [returnRate, setReturnRate] = React.useState(8);
+  const [startYear, setStartYear] = React.useState(new Date().getFullYear() + 5);
+  const [duration, setDuration] = React.useState(4);
 
-  const months = yearsAhead * 12;
-  const futureMonthly = monthlyNeeded * Math.pow(1 + inflation / 100, yearsAhead);
-  const yearlyFuture = futureMonthly * 12;
-  const monthlyRate = returnRate / 100 / 12;
-  const monthlyPayment = (yearlyFuture - 0) / (Math.pow(1 + monthlyRate, months) - 1) * monthlyRate;
-  const totalTarget = yearlyFuture;
+  const yearsUntilStart = Math.max(0, Number(startYear) - new Date().getFullYear());
+  const startCost = currentCost * Math.pow(1 + inflation / 100, yearsUntilStart);
+  const yearlyCosts = Array.from({ length: Math.max(1, duration) }, (_, index) => {
+    const cost = startCost * Math.pow(1 + inflation / 100, index);
+    return { year: Number(startYear) + index, cost };
+  });
+  const totalTarget = yearlyCosts.reduce((sum, item) => sum + item.cost, 0);
+  const averageMonthlyPreparation = totalTarget / Math.max(1, yearsUntilStart * 12);
+
+  const levelDurations = { SD: 6, SMP: 3, SMA: 3, "Kuliah": 4 };
+  const applyLevel = (level) => {
+    setEducationLevel(level);
+    setDuration(levelDurations[level] || 4);
+  };
 
   return (
     <CalcLayout
       inputs={
         <>
-          <NumberInput label="Biaya pendidikan per bulan sekarang" prefix="Rp" value={monthlyNeeded} onChange={setMonthlyNeeded} step={250000} />
-          <Slider label="Target masuk sekolah" value={yearsAhead} onChange={setYearsAhead} min={1} max={25} format={(v) => `${v} tahun lagi`} />
-          <Slider label="Inflasi pendidikan" value={inflation} onChange={setInflation} min={2} max={12} step={0.5} format={(v) => `${v}%`} />
-          <Slider label="Return investasi" value={returnRate} onChange={setReturnRate} min={2} max={15} step={0.5} format={(v) => `${v}%`} />
+          <NumberInput label="Perkiraan biaya saat ini (per tahun)" prefix="Rp" value={currentCost} onChange={setCurrentCost} step={1000000} hint="Estimasi biaya pendidikan untuk 1 tahun pada saat ini." />
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#35554a", marginBottom: 7 }}>Jenjang pendidikan</label>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 6 }}>
+              {Object.keys(levelDurations).map((level) => <button key={level} type="button" onClick={() => applyLevel(level)} style={{ padding: "9px 6px", borderRadius: 9, border: educationLevel === level ? "2px solid #0f5d46" : "1px solid rgba(20,50,40,.12)", background: educationLevel === level ? "#eef8f3" : "white", color: "#173b32", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{level}</button>)}
+            </div>
+          </div>
+          <NumberInput label="Tahun berangkat / mulai pendidikan" value={startYear} onChange={setStartYear} min={new Date().getFullYear()} step={1} hint={`Sekitar ${yearsUntilStart} tahun lagi.`} />
+          <Slider label="Inflasi / kenaikan biaya pendidikan" value={inflation} onChange={setInflation} min={0} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
+          <Slider label="Durasi biaya pendidikan" value={duration} onChange={setDuration} min={1} max={12} format={(v) => `${v} tahun`} />
         </>
       }
       results={
         <>
-          <ResultTile
-            label="TABUNGAN BULANAN DIBUTUHKAN"
-            value={formatIDR(Math.round(monthlyPayment))}
-            sub={`Target dana pendidikan dalam ${yearsAhead} tahun`}
-          />
+          <ResultTile label="ESTIMASI BIAYA SAAT MULAI" value={`Rp ${formatIDR(Math.round(startCost))}`} sub={`${educationLevel} · mulai ${startYear} · asumsi kenaikan ${inflation}%/tahun`} />
           <div className="card" style={{ marginTop: 16 }}>
-            <h4 style={{ marginBottom: 16 }}>Simulasi Biaya</h4>
-            <BreakdownRow label="Biaya bulanan sekarang" value={formatIDR(Math.round(monthlyNeeded))} />
-            <BreakdownRow label="Biaya bulanan di masa depan" value={formatIDR(Math.round(futureMonthly))} sub={`Dengan inflasi ${inflation}%/tahun`} />
-            <BreakdownRow label="Total dana dibutuhkan" value={formatIDR(Math.round(totalTarget))} highlight />
+            <h4 style={{ marginBottom: 12 }}>Total kebutuhan sampai lulus</h4>
+            <BreakdownRow label="Biaya saat ini" value={`Rp ${formatIDR(Math.round(currentCost))}/tahun`} />
+            <BreakdownRow label="Biaya saat mulai" value={`Rp ${formatIDR(Math.round(startCost))}/tahun`} />
+            <BreakdownRow label="Durasi pendidikan" value={`${duration} tahun`} />
+            <div className="divider" style={{ margin: "8px 0" }} />
+            <BreakdownRow label="Total kebutuhan pendidikan" value={`Rp ${formatIDR(Math.round(totalTarget))}`} highlight />
+            <BreakdownRow label="Rata-rata dana yang perlu disiapkan" value={`Rp ${formatIDR(Math.round(averageMonthlyPreparation))}/bln`} sub="Perhitungan sederhana tanpa asumsi return investasi." />
           </div>
+          <div className="card" style={{ marginTop: 16 }}>
+            <h4 style={{ marginBottom: 10 }}>Proyeksi biaya per tahun</h4>
+            <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}><thead><tr style={{ borderBottom: "1px solid var(--border)" }}><th style={{ textAlign: "left", padding: "8px 0" }}>Tahun</th><th style={{ textAlign: "right", padding: "8px 0" }}>Estimasi biaya</th></tr></thead><tbody>{yearlyCosts.map((item) => <tr key={item.year} style={{ borderBottom: "1px solid var(--border)" }}><td style={{ padding: "8px 0" }}>{item.year}</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(item.cost))}</td></tr>)}</tbody></table></div>
+          </div>
+          <div style={{ marginTop: 16, padding: "12px 16px", background: "#f8f8f5", borderRadius: 14, fontSize: 11, color: "#71827b", lineHeight: 1.55 }}>Catatan: ini simulasi kebutuhan biaya pendidikan berdasarkan asumsi inflasi. Biaya nyata dapat berbeda menurut sekolah/kampus, jurusan, lokasi, dan perubahan biaya pendidikan.</div>
         </>
       }
-      onSave={() => onSaveResult({ id: "edu", title: "Dana Pendidikan", value: formatIDR(Math.round(monthlyPayment)) + "/bln", plan: { type: "education", targetAmount: totalTarget, monthlyAmount: monthlyPayment, timeframe: yearsAhead } })}
+      onSave={() => onSaveResult({ id: "edu", title: "Simulasi Dana Pendidikan", value: formatIDR(Math.round(totalTarget)), plan: { type: "education", targetAmount: totalTarget, monthlyAmount: averageMonthlyPreparation, timeframe: yearsUntilStart, targetYear: startYear } })}
       onNavigate={onNavigate}
       calcId="edu"
       relatedId="edu"
@@ -1198,7 +1274,7 @@ export function CalculatorDetail({ id, onBack, onSaveResult, onNavigate }) {
       .wp-calculator .stack{display:flex;flex-direction:column}.wp-calculator .muted{color:#71827b}.wp-calculator .ink-2{color:#55766a}.wp-calculator .mono{font-variant-numeric:tabular-nums}.wp-calculator .divider{height:1px;background:rgba(20,50,40,.10)}
     `}</style>
     <button type="button" onClick={onBack} style={{width:"fit-content",border:0,background:"transparent",color:"#55766a",fontSize:13,cursor:"pointer",padding:0}}>← Semua kalkulator</button>
-    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#71827b"}}>KALKULATOR FINANSIAL</div><h1 style={{fontSize:28,lineHeight:1.15,color:"#173b32",margin:"7px 0 6px"}}>{meta.title}</h1><p style={{margin:0,fontSize:13,color:"#667a72"}}>{meta.desc}</p></div>
+    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#71827b"}}>FINANCIAL CALCULATOR</div><h1 style={{fontSize:28,lineHeight:1.15,color:"#173b32",margin:"7px 0 6px"}}>{meta.title}</h1><p style={{margin:0,fontSize:13,color:"#667a72"}}>{meta.desc}</p></div>
     <CalculatorBody id={id} onSaveResult={onSaveResult} onNavigate={onNavigate}/>
   </div>;
 }
