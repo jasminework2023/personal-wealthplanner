@@ -189,6 +189,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
     const handleRefresh = () => loadData();
     window.addEventListener("wealthplanner:transaction-added", handleRefresh);
     window.addEventListener("wealthplanner:setup-changed", handleRefresh);
+    window.addEventListener("wealthplanner:budget-updated", handleRefresh);
     window.addEventListener("visibilitychange", handleRefresh);
     const interval = window.setInterval(loadData, 15000);
     return () => {
@@ -196,6 +197,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
       window.clearInterval(interval);
       window.removeEventListener("wealthplanner:transaction-added", handleRefresh);
       window.removeEventListener("wealthplanner:setup-changed", handleRefresh);
+      window.removeEventListener("wealthplanner:budget-updated", handleRefresh);
       window.removeEventListener("visibilitychange", handleRefresh);
     };
   }, [monthOverride, includeAllMonths]);
