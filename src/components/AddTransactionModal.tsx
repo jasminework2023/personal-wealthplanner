@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { Modal } from "./Modal";
 import type { Transaction, TransactionType } from "../data/types";
-import { getStoredToken } from "../lib/useFinanceData";
+import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
 
 const categories = [
   "Gajian",
@@ -101,6 +101,12 @@ export function AddTransactionModal({
   const [aiPreview, setAiPreview] = useState<Partial<Transaction> | null>(null);
   const [aiError, setAiError] = useState("");
   const [saving, setSaving] = useState(false);
+  const { setup } = useFinanceData();
+  const activeCategories = useMemo(() => ({
+    Income: setup.income.filter((x) => x.active && x.name.trim()).map((x) => x.name),
+    Expense: setup.expense.filter((x) => x.active && x.name.trim()).map((x) => x.name),
+    Saving: setup.saving.filter((x) => x.active && x.name.trim()).map((x) => x.name),
+  }), [setup]);
 
   const [form, setForm] = useState({
     type: "Expense" as TransactionType,
@@ -224,7 +230,7 @@ export function AddTransactionModal({
             {(["Income", "Expense", "Saving"] as TransactionType[]).map((t) => (
               <button
                 key={t}
-                onClick={() => setForm((f) => ({ ...f, type: t }))}
+                onClick={() => setForm((f) => ({ ...f, type: t, category: activeCategories[t][0] || f.category }))}
                 className={`flex-1 text-[13px] py-1.5 rounded-lg border ${
                   form.type === t
                     ? "border-forest-600 bg-forest-50 text-forest-700 font-medium"
@@ -240,7 +246,7 @@ export function AddTransactionModal({
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
             className="w-full border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] bg-white"
           >
-            {categories.map((c) => (
+            {(activeCategories[form.type].length ? activeCategories[form.type] : categories).map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>
