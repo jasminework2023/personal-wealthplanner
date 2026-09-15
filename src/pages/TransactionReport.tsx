@@ -9,20 +9,23 @@ import { useFinanceData } from "../lib/useFinanceData";
 import type { Transaction, TransactionType } from "../data/types";
 
 export function TransactionReport() {
-  const { isRealData, username, error, transactions } = useFinanceData();
+  const { isRealData, username, error, transactions } = useFinanceData(undefined, true);
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TransactionType | "All">("All");
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
+  const [monthFilter, setMonthFilter] = useState<string>("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
 
   const allTxs = [...transactions, ...extraTxs];
   const categories = useMemo(() => Array.from(new Set(allTxs.map((t) => t.category))), [allTxs]);
+  const months = useMemo(() => Array.from(new Set(allTxs.map((t) => t.month))).sort((a, b) => a.localeCompare(b)), [allTxs]);
 
   const filtered = allTxs.filter((t) => {
     if (typeFilter !== "All" && t.type !== typeFilter) return false;
     if (categoryFilter !== "All" && t.category !== categoryFilter) return false;
+    if (monthFilter !== "All" && t.month !== monthFilter) return false;
     if (search && !t.description.toLowerCase().includes(search.toLowerCase()) && !t.category.toLowerCase().includes(search.toLowerCase())) {
       return false;
     }
@@ -82,6 +85,14 @@ export function TransactionReport() {
             <option value="Saving">Saving</option>
           </select>
           <select
+            value={monthFilter}
+            onChange={(e) => setMonthFilter(e.target.value)}
+            className="border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] bg-white"
+          >
+            <option value="All">Semua bulan</option>
+            {months.map((m) => <option key={m}>{m}</option>)}
+          </select>
+          <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] bg-white"
@@ -112,7 +123,13 @@ export function TransactionReport() {
                   </td>
                 </tr>
               ) : (
-                [...filtered].reverse().map((t, i) => (
+                [...filtered].sort((a, b) => {
+                  const parse = (date: string) => {
+                    const [d, m, y] = date.split("/").map(Number);
+                    return new Date(y || 0, (m || 1) - 1, d || 1).getTime();
+                  };
+                  return parse(b.date) - parse(a.date);
+                }).map((t, i) => (
                   <tr key={i} className="border-b border-charcoal/8 last:border-0">
                     <td className="py-2.5 whitespace-nowrap">{t.date}</td>
                     <td className="py-2.5">
@@ -135,7 +152,9 @@ export function TransactionReport() {
       <AddTransactionModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onAdd={(t) => setExtraTxs((prev) => [...prev, t])}
+        onAdd={(t) => {
+          if (!isRealData) setExtraTxs((prev) => [...prev, t]);
+        }}
         initialMode={modalMode}
       />
     </div>
