@@ -107,7 +107,7 @@ interface RawState {
 
 const CURRENT_MONTH_NAME = new Date().toLocaleString("en-US", { month: "long" });
 
-export function useFinanceData(monthOverride?: string): FinanceData {
+export function useFinanceData(monthOverride?: string, includeAllMonths = false): FinanceData {
   const initialMonth = monthOverride || CURRENT_MONTH_NAME;
   const [state, setState] = useState<RawState>({
     loading: true,
@@ -121,43 +121,59 @@ export function useFinanceData(monthOverride?: string): FinanceData {
   });
 
   useEffect(() => {
-    captureTokenFromUrl();
-    const token = getStoredToken();
+    let cancelled = false;
 
-    if (!token) {
-      setState((s) => ({
-        ...s,
-        loading: false,
-        month: monthOverride || CURRENT_MONTH_NAME,
-        transactions: mockTransactions.filter((t) => t.month.toLowerCase() === (monthOverride || CURRENT_MONTH_NAME).toLowerCase()),
-      }));
-      return;
-    }
+    const loadData = () => {
+      captureTokenFromUrl();
+      const token = getStoredToken();
+      const requestedMonth = monthOverride || CURRENT_MONTH_NAME;
 
-    setState((s) => ({ ...s, loading: true, error: null, month: monthOverride || CURRENT_MONTH_NAME }));
-    const requestedMonth = monthOverride || CURRENT_MONTH_NAME;
-    fetch(`${import.meta.env.BASE_URL}api/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}`)
-      .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok) {
-          setState((s) => ({ ...s, loading: false, error: data.error || "Gagal memuat data" }));
-        } else {
-          setState({
-            loading: false,
-            error: null,
-            isRealData: true,
-            username: data.username,
-            month: data.month || requestedMonth,
-            transactions: (data.transactions || []).filter((t: Transaction) => String(t.month || "").toLowerCase() === String(data.month || requestedMonth).toLowerCase()),
-            budgetByCategory: data.budgetByCategory || {},
-            assets: data.assets || mockAssetData(),
-          });
-        }
-      })
-      .catch(() => {
-        setState((s) => ({ ...s, loading: false, error: "Gagal memuat data" }));
-      });
-  }, [monthOverride]);
+      if (!token) {
+        if (cancelled) return;
+        setState((s) => ({
+          ...s,
+          loading: false,
+          month: requestedMonth,
+          transactions: mockTransactions.filter((t) => t.month.toLowerCase() === requestedMonth.toLowerCase()),
+        }));
+        return;
+      }
+
+      setState((s) => ({ ...s, loading: true, error: null, month: requestedMonth }));
+      fetch(`${import.meta.env.BASE_URL}api/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}`)
+        .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
+          if (cancelled) return;
+          if (!ok) {
+            setState((s) => ({ ...s, loading: false, error: data.error || "Gagal memuat data" }));
+          } else {
+            setState({
+              loading: false,
+              error: null,
+              isRealData: true,
+              username: data.username,
+              month: data.month || requestedMonth,
+              transactions: includeAllMonths
+                ? (data.transactions || [])
+                : (data.transactions || []).filter((t: Transaction) => String(t.month || "").toLowerCase() === String(data.month || requestedMonth).toLowerCase()),
+              budgetByCategory: data.budgetByCategory || {},
+              assets: data.assets || mockAssetData(),
+            });
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setState((s) => ({ ...s, loading: false, error: "Gagal memuat data" }));
+        });
+    };
+
+    loadData();
+    const handleTransactionAdded = () => loadData();
+    window.addEventListener("wealthplanner:transaction-added", handleTransactionAdded);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("wealthplanner:transaction-added", handleTransactionAdded);
+    };
+  }, [monthOverride, includeAllMonths]);
 
   const totalIncome = state.transactions.filter((t) => t.type === "Income").reduce((s, t) => s + t.amount, 0);
   const totalExpense = state.transactions.filter((t) => t.type === "Expense").reduce((s, t) => s + t.amount, 0);
