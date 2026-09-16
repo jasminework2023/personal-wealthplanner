@@ -463,63 +463,146 @@ function BreakdownRow({ label, value, sub, highlight, muted }) {
 // 5. EDUCATION FUND CALCULATOR
 // ============================================================
 function EduCalc({ onSaveResult, onNavigate }) {
+  const currentYear = new Date().getFullYear();
+  const levelDurations = { SD: 6, SMP: 3, SMA: 3, "Kuliah": 4 };
+  const levelOrder = ["SD", "SMP", "SMA", "Kuliah"];
   const [currentCost, setCurrentCost] = React.useState(50000000);
-  const [educationLevel, setEducationLevel] = React.useState("Kuliah");
+  const [educationLevel, setEducationLevel] = React.useState("SD");
   const [inflation, setInflation] = React.useState(6);
-  const [startYear, setStartYear] = React.useState(new Date().getFullYear() + 5);
-  const [duration, setDuration] = React.useState(4);
+  const [startYear, setStartYear] = React.useState(currentYear + 1);
+  const [duration, setDuration] = React.useState(levelDurations.SD);
+  const [educationPlans, setEducationPlans] = React.useState([]);
 
-  const yearsUntilStart = Math.max(0, Number(startYear) - new Date().getFullYear());
+  const yearsUntilStart = Math.max(0, Number(startYear) - currentYear);
   const startCost = currentCost * Math.pow(1 + inflation / 100, yearsUntilStart);
   const yearlyCosts = Array.from({ length: Math.max(1, duration) }, (_, index) => {
     const cost = startCost * Math.pow(1 + inflation / 100, index);
     return { year: Number(startYear) + index, cost };
   });
-  const totalTarget = yearlyCosts.reduce((sum, item) => sum + item.cost, 0);
-  const averageMonthlyPreparation = totalTarget / Math.max(1, yearsUntilStart * 12);
+  const currentSimulationTotal = yearlyCosts.reduce((sum, item) => sum + item.cost, 0);
+  const averageMonthlyPreparation = currentSimulationTotal / Math.max(1, yearsUntilStart * 12);
+  const totalEducationNeed = educationPlans.reduce((sum, item) => sum + item.total, 0) + currentSimulationTotal;
+  const savedEducationNeed = educationPlans.reduce((sum, item) => sum + item.total, 0);
 
-  const levelDurations = { SD: 6, SMP: 3, SMA: 3, "Kuliah": 4 };
   const applyLevel = (level) => {
     setEducationLevel(level);
     setDuration(levelDurations[level] || 4);
+  };
+
+  const addEducationPlan = () => {
+    const plan = {
+      id: `${educationLevel}-${Date.now()}`,
+      level: educationLevel,
+      startYear: Number(startYear),
+      duration: Number(duration),
+      currentCost: Number(currentCost),
+      inflation: Number(inflation),
+      startCost,
+      total: currentSimulationTotal,
+      yearlyCosts,
+    };
+    setEducationPlans((prev) => [...prev, plan]);
+
+    const nextIndex = levelOrder.indexOf(educationLevel) + 1;
+    const nextLevel = levelOrder[nextIndex];
+    if (nextLevel) {
+      setEducationLevel(nextLevel);
+      setDuration(levelDurations[nextLevel]);
+      setStartYear(Number(startYear) + Number(duration));
+    } else {
+      setStartYear(Number(startYear) + Number(duration));
+    }
+  };
+
+  const removeEducationPlan = (id) => {
+    setEducationPlans((prev) => prev.filter((item) => item.id !== id));
   };
 
   return (
     <CalcLayout
       inputs={
         <>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#173b32" }}>Tambah jenjang pendidikan</div>
+              <div style={{ fontSize: 11, color: "#71827b", marginTop: 3 }}>Hitung SD, lalu tambahkan SMP, SMA, dan Kuliah sesuai kebutuhan.</div>
+            </div>
+            {educationPlans.length > 0 && <Tag variant="accent">{educationPlans.length} jenjang ditambahkan</Tag>}
+          </div>
+
           <NumberInput label="Perkiraan biaya saat ini (per tahun)" prefix="Rp" value={currentCost} onChange={setCurrentCost} step={1000000} hint="Estimasi biaya pendidikan untuk 1 tahun pada saat ini." />
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#35554a", marginBottom: 7 }}>Jenjang pendidikan</label>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 6 }}>
-              {Object.keys(levelDurations).map((level) => <button key={level} type="button" onClick={() => applyLevel(level)} style={{ padding: "9px 6px", borderRadius: 9, border: educationLevel === level ? "2px solid #0f5d46" : "1px solid rgba(20,50,40,.12)", background: educationLevel === level ? "#eef8f3" : "white", color: "#173b32", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{level}</button>)}
+              {levelOrder.map((level) => <button key={level} type="button" onClick={() => applyLevel(level)} style={{ padding: "9px 6px", borderRadius: 9, border: educationLevel === level ? "2px solid #0f5d46" : "1px solid rgba(20,50,40,.12)", background: educationLevel === level ? "#eef8f3" : "white", color: "#173b32", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{level}</button>)}
             </div>
           </div>
-          <NumberInput label="Tahun berangkat / mulai pendidikan" value={startYear} onChange={setStartYear} min={new Date().getFullYear()} step={1} hint={`Sekitar ${yearsUntilStart} tahun lagi.`} />
+          <NumberInput label="Tahun berangkat / mulai pendidikan" value={startYear} onChange={setStartYear} min={currentYear} step={1} hint={`Sekitar ${yearsUntilStart} tahun lagi.`} />
           <Slider label="Inflasi / kenaikan biaya pendidikan" value={inflation} onChange={setInflation} min={0} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
           <Slider label="Durasi biaya pendidikan" value={duration} onChange={setDuration} min={1} max={12} format={(v) => `${v} tahun`} />
+
+          <div className="card" style={{ background: "#f8faf7", padding: 14 }}>
+            <div style={{ fontSize: 11, color: "#71827b", marginBottom: 5 }}>Simulasi saat ini</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#173b32" }}>{educationLevel} · {startYear}–{Number(startYear) + Number(duration) - 1}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#0f5d46", marginTop: 4 }}>Rp {formatIDR(Math.round(currentSimulationTotal))}</div>
+          </div>
+
+          <Button onClick={addEducationPlan} icon={<Plus size={15} />} iconRight={<ArrowRight size={14} />}>
+            Tambahkan {educationLevel}
+          </Button>
         </>
       }
       results={
         <>
-          <ResultTile label="ESTIMASI BIAYA SAAT MULAI" value={`Rp ${formatIDR(Math.round(startCost))}`} sub={`${educationLevel} · mulai ${startYear} · asumsi kenaikan ${inflation}%/tahun`} />
+          <ResultTile
+            label="TOTAL KEBUTUHAN PENDIDIKAN"
+            value={`Rp ${formatIDR(Math.round(totalEducationNeed))}`}
+            sub={educationPlans.length > 0 ? `${educationPlans.length} jenjang tersimpan + simulasi ${educationLevel} saat ini` : `Simulasi ${educationLevel} saat ini`}
+          />
+
+          {educationPlans.length > 0 && (
+            <div className="card" style={{ marginTop: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 10 }}>
+                <h4 style={{ margin: 0 }}>Rencana pendidikan</h4>
+                <span style={{ fontSize: 11, color: "#71827b" }}>Total tersimpan: Rp {formatIDR(Math.round(savedEducationNeed))}</span>
+              </div>
+              <div className="stack" style={{ gap: 9 }}>
+                {educationPlans.map((item) => (
+                  <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "11px 12px", border: "1px solid rgba(20,50,40,.10)", borderRadius: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700 }}>{item.level}</div>
+                      <div style={{ fontSize: 10, color: "#71827b", marginTop: 2 }}>{item.startYear}–{item.startYear + item.duration - 1} · {item.duration} tahun · inflasi {item.inflation}%</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <strong style={{ fontSize: 12, color: "#0f5d46", whiteSpace: "nowrap" }}>Rp {formatIDR(Math.round(item.total))}</strong>
+                      <button type="button" onClick={() => removeEducationPlan(item.id)} style={{ border: 0, background: "transparent", color: "#8b5c5c", cursor: "pointer", fontSize: 11 }}>Hapus</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="card" style={{ marginTop: 16 }}>
-            <h4 style={{ marginBottom: 12 }}>Total kebutuhan sampai lulus</h4>
+            <h4 style={{ marginBottom: 12 }}>{educationLevel} · Detail simulasi saat ini</h4>
             <BreakdownRow label="Biaya saat ini" value={`Rp ${formatIDR(Math.round(currentCost))}/tahun`} />
             <BreakdownRow label="Biaya saat mulai" value={`Rp ${formatIDR(Math.round(startCost))}/tahun`} />
+            <BreakdownRow label="Mulai pendidikan" value={`${startYear}`} />
             <BreakdownRow label="Durasi pendidikan" value={`${duration} tahun`} />
             <div className="divider" style={{ margin: "8px 0" }} />
-            <BreakdownRow label="Total kebutuhan pendidikan" value={`Rp ${formatIDR(Math.round(totalTarget))}`} highlight />
+            <BreakdownRow label={`Total kebutuhan ${educationLevel}`} value={`Rp ${formatIDR(Math.round(currentSimulationTotal))}`} highlight />
             <BreakdownRow label="Rata-rata dana yang perlu disiapkan" value={`Rp ${formatIDR(Math.round(averageMonthlyPreparation))}/bln`} sub="Perhitungan sederhana tanpa asumsi return investasi." />
           </div>
+
           <div className="card" style={{ marginTop: 16 }}>
-            <h4 style={{ marginBottom: 10 }}>Proyeksi biaya per tahun</h4>
+            <h4 style={{ marginBottom: 10 }}>Proyeksi biaya per tahun · {educationLevel}</h4>
             <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}><thead><tr style={{ borderBottom: "1px solid var(--border)" }}><th style={{ textAlign: "left", padding: "8px 0" }}>Tahun</th><th style={{ textAlign: "right", padding: "8px 0" }}>Estimasi biaya</th></tr></thead><tbody>{yearlyCosts.map((item) => <tr key={item.year} style={{ borderBottom: "1px solid var(--border)" }}><td style={{ padding: "8px 0" }}>{item.year}</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(item.cost))}</td></tr>)}</tbody></table></div>
           </div>
-          <div style={{ marginTop: 16, padding: "12px 16px", background: "#f8f8f5", borderRadius: 14, fontSize: 11, color: "#71827b", lineHeight: 1.55 }}>Catatan: ini simulasi kebutuhan biaya pendidikan berdasarkan asumsi inflasi. Biaya nyata dapat berbeda menurut sekolah/kampus, jurusan, lokasi, dan perubahan biaya pendidikan.</div>
+
+          <div style={{ marginTop: 16, padding: "12px 16px", background: "#f8f8f5", borderRadius: 14, fontSize: 11, color: "#71827b", lineHeight: 1.55 }}>Catatan: setiap jenjang yang ditambahkan akan masuk ke total kebutuhan pendidikan. Kamu bisa menghitung SD → Tambahkan SD → lanjut SMP → Tambahkan SMP, dan seterusnya.</div>
         </>
       }
-      onSave={() => onSaveResult({ id: "edu", title: "Simulasi Dana Pendidikan", value: formatIDR(Math.round(totalTarget)), plan: { type: "education", targetAmount: totalTarget, monthlyAmount: averageMonthlyPreparation, timeframe: yearsUntilStart, targetYear: startYear } })}
+      onSave={() => onSaveResult({ id: "edu", title: "Simulasi Dana Pendidikan", value: formatIDR(Math.round(totalEducationNeed)), plan: { type: "education", targetAmount: totalEducationNeed, monthlyAmount: averageMonthlyPreparation, timeframe: yearsUntilStart, targetYear: startYear, stages: educationPlans } })}
       onNavigate={onNavigate}
       calcId="edu"
       relatedId="edu"
