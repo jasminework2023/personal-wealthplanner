@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { ThemeToggle } from "./ThemeToggle";
 import {
   Home,
   LayoutDashboard,
@@ -10,7 +11,7 @@ import {
   User,
   BookOpen,
   X,
-  Globe2,
+  Globe,
 } from "lucide-react";
 
 const mainLinks = [
@@ -88,14 +89,15 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <nav className="flex flex-col gap-0.5">
           {toolLinks.map((l) => <NavItem key={l.to} {...l} onNavigate={onNavigate} />)}
         </nav>
-        <a href="https://www.wealthplanner.id" target="_blank" rel="noreferrer" className="group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] text-white hover:bg-white/10 hover:text-white transition-all">
-          <Globe2 size={18} strokeWidth={2} className="text-white/75 group-hover:text-rose-300" />
-          <span>Website</span>
-          <span className="ml-auto text-white/45" aria-hidden>↗</span>
+        <a href="https://www.wealthplanner.id" target="_blank" rel="noreferrer" className="group mx-2 mt-2 flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[14px] text-white hover:bg-white/10 hover:text-white transition-all">
+          <Globe size={18} strokeWidth={2} className="text-white/75 group-hover:text-rose-300" />
+          <span className="flex-1">Website</span>
+          <span aria-hidden className="text-white/50">↗</span>
         </a>
       </div>
 
       <div className="px-2 pb-4 pt-2 border-t border-white/12 flex flex-col gap-0.5">
+        <ThemeToggle />
         <NavItem to="/guidance" label="Guidance" icon={BookOpen} onNavigate={onNavigate} />
         <NavItem to="/settings" label="Settings" icon={Settings} onNavigate={onNavigate} />
         <NavItem to="/profile" label="Profile" icon={User} onNavigate={onNavigate} />
