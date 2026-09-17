@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+const API_BASE = "/api";
 import type { ComponentType, ReactNode } from "react";
 import {
   ArrowRight,
@@ -108,7 +109,7 @@ export function Guidance() {
   useEffect(() => {
     const token = getStoredToken();
     if (!token) return;
-    fetch(`${import.meta.env.BASE_URL}api/setup?token=${encodeURIComponent(token)}`)
+    fetch(`${API_BASE}/setup?token=${encodeURIComponent(token)}`)
       .then(async (res) => (res.ok ? res.json() : null))
       .then((data) => setSpreadsheetUrl(data?.spreadsheetUrl || ""))
       .catch(() => undefined);
@@ -169,7 +170,7 @@ export function Guidance() {
           <div className="mt-4 flex flex-wrap gap-2"><FeatureButton to="/finance">Buka Dashboard Finance</FeatureButton><FeatureButton to="/transactions">Lihat Transaction Report</FeatureButton></div>
         </Milestone>
 
-        <Milestone number="03" icon={Receipt} tone="bg-yellow-500" title="Pantau Aktivitas Transaksi" subtitle="Pastikan seluruh aktivitas keuanganmu terdokumentasi dengan rapi.">
+        <Milestone number="03" icon={Receipt} tone="bg-yellow-500 !text-[#173b32]" title="Pantau Aktivitas Transaksi" subtitle="Pastikan seluruh aktivitas keuanganmu terdokumentasi dengan rapi.">
           <StepCopy>
             Gunakan <strong className="text-forest-800">Transaction Report</strong> untuk melihat aktivitas transaksi yang sudah tercatat.
           </StepCopy>
@@ -216,7 +217,7 @@ export function Guidance() {
       </Card>
 
       <Card>
-        <h2 className="text-[17px] font-semibold text-forest-900">TNC</h2>
+        <h2 className="text-[17px] font-semibold text-forest-900">Term and Condition</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {[
             ["Data pengguna", "Akurasi hasil bergantung pada data yang kamu masukkan dan perbarui."],
