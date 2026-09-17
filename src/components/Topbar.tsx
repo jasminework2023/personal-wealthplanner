@@ -1,4 +1,5 @@
 import { Menu } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () => void }) {
   return (
@@ -10,7 +11,7 @@ export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () 
       >
         <Menu size={20} />
       </button>
-      <p className="font-semibold text-forest-900">{title}</p>
+      <p className="min-w-0 flex-1 truncate font-semibold text-forest-900">{title}</p><ThemeToggle />
     </header>
   );
 }
