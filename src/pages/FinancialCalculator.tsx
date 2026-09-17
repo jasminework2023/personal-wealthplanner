@@ -2,6 +2,7 @@
 // @ts-nocheck
 import React from "react";
 import { ArrowRight, Check, Gift, Plus } from "lucide-react";
+import { useFinanceData } from "../lib/useFinanceData";
 
 export const CALCULATOR_META = [
   { id: "checkup", title: "Financial Check-Up", desc: "Cek kesehatan cashflow, utang, dana darurat, dan likuiditas." },
@@ -56,286 +57,88 @@ function CalculatorBody({ id, onSaveResult, onNavigate }) {
 // 1. FINANCIAL CHECKUP
 // ============================================================
 function CheckupCalc({ onSaveResult, onNavigate }) {
-  const [income, setIncome] = React.useState(10000000);
-  const [expenses, setExpenses] = React.useState(7500000);
-  const [savings, setSavings] = React.useState(20000000);
-  const [debt, setDebt] = React.useState(500000);
-  const [assets, setAssets] = React.useState(50000000);
-
-  const saving = income - expenses;
-  const savingRate = income > 0 ? (saving / income) * 100 : 0;
-  const debtRatio = income > 0 ? (debt / income) * 100 : 0;
-  const emergencyMonths = expenses > 0 ? savings / expenses : 0;
-  const liquidity = (savings / Math.max(assets, 1)) * 100;
-
-  let score = 0;
-  if (savingRate >= 20) score += 25;
-  else if (savingRate >= 10) score += 18;
-  else if (savingRate > 0) score += 10;
-  if (debtRatio === 0) score += 25;
-  else if (debtRatio < 10) score += 22;
-  else if (debtRatio < 30) score += 15;
-  else score += 5;
-  if (emergencyMonths >= 6) score += 30;
-  else if (emergencyMonths >= 3) score += 22;
-  else if (emergencyMonths >= 1) score += 12;
-  if (liquidity >= 30) score += 20;
-  else if (liquidity >= 15) score += 14;
-  else score += 7;
-
-  const grade = score >= 80 ? "A" : score >= 65 ? "B" : score >= 50 ? "C" : "D";
-  const color = score >= 80 ? "var(--positive)" : score >= 65 ? "#C6F24E" : score >= 50 ? "#FFB800" : "var(--negative)";
-
-  return (
-    <CalcLayout
-      inputs={
-        <>
-          <NumberInput label="Pemasukan bulanan" prefix="Rp" value={income} onChange={setIncome} step={500000} />
-          <NumberInput label="Pengeluaran bulanan" prefix="Rp" value={expenses} onChange={setExpenses} step={500000} />
-          <NumberInput label="Tabungan Bulanan" prefix="Rp" value={savings} onChange={setSavings} step={1000000} />
-          <NumberInput label="Cicilan utang bulanan" prefix="Rp" value={debt} onChange={setDebt} step={100000} />
-          <NumberInput label="Total aset (termasuk tabungan)" prefix="Rp" value={assets} onChange={setAssets} step={5000000} />
-        </>
-      }
-      results={
-        <>
-          <div style={{
-            background: color, color: "#0a0a0a", borderRadius: 24, padding: 32,
-          }}>
-            <div className="row-between">
-              <div className="mono" style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", opacity: 0.75 }}>SKOR KEUANGANMU</div>
-              <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontWeight: 800, fontSize: 64, lineHeight: 1 }}>{grade}</div>
-            </div>
-            <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontWeight: 700, fontSize: 96, lineHeight: 0.9, marginTop: 16 }}>
-              {Math.round(score)}<span style={{ fontSize: 28, opacity: 0.5 }}>/100</span>
-            </div>
-            <p style={{ fontSize: 14, marginTop: 18, opacity: 0.75, maxWidth: 380 }}>
-              {score >= 80 ? "Mantap! Keuangan kamu sehat. Saatnya scale up investasi & rencana jangka panjang." :
-               score >= 65 ? "Lumayan! Ada beberapa area yang bisa ditingkatkan, terutama dana darurat & alokasi investasi." :
-               score >= 50 ? "Cukup. Fokus naikkan tabungan & turunkan rasio utang." :
-               "Perlu perhatian. Mulai dari turunkan utang & bangun dana darurat dulu."}
-            </p>
-          </div>
-          <div className="stack" style={{ gap: 8, marginTop: 16 }}>
-            <ScoreRow label="Saving rate" value={`${savingRate.toFixed(1)}%`} status={savingRate >= 20 ? "good" : savingRate >= 10 ? "ok" : "warn"} target=">20%" />
-            <ScoreRow label="Debt ratio" value={`${debtRatio.toFixed(1)}%`} status={debtRatio < 10 ? "good" : debtRatio < 30 ? "ok" : "warn"} target="<10%" />
-            <ScoreRow label="Dana darurat" value={`${emergencyMonths.toFixed(1)} bln`} status={emergencyMonths >= 6 ? "good" : emergencyMonths >= 3 ? "ok" : "warn"} target=">6 bln" />
-            <ScoreRow label="Likuiditas" value={`${liquidity.toFixed(0)}%`} status={liquidity >= 30 ? "good" : liquidity >= 15 ? "ok" : "warn"} target=">30%" />
-          </div>
-        </>
-      }
-      onSave={() => onSaveResult({ id: "checkup", title: "Check-Up Finansial", value: `${Math.round(score)}/100 (${grade})`, plan: { type: "cashflow", targetAmount: expenses * 12, income, expense: expenses, timeframe: 5, preparedAssets: assets } })}
-      onNavigate={onNavigate}
-      calcId="checkup"
-      relatedId="invest"
-    />
-  );
-}
-
-function ScoreRow({ label, value, status, target }) {
-  const color = status === "good" ? "var(--positive)" : status === "ok" ? "#FFB800" : "var(--negative)";
-  return (
-    <div className="card card-tight row-between" style={{ background: "var(--surface)" }}>
-      <div>
-        <div style={{ fontSize: 14, fontWeight: 600 }}>{label}</div>
-        <div className="muted mono" style={{ fontSize: 11, marginTop: 2 }}>target {target}</div>
-      </div>
-      <div className="row" style={{ gap: 12 }}>
-        <span className="mono" style={{ fontWeight: 600 }}>{value}</span>
-        <span style={{ width: 10, height: 10, borderRadius: 999, background: color }} />
-      </div>
-    </div>
-  );
+  const { totalIncome, totalExpense, totalSaving, assets, isRealData, month } = useFinanceData();
+  const [manualDebt, setManualDebt] = React.useState(0);
+  const income = isRealData ? totalIncome : 10000000;
+  const expenses = isRealData ? totalExpense : 7500000;
+  const savings = isRealData ? totalSaving : 20000000;
+  const debt = manualDebt;
+  const cash = assets.liquidAssets.reduce((s, x) => s + (Number(x.value)||0), 0);
+  const investments = assets.investmentAssets.reduce((s, x) => s + (Number(x.value)||0), 0);
+  const annualGrossIncome = income * 12;
+  const securityRate = annualGrossIncome > 0 ? (cash + investments) / annualGrossIncome : 0;
+  const savingRate = income > 0 ? ((income-expenses)/income)*100 : 0;
+  const debtRatio = income > 0 ? (debt/income)*100 : 0;
+  const emergencyMonths = expenses > 0 ? cash/expenses : 0;
+  const liquidity = assets.totalAssets > 0 ? (cash/assets.totalAssets)*100 : 0;
+  let score=0; if(savingRate>=20)score+=25;else if(savingRate>=10)score+=18;else if(savingRate>0)score+=10; if(debtRatio===0)score+=25;else if(debtRatio<10)score+=22;else if(debtRatio<30)score+=15;else score+=5; if(emergencyMonths>=6)score+=30;else if(emergencyMonths>=3)score+=22;else if(emergencyMonths>=1)score+=12; if(liquidity>=30)score+=20;else if(liquidity>=15)score+=14;else score+=7;
+  const grade=score>=80?"A":score>=65?"B":score>=50?"C":"D";
+  return <CalcLayout inputs={<>
+    <div style={{padding:"11px 13px",background:"#f6fbf8",borderRadius:12,border:"1px solid #d7ebe1",fontSize:11,color:"#55766a"}}>Sumber data: {isRealData?`Dashboard Finance · ${month}`:"mode demo"}. Income, expense, saving, cash dan investment assets mengikuti data dashboard.</div>
+    <NumberInput label="Cicilan utang bulanan" prefix="Rp" value={debt} onChange={setManualDebt} step={100000}/>
+  </>} results={<>
+    <div style={{background:"#eef8f3",border:"1px solid #d7ebe1",borderRadius:24,padding:28}}><div className="row-between"><div className="mono" style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"#55766a"}}>SKOR KEUANGANMU</div><div style={{fontWeight:800,fontSize:56,color:"#0f5d46"}}>{grade}</div></div><div style={{fontWeight:800,fontSize:78,lineHeight:.9,marginTop:12,color:"#0f5d46"}}>{Math.round(score)}<span style={{fontSize:24,color:"#71827b"}}>/100</span></div></div>
+    <div className="card" style={{marginTop:16}}><h4 style={{marginBottom:12}}>Financial Security Rate</h4><ResultTile label="FINANCIAL SECURITY RATE" value={`${securityRate.toFixed(2)}×`} sub="(Cash + Investment Assets) ÷ Annual Gross Income"/><p className="muted" style={{fontSize:11,lineHeight:1.5,marginTop:10}}>Rasio ini menunjukkan besarnya aset kas dan investasi dibandingkan penghasilan bruto tahunan. Bukan skor 0–100.</p></div>
+    <div className="stack" style={{gap:8,marginTop:16}}><ScoreRow label="Saving rate" value={`${savingRate.toFixed(1)}%`} status={savingRate>=20?"good":savingRate>=10?"ok":"warn"} target=">20%"/><ScoreRow label="Debt ratio" value={`${debtRatio.toFixed(1)}%`} status={debtRatio<10?"good":debtRatio<30?"ok":"warn"} target="<10%"/><ScoreRow label="Dana darurat" value={`${emergencyMonths.toFixed(1)} bln`} status={emergencyMonths>=6?"good":emergencyMonths>=3?"ok":"warn"} target=">6 bln"/><ScoreRow label="Liquidity" value={`${liquidity.toFixed(1)}%`} status={liquidity>=30?"good":liquidity>=15?"ok":"warn"} target=">30%"/></div>
+  </>} onSave={()=>onSaveResult({id:"checkup",title:"Financial Check-Up",value:`Score ${Math.round(score)}/100 · FSR ${securityRate.toFixed(2)}×`,plan:{type:"cashflow",targetAmount:0,monthlyAmount:income,preparedAssets:cash+investments,timeframe:1}})} onNavigate={onNavigate} calcId="checkup" relatedId="checkup"/>;
 }
 
 // ============================================================
 // 2. SIMULASI RUMAH (KPR vs Sewa Comparison)
 // ============================================================
 function RumahCalc({ onSaveResult, onNavigate }) {
-  const [homePrice, setHomePrice] = React.useState(1000000000);
-  const [downPayment, setDownPayment] = React.useState(200000000);
-  const [loanAmount, setLoanAmount] = React.useState(800000000);
-  const [financingType, setFinancingType] = React.useState("conventional");
-  const [fixedRate, setFixedRate] = React.useState(5.5);
-  const [fixedYears, setFixedYears] = React.useState(5);
-  const [floatingRate, setFloatingRate] = React.useState(9);
-  const [tenor, setTenor] = React.useState(20);
-  const [syariahMargin, setSyariahMargin] = React.useState(5);
-  const [rentalPrice, setRentalPrice] = React.useState(5000000);
-
-  React.useEffect(() => {
-    const nextLoan = Math.max(0, Number(homePrice || 0) - Number(downPayment || 0));
-    setLoanAmount(nextLoan);
-  }, [homePrice, downPayment]);
-
-  const safeLoan = Math.max(0, Math.min(Number(loanAmount || 0), Number(homePrice || 0)));
-  const months = Math.max(1, Number(tenor || 1) * 12);
-
-  const monthlyPaymentFor = (principal, annualRate, remainingMonths) => {
-    if (principal <= 0 || remainingMonths <= 0) return 0;
-    const r = annualRate / 100 / 12;
-    if (r === 0) return principal / remainingMonths;
-    return principal * (r * Math.pow(1 + r, remainingMonths)) / (Math.pow(1 + r, remainingMonths) - 1);
-  };
-  const balanceAfterPayments = (principal, annualRate, payment, periods) => {
-    if (principal <= 0 || periods <= 0) return principal;
-    const r = annualRate / 100 / 12;
-    if (r === 0) return Math.max(0, principal - payment * periods);
-    return Math.max(0, principal * Math.pow(1 + r, periods) - payment * ((Math.pow(1 + r, periods) - 1) / r));
-  };
-
-  let monthlyPayment = 0;
-  let totalPaid = 0;
-  let totalInterest = 0;
-  let schedule = [];
-
-  if (financingType === "conventional") {
-    const fixedMonths = Math.min(months, Math.max(0, Number(fixedYears || 0) * 12));
-    const initialRate = fixedMonths > 0 ? fixedRate : floatingRate;
-    const initialPayment = monthlyPaymentFor(safeLoan, initialRate, months);
-    let balance = safeLoan;
-    let totalPrincipal = 0;
-    let totalInterestAccrued = 0;
-    let currentPayment = initialPayment;
-
-    for (let month = 1; month <= months; month++) {
-      const isFixed = fixedMonths > 0 && month <= fixedMonths;
-      const rate = isFixed ? fixedRate : floatingRate;
-      const remainingMonths = months - month + 1;
-      if (!isFixed && month === fixedMonths + 1) currentPayment = monthlyPaymentFor(balance, floatingRate, remainingMonths);
-      const monthlyRate = rate / 100 / 12;
-      const interest = monthlyRate > 0 ? balance * monthlyRate : 0;
-      let principal = currentPayment - interest;
-      if (month === months || principal > balance) principal = balance;
-      const actualPayment = principal + interest;
-      balance = Math.max(0, balance - principal);
-      totalPrincipal += principal;
-      totalInterestAccrued += interest;
-      totalPaid += actualPayment;
-
-      if (month === 1 || month === 12 || month === fixedMonths || month === fixedMonths + 1 || month === months) {
-        schedule.push({ month, label: month === 1 ? "Bulan 1" : month % 12 === 0 ? `Tahun ${month / 12}` : `Bulan ${month}`, rate, payment: actualPayment, principal, interest, balance });
-      }
-    }
-    monthlyPayment = initialPayment;
-    totalInterest = totalInterestAccrued;
-  } else {
-    // Illustrative murabahah model: the agreed margin is treated as a fixed
-    // total margin over the original financing amount, then paid in equal instalments.
-    const totalMargin = safeLoan * (syariahMargin / 100) * Number(tenor || 0);
-    const sellingPrice = safeLoan + totalMargin;
-    monthlyPayment = sellingPrice / months;
-    totalPaid = sellingPrice;
-    totalInterest = totalMargin;
-    let remaining = sellingPrice;
-    schedule = [1, 12, 60, 120, months].filter((m, i, arr) => m > 0 && m <= months && arr.indexOf(m) === i).map((month) => {
-      const paid = monthlyPayment * month;
-      const remainingAmount = Math.max(0, sellingPrice - paid);
-      return { month, label: month === 1 ? "Bulan 1" : month % 12 === 0 ? `Tahun ${month / 12}` : `Bulan ${month}`, rate: syariahMargin, payment: monthlyPayment, principal: (safeLoan / months), interest: (totalMargin / months), balance: remainingAmount };
-    });
-  }
-
-  const initialPayment = financingType === "conventional"
-    ? monthlyPaymentFor(safeLoan, (fixedYears > 0 ? fixedRate : floatingRate), months)
-    : monthlyPayment;
-  const fixedPayment = initialPayment;
-  const fixedMonthsForSummary = Math.min(months, Math.max(0, Number(fixedYears || 0) * 12));
-  const remainingAfterFixed = Math.max(0, months - fixedMonthsForSummary);
-  const balanceAfterFixed = financingType === "conventional" && fixedMonthsForSummary > 0
-    ? balanceAfterPayments(safeLoan, fixedRate, fixedPayment, fixedMonthsForSummary)
-    : safeLoan;
-  const floatingPayment = financingType === "conventional" && remainingAfterFixed > 0
-    ? monthlyPaymentFor(balanceAfterFixed, floatingRate, remainingAfterFixed)
-    : fixedPayment;
-
-  const comparisonData = [];
-  let cumulativeKPR = Math.max(0, Number(downPayment || 0));
-  let cumulativeRental = 0;
-  for (let month = 1; month <= months; month++) {
-    cumulativeKPR += monthlyPayment;
-    cumulativeRental += rentalPrice;
-    if (month === 1 || month === 12 || month === 60 || month === 120 || month === 180 || month === months) {
-      comparisonData.push({ month, monthLabel: month === 1 ? "Bulan 1" : month % 12 === 0 ? `Tahun ${month / 12}` : `Bulan ${month}`, kprCumulative: cumulativeKPR, rentalCumulative: cumulativeRental });
-    }
-  }
-
-  return (
-    <CalcLayout
-      inputs={
-        <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 8 }}>
-            {[['conventional', 'KPR Konvensional'], ['syariah', 'KPR Syariah']].map(([value, label]) => (
-              <button key={value} type="button" onClick={() => setFinancingType(value)} style={{ padding: "11px 10px", borderRadius: 10, border: financingType === value ? "2px solid #0f5d46" : "1px solid rgba(20,50,40,.12)", background: financingType === value ? "#eef8f3" : "white", color: "#173b32", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{label}</button>
-            ))}
-          </div>
-          <NumberInput label="Harga rumah / nilai properti" prefix="Rp" value={homePrice} onChange={setHomePrice} step={10000000} />
-          <NumberInput label="Down payment" prefix="Rp" value={downPayment} onChange={setDownPayment} step={10000000} />
-          <NumberInput label="Nilai pinjaman / pembiayaan" prefix="Rp" value={loanAmount} onChange={setLoanAmount} step={10000000} hint="Otomatis mengikuti harga rumah − DP; tetap bisa disesuaikan." />
-          <Slider label="Tenor" value={tenor} onChange={setTenor} min={1} max={30} format={(v) => `${v} tahun`} />
-          {financingType === "conventional" ? (
-            <>
-              <Slider label="Fixed interest" value={fixedRate} onChange={setFixedRate} min={0} max={15} step={0.25} format={(v) => `${v}%/tahun`} />
-              <Slider label="Periode fixed" value={fixedYears} onChange={setFixedYears} min={0} max={Math.max(1, tenor)} step={1} format={(v) => v === 0 ? "Tidak ada fixed" : `${v} tahun`} />
-              <Slider label="Floating interest setelah fixed" value={floatingRate} onChange={setFloatingRate} min={0} max={20} step={0.25} format={(v) => `${v}%/tahun`} />
-            </>
-          ) : (
-            <Slider label="Estimasi margin murabahah" value={syariahMargin} onChange={setSyariahMargin} min={0} max={15} step={0.25} format={(v) => `${v}%/tahun (ilustrasi)`} />
-          )}
-          <div className="divider" style={{ margin: "4px 0" }} />
-          <NumberInput label="Sewa rumah per bulan (opsional comparison)" prefix="Rp" value={rentalPrice} onChange={setRentalPrice} step={500000} />
-        </>
-      }
-      results={
-        <>
-          <div className="row" style={{ gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
-            <ResultTile label={financingType === "conventional" ? "ESTIMASI CICILAN AWAL / BULAN" : "ESTIMASI ANGSURAN / BULAN"} value={`Rp ${formatIDR(Math.round(monthlyPayment))}`} sub={`${tenor} tahun · ${financingType === "conventional" ? `fixed ${fixedRate}%` : "margin tetap ilustratif"}`} />
-          </div>
-          <div className="card" style={{ marginTop: 16 }}>
-            <h4 style={{ marginBottom: 14 }}>Ringkasan Pembiayaan</h4>
-            <div className="stack" style={{ gap: 4 }}>
-              <BreakdownRow label="Harga properti" value={`Rp ${formatIDR(homePrice)}`} />
-              <BreakdownRow label="Down payment" value={`Rp ${formatIDR(downPayment)}`} />
-              <BreakdownRow label="Total pinjaman / pembiayaan" value={`Rp ${formatIDR(Math.round(safeLoan))}`} highlight />
-              <BreakdownRow label={financingType === "conventional" ? "Total bunga" : "Total margin ilustratif"} value={`Rp ${formatIDR(Math.round(totalInterest))}`} />
-              <BreakdownRow label="Total pembayaran pembiayaan" value={`Rp ${formatIDR(Math.round(totalPaid))}`} highlight />
-              {financingType === "conventional" && fixedYears > 0 && fixedYears < tenor && <BreakdownRow label="Estimasi cicilan setelah fixed" value={`Rp ${formatIDR(Math.round(floatingPayment))}/bln`} sub={`Skenario floating ${floatingRate}%/tahun mulai tahun ke-${fixedYears + 1}`} />}
-            </div>
-          </div>
-
-          {financingType === "conventional" && (
-            <div className="card" style={{ marginTop: 16 }}>
-              <h4 style={{ marginBottom: 8 }}>Fixed → Floating</h4>
-              <p className="muted" style={{ fontSize: 12, lineHeight: 1.55, marginTop: 0 }}>Simulator menggunakan fixed rate untuk periode awal, lalu menghitung ulang cicilan berdasarkan sisa pokok dan asumsi floating rate setelah periode fixed. Floating sebenarnya dapat berubah berkala; angka ini hanya skenario.</p>
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                  <thead><tr style={{ borderBottom: "1px solid var(--border)" }}><th style={{ textAlign: "left", padding: "8px 0" }}>Periode</th><th style={{ textAlign: "right", padding: "8px 0" }}>Rate</th><th style={{ textAlign: "right", padding: "8px 0" }}>Cicilan</th><th style={{ textAlign: "right", padding: "8px 0" }}>Bunga</th><th style={{ textAlign: "right", padding: "8px 0" }}>Pokok</th></tr></thead>
-                  <tbody>{schedule.map((row, i) => <tr key={`${row.month}-${i}`} style={{ borderBottom: "1px solid var(--border)" }}><td style={{ padding: "8px 0" }}>{row.label}</td><td style={{ textAlign: "right", padding: "8px 0" }}>{row.rate}%</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(row.payment))}</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(row.interest))}</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(row.principal))}</td></tr>)}</tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {financingType === "syariah" && (
-            <div className="card" style={{ marginTop: 16, background: "#f6fbf8" }}>
-              <h4 style={{ marginBottom: 8 }}>Bagaimana KPR Syariah bekerja?</h4>
-              <p style={{ fontSize: 12, lineHeight: 1.6, color: "#55766a", margin: 0 }}>Pada skenario murabahah, bank/lembaga pembiayaan membeli aset lalu menjualnya kepada nasabah dengan harga jual yang sudah mencakup margin yang disepakati. Angsuran pada model ilustrasi ini tetap selama tenor; tidak menggunakan bunga floating. Struktur akad, margin, biaya, uang muka, dan metode perhitungan dapat berbeda antar lembaga dan produk.</p>
-              <div style={{ marginTop: 10, padding: "10px 12px", background: "white", borderRadius: 10, fontSize: 11, lineHeight: 1.5, color: "#667a72" }}>⚠️ Angka margin di atas adalah asumsi edukatif, bukan simulasi penawaran bank syariah tertentu.</div>
-            </div>
-          )}
-
-          <div className="card" style={{ marginTop: 16 }}>
-            <h4 style={{ marginBottom: 12 }}>KPR vs Sewa</h4>
-            <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}><thead><tr style={{ borderBottom: "1px solid var(--border)" }}><th style={{ textAlign: "left", padding: "8px 0" }}>Timeline</th><th style={{ textAlign: "right", padding: "8px 0" }}>KPR</th><th style={{ textAlign: "right", padding: "8px 0" }}>Sewa</th></tr></thead><tbody>{comparisonData.map((row, i) => <tr key={`${row.month}-${i}`} style={{ borderBottom: "1px solid var(--border)" }}><td style={{ padding: "8px 0" }}>{row.monthLabel}</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(row.kprCumulative))}</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(row.rentalCumulative))}</td></tr>)}</tbody></table></div>
-          </div>
-          <div style={{ marginTop: 16, padding: "12px 16px", background: "#f8f8f5", borderRadius: 14, fontSize: 11, color: "#71827b", lineHeight: 1.55 }}>Disclaimer: hasil di atas adalah simulasi/estimasi edukatif, bukan penawaran pembiayaan. Belum memperhitungkan seluruh biaya seperti provisi, administrasi, asuransi, pajak, notaris, dan biaya lain yang mungkin berlaku.</div>
-        </>
-      }
-      onSave={() => onSaveResult({ id: "rumah", title: "Simulasi KPR", value: `${formatIDR(Math.round(monthlyPayment))}/bln × ${tenor}th`, plan: { type: "home", targetAmount: homePrice, obligationAmount: safeLoan, monthlyAmount: monthlyPayment, timeframe: tenor, preparedAssets: downPayment, financingType } })}
-      onNavigate={onNavigate}
-      calcId="rumah"
-      relatedId="kpr"
-    />
-  );
+  const [kprMode,setKprMode]=React.useState("new");
+  const [homePrice,setHomePrice]=React.useState(1000000000); const [downPayment,setDownPayment]=React.useState(200000000); const [loanAmount,setLoanAmount]=React.useState(800000000);
+  const [outstanding,setOutstanding]=React.useState(650000000); const [remainingYears,setRemainingYears]=React.useState(15); const [currentRate,setCurrentRate]=React.useState(7); const [currentInstallment,setCurrentInstallment]=React.useState(0);
+  const [financingType,setFinancingType]=React.useState("conventional"); const [fixedRate,setFixedRate]=React.useState(5.5); const [fixedYears,setFixedYears]=React.useState(5); const [floatingRate,setFloatingRate]=React.useState(9); const [tenor,setTenor]=React.useState(20); const [syariahMargin,setSyariahMargin]=React.useState(5); const [rentalPrice,setRentalPrice]=React.useState(5000000);
+  React.useEffect(()=>{if(kprMode==="new")setLoanAmount(Math.max(0,Number(homePrice||0)-Number(downPayment||0)));},[homePrice,downPayment,kprMode]);
+  const safeLoan=kprMode==="existing"?Math.max(0,Number(outstanding||0)):Math.max(0,Math.min(Number(loanAmount||0),Number(homePrice||0)));
+  const effectiveTenor=kprMode==="existing"?Math.max(1,Number(remainingYears||1)):Math.max(1,Number(tenor||1)); const months=effectiveTenor*12;
+  const monthlyPaymentFor=(principal,rate,n)=>{if(principal<=0||n<=0)return 0;const r=rate/100/12;return r===0?principal/n:principal*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1)};
+  const balanceAfterPayments=(principal,rate,payment,n)=>{if(principal<=0||n<=0)return principal;const r=rate/100/12;if(r===0)return Math.max(0,principal-payment*n);return Math.max(0,principal*Math.pow(1+r,n)-payment*((Math.pow(1+r,n)-1)/r));};
+  let monthlyPayment=0,totalPaid=0,totalInterest=0,schedule=[];
+  if(kprMode==="existing") { monthlyPayment=currentInstallment>0?currentInstallment:monthlyPaymentFor(safeLoan,currentRate,months); let balance=safeLoan; for(let m=1;m<=months;m++){const mr=currentRate/100/12;const interest=mr>0?balance*mr:0;let principal=Math.max(0,monthlyPayment-interest);if(m===months||principal>balance)principal=balance;const actual=principal+interest;balance=Math.max(0,balance-principal);totalPaid+=actual;totalInterest+=interest;if(m===1||m===12||m===60||m===120||m===months)schedule.push({month:m,label:m%12===0?`Tahun ${m/12}`:`Bulan ${m}`,rate:currentRate,payment:actual,principal,interest,balance});} }
+  else if(financingType==="conventional") {const fixedMonths=Math.min(months,Math.max(0,Number(fixedYears||0)*12));const initialRate=fixedMonths>0?fixedRate:floatingRate;const initialPayment=monthlyPaymentFor(safeLoan,initialRate,months);let balance=safeLoan,currentPayment=initialPayment;for(let m=1;m<=months;m++){const fixed=fixedMonths>0&&m<=fixedMonths;const rate=fixed?fixedRate:floatingRate;if(!fixed&&m===fixedMonths+1)currentPayment=monthlyPaymentFor(balance,floatingRate,months-m+1);const mr=rate/100/12;const interest=mr>0?balance*mr:0;let principal=currentPayment-interest;if(m===months||principal>balance)principal=balance;const actual=principal+interest;balance=Math.max(0,balance-principal);totalPaid+=actual;totalInterest+=interest;if(m===1||m===12||m===fixedMonths||m===fixedMonths+1||m===months)schedule.push({month:m,label:m%12===0?`Tahun ${m/12}`:`Bulan ${m}`,rate,payment:actual,principal,interest,balance});}monthlyPayment=initialPayment;}
+  else {const margin=safeLoan*(syariahMargin/100)*effectiveTenor;const selling=safeLoan+margin;monthlyPayment=selling/months;totalPaid=selling;totalInterest=margin;schedule=[1,12,60,120,months].filter((m,i,a)=>m>0&&m<=months&&a.indexOf(m)===i).map(m=>({month:m,label:m%12===0?`Tahun ${m/12}`:`Bulan ${m}`,rate:syariahMargin,payment:monthlyPayment,principal:safeLoan/months,interest:margin/months,balance:Math.max(0,selling-monthlyPayment*m)}));}
+  const fixedPayment=kprMode==="existing"?monthlyPayment:financingType==="conventional"?monthlyPaymentFor(safeLoan,(fixedYears>0?fixedRate:floatingRate),months):monthlyPayment;
+  const fixedMonths=Math.min(months,Math.max(0,Number(fixedYears||0)*12));const remainingAfterFixed=Math.max(0,months-fixedMonths);const balanceAfterFixed=financingType==="conventional"&&fixedMonths>0?balanceAfterPayments(safeLoan,fixedRate,fixedPayment,fixedMonths):safeLoan;const floatingPayment=financingType==="conventional"&&remainingAfterFixed>0?monthlyPaymentFor(balanceAfterFixed,floatingRate,remainingAfterFixed):fixedPayment;
+  const comparisonData=[];let cumulativeKPR=kprMode==="new"?Math.max(0,downPayment):0,cumulativeRental=0;for(let m=1;m<=months;m++){cumulativeKPR+=monthlyPayment;cumulativeRental+=rentalPrice;if(m===1||m===12||m===60||m===120||m===180||m===months)comparisonData.push({month:m,monthLabel:m%12===0?`Tahun ${m/12}`:`Bulan ${m}`,kprCumulative:cumulativeKPR,rentalCumulative:cumulativeRental});}
+  const newInputs = <>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:8}}>
+      <button type="button" onClick={()=>setFinancingType("conventional")} style={{padding:"11px 10px",borderRadius:10,border:financingType==="conventional"?"2px solid #0f5d46":"1px solid rgba(20,50,40,.12)",background:financingType==="conventional"?"#eef8f3":"white",fontSize:12,fontWeight:700}}>KPR Konvensional</button>
+      <button type="button" onClick={()=>setFinancingType("syariah")} style={{padding:"11px 10px",borderRadius:10,border:financingType==="syariah"?"2px solid #0f5d46":"1px solid rgba(20,50,40,.12)",background:financingType==="syariah"?"#eef8f3":"white",fontSize:12,fontWeight:700}}>KPR Syariah</button>
+    </div>
+    <NumberInput label="Harga rumah / nilai properti" prefix="Rp" value={homePrice} onChange={setHomePrice} step={10000000}/>
+    <NumberInput label="Down payment" prefix="Rp" value={downPayment} onChange={setDownPayment} step={10000000}/>
+    <NumberInput label="Total pinjaman / pembiayaan" prefix="Rp" value={loanAmount} onChange={setLoanAmount} step={10000000}/>
+    <Slider label="Tenor" value={tenor} onChange={setTenor} min={1} max={30} format={v=>`${v} tahun`}/>
+    {financingType==="conventional" ? <>
+      <Slider label="Fixed interest" value={fixedRate} onChange={setFixedRate} min={0} max={15} step={.25} format={v=>`${v}%/tahun`}/>
+      <Slider label="Periode fixed" value={fixedYears} onChange={setFixedYears} min={0} max={Math.max(1,tenor)} format={v=>v===0?"Tidak ada fixed":`${v} tahun`}/>
+      <Slider label="Floating interest setelah fixed" value={floatingRate} onChange={setFloatingRate} min={0} max={20} step={.25} format={v=>`${v}%/tahun`}/>
+    </> : <Slider label="Estimasi margin murabahah" value={syariahMargin} onChange={setSyariahMargin} min={0} max={15} step={.25} format={v=>`${v}%/tahun (ilustrasi)`}/>}
+  </>;
+  const existingInputs = <>
+    <NumberInput label="Sisa pokok pinjaman / pembiayaan" prefix="Rp" value={outstanding} onChange={setOutstanding} step={10000000}/>
+    <Slider label="Sisa tenor" value={remainingYears} onChange={setRemainingYears} min={1} max={30} format={v=>`${v} tahun`}/>
+    <Slider label="Suku bunga saat ini" value={currentRate} onChange={setCurrentRate} min={0} max={20} step={.25} format={v=>`${v}%/tahun`}/>
+    <NumberInput label="Cicilan existing / bulan (opsional)" prefix="Rp" value={currentInstallment} onChange={setCurrentInstallment} step={100000}/>
+  </>;
+  return <CalcLayout inputs={< >
+    <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:8}}>
+      <button type="button" onClick={()=>setKprMode("new")} style={{padding:"11px 10px",borderRadius:10,border:kprMode==="new"?"2px solid #0f5d46":"1px solid rgba(20,50,40,.12)",background:kprMode==="new"?"#eef8f3":"white",fontSize:12,fontWeight:700}}>KPR Baru</button>
+      <button type="button" onClick={()=>setKprMode("existing")} style={{padding:"11px 10px",borderRadius:10,border:kprMode==="existing"?"2px solid #0f5d46":"1px solid rgba(20,50,40,.12)",background:kprMode==="existing"?"#eef8f3":"white",fontSize:12,fontWeight:700}}>KPR Berjalan</button>
+    </div>
+    {kprMode==="new" ? newInputs : existingInputs}
+    <div className="divider" style={{margin:"4px 0"}}/><NumberInput label="Sewa rumah per bulan (opsional comparison)" prefix="Rp" value={rentalPrice} onChange={setRentalPrice} step={500000}/>
+  </>} results={<>
+    <div className="row" style={{gap:12,marginBottom:12,flexWrap:"wrap"}}><ResultTile label="TOTAL PEMBIAYAAN / PINJAMAN" value={`Rp ${formatIDR(Math.round(safeLoan))}`} sub={kprMode==="existing"?"Sisa pokok pembiayaan saat ini":"Pokok pinjaman setelah DP"}/><ResultTile label={kprMode==="existing"?"CICILAN EXISTING / BULAN":financingType==="conventional"?"CICILAN AWAL / BULAN":"ANGSURAN / BULAN"} value={`Rp ${formatIDR(Math.round(monthlyPayment))}`} sub={`${effectiveTenor} tahun`}/></div>
+    <div className="card" style={{marginTop:16}}><h4 style={{marginBottom:14}}>Ringkasan Pembiayaan</h4><div className="stack" style={{gap:4}}>{kprMode==="new"&&<><BreakdownRow label="Harga properti" value={`Rp ${formatIDR(homePrice)}`}/><BreakdownRow label="Down payment" value={`Rp ${formatIDR(downPayment)}`}/></>}<BreakdownRow label="Total pembiayaan / pinjaman" value={`Rp ${formatIDR(Math.round(safeLoan))}`} highlight/><BreakdownRow label={kprMode==="existing"?"Sisa tenor":"Tenor"} value={`${effectiveTenor} tahun`}/><BreakdownRow label={kprMode==="existing"?"Total pembayaran dari sekarang":"Total pembayaran pembiayaan"} value={`Rp ${formatIDR(Math.round(totalPaid))}`} highlight/><BreakdownRow label={financingType==="conventional"?"Total bunga":"Total margin ilustratif"} value={`Rp ${formatIDR(Math.round(totalInterest))}`}/>{financingType==="conventional"&&kprMode==="new"&&fixedYears>0&&fixedYears<tenor&&<BreakdownRow label="Estimasi cicilan setelah fixed" value={`Rp ${formatIDR(Math.round(floatingPayment))}/bln`} sub={`Skenario floating ${floatingRate}%/tahun`}/>}</div></div>
+    {financingType==="conventional"&&<div className="card" style={{marginTop:16}}><h4 style={{marginBottom:8}}>{kprMode==="existing"?"Proyeksi KPR Berjalan":"Fixed → Floating"}</h4><div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}><thead><tr><th style={{textAlign:"left",padding:8}}>Periode</th><th style={{textAlign:"right",padding:8}}>Rate</th><th style={{textAlign:"right",padding:8}}>Cicilan</th><th style={{textAlign:"right",padding:8}}>Bunga</th><th style={{textAlign:"right",padding:8}}>Pokok</th></tr></thead><tbody>{schedule.map((r,i)=><tr key={`${r.month}-${i}`}><td style={{padding:8}}>{r.label}</td><td style={{textAlign:"right",padding:8}}>{r.rate}%</td><td style={{textAlign:"right",padding:8}}>Rp {formatIDR(Math.round(r.payment))}</td><td style={{textAlign:"right",padding:8}}>Rp {formatIDR(Math.round(r.interest))}</td><td style={{textAlign:"right",padding:8}}>Rp {formatIDR(Math.round(r.principal))}</td></tr>)}</tbody></table></div></div>}
+    {kprMode==="new"&&financingType==="syariah"&&<div className="card" style={{marginTop:16,background:"#f6fbf8"}}><h4 style={{marginBottom:8}}>Bagaimana KPR Syariah bekerja?</h4><p style={{fontSize:12,lineHeight:1.6,color:"#55766a",margin:0}}>Pada skenario murabahah, margin disepakati di awal dan pembayaran mengikuti struktur akad produk. Angka di sini adalah ilustrasi edukatif, bukan penawaran lembaga tertentu.</p></div>}
+    <div className="card" style={{marginTop:16}}><h4 style={{marginBottom:12}}>KPR vs Sewa</h4><div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}><thead><tr><th style={{textAlign:"left",padding:8}}>Timeline</th><th style={{textAlign:"right",padding:8}}>KPR</th><th style={{textAlign:"right",padding:8}}>Sewa</th></tr></thead><tbody>{comparisonData.map((r,i)=><tr key={`${r.month}-${i}`}><td style={{padding:8}}>{r.monthLabel}</td><td style={{textAlign:"right",padding:8}}>Rp {formatIDR(Math.round(r.kprCumulative))}</td><td style={{textAlign:"right",padding:8}}>Rp {formatIDR(Math.round(r.rentalCumulative))}</td></tr>)}</tbody></table></div></div>
+    <div style={{marginTop:16,padding:"12px 16px",background:"#f8f8f5",borderRadius:14,fontSize:11,color:"#71827b",lineHeight:1.55}}>Disclaimer: hasil adalah simulasi/estimasi edukatif, bukan penawaran pembiayaan. Biaya provisi, administrasi, asuransi, pajak, notaris, dan biaya lain belum diperhitungkan.</div>
+  </>} onSave={()=>onSaveResult({id:"rumah",title:"Simulasi KPR",value:`Rp ${formatIDR(Math.round(safeLoan))} · Rp ${formatIDR(Math.round(monthlyPayment))}/bln`,plan:{type:"home",targetAmount:kprMode==="existing"?safeLoan:homePrice,obligationAmount:safeLoan,monthlyAmount:monthlyPayment,timeframe:effectiveTenor,preparedAssets:kprMode==="new"?downPayment:0,financingType,kprMode}})} onNavigate={onNavigate} calcId="rumah" relatedId="kpr"/>;
 }
 
 // ============================================================
