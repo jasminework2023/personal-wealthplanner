@@ -264,3 +264,95 @@ html.dark .bg-gradient-to-br.to-rose-50\/30 {
 html.dark .from-white {
   --tw-gradient-from: rgb(var(--c-surface)) var(--tw-gradient-from-position);
 }
+
+
+/* ============================================================
+   DARK MODE — GLOBAL READABILITY OVERRIDES
+   Pastikan seluruh halaman benar-benar mengikuti mode gelap:
+   background halaman gelap, surface/card gelap, teks utama terang,
+   teks sekunder hijau muda/abu terang, dan form tetap terbaca.
+   ============================================================ */
+html.dark,
+html.dark body,
+html.dark #root {
+  background-color: #0d1411 !important;
+  color: #e9f3ee !important;
+}
+
+html.dark .bg-cream,
+html.dark [class*="bg-cream/"] {
+  background-color: #0d1411 !important;
+}
+
+/* Surface putih menjadi surface gelap. bg-white/10 sidebar sengaja
+   tidak disentuh agar tetap translucent. */
+html.dark .bg-white,
+html.dark .bg-white\/70,
+html.dark .bg-white\/90 {
+  background-color: #1b2822 !important;
+}
+
+/* Main text palette */
+html.dark [class*="text-forest-900"],
+html.dark [class*="text-forest-800"] {
+  color: #e8f4ee !important;
+}
+
+html.dark [class*="text-forest-700"] {
+  color: #9ed8bd !important;
+}
+
+html.dark [class*="text-forest-600"] {
+  color: #83cbaa !important;
+}
+
+html.dark [class*="text-charcoal/"] {
+  color: #b8c9c1 !important;
+}
+
+html.dark [class*="text-charcoal-"],
+html.dark .text-charcoal {
+  color: #e1ebe6 !important;
+}
+
+html.dark [class*="text-rose-700"] {
+  color: #f09ab4 !important;
+}
+
+html.dark [class*="text-rose-600"] {
+  color: #f2789b !important;
+}
+
+/* Borders / subtle surfaces */
+html.dark [class*="border-charcoal/"] {
+  border-color: rgb(255 255 255 / 0.14) !important;
+}
+
+html.dark [class*="border-forest-100"],
+html.dark [class*="border-forest-200"] {
+  border-color: rgb(110 170 145 / 0.28) !important;
+}
+
+html.dark [class*="bg-charcoal/"] {
+  background-color: rgb(255 255 255 / 0.07) !important;
+}
+
+/* White-background controls stay readable in dark mode. */
+html.dark button.bg-white,
+html.dark a.bg-white,
+html.dark input.bg-white,
+html.dark select.bg-white,
+html.dark textarea.bg-white {
+  background-color: #1b2822 !important;
+  color: #e8f4ee !important;
+}
+
+html.dark ::placeholder {
+  color: #82968d !important;
+}
+
+/* Recharts labels and axes */
+html.dark .recharts-text,
+html.dark .recharts-cartesian-axis-tick-value {
+  fill: #b8c9c1 !important;
+}
