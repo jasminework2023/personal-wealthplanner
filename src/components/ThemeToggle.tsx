@@ -25,17 +25,26 @@ export function ThemeToggle({ variant = "bar" }: { variant?: "bar" | "compact" }
   useEffect(() => {
     applyTheme(theme);
     window.localStorage.setItem(STORAGE_KEY, theme);
+    window.dispatchEvent(new CustomEvent("wealthplanner:theme-changed", { detail: theme }));
   }, [theme]);
 
-  // Sinkron kalau ada toggle lain (mis. mobile & desktop) yang dipakai
+  // Sinkronkan toggle desktop/mobile dalam tab yang sama dan antar-tab.
   useEffect(() => {
+    function onThemeChange(e: Event) {
+      const value = (e as CustomEvent).detail;
+      if (value === "dark" || value === "light") setTheme(value);
+    }
     function onStorage(e: StorageEvent) {
       if (e.key === STORAGE_KEY && (e.newValue === "dark" || e.newValue === "light")) {
         setTheme(e.newValue);
       }
     }
+    window.addEventListener("wealthplanner:theme-changed", onThemeChange);
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener("wealthplanner:theme-changed", onThemeChange);
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   const isDark = theme === "dark";
