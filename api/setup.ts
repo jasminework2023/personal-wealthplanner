@@ -6,10 +6,10 @@ type Section = "income" | "expense" | "saving" | "bank";
 type SetupItem = { name: string; active: boolean };
 
 const RANGES: Record<Section, { categoryCol: string; statusCol: string; start: number; end: number }> = {
-  income: { categoryCol: "B", statusCol: "C", start: 1, end: 80 },
-  expense: { categoryCol: "E", statusCol: "F", start: 1, end: 80 },
-  saving: { categoryCol: "H", statusCol: "I", start: 1, end: 80 },
-  bank: { categoryCol: "K", statusCol: "L", start: 1, end: 80 },
+  income: { categoryCol: "B", statusCol: "C", start: 1, end: 200 },
+  expense: { categoryCol: "E", statusCol: "F", start: 1, end: 200 },
+  saving: { categoryCol: "H", statusCol: "I", start: 1, end: 200 },
+  bank: { categoryCol: "K", statusCol: "L", start: 1, end: 200 },
 };
 
 function getSheetsClient() {
@@ -43,24 +43,10 @@ async function getUser(token: string) {
   return data;
 }
 
-async function resolveSetupSheet(sheets: ReturnType<typeof getSheetsClient>, spreadsheetId: string) {
-  const meta = await sheets.spreadsheets.get({ spreadsheetId, fields: "sheets.properties" });
-  const sheetsList = meta.data.sheets || [];
-  const preferred = sheetsList.find((s) => /setup|setting|baseline/i.test(String(s.properties?.title || "")));
-  const fallback = sheetsList[0];
-  if (!preferred && !fallback) throw new Error("Tidak ada tab spreadsheet yang tersedia");
-  return preferred?.properties?.title || fallback?.properties?.title || "";
-}
-
-function sheetRange(sheetTitle: string, range: string) {
-  const safeTitle = `'${sheetTitle.replace(/'/g, "''")}'`;
-  return `${safeTitle}!${range}`;
-}
-
-async function readSetup(sheets: ReturnType<typeof getSheetsClient>, spreadsheetId: string, sheetTitle: string) {
+async function readSetup(sheets: ReturnType<typeof getSheetsClient>, spreadsheetId: string) {
   const result = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: sheetRange(sheetTitle, "B1:L80"),
+    range: "Setup!B1:L200",
   });
   const rows = result.data.values || [];
   const sections: Record<Section, SetupItem[]> = { income: [], expense: [], saving: [], bank: [] };
@@ -93,13 +79,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const user = await getUser(token);
     const sheets = getSheetsClient();
-    const setupSheet = await resolveSetupSheet(sheets, user.spreadsheet_id);
     if (req.method === "GET") {
-      const sections = await readSetup(sheets, user.spreadsheet_id, setupSheet);
+      const sections = await readSetup(sheets, user.spreadsheet_id);
       return res.status(200).json({
         username: user.username,
         spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${user.spreadsheet_id}/edit`,
-        setupSheet,
         sections,
       });
     }
@@ -112,7 +96,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // rows below each "Category / Status" header.
     const existing = await sheets.spreadsheets.values.get({
       spreadsheetId: user.spreadsheet_id,
-      range: sheetRange(setupSheet, "B1:L80"),
+      range: "Setup!B1:L200",
     });
     const rows = existing.data.values || [];
     const data: { range: string; values: unknown[][] }[] = [];
@@ -131,7 +115,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const startRow = headerIndex + 2; // 1-indexed sheet row immediately below header
       const endRow = cfg.end;
-      clearRanges.push(sheetRange(setupSheet, `${cfg.categoryCol}${startRow}:${cfg.statusCol}${endRow}`));
+      clearRanges.push(`Setup!${cfg.categoryCol}${startRow}:${cfg.statusCol}${endRow}`);
 
       const items = Array.isArray(sections[section]) ? sections[section] : [];
       const safe = items
@@ -140,7 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .slice(0, endRow - startRow + 1);
       if (safe.length) {
         data.push({
-          range: sheetRange(setupSheet, `${cfg.categoryCol}${startRow}:${cfg.statusCol}${startRow + safe.length - 1}`),
+          range: `Setup!${cfg.categoryCol}${startRow}:${cfg.statusCol}${startRow + safe.length - 1}`,
           values: safe.map((item) => [item.name, item.active]),
         });
       }
