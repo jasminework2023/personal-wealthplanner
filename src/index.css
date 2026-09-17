@@ -11,6 +11,7 @@
   --c-forest-50: 234 242 239;
   --c-forest-100: 207 226 218;
   --c-forest-200: 183 212 200;
+  --c-forest-300: 124 173 154;
   --c-forest-400: 76 133 112;
   --c-forest-500: 52 112 90;
   --c-forest-600: 40 92 73;
@@ -86,6 +87,7 @@ html.dark {
   --c-forest-50: 24 45 37;
   --c-forest-100: 32 58 48;
   --c-forest-200: 42 74 61;
+  --c-forest-300: 78 126 105;
   --c-forest-400: 122 184 158;
   --c-forest-500: 108 173 146;
   --c-forest-600: 52 124 98;
@@ -96,6 +98,7 @@ html.dark {
   --c-rose-50: 58 30 41;
   --c-rose-100: 74 38 52;
   --c-rose-200: 240 176 197;
+  --c-rose-300: 233 151 178;
   --c-rose-300: 240 160 186;
   --c-rose-400: 232 143 172;
   --c-rose-500: 222 106 143;
@@ -167,6 +170,22 @@ body {
 /* bg-white dipakai luas sebagai warna kartu; di dark mode diarahkan ke
    surface gelap. Varian ber-opacity (bg-white/10 di sidebar) tidak ikut
    terpengaruh karena class-nya berbeda. */
+html.dark .bg-forest-700 {
+  background-color: rgb(22 56 44) !important;
+}
+
+html.dark .bg-forest-600 {
+  background-color: rgb(var(--c-forest-600)) !important;
+}
+
+html.dark .bg-rose-600 {
+  background-color: rgb(var(--c-rose-600)) !important;
+}
+
+html.dark .bg-yellow-500 {
+  background-color: rgb(var(--c-yellow-500)) !important;
+}
+
 html.dark .bg-white {
   background-color: rgb(var(--c-surface)) !important;
   border-color: rgb(255 255 255 / 0.08);
@@ -213,4 +232,35 @@ html.dark .recharts-legend-item-text {
    dipakai lewat wrapper .wp-calculator (lihat FinancialCalculator.tsx). */
 .wp-calculator {
   color: var(--calc-ink);
+}
+
+html.dark .wp-calculator .card {
+  background: var(--calc-surface) !important;
+}
+
+html.dark .wp-calculator button[style*="background: white"],
+html.dark .wp-calculator button[style*="background:"white""] {
+  background: var(--calc-surface-2) !important;
+  color: var(--calc-ink) !important;
+}
+
+html.dark .wp-calculator svg text {
+  fill: var(--calc-ink) !important;
+}
+
+html.dark .bg-gradient-to-br.from-white {
+  --tw-gradient-from: rgb(var(--c-surface)) var(--tw-gradient-from-position);
+}
+
+html.dark .bg-gradient-to-br.via-forest-50\/45 {
+  --tw-gradient-via: rgb(var(--c-forest-50) / 0.45) var(--tw-gradient-via-position);
+}
+
+html.dark .bg-gradient-to-br.to-rose-50\/30 {
+  --tw-gradient-to: rgb(var(--c-rose-50) / 0.30) var(--tw-gradient-to-position);
+}
+
+/* Guidance gradient surfaces stay readable in dark mode. */
+html.dark .from-white {
+  --tw-gradient-from: rgb(var(--c-surface)) var(--tw-gradient-from-position);
 }
