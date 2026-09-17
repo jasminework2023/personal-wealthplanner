@@ -2,39 +2,208 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   PALETTE
+   Nilai ditulis sebagai channel RGB (tanpa koma) supaya Tailwind
+   bisa menambahkan opacity sendiri: text-charcoal/60, bg-forest-50/40, dst.
+   ============================================================ */
+:root {
+  --c-forest-50: 234 242 239;
+  --c-forest-100: 207 226 218;
+  --c-forest-200: 183 212 200;
+  --c-forest-400: 76 133 112;
+  --c-forest-500: 52 112 90;
+  --c-forest-600: 40 92 73;
+  --c-forest-700: 30 71 55;
+  --c-forest-800: 22 56 44;
+  --c-forest-900: 15 42 32;
+
+  --c-rose-50: 251 234 240;
+  --c-rose-100: 245 203 218;
+  --c-rose-200: 240 176 197;
+  --c-rose-300: 233 151 178;
+  --c-rose-400: 225 126 155;
+  --c-rose-500: 219 96 134;
+  --c-rose-600: 212 79 118;
+  --c-rose-700: 169 58 92;
+
+  --c-lilac-50: 245 238 255;
+  --c-lilac-100: 232 215 255;
+  --c-lilac-400: 185 138 232;
+  --c-lilac-600: 142 92 199;
+  --c-lilac-700: 116 71 166;
+
+  --c-yellow-50: 255 248 225;
+  --c-yellow-100: 255 232 163;
+  --c-yellow-500: 255 184 0;
+
+  --c-orange-50: 255 241 233;
+  --c-orange-100: 255 214 194;
+  --c-orange-500: 255 154 107;
+
+  --c-cream: 251 248 243;
+  --c-charcoal: 35 35 35;
+  --c-surface: 255 255 255;
+  --c-shadow: 15 42 32;
+
+  /* Dipakai chart & kalkulator (inline style) */
+  --chart-axis: #6b6b6b;
+  --chart-grid: rgba(20, 50, 40, 0.12);
+
+  /* Warna seri chart (pie/bar). Di dark mode dinaikkan kecerahannya. */
+  --chart-1: #D44F76;
+  --chart-2: #285C49;
+  --chart-3: #D8A928;
+  --chart-4: #7A5FA8;
+  --chart-5: #4C8A7A;
+  --chart-6: #C96B2C;
+  --chart-7: #6B7A8F;
+  --chart-8: #B83A62;
+  --chart-income: #285C49;
+  --chart-expense: #D44F76;
+  --chart-saving: #B58900;
+
+  --calc-ink: #173b32;
+  --calc-ink-2: #55766a;
+  --calc-muted: #71827b;
+  --calc-accent: #0f5d46;
+  --calc-accent-ink: #ffffff;
+  --calc-surface: #ffffff;
+  --calc-surface-2: #f6f7f4;
+  --calc-surface-3: #f8f8f5;
+  --calc-tint: #eef8f3;
+  --calc-tint-border: #d7ebe1;
+  --calc-border: rgba(20, 50, 40, 0.12);
+  --calc-card-fade: #ffffff;
+}
+
+/* ============================================================
+   DARK MODE
+   Teks jadi terang, permukaan jadi gelap, aksen dinaikkan
+   kecerahannya supaya tetap terbaca di atas background gelap.
+   ============================================================ */
+html.dark {
+  --c-forest-50: 24 45 37;
+  --c-forest-100: 32 58 48;
+  --c-forest-200: 42 74 61;
+  --c-forest-400: 122 184 158;
+  --c-forest-500: 108 173 146;
+  --c-forest-600: 52 124 98;
+  --c-forest-700: 148 205 180;
+  --c-forest-800: 186 224 207;
+  --c-forest-900: 221 238 230;
+
+  --c-rose-50: 58 30 41;
+  --c-rose-100: 74 38 52;
+  --c-rose-200: 240 176 197;
+  --c-rose-300: 240 160 186;
+  --c-rose-400: 232 143 172;
+  --c-rose-500: 222 106 143;
+  --c-rose-600: 226 116 150;
+  --c-rose-700: 236 158 183;
+
+  --c-lilac-50: 45 33 62;
+  --c-lilac-100: 60 44 82;
+  --c-lilac-400: 198 165 240;
+  --c-lilac-600: 191 154 238;
+  --c-lilac-700: 205 176 242;
+
+  --c-yellow-50: 58 45 16;
+  --c-yellow-100: 78 61 22;
+  --c-yellow-500: 255 202 74;
+
+  --c-orange-50: 60 38 27;
+  --c-orange-100: 80 51 36;
+  --c-orange-500: 255 173 132;
+
+  --c-cream: 16 23 20;
+  --c-charcoal: 232 237 234;
+  --c-surface: 26 33 30;
+  --c-shadow: 0 0 0;
+
+  --chart-axis: #9aa8a2;
+  --chart-grid: rgba(255, 255, 255, 0.12);
+
+  --chart-1: #F2789B;
+  --chart-2: #5FBF95;
+  --chart-3: #F2C744;
+  --chart-4: #B79BE8;
+  --chart-5: #7FD4BC;
+  --chart-6: #F0925A;
+  --chart-7: #A3B4C6;
+  --chart-8: #F06A96;
+  --chart-income: #5FBF95;
+  --chart-expense: #F2789B;
+  --chart-saving: #F2C744;
+
+  --calc-ink: #e8edea;
+  --calc-ink-2: #b9c7c1;
+  --calc-muted: #93a29b;
+  --calc-accent: #5fb997;
+  --calc-accent-ink: #0f2a20;
+  --calc-surface: #1a211e;
+  --calc-surface-2: #212a26;
+  --calc-surface-3: #1e2723;
+  --calc-tint: #17322a;
+  --calc-tint-border: #24453a;
+  --calc-border: rgba(255, 255, 255, 0.14);
+  --calc-card-fade: #1a211e;
+}
+
 html,
 body {
   font-family: "Inter", system-ui, sans-serif;
+}
+
+body {
+  background-color: rgb(var(--c-cream));
+  color: rgb(var(--c-charcoal));
 }
 
 * {
   scrollbar-width: thin;
 }
 
-
-/* Global dark mode. The existing light theme remains unchanged. */
-html.dark body {
-  background: #111815;
-  color: #f5f5f5;
+/* bg-white dipakai luas sebagai warna kartu; di dark mode diarahkan ke
+   surface gelap. Varian ber-opacity (bg-white/10 di sidebar) tidak ikut
+   terpengaruh karena class-nya berbeda. */
+html.dark .bg-white {
+  background-color: rgb(var(--c-surface)) !important;
 }
 
-html.dark .bg-cream { background-color: #111815 !important; }
-html.dark .text-charcoal { color: #f5f5f5 !important; }
-html.dark .text-gray-900,
-html.dark .text-gray-800,
-html.dark .text-gray-700 { color: #f3f4f6 !important; }
-html.dark .text-gray-600,
-html.dark .text-gray-500 { color: #b8c0bc !important; }
-html.dark .bg-white { background-color: #1a211e !important; }
-html.dark .border-gray-100,
-html.dark .border-gray-200,
-html.dark .border-gray-300 { border-color: rgba(255,255,255,.10) !important; }
+/* Elemen form bawaan browser */
 html.dark input,
 html.dark select,
 html.dark textarea {
-  background-color: #1a211e;
-  color: #f5f5f5;
-  border-color: rgba(255,255,255,.14);
+  background-color: rgb(var(--c-surface));
+  color: rgb(var(--c-charcoal));
+  border-color: rgb(255 255 255 / 0.14);
 }
 html.dark input::placeholder,
-html.dark textarea::placeholder { color: #89938d; }
+html.dark textarea::placeholder {
+  color: rgb(var(--c-charcoal) / 0.45);
+}
+html.dark option {
+  background-color: rgb(var(--c-surface));
+  color: rgb(var(--c-charcoal));
+}
+
+/* Recharts: garis sumbu & tooltip */
+html.dark .recharts-cartesian-axis-line,
+html.dark .recharts-cartesian-axis-tick-line {
+  stroke: var(--chart-grid);
+}
+html.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: rgb(var(--c-surface)) !important;
+  border-color: rgb(255 255 255 / 0.14) !important;
+  color: rgb(var(--c-charcoal)) !important;
+}
+html.dark .recharts-legend-item-text {
+  color: rgb(var(--c-charcoal)) !important;
+}
+
+/* Kalkulator finansial memakai banyak inline style; variabel di bawah
+   dipakai lewat wrapper .wp-calculator (lihat FinancialCalculator.tsx). */
+.wp-calculator {
+  color: var(--calc-ink);
+}
