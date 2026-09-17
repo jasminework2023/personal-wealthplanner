@@ -22,6 +22,21 @@ export interface FinancialPlan {
   existingProtection?: number;
   income?: number;
   expense?: number;
+  financingType?: string;
+  kprMode?: string;
+  homePrice?: number;
+  downPayment?: number;
+  loanAmount?: number;
+  outstanding?: number;
+  remainingYears?: number;
+  currentRate?: number;
+  currentInstallment?: number;
+  fixedRate?: number;
+  fixedYears?: number;
+  floatingRate?: number;
+  tenor?: number;
+  syariahMargin?: number;
+  rentalPrice?: number;
   createdAt: number;
 }
 
