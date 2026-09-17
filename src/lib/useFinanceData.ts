@@ -5,6 +5,7 @@ import { incomeCategories, expenseCategories, savingCategories } from "../data/b
 import { assetGroups, totalAssets as mockTotalAssets, assetTarget, stocksID as mockStocksID, stocksUS as mockStocksUS } from "../data/assets";
 
 const TOKEN_KEY = "wealthplanner_token";
+const API_BASE = "/api";
 
 export function getStoredToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
@@ -158,8 +159,8 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
 
       setState((s) => ({ ...s, loading: true, error: null, month: requestedMonth }));
       Promise.all([
-        fetch(`${import.meta.env.BASE_URL}api/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}`),
-        fetch(`${import.meta.env.BASE_URL}api/setup?token=${encodeURIComponent(token)}`),
+        fetch(`${API_BASE}/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}`),
+        fetch(`${API_BASE}/setup?token=${encodeURIComponent(token)}`),
       ])
         .then(async ([dashboardResponse, setupResponse]) => ({
           dashboard: { ok: dashboardResponse.ok, data: await dashboardResponse.json() },
