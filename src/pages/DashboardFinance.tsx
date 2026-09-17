@@ -9,6 +9,7 @@ import { formatRupiah, formatCompact, formatPercent } from "../lib/format";
 import { usagePercentage, budgetStatus } from "../data/types";
 import { useFinanceData, getStoredToken } from "../lib/useFinanceData";
 import { AddItemForm } from "../components/AddItemForm";
+import { AddTransactionModal } from "../components/AddTransactionModal";
 import { usdRate } from "../data/assets";
 
 
@@ -202,6 +203,8 @@ function BudgetRow({
 export function DashboardFinance() {
   const { loading, error, isRealData, username, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData();
   const [manualStocks, setManualStocks] = useState<ManualStock[]>(() => loadManualStocks());
+  const [transactionModalOpen, setTransactionModalOpen] = useState(false);
+  const [transactionMode, setTransactionMode] = useState<"manual" | "ai">("ai");
 
   useEffect(() => {
     localStorage.setItem(MANUAL_STOCKS_KEY, JSON.stringify(manualStocks));
@@ -228,9 +231,15 @@ export function DashboardFinance() {
     <div className="flex flex-col gap-6">
       <DataStatusBanner isRealData={isRealData} username={username} error={error} />
 
-      <div>
-        <h1 className="text-2xl font-semibold text-forest-900">Dashboard Finance</h1>
-        <p className="text-[14px] text-charcoal/60 mt-0.5">Ringkasan lengkap kondisi keuanganmu bulan ini.</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-semibold text-forest-900">Dashboard Finance</h1>
+          <p className="text-[14px] text-charcoal/60 mt-0.5">Ringkasan lengkap kondisi keuanganmu bulan ini.</p>
+        </div>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => { setTransactionMode("ai"); setTransactionModalOpen(true); }} className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3.5 py-2 text-[13px] font-medium text-white hover:bg-rose-700">✨ Catat dengan AI</button>
+          <button type="button" onClick={() => { setTransactionMode("manual"); setTransactionModalOpen(true); }} className="inline-flex items-center gap-1.5 rounded-lg border border-charcoal/15 bg-white px-3.5 py-2 text-[13px] font-medium hover:bg-charcoal/5">+ Tambah Transaksi</button>
+        </div>
       </div>
 
       {/* A. Ringkasan Bulanan */}
@@ -238,7 +247,7 @@ export function DashboardFinance() {
         <StatCard label="Monthly Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
         <StatCard
           label="Budget Expense"
-          value={budgetExpensePlan > 0 ? formatRupiah(budgetExpensePlan) : "Belum diatur"}
+          value={budgetExpensePlan > 0 ? formatRupiah(budgetExpensePlan) : "Belum Aktivasi Budget"}
           icon={Landmark}
           tone="neutral"
         />
@@ -373,6 +382,13 @@ export function DashboardFinance() {
       </ChartCard>
 
       {/* Stock Net Worth hidden in Phase 1 until live market-price data is available. */}
+
+      <AddTransactionModal
+        open={transactionModalOpen}
+        onClose={() => setTransactionModalOpen(false)}
+        initialMode={transactionMode}
+        onAdd={() => {}}
+      />
     </div>
   );
 }
