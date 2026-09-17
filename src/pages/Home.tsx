@@ -22,7 +22,7 @@ import { useFinanceData } from "../lib/useFinanceData";
 import { getDisplayName, greetingWord } from "../lib/settings";
 import type { Transaction } from "../data/types";
 
-const PIE_COLORS = ["#D44F76", "#285C49", "#D8A928", "#7A5FA8", "#4C8A7A", "#C96B2C", "#6B7A8F", "#B83A62"];
+const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 
 export function Home() {
   const { loading, error, isRealData, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month, assets } = useFinanceData();
@@ -88,12 +88,12 @@ export function Home() {
         <ChartCard title="Cash Flow" subtitle="Income, expense, dan savings bulan ini">
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={cashFlowData}>
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#6b6b6b" }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={(v) => formatCompact(v)} tick={{ fontSize: 11, fill: "#6b6b6b" }} axisLine={false} tickLine={false} width={50} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={(v) => formatCompact(v)} tick={{ fontSize: 11, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} width={50} />
               <Tooltip formatter={(v: number) => formatRupiah(v)} />
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                 {cashFlowData.map((_, i) => (
-                  <Cell key={i} fill={["#285C49", "#D44F76", "#B58900"][i]} />
+                  <Cell key={i} fill={["var(--chart-income)", "var(--chart-expense)", "var(--chart-saving)"][i]} />
                 ))}
               </Bar>
             </BarChart>
