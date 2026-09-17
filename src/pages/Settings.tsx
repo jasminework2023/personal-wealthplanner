@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+const API_BASE = "/api";
 import { Check, ExternalLink, GripVertical, Plus, Settings2, Trash2, User as UserIcon, Loader2, RotateCcw } from "lucide-react";
 import { Card } from "../components/Card";
 import { getDisplayName, setDisplayName } from "../lib/settings";
@@ -42,7 +43,7 @@ export function Settings() {
     }
     setLoading(true); setError("");
     try {
-      const res = await fetch(`${import.meta.env.BASE_URL}api/setup?token=${encodeURIComponent(token)}`);
+      const res = await fetch(`${API_BASE}/setup?token=${encodeURIComponent(token)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal memuat setup");
       const next = { ...EMPTY_SETUP, ...data.sections } as SetupState;
@@ -81,7 +82,7 @@ export function Settings() {
     });
     setSaving(true); setError(""); setMessage("");
     try {
-      const res = await fetch(`${import.meta.env.BASE_URL}api/setup`, {
+      const res = await fetch(`${API_BASE}/setup`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, sections: cleaned }),
       });
