@@ -3,7 +3,6 @@ import { Outlet, useLocation } from "react-router-dom";
 import { DesktopSidebar, MobileSidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { DateHeader } from "./DateHeader";
-import { ThemeToggle } from "./ThemeToggle";
 
 const titles: Record<string, string> = {
   "/": "Home",
@@ -30,8 +29,7 @@ export function AppShell() {
       <div className="flex-1 min-w-0">
         <Topbar title={title} onMenuClick={() => setMobileOpen(true)} />
         <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-          <div className="hidden lg:flex items-center justify-end gap-3 mb-2">
-            <ThemeToggle />
+          <div className="hidden lg:flex justify-end mb-2">
             <DateHeader />
           </div>
           <Outlet />
