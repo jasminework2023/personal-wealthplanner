@@ -14,7 +14,6 @@ export function TransactionReport() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<TransactionType | "All">("All");
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
-  const [monthFilter, setMonthFilter] = useState<string>("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
 
@@ -33,30 +32,9 @@ export function TransactionReport() {
     return new Date(y || 0, (m || 1) - 1, d || 1).getTime();
   };
 
-  const monthGroup = (t: Transaction) => {
-    const [d, m, y] = t.date.split("/").map(Number);
-    if (d && m && y) {
-      return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
-    }
-    return t.month || "Tanpa Bulan";
-  };
-
-  const months = useMemo(() => {
-    const groups = new Map<string, number>();
-    allTxs.forEach((t) => {
-      const key = monthGroup(t);
-      const timestamp = parseDate(t.date);
-      groups.set(key, Math.max(groups.get(key) ?? 0, timestamp));
-    });
-    return Array.from(groups.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([label]) => label);
-  }, [allTxs]);
-
   const filtered = allTxs.filter((t) => {
     if (typeFilter !== "All" && t.type !== typeFilter) return false;
     if (categoryFilter !== "All" && t.category !== categoryFilter) return false;
-    if (monthFilter !== "All" && monthGroup(t) !== monthFilter) return false;
     if (search && !t.description.toLowerCase().includes(search.toLowerCase()) && !t.category.toLowerCase().includes(search.toLowerCase())) {
       return false;
     }
@@ -116,14 +94,6 @@ export function TransactionReport() {
             <option value="Saving">Saving</option>
           </select>
           <select
-            value={monthFilter}
-            onChange={(e) => setMonthFilter(e.target.value)}
-            className="border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] bg-white"
-          >
-            <option value="All">Semua bulan</option>
-            {months.map((m) => <option key={m}>{m}</option>)}
-          </select>
-          <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] bg-white"
@@ -138,51 +108,33 @@ export function TransactionReport() {
         {filtered.length === 0 ? (
           <div className="py-8 text-center text-charcoal/40 text-[13px]">Nggak ada transaksi yang cocok.</div>
         ) : (
-          <div className="flex flex-col gap-5">
-            {months
-              .filter((month) => month === "All" || filtered.some((t) => monthGroup(t) === month))
-              .map((month) => {
-                const monthTxs = filtered
-                  .filter((t) => monthGroup(t) === month)
-                  .sort((a, b) => parseDate(b.date) - parseDate(a.date));
-
-                return (
-                  <div key={month} className="overflow-hidden rounded-xl border border-charcoal/8">
-                    <div className="flex items-center justify-between gap-3 bg-charcoal/[0.025] px-4 py-3 border-b border-charcoal/8">
-                      <div>
-                        <p className="text-[14px] font-semibold text-forest-900">{month}</p>
-                        <p className="text-[11px] text-charcoal/45 mt-0.5">{monthTxs.length} transaksi</p>
-                      </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-[13px] min-w-[640px]">
-                        <thead>
-                          <tr className="text-left text-charcoal/50 text-[12px] border-b border-charcoal/8">
-                            <th className="py-2.5 px-4 font-medium">Date</th>
-                            <th className="py-2.5 font-medium">Type</th>
-                            <th className="py-2.5 font-medium">Category</th>
-                            <th className="py-2.5 font-medium">Description</th>
-                            <th className="py-2.5 px-4 font-medium text-right">Total</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {monthTxs.map((t, i) => (
-                            <tr key={`${t.date}-${t.category}-${t.description}-${i}`} className="border-b border-charcoal/8 last:border-0">
-                              <td className="py-2.5 px-4 whitespace-nowrap">{t.date}</td>
-                              <td className="py-2.5"><TransactionBadge type={t.type} /></td>
-                              <td className="py-2.5">{t.category}</td>
-                              <td className="py-2.5">{t.description}</td>
-                              <td className={`py-2.5 px-4 text-right font-medium ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>
-                                {t.type === "Expense" ? "-" : "+"}{formatRupiah(t.amount)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="overflow-x-auto rounded-xl border border-charcoal/8">
+            <table className="w-full text-[13px] min-w-[680px]">
+              <thead>
+                <tr className="text-left text-charcoal/50 text-[12px] border-b border-charcoal/8 bg-charcoal/[0.025]">
+                  <th className="py-2.5 px-4 font-medium">Date</th>
+                  <th className="py-2.5 font-medium">Type</th>
+                  <th className="py-2.5 font-medium">Category</th>
+                  <th className="py-2.5 font-medium">Description</th>
+                  <th className="py-2.5 px-4 font-medium text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...filtered]
+                  .sort((a, b) => parseDate(b.date) - parseDate(a.date))
+                  .map((t, i) => (
+                    <tr key={`${t.date}-${t.category}-${t.description}-${i}`} className="border-b border-charcoal/8 last:border-0 hover:bg-charcoal/[0.02]">
+                      <td className="py-3 px-4 whitespace-nowrap">{t.date}</td>
+                      <td className="py-3"><TransactionBadge type={t.type} /></td>
+                      <td className="py-3">{t.category}</td>
+                      <td className="py-3">{t.description}</td>
+                      <td className={`py-3 px-4 text-right font-medium ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>
+                        {t.type === "Expense" ? "-" : "+"}{formatRupiah(t.amount)}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </div>
         )}
       </Card>
