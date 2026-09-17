@@ -122,6 +122,7 @@ export function AddTransactionModal({
     await persistTransaction({
       date: now.toLocaleDateString("id-ID"),
       month: now.toLocaleString("en-US", { month: "long" }),
+      year: now.getFullYear(),
       type: form.type,
       category: form.category,
       description: form.description.trim(),
@@ -153,6 +154,7 @@ export function AddTransactionModal({
     await persistTransaction({
       date: parsedDate,
       month: parsed.toLocaleString("en-US", { month: "long" }),
+      year: parsed.getFullYear(),
       type,
       category: resolveCategory(type, aiPreview.category ?? fallbackCategories[9]),
       description: aiPreview.description ?? "Transaksi",
