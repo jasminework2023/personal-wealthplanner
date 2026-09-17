@@ -10,6 +10,7 @@ import {
   User,
   BookOpen,
   X,
+  Globe2,
 } from "lucide-react";
 
 const mainLinks = [
@@ -87,8 +88,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <nav className="flex flex-col gap-0.5">
           {toolLinks.map((l) => <NavItem key={l.to} {...l} onNavigate={onNavigate} />)}
         </nav>
-        <a href="https://www.wealthplanner.id" target="_blank" rel="noreferrer" className="mt-2 mx-2 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[11px] text-white/75 hover:bg-white/10 hover:text-white">
-          <span>Website CTA: wealthplanner.id</span><span aria-hidden>↗</span>
+        <a href="https://www.wealthplanner.id" target="_blank" rel="noreferrer" className="group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] text-white hover:bg-white/10 hover:text-white transition-all">
+          <Globe2 size={18} strokeWidth={2} className="text-white/75 group-hover:text-rose-300" />
+          <span>Website</span>
+          <span className="ml-auto text-white/45" aria-hidden>↗</span>
         </a>
       </div>
 
