@@ -12,8 +12,7 @@ const titles: Record<string, string> = {
   "/calculator": "Financial Calculator",
   "/protection": "Financial Protection",
   "/protection": "Proteksi Finansial",
-  "/settings": "Settings",
-  "/profile": "Profile",
+  "/settings": "Profile & Settings",
   "/guidance": "Guidance",
 };
 
