@@ -116,9 +116,9 @@ html.dark {
   --c-orange-100: 80 51 36;
   --c-orange-500: 255 173 132;
 
-  --c-cream: 16 23 20;
-  --c-charcoal: 232 237 234;
-  --c-surface: 26 33 30;
+  --c-cream: 13 20 17;
+  --c-charcoal: 233 239 236;
+  --c-surface: 31 41 36;
   --c-shadow: 0 0 0;
 
   --chart-axis: #9aa8a2;
@@ -169,6 +169,13 @@ body {
    terpengaruh karena class-nya berbeda. */
 html.dark .bg-white {
   background-color: rgb(var(--c-surface)) !important;
+  border-color: rgb(255 255 255 / 0.08);
+}
+
+/* Kartu di dark mode diberi garis tipis + bayangan supaya terlihat
+   "naik" dari latar, bukan menyatu jadi satu blok gelap. */
+html.dark .shadow-card {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 2px 10px rgb(0 0 0 / 0.25);
 }
 
 /* Elemen form bawaan browser */
