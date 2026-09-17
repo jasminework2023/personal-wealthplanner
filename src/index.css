@@ -356,3 +356,39 @@ html.dark .recharts-text,
 html.dark .recharts-cartesian-axis-tick-value {
   fill: #b8c9c1 !important;
 }
+
+/* Financial Calculator: all surfaces and form controls follow the active theme. */
+.wp-calculator .wp-calc-card {
+  background: var(--calc-surface) !important;
+  color: var(--calc-ink);
+}
+.wp-calculator input,
+.wp-calculator select,
+.wp-calculator textarea {
+  background: var(--calc-surface-2) !important;
+  color: var(--calc-ink) !important;
+  border-color: var(--calc-border) !important;
+}
+.wp-calculator input::placeholder,
+.wp-calculator textarea::placeholder {
+  color: var(--calc-muted) !important;
+}
+.wp-calculator option {
+  background: var(--calc-surface) !important;
+  color: var(--calc-ink) !important;
+}
+html.dark .wp-calculator .card,
+html.dark .wp-calculator .wp-calc-card {
+  background: var(--calc-surface) !important;
+  color: var(--calc-ink) !important;
+}
+html.dark .wp-calculator button[style*="background: white"] {
+  background: var(--calc-surface-2) !important;
+  color: var(--calc-ink) !important;
+}
+
+/* Calculator controls: keep all input cards and controls readable in both themes. */
+.wp-calculator .wp-calc-card { background: var(--calc-surface) !important; color: var(--calc-ink); }
+.wp-calculator input, .wp-calculator select, .wp-calculator textarea { background: var(--calc-surface-2) !important; color: var(--calc-ink) !important; border-color: var(--calc-border) !important; }
+.wp-calculator input::placeholder, .wp-calculator textarea::placeholder { color: var(--calc-muted) !important; }
+.wp-calculator option { background: var(--calc-surface) !important; color: var(--calc-ink) !important; }
