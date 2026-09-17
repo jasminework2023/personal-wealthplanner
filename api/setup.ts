@@ -43,11 +43,19 @@ async function getUser(token: string) {
   return data;
 }
 
+async function getSetupRange(sheets: ReturnType<typeof getSheetsClient>, spreadsheetId: string) {
+  const meta = await sheets.spreadsheets.get({ spreadsheetId, fields: "sheets.properties(sheetId,title)" });
+  const setupSheet = (meta.data.sheets || []).find((sheet) =>
+    String(sheet.properties?.title || "").trim().toLowerCase().replace(/\s+/g, "") === "setup"
+  );
+  if (!setupSheet?.properties?.title) throw new Error("Tab Setup tidak ditemukan di spreadsheet");
+  const title = String(setupSheet.properties.title).replace(/'/g, "''");
+  return `'${title}'!B1:L200`;
+}
+
 async function readSetup(sheets: ReturnType<typeof getSheetsClient>, spreadsheetId: string) {
-  const result = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "Setup!B1:L200",
-  });
+  const setupRange = await getSetupRange(sheets, spreadsheetId);
+  const result = await sheets.spreadsheets.values.get({ spreadsheetId, range: setupRange });
   const rows = result.data.values || [];
   const sections: Record<Section, SetupItem[]> = { income: [], expense: [], saving: [], bank: [] };
 
@@ -94,10 +102,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Preserve the Setup headers and checkbox formatting. We only clear/write
     // rows below each "Category / Status" header.
-    const existing = await sheets.spreadsheets.values.get({
-      spreadsheetId: user.spreadsheet_id,
-      range: "Setup!B1:L200",
-    });
+    const setupRange = await getSetupRange(sheets, user.spreadsheet_id);
+    const existing = await sheets.spreadsheets.values.get({ spreadsheetId: user.spreadsheet_id, range: setupRange });
     const rows = existing.data.values || [];
     const data: { range: string; values: unknown[][] }[] = [];
     const clearRanges: string[] = [];
@@ -115,7 +121,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const startRow = headerIndex + 2; // 1-indexed sheet row immediately below header
       const endRow = cfg.end;
-      clearRanges.push(`Setup!${cfg.categoryCol}${startRow}:${cfg.statusCol}${endRow}`);
+      clearRanges.push(`${setupRange.split("!")[0]}!${cfg.categoryCol}${startRow}:${cfg.statusCol}${endRow}`);
 
       const items = Array.isArray(sections[section]) ? sections[section] : [];
       const safe = items
@@ -124,7 +130,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .slice(0, endRow - startRow + 1);
       if (safe.length) {
         data.push({
-          range: `Setup!${cfg.categoryCol}${startRow}:${cfg.statusCol}${startRow + safe.length - 1}`,
+          range: `${setupRange.split("!")[0]}!${cfg.categoryCol}${startRow}:${cfg.statusCol}${startRow + safe.length - 1}`,
           values: safe.map((item) => [item.name, item.active]),
         });
       }
