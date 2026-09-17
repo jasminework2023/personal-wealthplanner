@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+const API_BASE = "/api";
 import { Loader2, Sparkles } from "lucide-react";
 import { Modal } from "./Modal";
 import type { Transaction, TransactionType } from "../data/types";
@@ -89,7 +90,7 @@ export function AddTransactionModal({
     setAiError("");
     try {
       if (token) {
-        const response = await fetch(`${import.meta.env.BASE_URL}api/add-transaction`, {
+        const response = await fetch(`${API_BASE}/add-transaction`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token, transaction }),
