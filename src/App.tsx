@@ -5,7 +5,6 @@ import { DashboardFinance } from "./pages/DashboardFinance";
 import { TransactionReport } from "./pages/TransactionReport";
 import { MonthlyBudgeting } from "./pages/MonthlyBudgeting";
 import { Settings } from "./pages/Settings";
-import { Profile } from "./pages/Profile";
 import { Guidance } from "./pages/Guidance";
 import { FinancialProtection } from "./pages/FinancialProtection";
 import { FinancialCalculator, CalculatorDetail } from "./pages/FinancialCalculator";
@@ -57,7 +56,6 @@ export default function App() {
           <Route path="/calculator/:id" element={<CalculatorRoute />} />
           <Route path="/protection" element={<FinancialProtection />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/profile" element={<Profile />} />
           <Route path="/guidance" element={<Guidance />} />
         </Route>
       </Routes>
