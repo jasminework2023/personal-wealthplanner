@@ -23,7 +23,6 @@ const protectionCards = [
     title: "Asuransi Jiwa",
     intro: "Jaga kondisi finansial keluarga saat kamu sudah tidak bisa lagi mendampingi mereka.",
     body: "Asuransi jiwa bukan hanya untuk yang sudah menikah atau punya anak. Ini adalah bagian dari life planning untuk memastikan ada dana yang tetap tersedia ketika risiko terburuk terjadi.",
-    cocok: ["Pencari nafkah utama", "Orang yang sudah memiliki pasangan atau anak", "Individu yang ingin menyiapkan warisan", "Kamu yang ingin mengalokasikan sebagian manfaat untuk wakaf"],
     benefits: ["Santunan jiwa untuk penerima manfaat", "Membantu menjaga cash flow keluarga setelah kehilangan pencari nafkah", "Membantu kebutuhan warisan", "Dapat direncanakan sebagai bagian dari wakaf", "Besaran perlindungan dapat disesuaikan dengan kebutuhan dan kemampuan finansial"],
     closing: "Intinya: bukan soal “sudah punya tanggungan atau belum”, tapi apa yang ingin kamu tinggalkan ketika suatu hari sudah tidak ada.",
   },
@@ -32,7 +31,6 @@ const protectionCards = [
     title: "Asuransi Sakit Kritis",
     intro: "Siapkan dana ketika penyakit kritis datang, tanpa harus mengorbankan seluruh aset yang sudah kamu bangun.",
     body: "Penyakit kritis bukan hanya soal biaya pengobatan. Ada kemungkinan penghasilan berhenti, aktivitas kerja terganggu, dan kebutuhan hidup tetap berjalan. Karena itu, perencanaan penyakit kritis perlu melihat biaya medis + kehilangan penghasilan + kebutuhan hidup selama pemulihan.",
-    cocok: ["Pencari nafkah", "Entrepreneur atau freelancer", "Karyawan yang bergantung pada penghasilan aktif", "Orang dengan aset yang belum cukup besar untuk menghadapi risiko kesehatan", "Keluarga yang ingin menjaga cash flow ketika salah satu anggota terkena penyakit kritis"],
     benefits: ["Santunan tunai ketika memenuhi kondisi penyakit kritis sesuai polis", "Membantu menggantikan sebagian penghasilan selama masa pemulihan", "Membantu membayar biaya non-medis", "Menjaga tabungan dan investasi agar tidak perlu dicairkan secara terpaksa", "Perlindungan dapat disesuaikan dengan kebutuhan finansial"],
     closing: "Karena saat sakit, yang perlu dilindungi bukan cuma kesehatan—tapi juga kondisi finansial.",
   },
@@ -41,7 +39,6 @@ const protectionCards = [
     title: "Asuransi Kesehatan",
     intro: "Siapkan biaya kesehatan tanpa harus mengganggu rencana keuangan yang sudah kamu bangun.",
     body: "BPJS dapat menjadi fondasi perlindungan kesehatan. Namun, setiap orang memiliki kebutuhan dan preferensi layanan yang berbeda. Asuransi kesehatan dapat menjadi lapisan perlindungan tambahan sesuai kebutuhan dan kemampuan finansial.",
-    cocok: ["Kamu yang ingin memiliki pilihan fasilitas kesehatan lebih luas", "Orang dengan mobilitas tinggi", "Keluarga yang ingin menyiapkan perlindungan kesehatan bersama", "Kamu yang ingin mengurangi risiko pengeluaran medis besar secara tiba-tiba"],
     benefits: ["Perlindungan biaya rawat inap sesuai ketentuan polis", "Pilihan fasilitas dan rumah sakit sesuai jaringan produk", "Dapat mencakup manfaat rawat jalan pada produk tertentu", "Membantu mengurangi risiko pengeluaran medis besar", "Dapat disesuaikan dengan kebutuhan individu maupun keluarga"],
     closing: "Tujuannya bukan menggantikan BPJS, tapi melengkapi perlindungan sesuai kebutuhanmu.",
   },
@@ -50,7 +47,6 @@ const protectionCards = [
     title: "Program Persiapan Haji & Umroh",
     intro: "Bukan cuma menabung untuk berangkat, tapi memastikan dana ibadahmu siap ketika waktunya tiba.",
     body: "Biaya Haji dan Umroh dapat berubah seiring waktu. Karena itu, target dana sebaiknya direncanakan sejak awal—mulai dari target keberangkatan, estimasi biaya, inflasi, sampai strategi pendanaan.",
-    cocok: ["Kamu yang baru mulai mempersiapkan Haji", "Orang yang sudah mendaftar dan sedang menunggu keberangkatan", "Keluarga yang ingin menyiapkan dana Haji/Umroh bersama", "Kamu yang ingin memiliki strategi pendanaan jangka panjang"],
     benefits: ["Menentukan target dana Haji/Umroh", "Menghitung kebutuhan dana berdasarkan target keberangkatan", "Memperhitungkan potensi kenaikan biaya", "Menentukan target tabungan/investasi secara berkala", "Menyiapkan strategi perlindungan apabila terjadi risiko sebelum keberangkatan", "Menyesuaikan strategi dengan kemampuan cash flow"],
     closing: "Karena ibadah yang direncanakan dengan baik bukan hanya soal “ingin berangkat”, tapi juga memastikan kita siap secara finansial ketika waktunya tiba.",
   },
@@ -59,7 +55,6 @@ const protectionCards = [
     title: "Perlindungan yang Menjadi Wakaf",
     intro: "Bukan hanya melindungi yang kita cintai, tapi juga meninggalkan manfaat yang terus mengalir.",
     body: "Perlindungan dapat direncanakan agar sebagian manfaatnya menjadi wakaf, sesuai produk dan prinsip syariah yang berlaku.",
-    cocok: ["Kamu yang ingin menyiapkan manfaat jangka panjang", "Keluarga yang ingin menggabungkan perlindungan dan wakaf", "Kamu yang ingin merencanakan life after life"],
     benefits: ["Wakaf sebagian manfaat polis", "Berlandaskan prinsip syariah", "Perlindungan hari ini, amal jariyah untuk kemudian hari"],
     closing: "Perlindungan bukan hanya tentang apa yang kita terima hari ini, tapi juga manfaat yang bisa terus mengalir kemudian.",
   },
@@ -136,6 +131,8 @@ export function FinancialProtection() {
         </article>)}
       </div>
     </Card>
+
+    <div className="flex justify-center"><a href="https://gri.my.id/f1/GJ5115" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-forest-600 px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-forest-700">Konsultasi dengan Life Planner <ArrowRight size={14}/></a></div>
 
     <Card>
       <div className="flex items-center justify-between gap-4"><div><h3 className="text-[16px] font-semibold text-forest-900">Rencana yang ingin kamu lindungi</h3><p className="mt-1 text-[12px] text-charcoal/55">Tambahkan satu per satu. Rencana dari kalkulator akan otomatis muncul di sini.</p></div><button type="button" onClick={openAdd} className="inline-flex items-center gap-2 rounded-lg bg-forest-600 px-3.5 py-2.5 text-[13px] font-semibold text-white hover:bg-forest-700">+ Tambah Rencana</button></div>
