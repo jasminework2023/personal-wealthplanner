@@ -22,7 +22,7 @@ import { useFinanceData } from "../lib/useFinanceData";
 import { getDisplayName, greetingWord } from "../lib/settings";
 import type { Transaction } from "../data/types";
 
-const PIE_COLORS = ["#D44F76", "#E17E9B", "#C73F68", "#F0A1B6", "#B8325B", "#D96B8A", "#A92F55", "#F3C1CF"];
+const PIE_COLORS = ["#D44F76", "#285C49", "#D8A928", "#7A5FA8", "#4C8A7A", "#C96B2C", "#6B7A8F", "#B83A62"];
 
 export function Home() {
   const { loading, error, isRealData, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month, assets } = useFinanceData();
