@@ -297,57 +297,9 @@ export function DashboardFinance() {
               <div className="rounded-xl bg-white border border-charcoal/8 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] text-charcoal/55">Target</p>
-                  {isRealData && !editingAssetTarget && (
-                    <button
-                      type="button"
-                      onClick={() => { setAssetTargetInput(String(assets.target || "")); setEditingAssetTarget(true); }}
-                      className="text-charcoal/40 hover:text-forest-700"
-                      aria-label="Edit target aset"
-                    >
-                      <Pencil size={11} />
-                    </button>
-                  )}
+                  {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="text-[11px] font-semibold text-forest-700 hover:underline">Edit</button>}
                 </div>
-                {editingAssetTarget ? (
-                  <div className="mt-2 flex gap-1.5">
-                    <input
-                      autoFocus
-                      inputMode="numeric"
-                      value={assetTargetInput}
-                      onChange={(e) => setAssetTargetInput(e.target.value.replace(/\D/g, ""))}
-                      className="min-w-0 w-full rounded-lg border border-charcoal/15 px-2 py-1.5 text-[12px]"
-                      placeholder="Target aset"
-                    />
-                    <button
-                      type="button"
-                      disabled={savingAssetTarget}
-                      onClick={async () => {
-                        const value = Number(assetTargetInput);
-                        if (!value || value < 0) return;
-                        setSavingAssetTarget(true);
-                        try {
-                          const token = getStoredToken();
-                          const res = await fetch(`${import.meta.env.BASE_URL}api/update-asset-target`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ token, value }),
-                          });
-                          const data = await res.json();
-                          if (!res.ok) throw new Error(data.error || "Gagal menyimpan");
-                          setEditingAssetTarget(false);
-                          window.dispatchEvent(new Event("wealthplanner:asset-updated"));
-                        } finally {
-                          setSavingAssetTarget(false);
-                        }
-                      }}
-                      className="rounded-lg bg-forest-600 px-2 text-white disabled:opacity-50"
-                    >
-                      {savingAssetTarget ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
-                    </button>
-                  </div>
-                ) : (
-                  <p className="mt-1 text-[17px] font-semibold text-forest-900">{assets.target > 0 ? formatRupiah(assets.target) : "Belum diatur"}</p>
-                )}
+                {editingAssetTarget ? <div className="mt-2 flex gap-2"><input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 flex-1 rounded-lg border border-charcoal/15 px-2.5 py-2 text-[13px] outline-none focus:border-forest-400" placeholder="Target aset" /><button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${import.meta.env.BASE_URL}api/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) throw new Error("Gagal menyimpan target"); setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { console.error(e); } finally { setSavingAssetTarget(false); } }} className="rounded-lg bg-forest-600 px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-50">{savingAssetTarget ? "..." : "Save"}</button></div> : <p className="mt-1 text-[17px] font-semibold text-forest-900">{assets.target > 0 ? formatRupiah(assets.target) : "Belum diatur"}</p>}
               </div>
               <div className="rounded-xl bg-white border border-charcoal/8 p-3">
                 <p className="text-[11px] text-charcoal/55">Progress ke Target</p>
