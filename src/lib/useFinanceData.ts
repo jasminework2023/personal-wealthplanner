@@ -53,6 +53,7 @@ interface FinanceData {
   isRealData: boolean;
   username: string | null;
   month: string;
+  year: number;
   transactions: Transaction[];
   totalIncome: number;
   totalExpense: number;
@@ -103,6 +104,7 @@ interface RawState {
   isRealData: boolean;
   username: string | null;
   month: string;
+  year: number;
   transactions: Transaction[];
   budgetByCategory: Record<string, number>;
   assets: AssetData;
@@ -111,14 +113,17 @@ interface RawState {
 
 const CURRENT_MONTH_NAME = new Date().toLocaleString("en-US", { month: "long" });
 
-export function useFinanceData(monthOverride?: string, includeAllMonths = false): FinanceData {
+export function useFinanceData(monthOverride?: string, includeAllMonths = false, yearOverride?: number): FinanceData {
   const initialMonth = monthOverride || CURRENT_MONTH_NAME;
+  const currentYear = new Date().getFullYear();
+  const initialYear = yearOverride || currentYear;
   const [state, setState] = useState<RawState>({
     loading: true,
     error: null,
     isRealData: false,
     username: null,
     month: initialMonth,
+    year: initialYear,
     transactions: mockTransactions.filter((t) => t.month.toLowerCase() === initialMonth.toLowerCase()),
     budgetByCategory: mockAllocationMap(),
     assets: mockAssetData(),
@@ -137,6 +142,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
       captureTokenFromUrl();
       const token = getStoredToken();
       const requestedMonth = monthOverride || CURRENT_MONTH_NAME;
+      const requestedYear = yearOverride || currentYear;
 
       if (!token) {
         if (cancelled) return;
@@ -144,6 +150,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
           ...s,
           loading: false,
           month: requestedMonth,
+          year: requestedYear,
           transactions: mockTransactions.filter((t) => t.month.toLowerCase() === requestedMonth.toLowerCase()),
         }));
         return;
@@ -151,7 +158,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
 
       setState((s) => ({ ...s, loading: true, error: null, month: requestedMonth }));
       Promise.all([
-        fetch(`${import.meta.env.BASE_URL}api/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}`),
+        fetch(`${import.meta.env.BASE_URL}api/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}`),
         fetch(`${import.meta.env.BASE_URL}api/setup?token=${encodeURIComponent(token)}`),
       ])
         .then(async ([dashboardResponse, setupResponse]) => ({
@@ -171,6 +178,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
               isRealData: true,
               username: data.username,
               month: data.month || requestedMonth,
+              year: data.year || requestedYear,
               transactions: includeAllMonths
                 ? (data.transactions || [])
                 : (data.transactions || []).filter((t: Transaction) => String(t.month || "").toLowerCase() === String(data.month || requestedMonth).toLowerCase()),
@@ -200,7 +208,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false)
       window.removeEventListener("wealthplanner:budget-updated", handleRefresh);
       window.removeEventListener("visibilitychange", handleRefresh);
     };
-  }, [monthOverride, includeAllMonths]);
+  }, [monthOverride, includeAllMonths, yearOverride]);
 
   const totalIncome = state.transactions.filter((t) => t.type === "Income").reduce((s, t) => s + t.amount, 0);
   const totalExpense = state.transactions.filter((t) => t.type === "Expense").reduce((s, t) => s + t.amount, 0);
