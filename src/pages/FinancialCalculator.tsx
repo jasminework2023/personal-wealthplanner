@@ -25,18 +25,18 @@ function formatThousands(n) {
   return Number(n || 0).toLocaleString("id-ID");
 }
 function Button({ children, variant="primary", size, onClick, icon, iconRight, style }) {
-  return <button type="button" onClick={onClick} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7,borderRadius:10,border:variant==="outline"?"1px solid rgba(15,61,46,.18)":"1px solid transparent",padding:size==="sm"?"9px 13px":"11px 15px",fontSize:13,fontWeight:600,cursor:"pointer",background:variant==="primary"?"#0f5d46":variant==="secondary"?"white":"transparent",color:variant==="primary"?"white":"#173b32",...style}}>{icon}{children}{iconRight}</button>;
+  return <button type="button" onClick={onClick} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7,borderRadius:10,border:variant==="outline"?"1px solid rgba(15,61,46,.18)":"1px solid transparent",padding:size==="sm"?"9px 13px":"11px 15px",fontSize:13,fontWeight:600,cursor:"pointer",background:variant==="primary"?"var(--calc-accent)":variant==="secondary"?"white":"transparent",color:variant==="primary"?"white":"var(--calc-ink)",...style}}>{icon}{children}{iconRight}</button>;
 }
-function Tag({ children, variant="default" }) { return <span style={{display:"inline-flex",alignItems:"center",borderRadius:999,padding:"5px 9px",fontSize:10,fontWeight:700,letterSpacing:".04em",background:variant==="accent"?"#eef8f3":"#f4f5f3",color:"#426156",border:variant==="outline"?"1px solid rgba(15,61,46,.12)":"1px solid transparent"}}>{children}</span>; }
+function Tag({ children, variant="default" }) { return <span style={{display:"inline-flex",alignItems:"center",borderRadius:999,padding:"5px 9px",fontSize:10,fontWeight:700,letterSpacing:".04em",background:variant==="accent"?"var(--calc-tint)":"var(--calc-surface-2)",color:"var(--calc-ink-2)",border:variant==="outline"?"1px solid var(--calc-border)":"1px solid transparent"}}>{children}</span>; }
 function Section({ children, style }) { return <section style={style}><div style={{maxWidth:1200,margin:"0 auto"}}>{children}</div></section>; }
 function NumberInput({ label, value, onChange, prefix, suffix, min=0, step=1, hint }) {
   const [raw,setRaw]=React.useState(null);
   const display=raw!==null?raw:formatThousands(value);
-  return <div><label style={{display:"block",fontSize:12,fontWeight:600,color:"#35554a",marginBottom:7}}>{label}</label><div style={{display:"flex",alignItems:"stretch"}}>{prefix&&<div style={{padding:"0 11px",display:"flex",alignItems:"center",background:"#f6f7f4",border:"1px solid rgba(20,50,40,.12)",borderRight:0,borderRadius:"10px 0 0 10px",color:"#71827b",fontSize:12}}>{prefix}</div>}<input inputMode="numeric" value={display} onChange={e=>{const d=e.target.value.replace(/[^0-9]/g,"");setRaw(d);if(d!=="")onChange(Number(d));}} onBlur={()=>{const n=raw===""||raw===null?min:Number(raw);onChange(Math.max(min,n));setRaw(null)}} style={{width:"100%",border:"1px solid rgba(20,50,40,.12)",borderRadius:prefix?(suffix?0:"0 10px 10px 0"):(suffix?"10px 0 0 10px":10),padding:"11px 12px",outline:"none",fontSize:13,boxSizing:"border-box"}}/>{suffix&&<div style={{padding:"0 11px",display:"flex",alignItems:"center",background:"#f6f7f4",border:"1px solid rgba(20,50,40,.12)",borderLeft:0,borderRadius:"0 10px 10px 0",color:"#71827b",fontSize:12}}>{suffix}</div>}</div>{hint&&<div style={{fontSize:11,color:"#71827b",marginTop:5}}>{hint}</div>}</div>;
+  return <div><label style={{display:"block",fontSize:12,fontWeight:600,color:"var(--calc-ink-2)",marginBottom:7}}>{label}</label><div style={{display:"flex",alignItems:"stretch"}}>{prefix&&<div style={{padding:"0 11px",display:"flex",alignItems:"center",background:"var(--calc-surface-2)",border:"1px solid var(--calc-border)",borderRight:0,borderRadius:"10px 0 0 10px",color:"var(--calc-muted)",fontSize:12}}>{prefix}</div>}<input inputMode="numeric" value={display} onChange={e=>{const d=e.target.value.replace(/[^0-9]/g,"");setRaw(d);if(d!=="")onChange(Number(d));}} onBlur={()=>{const n=raw===""||raw===null?min:Number(raw);onChange(Math.max(min,n));setRaw(null)}} style={{width:"100%",border:"1px solid var(--calc-border)",borderRadius:prefix?(suffix?0:"0 10px 10px 0"):(suffix?"10px 0 0 10px":10),padding:"11px 12px",outline:"none",fontSize:13,boxSizing:"border-box"}}/>{suffix&&<div style={{padding:"0 11px",display:"flex",alignItems:"center",background:"var(--calc-surface-2)",border:"1px solid var(--calc-border)",borderLeft:0,borderRadius:"0 10px 10px 0",color:"var(--calc-muted)",fontSize:12}}>{suffix}</div>}</div>{hint&&<div style={{fontSize:11,color:"var(--calc-muted)",marginTop:5}}>{hint}</div>}</div>;
 }
-function Slider({ label,value,onChange,min,max,step=1,format }) { return <div><div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}><span style={{fontSize:12,fontWeight:600,color:"#35554a"}}>{label}</span><span style={{fontSize:12,fontWeight:700,color:"#173b32"}}>{format?format(value):value}</span></div><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))} style={{width:"100%"}}/></div>; }
-function ResultTile({ label,value,sub }) { return <div style={{background:"#eef8f3",border:"1px solid #d7ebe1",borderRadius:16,padding:"22px 22px 24px"}}><div style={{fontSize:10,fontWeight:700,letterSpacing:".08em",color:"#55766a"}}>{label}</div><div style={{fontSize:"clamp(30px,4vw,48px)",lineHeight:1.05,fontWeight:800,color:"#0f5d46",marginTop:9}}>{value}</div>{sub&&<div style={{fontSize:12,color:"#667a72",marginTop:9}}>{sub}</div>}</div>; }
-function Card({children,style}) { return <div style={{background:"white",border:"1px solid rgba(20,50,40,.10)",borderRadius:16,padding:18,...style}}>{children}</div>; }
+function Slider({ label,value,onChange,min,max,step=1,format }) { return <div><div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}><span style={{fontSize:12,fontWeight:600,color:"var(--calc-ink-2)"}}>{label}</span><span style={{fontSize:12,fontWeight:700,color:"var(--calc-ink)"}}>{format?format(value):value}</span></div><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))} style={{width:"100%"}}/></div>; }
+function ResultTile({ label,value,sub }) { return <div style={{background:"var(--calc-tint)",border:"1px solid var(--calc-tint-border)",borderRadius:16,padding:"22px 22px 24px"}}><div style={{fontSize:10,fontWeight:700,letterSpacing:".08em",color:"var(--calc-ink-2)"}}>{label}</div><div style={{fontSize:"clamp(30px,4vw,48px)",lineHeight:1.05,fontWeight:800,color:"var(--calc-accent)",marginTop:9}}>{value}</div>{sub&&<div style={{fontSize:12,color:"var(--calc-ink-2)",marginTop:9}}>{sub}</div>}</div>; }
+function Card({children,style}) { return <div style={{background:"white",border:"1px solid var(--calc-border)",borderRadius:16,padding:18,...style}}>{children}</div>; }
 
 function CalculatorBody({ id, onSaveResult, onNavigate }) {
   switch (id) {
@@ -74,10 +74,10 @@ function CheckupCalc({ onSaveResult, onNavigate }) {
   let score=0; if(savingRate>=20)score+=25;else if(savingRate>=10)score+=18;else if(savingRate>0)score+=10; if(debtRatio===0)score+=25;else if(debtRatio<10)score+=22;else if(debtRatio<30)score+=15;else score+=5; if(emergencyMonths>=6)score+=30;else if(emergencyMonths>=3)score+=22;else if(emergencyMonths>=1)score+=12; if(liquidity>=30)score+=20;else if(liquidity>=15)score+=14;else score+=7;
   const grade=score>=80?"A":score>=65?"B":score>=50?"C":"D";
   return <CalcLayout inputs={<>
-    <div style={{padding:"11px 13px",background:"#f6fbf8",borderRadius:12,border:"1px solid #d7ebe1",fontSize:11,color:"#55766a"}}>Sumber data: {isRealData?`Dashboard Finance · ${month}`:"mode demo"}. Income, expense, saving, cash dan investment assets mengikuti data dashboard.</div>
+    <div style={{padding:"11px 13px",background:"var(--calc-surface-2)",borderRadius:12,border:"1px solid var(--calc-tint-border)",fontSize:11,color:"var(--calc-ink-2)"}}>Sumber data: {isRealData?`Dashboard Finance · ${month}`:"mode demo"}. Income, expense, saving, cash dan investment assets mengikuti data dashboard.</div>
     <NumberInput label="Cicilan utang bulanan" prefix="Rp" value={debt} onChange={setManualDebt} step={100000}/>
   </>} results={<>
-    <div style={{background:"#eef8f3",border:"1px solid #d7ebe1",borderRadius:24,padding:28}}><div className="row-between"><div className="mono" style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"#55766a"}}>SKOR KEUANGANMU</div><div style={{fontWeight:800,fontSize:56,color:"#0f5d46"}}>{grade}</div></div><div style={{fontWeight:800,fontSize:78,lineHeight:.9,marginTop:12,color:"#0f5d46"}}>{Math.round(score)}<span style={{fontSize:24,color:"#71827b"}}>/100</span></div></div>
+    <div style={{background:"var(--calc-tint)",border:"1px solid var(--calc-tint-border)",borderRadius:24,padding:28}}><div className="row-between"><div className="mono" style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"var(--calc-ink-2)"}}>SKOR KEUANGANMU</div><div style={{fontWeight:800,fontSize:56,color:"var(--calc-accent)"}}>{grade}</div></div><div style={{fontWeight:800,fontSize:78,lineHeight:.9,marginTop:12,color:"var(--calc-accent)"}}>{Math.round(score)}<span style={{fontSize:24,color:"var(--calc-muted)"}}>/100</span></div></div>
     <div className="card" style={{marginTop:16}}><h4 style={{marginBottom:12}}>Financial Security Rate</h4><ResultTile label="FINANCIAL SECURITY RATE" value={`${securityRate.toFixed(2)}×`} sub="(Cash + Investment Assets) ÷ Annual Gross Income"/><p className="muted" style={{fontSize:11,lineHeight:1.5,marginTop:10}}>Rasio ini menunjukkan besarnya aset kas dan investasi dibandingkan penghasilan bruto tahunan. Bukan skor 0–100.</p></div>
     <div className="stack" style={{gap:8,marginTop:16}}><ScoreRow label="Saving rate" value={`${savingRate.toFixed(1)}%`} status={savingRate>=20?"good":savingRate>=10?"ok":"warn"} target=">20%"/><ScoreRow label="Debt ratio" value={`${debtRatio.toFixed(1)}%`} status={debtRatio<10?"good":debtRatio<30?"ok":"warn"} target="<10%"/><ScoreRow label="Dana darurat" value={`${emergencyMonths.toFixed(1)} bln`} status={emergencyMonths>=6?"good":emergencyMonths>=3?"ok":"warn"} target=">6 bln"/><ScoreRow label="Liquidity" value={`${liquidity.toFixed(1)}%`} status={liquidity>=30?"good":liquidity>=15?"ok":"warn"} target=">30%"/></div>
   </>} onSave={()=>onSaveResult({id:"checkup",title:"Financial Check-Up",value:`Score ${Math.round(score)}/100 · FSR ${securityRate.toFixed(2)}×`,plan:{type:"cashflow",targetAmount:0,monthlyAmount:income,preparedAssets:cash+investments,timeframe:1}})} onNavigate={onNavigate} calcId="checkup" relatedId="checkup"/>;
@@ -105,8 +105,8 @@ function RumahCalc({ onSaveResult, onNavigate }) {
   const comparisonData=[];let cumulativeKPR=kprMode==="new"?Math.max(0,downPayment):0,cumulativeRental=0;for(let m=1;m<=months;m++){cumulativeKPR+=monthlyPayment;cumulativeRental+=rentalPrice;if(m===1||m===12||m===60||m===120||m===180||m===months)comparisonData.push({month:m,monthLabel:m%12===0?`Tahun ${m/12}`:`Bulan ${m}`,kprCumulative:cumulativeKPR,rentalCumulative:cumulativeRental});}
   const newInputs = <>
     <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:8}}>
-      <button type="button" onClick={()=>setFinancingType("conventional")} style={{padding:"11px 10px",borderRadius:10,border:financingType==="conventional"?"2px solid #0f5d46":"1px solid rgba(20,50,40,.12)",background:financingType==="conventional"?"#eef8f3":"white",fontSize:12,fontWeight:700}}>KPR Konvensional</button>
-      <button type="button" onClick={()=>setFinancingType("syariah")} style={{padding:"11px 10px",borderRadius:10,border:financingType==="syariah"?"2px solid #0f5d46":"1px solid rgba(20,50,40,.12)",background:financingType==="syariah"?"#eef8f3":"white",fontSize:12,fontWeight:700}}>KPR Syariah</button>
+      <button type="button" onClick={()=>setFinancingType("conventional")} style={{padding:"11px 10px",borderRadius:10,border:financingType==="conventional"?"2px solid var(--calc-accent)":"1px solid var(--calc-border)",background:financingType==="conventional"?"var(--calc-tint)":"white",fontSize:12,fontWeight:700}}>KPR Konvensional</button>
+      <button type="button" onClick={()=>setFinancingType("syariah")} style={{padding:"11px 10px",borderRadius:10,border:financingType==="syariah"?"2px solid var(--calc-accent)":"1px solid var(--calc-border)",background:financingType==="syariah"?"var(--calc-tint)":"white",fontSize:12,fontWeight:700}}>KPR Syariah</button>
     </div>
     <NumberInput label="Harga rumah / nilai properti" prefix="Rp" value={homePrice} onChange={setHomePrice} step={10000000}/>
     <NumberInput label="Down payment" prefix="Rp" value={downPayment} onChange={setDownPayment} step={10000000}/>
@@ -126,8 +126,8 @@ function RumahCalc({ onSaveResult, onNavigate }) {
   </>;
   return <CalcLayout inputs={< >
     <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:8}}>
-      <button type="button" onClick={()=>setKprMode("new")} style={{padding:"11px 10px",borderRadius:10,border:kprMode==="new"?"2px solid #0f5d46":"1px solid rgba(20,50,40,.12)",background:kprMode==="new"?"#eef8f3":"white",fontSize:12,fontWeight:700}}>KPR Baru</button>
-      <button type="button" onClick={()=>setKprMode("existing")} style={{padding:"11px 10px",borderRadius:10,border:kprMode==="existing"?"2px solid #0f5d46":"1px solid rgba(20,50,40,.12)",background:kprMode==="existing"?"#eef8f3":"white",fontSize:12,fontWeight:700}}>KPR Berjalan</button>
+      <button type="button" onClick={()=>setKprMode("new")} style={{padding:"11px 10px",borderRadius:10,border:kprMode==="new"?"2px solid var(--calc-accent)":"1px solid var(--calc-border)",background:kprMode==="new"?"var(--calc-tint)":"white",fontSize:12,fontWeight:700}}>KPR Baru</button>
+      <button type="button" onClick={()=>setKprMode("existing")} style={{padding:"11px 10px",borderRadius:10,border:kprMode==="existing"?"2px solid var(--calc-accent)":"1px solid var(--calc-border)",background:kprMode==="existing"?"var(--calc-tint)":"white",fontSize:12,fontWeight:700}}>KPR Berjalan</button>
     </div>
     {kprMode==="new" ? newInputs : existingInputs}
     <div className="divider" style={{margin:"4px 0"}}/><NumberInput label="Sewa rumah per bulan (opsional comparison)" prefix="Rp" value={rentalPrice} onChange={setRentalPrice} step={500000}/>
@@ -135,9 +135,9 @@ function RumahCalc({ onSaveResult, onNavigate }) {
     <div className="row" style={{gap:12,marginBottom:12,flexWrap:"wrap"}}><ResultTile label="TOTAL PEMBIAYAAN / PINJAMAN" value={`Rp ${formatIDR(Math.round(safeLoan))}`} sub={kprMode==="existing"?"Sisa pokok pembiayaan saat ini":"Pokok pinjaman setelah DP"}/><ResultTile label={kprMode==="existing"?"CICILAN EXISTING / BULAN":financingType==="conventional"?"CICILAN AWAL / BULAN":"ANGSURAN / BULAN"} value={`Rp ${formatIDR(Math.round(monthlyPayment))}`} sub={`${effectiveTenor} tahun`}/></div>
     <div className="card" style={{marginTop:16}}><h4 style={{marginBottom:14}}>Ringkasan Pembiayaan</h4><div className="stack" style={{gap:4}}>{kprMode==="new"&&<><BreakdownRow label="Harga properti" value={`Rp ${formatIDR(homePrice)}`}/><BreakdownRow label="Down payment" value={`Rp ${formatIDR(downPayment)}`}/></>}<BreakdownRow label="Total pembiayaan / pinjaman" value={`Rp ${formatIDR(Math.round(safeLoan))}`} highlight/><BreakdownRow label={kprMode==="existing"?"Sisa tenor":"Tenor"} value={`${effectiveTenor} tahun`}/><BreakdownRow label={kprMode==="existing"?"Total pembayaran dari sekarang":"Total pembayaran pembiayaan"} value={`Rp ${formatIDR(Math.round(totalPaid))}`} highlight/><BreakdownRow label={financingType==="conventional"?"Total bunga":"Total margin ilustratif"} value={`Rp ${formatIDR(Math.round(totalInterest))}`}/>{financingType==="conventional"&&kprMode==="new"&&fixedYears>0&&fixedYears<tenor&&<BreakdownRow label="Estimasi cicilan setelah fixed" value={`Rp ${formatIDR(Math.round(floatingPayment))}/bln`} sub={`Skenario floating ${floatingRate}%/tahun`}/>}</div></div>
     {financingType==="conventional"&&<div className="card" style={{marginTop:16}}><h4 style={{marginBottom:8}}>{kprMode==="existing"?"Proyeksi KPR Berjalan":"Fixed → Floating"}</h4><div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}><thead><tr><th style={{textAlign:"left",padding:8}}>Periode</th><th style={{textAlign:"right",padding:8}}>Rate</th><th style={{textAlign:"right",padding:8}}>Cicilan</th><th style={{textAlign:"right",padding:8}}>Bunga</th><th style={{textAlign:"right",padding:8}}>Pokok</th></tr></thead><tbody>{schedule.map((r,i)=><tr key={`${r.month}-${i}`}><td style={{padding:8}}>{r.label}</td><td style={{textAlign:"right",padding:8}}>{r.rate}%</td><td style={{textAlign:"right",padding:8}}>Rp {formatIDR(Math.round(r.payment))}</td><td style={{textAlign:"right",padding:8}}>Rp {formatIDR(Math.round(r.interest))}</td><td style={{textAlign:"right",padding:8}}>Rp {formatIDR(Math.round(r.principal))}</td></tr>)}</tbody></table></div></div>}
-    {kprMode==="new"&&financingType==="syariah"&&<div className="card" style={{marginTop:16,background:"#f6fbf8"}}><h4 style={{marginBottom:8}}>Bagaimana KPR Syariah bekerja?</h4><p style={{fontSize:12,lineHeight:1.6,color:"#55766a",margin:0}}>Pada skenario murabahah, margin disepakati di awal dan pembayaran mengikuti struktur akad produk. Angka di sini adalah ilustrasi edukatif, bukan penawaran lembaga tertentu.</p></div>}
+    {kprMode==="new"&&financingType==="syariah"&&<div className="card" style={{marginTop:16,background:"var(--calc-surface-2)"}}><h4 style={{marginBottom:8}}>Bagaimana KPR Syariah bekerja?</h4><p style={{fontSize:12,lineHeight:1.6,color:"var(--calc-ink-2)",margin:0}}>Pada skenario murabahah, margin disepakati di awal dan pembayaran mengikuti struktur akad produk. Angka di sini adalah ilustrasi edukatif, bukan penawaran lembaga tertentu.</p></div>}
     <div className="card" style={{marginTop:16}}><h4 style={{marginBottom:12}}>KPR vs Sewa</h4><div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}><thead><tr><th style={{textAlign:"left",padding:8}}>Timeline</th><th style={{textAlign:"right",padding:8}}>KPR</th><th style={{textAlign:"right",padding:8}}>Sewa</th></tr></thead><tbody>{comparisonData.map((r,i)=><tr key={`${r.month}-${i}`}><td style={{padding:8}}>{r.monthLabel}</td><td style={{textAlign:"right",padding:8}}>Rp {formatIDR(Math.round(r.kprCumulative))}</td><td style={{textAlign:"right",padding:8}}>Rp {formatIDR(Math.round(r.rentalCumulative))}</td></tr>)}</tbody></table></div></div>
-    <div style={{marginTop:16,padding:"12px 16px",background:"#f8f8f5",borderRadius:14,fontSize:11,color:"#71827b",lineHeight:1.55}}>Disclaimer: hasil adalah simulasi/estimasi edukatif, bukan penawaran pembiayaan. Biaya provisi, administrasi, asuransi, pajak, notaris, dan biaya lain belum diperhitungkan.</div>
+    <div style={{marginTop:16,padding:"12px 16px",background:"var(--calc-surface-3)",borderRadius:14,fontSize:11,color:"var(--calc-muted)",lineHeight:1.55}}>Disclaimer: hasil adalah simulasi/estimasi edukatif, bukan penawaran pembiayaan. Biaya provisi, administrasi, asuransi, pajak, notaris, dan biaya lain belum diperhitungkan.</div>
   </>} onSave={()=>onSaveResult({id:"rumah",title:"Simulasi KPR",value:`Rp ${formatIDR(Math.round(safeLoan))} · Rp ${formatIDR(Math.round(monthlyPayment))}/bln`,plan:{type:"home",targetAmount:kprMode==="existing"?safeLoan:homePrice,obligationAmount:safeLoan,monthlyAmount:monthlyPayment,timeframe:effectiveTenor,preparedAssets:kprMode==="new"?downPayment:0,financingType,kprMode}})} onNavigate={onNavigate} calcId="rumah" relatedId="kpr"/>;
 }
 
@@ -327,27 +327,27 @@ function EduCalc({ onSaveResult, onNavigate }) {
         <>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#173b32" }}>Tambah jenjang pendidikan</div>
-              <div style={{ fontSize: 11, color: "#71827b", marginTop: 3 }}>Hitung SD, lalu tambahkan SMP, SMA, dan Kuliah sesuai kebutuhan.</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--calc-ink)" }}>Tambah jenjang pendidikan</div>
+              <div style={{ fontSize: 11, color: "var(--calc-muted)", marginTop: 3 }}>Hitung SD, lalu tambahkan SMP, SMA, dan Kuliah sesuai kebutuhan.</div>
             </div>
             {educationPlans.length > 0 && <Tag variant="accent">{educationPlans.length} jenjang ditambahkan</Tag>}
           </div>
 
           <NumberInput label="Perkiraan biaya saat ini (per tahun)" prefix="Rp" value={currentCost} onChange={setCurrentCost} step={1000000} hint="Estimasi biaya pendidikan untuk 1 tahun pada saat ini." />
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#35554a", marginBottom: 7 }}>Jenjang pendidikan</label>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "var(--calc-ink-2)", marginBottom: 7 }}>Jenjang pendidikan</label>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 6 }}>
-              {levelOrder.map((level) => <button key={level} type="button" onClick={() => applyLevel(level)} style={{ padding: "9px 6px", borderRadius: 9, border: educationLevel === level ? "2px solid #0f5d46" : "1px solid rgba(20,50,40,.12)", background: educationLevel === level ? "#eef8f3" : "white", color: "#173b32", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{level}</button>)}
+              {levelOrder.map((level) => <button key={level} type="button" onClick={() => applyLevel(level)} style={{ padding: "9px 6px", borderRadius: 9, border: educationLevel === level ? "2px solid var(--calc-accent)" : "1px solid var(--calc-border)", background: educationLevel === level ? "var(--calc-tint)" : "white", color: "var(--calc-ink)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{level}</button>)}
             </div>
           </div>
           <NumberInput label="Tahun berangkat / mulai pendidikan" value={startYear} onChange={setStartYear} min={currentYear} step={1} hint={`Sekitar ${yearsUntilStart} tahun lagi.`} />
           <Slider label="Inflasi / kenaikan biaya pendidikan" value={inflation} onChange={setInflation} min={0} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
           <Slider label="Durasi biaya pendidikan" value={duration} onChange={setDuration} min={1} max={12} format={(v) => `${v} tahun`} />
 
-          <div className="card" style={{ background: "#f8faf7", padding: 14 }}>
-            <div style={{ fontSize: 11, color: "#71827b", marginBottom: 5 }}>Simulasi saat ini</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#173b32" }}>{educationLevel} · {startYear}–{Number(startYear) + Number(duration) - 1}</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#0f5d46", marginTop: 4 }}>Rp {formatIDR(Math.round(currentSimulationTotal))}</div>
+          <div className="card" style={{ background: "var(--calc-surface-2)", padding: 14 }}>
+            <div style={{ fontSize: 11, color: "var(--calc-muted)", marginBottom: 5 }}>Simulasi saat ini</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--calc-ink)" }}>{educationLevel} · {startYear}–{Number(startYear) + Number(duration) - 1}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--calc-accent)", marginTop: 4 }}>Rp {formatIDR(Math.round(currentSimulationTotal))}</div>
           </div>
 
           <Button onClick={addEducationPlan} icon={<Plus size={15} />} iconRight={<ArrowRight size={14} />}>
@@ -367,18 +367,18 @@ function EduCalc({ onSaveResult, onNavigate }) {
             <div className="card" style={{ marginTop: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 10 }}>
                 <h4 style={{ margin: 0 }}>Rencana pendidikan</h4>
-                <span style={{ fontSize: 11, color: "#71827b" }}>Total tersimpan: Rp {formatIDR(Math.round(savedEducationNeed))}</span>
+                <span style={{ fontSize: 11, color: "var(--calc-muted)" }}>Total tersimpan: Rp {formatIDR(Math.round(savedEducationNeed))}</span>
               </div>
               <div className="stack" style={{ gap: 9 }}>
                 {educationPlans.map((item) => (
-                  <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "11px 12px", border: "1px solid rgba(20,50,40,.10)", borderRadius: 12 }}>
+                  <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "11px 12px", border: "1px solid var(--calc-border)", borderRadius: 12 }}>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 700 }}>{item.level}</div>
-                      <div style={{ fontSize: 10, color: "#71827b", marginTop: 2 }}>{item.startYear}–{item.startYear + item.duration - 1} · {item.duration} tahun · inflasi {item.inflation}%</div>
+                      <div style={{ fontSize: 10, color: "var(--calc-muted)", marginTop: 2 }}>{item.startYear}–{item.startYear + item.duration - 1} · {item.duration} tahun · inflasi {item.inflation}%</div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <strong style={{ fontSize: 12, color: "#0f5d46", whiteSpace: "nowrap" }}>Rp {formatIDR(Math.round(item.total))}</strong>
-                      <button type="button" onClick={() => removeEducationPlan(item.id)} style={{ border: 0, background: "transparent", color: "#8b5c5c", cursor: "pointer", fontSize: 11 }}>Hapus</button>
+                      <strong style={{ fontSize: 12, color: "var(--calc-accent)", whiteSpace: "nowrap" }}>Rp {formatIDR(Math.round(item.total))}</strong>
+                      <button type="button" onClick={() => removeEducationPlan(item.id)} style={{ border: 0, background: "transparent", color: "var(--calc-danger, #c76b6b)", cursor: "pointer", fontSize: 11 }}>Hapus</button>
                     </div>
                   </div>
                 ))}
@@ -402,7 +402,7 @@ function EduCalc({ onSaveResult, onNavigate }) {
             <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}><thead><tr style={{ borderBottom: "1px solid var(--border)" }}><th style={{ textAlign: "left", padding: "8px 0" }}>Tahun</th><th style={{ textAlign: "right", padding: "8px 0" }}>Estimasi biaya</th></tr></thead><tbody>{yearlyCosts.map((item) => <tr key={item.year} style={{ borderBottom: "1px solid var(--border)" }}><td style={{ padding: "8px 0" }}>{item.year}</td><td style={{ textAlign: "right", padding: "8px 0" }}>Rp {formatIDR(Math.round(item.cost))}</td></tr>)}</tbody></table></div>
           </div>
 
-          <div style={{ marginTop: 16, padding: "12px 16px", background: "#f8f8f5", borderRadius: 14, fontSize: 11, color: "#71827b", lineHeight: 1.55 }}>Catatan: setiap jenjang yang ditambahkan akan masuk ke total kebutuhan pendidikan. Kamu bisa menghitung SD → Tambahkan SD → lanjut SMP → Tambahkan SMP, dan seterusnya.</div>
+          <div style={{ marginTop: 16, padding: "12px 16px", background: "var(--calc-surface-3)", borderRadius: 14, fontSize: 11, color: "var(--calc-muted)", lineHeight: 1.55 }}>Catatan: setiap jenjang yang ditambahkan akan masuk ke total kebutuhan pendidikan. Kamu bisa menghitung SD → Tambahkan SD → lanjut SMP → Tambahkan SMP, dan seterusnya.</div>
         </>
       }
       onSave={() => onSaveResult({ id: "edu", title: "Simulasi Dana Pendidikan", value: formatIDR(Math.round(totalEducationNeed)), plan: { type: "education", targetAmount: totalEducationNeed, monthlyAmount: averageMonthlyPreparation, timeframe: yearsUntilStart, targetYear: startYear, stages: educationPlans } })}
@@ -1020,7 +1020,7 @@ function SimplePieChart({ data, colors }) {
             y={100 + 50 * Math.sin((startRad + endRad) / 2)}
             textAnchor="middle"
             dy="0.3em"
-            style={{ fontSize: 12, fontWeight: 700, fill: "#000", pointerEvents: "none" }}
+            style={{ fontSize: 12, fontWeight: 700, fill: "#1a1a1a", pointerEvents: "none" }}
           >
             {(percentage * 100).toFixed(0)}%
           </text>
@@ -1133,8 +1133,8 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
   return <div>
     <div className="wp-calc-grid" style={{display:"grid",gridTemplateColumns:"minmax(0,.85fr) minmax(0,1.15fr)",gap:20,alignItems:"start"}}>
       <Card style={{position:"sticky",top:20}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}><h3 style={{margin:0,fontSize:18}}>Input</h3><Tag>auto-update</Tag></div><div style={{display:"grid",gap:15}}>{inputs}</div></Card>
-      <div><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><h3 style={{margin:0,fontSize:18}}>Hasil Perhitungan</h3><Button variant="secondary" size="sm" onClick={save} icon={saved?<Check size={14}/>:<Plus size={14}/>}>{saved?"Tersimpan":"Simpan Hasil"}</Button></div>{results}<p style={{fontSize:11,color:"#71827b",lineHeight:1.5,marginTop:12}}>Simulasi bersifat edukatif. Hasil aktual dapat berbeda sesuai kondisi dan asumsi yang digunakan.</p>
-        <Card style={{marginTop:18,background:"linear-gradient(135deg,#f5fbf7,#ffffff)",borderColor:"#cfe5da"}}><Tag variant="accent">PROTEKSI FINANSIAL</Tag><h4 style={{fontSize:18,margin:"12px 0 7px",color:"#173b32"}}>{protectLabel}</h4><p style={{fontSize:12,lineHeight:1.6,color:"#667a72",margin:0}}>Rencana keuanganmu akan tetap tersimpan. Cek risiko yang bisa mengganggu target ini dan lihat apa yang masih perlu dilindungi.</p><Button variant="primary" size="sm" onClick={goProtection} iconRight={<ArrowRight size={14}/>} style={{marginTop:14}}>Lindungi rencana ini</Button></Card>
+      <div><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><h3 style={{margin:0,fontSize:18}}>Hasil Perhitungan</h3><Button variant="secondary" size="sm" onClick={save} icon={saved?<Check size={14}/>:<Plus size={14}/>}>{saved?"Tersimpan":"Simpan Hasil"}</Button></div>{results}<p style={{fontSize:11,color:"var(--calc-muted)",lineHeight:1.5,marginTop:12}}>Simulasi bersifat edukatif. Hasil aktual dapat berbeda sesuai kondisi dan asumsi yang digunakan.</p>
+        <Card style={{marginTop:18,background:"linear-gradient(135deg, var(--calc-tint), var(--calc-surface))",borderColor:"var(--calc-tint-border)"}}><Tag variant="accent">PROTEKSI FINANSIAL</Tag><h4 style={{fontSize:18,margin:"12px 0 7px",color:"var(--calc-ink)"}}>{protectLabel}</h4><p style={{fontSize:12,lineHeight:1.6,color:"var(--calc-ink-2)",margin:0}}>Rencana keuanganmu akan tetap tersimpan. Cek risiko yang bisa mengganggu target ini dan lihat apa yang masih perlu dilindungi.</p><Button variant="primary" size="sm" onClick={goProtection} iconRight={<ArrowRight size={14}/>} style={{marginTop:14}}>Lindungi rencana ini</Button></Card>
       </div>
     </div>
     <style>{`@media(max-width:880px){.wp-calc-grid{grid-template-columns:1fr!important}.wp-calc-grid>div:first-child{position:relative!important;top:0!important}}`}</style>
@@ -1144,23 +1144,23 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
 
 export function FinancialCalculator({ onOpen }: { onOpen: (id: string) => void }) {
   return <div className="wp-calculator" style={{display:"grid",gap:20}}>
-    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#71827b"}}>WEALTHPLANNER</div><h1 style={{fontSize:28,lineHeight:1.15,color:"#173b32",margin:"7px 0 6px"}}>Financial Calculator</h1><p style={{margin:0,fontSize:13,color:"#667a72"}}>Hitung, simulasikan, lalu simpan rencana ke Proteksi Finansial tanpa membuka tab baru.</p></div>
+    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--calc-muted)"}}>WEALTHPLANNER</div><h1 style={{fontSize:28,lineHeight:1.15,color:"var(--calc-ink)",margin:"7px 0 6px"}}>Financial Calculator</h1><p style={{margin:0,fontSize:13,color:"var(--calc-ink-2)"}}>Hitung, simulasikan, lalu simpan rencana ke Proteksi Finansial tanpa membuka tab baru.</p></div>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:12}}>
-      {CALCULATOR_META.map((c, index)=><button key={c.id} type="button" onClick={()=>onOpen(c.id)} style={{textAlign:"left",padding:20,border:`1px solid ${COLORS[index % COLORS.length]}55`,background:`linear-gradient(145deg, ${COLORS[index % COLORS.length]}20, #ffffff 72%)`,borderRadius:18,cursor:"pointer",boxShadow:"0 4px 16px rgba(15,42,32,.05)",transition:"transform .15s ease, box-shadow .15s ease"}}><div style={{display:"inline-flex",alignItems:"center",borderRadius:999,padding:"5px 9px",background:`${COLORS[index % COLORS.length]}30`,color:"#35554a",fontSize:10,fontWeight:700,marginBottom:12}}>WEALTH PLANNER</div><div style={{fontSize:15,fontWeight:700,color:"#173b32"}}>{c.title}</div><div style={{fontSize:12,lineHeight:1.55,color:"#71827b",marginTop:7}}>{c.desc}</div><div style={{fontSize:12,fontWeight:700,color:"#0f5d46",marginTop:14}}>Buka kalkulator →</div></button>)}
+      {CALCULATOR_META.map((c, index)=><button key={c.id} type="button" onClick={()=>onOpen(c.id)} style={{textAlign:"left",padding:20,border:`1px solid ${COLORS[index % COLORS.length]}55`,background:`linear-gradient(145deg, ${COLORS[index % COLORS.length]}20, var(--calc-card-fade) 72%)`,borderRadius:18,cursor:"pointer",boxShadow:"0 4px 16px rgb(var(--c-shadow) / .05)",transition:"transform .15s ease, box-shadow .15s ease"}}><div style={{display:"inline-flex",alignItems:"center",borderRadius:999,padding:"5px 9px",background:`${COLORS[index % COLORS.length]}30`,color:"var(--calc-ink-2)",fontSize:10,fontWeight:700,marginBottom:12}}>WEALTH PLANNER</div><div style={{fontSize:15,fontWeight:700,color:"var(--calc-ink)"}}>{c.title}</div><div style={{fontSize:12,lineHeight:1.55,color:"var(--calc-muted)",marginTop:7}}>{c.desc}</div><div style={{fontSize:12,fontWeight:700,color:"var(--calc-accent)",marginTop:14}}>Buka kalkulator →</div></button>)}
     </div>
   </div>;
 }
 export function CalculatorDetail({ id, onBack, onSaveResult, onNavigate }) {
   const meta=CALCULATOR_META.find(x=>x.id===id)||CALCULATOR_META[0];
   return <div className="wp-calculator" style={{display:"grid",gap:20}}><style>{`
-      .wp-calculator{--ink:#173b32;--ink-2:#55766a;--muted:#71827b;--accent:#0f5d46;--accent-ink:#fff;--surface:#fff;--surface-2:#f6f7f4;--border:rgba(20,50,40,.10)}
-      .wp-calculator .card{background:#fff;border:1px solid rgba(20,50,40,.10);border-radius:16px;padding:18px}
+      .wp-calculator{--ink:var(--calc-ink);--ink-2:var(--calc-ink-2);--muted:var(--calc-muted);--accent:var(--calc-accent);--accent-ink:var(--calc-accent-ink);--surface:var(--calc-surface);--surface-2:var(--calc-surface-2);--border:var(--calc-border)}
+      .wp-calculator .card{background:var(--calc-surface);border:1px solid var(--calc-border);border-radius:16px;padding:18px}
       .wp-calculator .card-tight{padding:12px 14px}
       .wp-calculator .row{display:flex;align-items:center}.wp-calculator .row-between{display:flex;align-items:center;justify-content:space-between}
-      .wp-calculator .stack{display:flex;flex-direction:column}.wp-calculator .muted{color:#71827b}.wp-calculator .ink-2{color:#55766a}.wp-calculator .mono{font-variant-numeric:tabular-nums}.wp-calculator .divider{height:1px;background:rgba(20,50,40,.10)}
+      .wp-calculator .stack{display:flex;flex-direction:column}.wp-calculator .muted{color:var(--calc-muted)}.wp-calculator .ink-2{color:var(--calc-ink-2)}.wp-calculator .mono{font-variant-numeric:tabular-nums}.wp-calculator .divider{height:1px;background:var(--calc-border)}
     `}</style>
-    <button type="button" onClick={onBack} style={{width:"fit-content",border:0,background:"transparent",color:"#55766a",fontSize:13,cursor:"pointer",padding:0}}>← Semua kalkulator</button>
-    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#71827b"}}>FINANCIAL CALCULATOR</div><h1 style={{fontSize:28,lineHeight:1.15,color:"#173b32",margin:"7px 0 6px"}}>{meta.title}</h1><p style={{margin:0,fontSize:13,color:"#667a72"}}>{meta.desc}</p></div>
+    <button type="button" onClick={onBack} style={{width:"fit-content",border:0,background:"transparent",color:"var(--calc-ink-2)",fontSize:13,cursor:"pointer",padding:0}}>← Semua kalkulator</button>
+    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--calc-muted)"}}>FINANCIAL CALCULATOR</div><h1 style={{fontSize:28,lineHeight:1.15,color:"var(--calc-ink)",margin:"7px 0 6px"}}>{meta.title}</h1><p style={{margin:0,fontSize:13,color:"var(--calc-ink-2)"}}>{meta.desc}</p></div>
     <CalculatorBody id={id} onSaveResult={onSaveResult} onNavigate={onNavigate}/>
   </div>;
 }
