@@ -70,7 +70,7 @@ function Milestone({
   last = false,
 }: {
   number: string;
-  icon: ComponentType<{ size?: number; strokeWidth?: number }>;
+  icon: ComponentType<{ size?: number | string; strokeWidth?: number | string }>;
   tone: string;
   title: string;
   subtitle: string;
