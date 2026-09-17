@@ -152,7 +152,7 @@ function EditableAssetItem({
   );
 }
 
-const PIE_COLORS = ["#285C49", "#4C8570", "#D44F76", "#E17E9B", "#B58900"];
+const PIE_COLORS = ["var(--chart-2)", "var(--chart-5)", "var(--chart-1)", "var(--chart-8)", "var(--chart-3)"];
 
 function BudgetRow({
   category,
