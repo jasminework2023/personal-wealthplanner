@@ -169,9 +169,31 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
         .then(({ dashboard, setup }) => {
           const { ok, data } = dashboard;
           if (cancelled) return;
+          const cacheKey = `wealthplanner_finance_cache_${token}`;
           if (!ok) {
+            try {
+              const cached = JSON.parse(localStorage.getItem(cacheKey) || "null");
+              if (cached?.dashboard) {
+                const cachedData = cached.dashboard;
+                setState((s) => ({
+                  ...s,
+                  loading: false,
+                  error: `Data terakhir tersimpan digunakan — ${data.error || "server sedang tidak dapat diakses"}`,
+                  isRealData: true,
+                  username: cachedData.username || s.username,
+                  month: cachedData.month || requestedMonth,
+                  year: cachedData.year || requestedYear,
+                  transactions: includeAllMonths ? (cachedData.transactions || []) : (cachedData.transactions || []).filter((t: Transaction) => String(t.month || "").toLowerCase() === String(cachedData.month || requestedMonth).toLowerCase()),
+                  budgetByCategory: cachedData.budgetByCategory || {},
+                  assets: cachedData.assets || s.assets,
+                  setup: cached.setup?.sections || s.setup,
+                }));
+                return;
+              }
+            } catch {}
             setState((s) => ({ ...s, loading: false, error: data.error || "Gagal memuat data" }));
           } else {
+            try { localStorage.setItem(cacheKey, JSON.stringify({ dashboard: data, setup: setup.ok ? setup.data : null, savedAt: Date.now() })); } catch {}
             setState((s) => ({
               ...s,
               loading: false,
