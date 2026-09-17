@@ -122,10 +122,12 @@ export function Settings() {
         {message && <div className="mt-4 rounded-lg border border-forest-100 bg-forest-50 px-3 py-2 text-[12px] text-forest-700">{message}</div>}
 
         {loading ? <div className="py-12 flex justify-center text-charcoal/40"><Loader2 className="animate-spin"/></div> :
-          <div className="mt-6 grid gap-4 xl:grid-cols-4">
-            {SECTION_META.map((section) => (
-              <SetupSection key={section.key} meta={section} items={setup[section.key]} onAdd={() => addItem(section.key)} onRemove={(i) => removeItem(section.key, i)} onUpdate={(i, patch) => updateItem(section.key, i, patch)} />
-            ))}
+          <div className="mt-6 overflow-x-auto pb-2">
+            <div className="grid min-w-[1120px] grid-cols-4 gap-4">
+              {SECTION_META.map((section) => (
+                <SetupSection key={section.key} meta={section} items={setup[section.key]} onAdd={() => addItem(section.key)} onRemove={(i) => removeItem(section.key, i)} onUpdate={(i, patch) => updateItem(section.key, i, patch)} />
+              ))}
+            </div>
           </div>
         }
       </Card>
@@ -147,7 +149,7 @@ function SetupSection({ meta, items, onAdd, onRemove, onUpdate }: { meta: typeof
       <div className="px-2 py-1.5 bg-charcoal/[0.025] border-b border-charcoal/8 flex items-center justify-between text-[10px] font-semibold text-charcoal/50 uppercase tracking-wide"><span>Category</span><span>Status</span></div>
       <div className="p-1.5 max-h-[420px] overflow-y-auto">
         {items.map((item, index) => (
-          <div key={`${item.name}-${index}`} className="group flex items-center gap-1.5 rounded-md px-1.5 py-1 hover:bg-charcoal/[0.035]">
+          <div key={`${meta.key}-${index}`} className="group flex items-center gap-1.5 rounded-md px-1.5 py-1 hover:bg-charcoal/[0.035]">
             <GripVertical size={12} className="text-charcoal/20 shrink-0" />
             <input value={item.name} onChange={(e) => onUpdate(index, { name: e.target.value })} placeholder="Nama kategori" className="min-w-0 flex-1 bg-transparent text-[12px] text-charcoal outline-none border-b border-transparent focus:border-forest-300 py-0.5" />
             <button type="button" onClick={() => onUpdate(index, { active: !item.active })} aria-label={item.active ? "Nonaktifkan" : "Aktifkan"} className={`relative shrink-0 h-5 w-5 rounded border transition ${item.active ? "border-forest-500 bg-forest-600 text-white" : "border-charcoal/30 bg-white text-transparent"}`}><Check size={13} className="absolute inset-0 m-auto" /></button>
