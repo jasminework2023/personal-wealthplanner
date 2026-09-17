@@ -1,5 +1,4 @@
 import { NavLink } from "react-router-dom";
-import { ThemeToggle } from "./ThemeToggle";
 import {
   Home,
   LayoutDashboard,
@@ -8,11 +7,11 @@ import {
   Calculator,
   Shield,
   Settings,
-  User,
   BookOpen,
   X,
-  Globe,
+  ExternalLink,
 } from "lucide-react";
+import logoMark from "../assets/logo-mark-white.png";
 
 const mainLinks = [
   { to: "/", label: "Home", icon: Home },
@@ -59,11 +58,8 @@ function Brand() {
   return (
     <div className="px-4 pt-5 pb-5">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 shadow-sm" aria-hidden>
-          <svg viewBox="0 0 40 40" className="h-7 w-7" fill="none">
-            <path d="M8 25.5 13.5 14l6 11.5L25 14l7 11.5" stroke="white" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M10 30h20" stroke="white" strokeWidth="2.4" strokeLinecap="round" opacity=".7"/>
-          </svg>
+        <div className="flex h-10 w-12 shrink-0 items-center justify-center" aria-hidden>
+          <img src={logoMark} alt="Wealthplanner" className="h-auto w-full object-contain" />
         </div>
         <div className="min-w-0">
           <p className="text-[15px] font-semibold text-white tracking-tight">Wealthplanner</p>
@@ -88,19 +84,16 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-white/50 mt-2 mb-1.5">Tools</p>
         <nav className="flex flex-col gap-0.5">
           {toolLinks.map((l) => <NavItem key={l.to} {...l} onNavigate={onNavigate} />)}
+          <a href="https://www.wealthplanner.id" target="_blank" rel="noreferrer" onClick={onNavigate} className="group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] text-white hover:bg-white/10 hover:text-white transition-all">
+            <ExternalLink size={18} strokeWidth={2} className="text-white/75 group-hover:text-rose-300" />
+            Website
+          </a>
         </nav>
-        <a href="https://www.wealthplanner.id" target="_blank" rel="noreferrer" className="group mx-2 mt-2 flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-[14px] text-white hover:bg-white/10 hover:text-white transition-all">
-          <Globe size={18} strokeWidth={2} className="text-white/75 group-hover:text-rose-300" />
-          <span className="flex-1">Website</span>
-          <span aria-hidden className="text-white/50">↗</span>
-        </a>
       </div>
 
       <div className="px-2 pb-4 pt-2 border-t border-white/12 flex flex-col gap-0.5">
-        <ThemeToggle />
         <NavItem to="/guidance" label="Guidance" icon={BookOpen} onNavigate={onNavigate} />
-        <NavItem to="/settings" label="Settings" icon={Settings} onNavigate={onNavigate} />
-        <NavItem to="/profile" label="Profile" icon={User} onNavigate={onNavigate} />
+        <NavItem to="/settings" label="Profile & Settings" icon={Settings} onNavigate={onNavigate} />
       </div>
     </div>
   );
