@@ -47,7 +47,7 @@ async function getSheetsClient() {
 }
 
 // ---------- TRANSACTION ----------
-async function getTransactions(spreadsheetId: string) {
+async function getTransactions(spreadsheetId: string, year?: number) {
   const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId,
@@ -57,7 +57,12 @@ async function getTransactions(spreadsheetId: string) {
   const typeMap: Record<string, string> = { income: "Income", expense: "Expense", saving: "Saving" };
 
   return rows
-    .filter((row) => row && row.length >= 3 && row[2])
+    .filter((row) => {
+      if (!row || row.length < 3 || !row[2]) return false;
+      if (!year) return true;
+      const rowYear = Number(String(row[0] || "").split("/").pop());
+      return !rowYear || rowYear === year;
+    })
     .map((row) => ({
       date: row[0] || "",
       month: row[1] || "",
@@ -65,6 +70,7 @@ async function getTransactions(spreadsheetId: string) {
       category: row[3] || "",
       description: row[4] || "",
       amount: parseRupiah(row[5]),
+      year: Number(String(row[0] || "").split("/").pop()) || undefined,
     }));
 }
 
@@ -224,9 +230,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const requestedMonth = typeof req.query.month === "string" && req.query.month
       ? req.query.month
       : new Date().toLocaleString("en-US", { month: "long" });
+    const requestedYear = Number(req.query.year) || new Date().getFullYear();
+    const allYears = String(req.query.allYears || "") === "1";
 
     const [transactions, budgetByCategory, assets] = await Promise.all([
-      getTransactions(user.spreadsheet_id),
+      getTransactions(user.spreadsheet_id, allYears ? undefined : requestedYear),
       getBudgetByCategory(user.spreadsheet_id, requestedMonth).catch(() => ({})),
       getAssetTracker(user.spreadsheet_id).catch(() => null),
     ]);
@@ -237,6 +245,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       budgetByCategory,
       assets,
       month: requestedMonth,
+      year: requestedYear,
     });
   } catch (err) {
     console.error("Dashboard API error:", (err as Error).message);
