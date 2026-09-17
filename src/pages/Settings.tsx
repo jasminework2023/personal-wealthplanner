@@ -100,7 +100,7 @@ export function Settings() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold text-forest-900">Setup & Settings</h1>
+        <h1 className="text-2xl font-semibold text-forest-900">Profile & Settings</h1>
         <p className="text-[14px] text-charcoal/60 mt-0.5">Aktifkan baseline keuanganmu. Perubahan di sini akan ditulis ke spreadsheet.</p>
       </div>
 
