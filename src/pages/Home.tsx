@@ -20,13 +20,12 @@ import { DataStatusBanner } from "../components/DataStatusBanner";
 import { formatRupiah, formatCompact } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
 import { getDisplayName, greetingWord } from "../lib/settings";
-import { totalAssets } from "../data/assets";
 import type { Transaction } from "../data/types";
 
-const PIE_COLORS = ["#285C49", "#4C8570", "#D44F76", "#E17E9B", "#B58900", "#7A7A7A", "#3E7CB1", "#A93A5C"];
+const PIE_COLORS = ["#D44F76", "#E17E9B", "#C73F68", "#F0A1B6", "#B8325B", "#D96B8A", "#A92F55", "#F3C1CF"];
 
 export function Home() {
-  const { loading, error, isRealData, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month } = useFinanceData();
+  const { loading, error, isRealData, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month, assets } = useFinanceData();
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
@@ -35,11 +34,7 @@ export function Home() {
   const currentYear = new Date().getFullYear();
 
   const allTxs = [...transactions, ...extraTxs];
-  const parseDate = (date: string) => {
-    const [d, m, y] = date.split("/").map(Number);
-    return new Date(y || 1970, (m || 1) - 1, d || 1).getTime();
-  };
-  const recent = [...allTxs].sort((a, b) => parseDate(b.date) - parseDate(a.date)).slice(0, 5);
+  const recent = [...allTxs].reverse().slice(0, 5);
   
   const cashFlowData = [
     { name: "Income", value: totalIncome },
@@ -83,7 +78,7 @@ export function Home() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Assets" value={formatRupiah(totalAssets)} icon={Wallet} tone="forest" />
+        <StatCard label="Total Assets" value={formatRupiah(assets.totalAssets)} icon={Wallet} tone="forest" />
         <StatCard label="Monthly Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
         <StatCard label="Monthly Spending" value={formatRupiah(totalExpense)} icon={TrendingDown} tone="rose" />
         <StatCard label="Monthly Savings" value={formatRupiah(totalSaving)} icon={PiggyBank} tone="lilac" />
