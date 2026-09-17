@@ -27,9 +27,40 @@ export function TransactionReport() {
     return Array.from(new Set([...setupCategories, ...allTxs.map((t) => t.category)]));
   }, [allTxs, setup]);
 
-  const parseDate = (date: string) => {
-    const [d, m, y] = date.split("/").map(Number);
-    return new Date(y || 0, (m || 1) - 1, d || 1).getTime();
+  // Tanggal dari sheet bisa datang sebagai M/D/Y ("6/5/2026" = 5 Juni) atau
+  // D/M/Y. Kolom "Month" dipakai sebagai penentu supaya urutannya benar.
+  const MONTH_NAMES = [
+    "january", "february", "march", "april", "may", "june",
+    "july", "august", "september", "october", "november", "december",
+  ];
+
+  const parseDate = (date: string, monthLabel?: string) => {
+    const parts = date.split("/").map(Number);
+    if (parts.length < 3 || parts.some(isNaN)) return 0;
+    const [a, b, y] = parts;
+
+    let month = b;
+    let day = a;
+
+    const idx = monthLabel ? MONTH_NAMES.indexOf(monthLabel.trim().toLowerCase()) : -1;
+    if (idx !== -1) {
+      const monthNum = idx + 1;
+      if (a === monthNum && b !== monthNum) {
+        month = a; // format M/D/Y
+        day = b;
+      } else if (b === monthNum) {
+        month = b; // format D/M/Y
+        day = a;
+      }
+    } else if (a > 12 && b <= 12) {
+      month = b;
+      day = a;
+    } else if (b > 12 && a <= 12) {
+      month = a;
+      day = b;
+    }
+
+    return new Date(y || 0, (month || 1) - 1, day || 1).getTime();
   };
 
   const filtered = allTxs.filter((t) => {
@@ -121,7 +152,7 @@ export function TransactionReport() {
               </thead>
               <tbody>
                 {[...filtered]
-                  .sort((a, b) => parseDate(b.date) - parseDate(a.date))
+                  .sort((a, b) => parseDate(b.date, b.month) - parseDate(a.date, a.month))
                   .map((t, i) => (
                     <tr key={`${t.date}-${t.category}-${t.description}-${i}`} className="border-b border-charcoal/8 last:border-0 hover:bg-charcoal/[0.02]">
                       <td className="py-3 px-4 whitespace-nowrap">{t.date}</td>
