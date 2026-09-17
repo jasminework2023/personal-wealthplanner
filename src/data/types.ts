@@ -3,6 +3,7 @@ export type TransactionType = "Income" | "Expense" | "Saving";
 export interface Transaction {
   date: string; // dd/mm/yyyy
   month: string;
+  year?: number;
   type: TransactionType;
   category: string;
   description: string;
