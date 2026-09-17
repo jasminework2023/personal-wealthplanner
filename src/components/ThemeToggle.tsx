@@ -1,5 +1,36 @@
-import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
-const KEY = "wealthplanner_theme";
-function applyTheme(theme: "light" | "dark") { document.documentElement.dataset.theme = theme; localStorage.setItem(KEY, theme); }
-export function ThemeToggle() { const [theme,setTheme]=useState<"light"|"dark">(()=>localStorage.getItem(KEY)==="dark"?"dark":"light"); useEffect(()=>{applyTheme(theme)},[theme]); const dark=theme==="dark"; return <button type="button" onClick={()=>setTheme(dark?"light":"dark")} aria-label={dark?"Gunakan mode terang":"Gunakan mode gelap"} title={dark?"Mode terang":"Mode gelap"} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-charcoal/12 bg-white text-charcoal/70 hover:bg-charcoal/5">{dark?<Sun size={17}/>:<Moon size={17}/>}</button>; }
+import { Moon, Sun } from "lucide-react";
+
+const STORAGE_KEY = "wealthplanner-theme";
+
+function applyTheme(theme: "light" | "dark") {
+  document.documentElement.classList.toggle("dark", theme === "dark");
+  document.documentElement.style.colorScheme = theme;
+}
+
+export function ThemeToggle() {
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") return "light";
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    if (saved === "dark" || saved === "light") return saved;
+    return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  });
+
+  useEffect(() => {
+    applyTheme(theme);
+    window.localStorage.setItem(STORAGE_KEY, theme);
+  }, [theme]);
+
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
+      aria-label={theme === "dark" ? "Gunakan mode terang" : "Gunakan mode gelap"}
+      title={theme === "dark" ? "Mode terang" : "Mode gelap"}
+      className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[14px] text-white hover:bg-white/10 transition-all"
+    >
+      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+      <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+    </button>
+  );
+}
