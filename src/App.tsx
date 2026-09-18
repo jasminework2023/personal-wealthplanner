@@ -6,6 +6,7 @@ import { TransactionReport } from "./pages/TransactionReport";
 import { MonthlyBudgeting } from "./pages/MonthlyBudgeting";
 import { Settings } from "./pages/Settings";
 import { Guidance } from "./pages/Guidance";
+import { DashboardWelcome } from "./pages/DashboardWelcome";
 import { FinancialProtection } from "./pages/FinancialProtection";
 import { FinancialCalculator, CalculatorDetail } from "./pages/FinancialCalculator";
 import { saveFinancialPlan } from "./lib/financialPlans";
@@ -47,6 +48,7 @@ export default function App() {
   return (
     <BrowserRouter basename="/dashboard">
       <Routes>
+        <Route path="/welcome" element={<DashboardWelcome />} />
         <Route element={<AppShell />}>
           <Route path="/" element={<Home />} />
           <Route path="/finance" element={<DashboardFinance />} />
