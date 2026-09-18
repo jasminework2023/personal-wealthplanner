@@ -1,5 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import { google } from "googleapis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 function db() {
@@ -7,31 +6,6 @@ function db() {
     process.env.SUPABASE_URL as string,
     process.env.SUPABASE_ANON_KEY as string,
   );
-}
-
-function getGoogleAuth(scopes: string[]) {
-  const raw = process.env.GOOGLE_CREDENTIALS;
-  if (!raw) throw new Error("GOOGLE_CREDENTIALS belum diset");
-  const credentials = JSON.parse(raw);
-  return new google.auth.JWT({ email: credentials.client_email, key: credentials.private_key, scopes });
-}
-
-async function createCustomerSpreadsheet(name: string) {
-  const templateId = process.env.GOOGLE_TEMPLATE_SPREADSHEET_ID;
-  if (!templateId) throw new Error("GOOGLE_TEMPLATE_SPREADSHEET_ID belum diset");
-
-  const drive = google.drive({ version: "v3", auth: getGoogleAuth(["https://www.googleapis.com/auth/drive"]) });
-  const copy = await drive.files.copy({
-    fileId: templateId,
-    requestBody: {
-      name: `Wealthplanner — ${name}`,
-      ...(process.env.GOOGLE_DRIVE_FOLDER_ID ? { parents: [process.env.GOOGLE_DRIVE_FOLDER_ID] } : {}),
-    },
-    fields: "id,name,webViewLink",
-  });
-
-  if (!copy.data.id) throw new Error("Spreadsheet baru gagal dibuat");
-  return { id: copy.data.id, url: copy.data.webViewLink || `https://docs.google.com/spreadsheets/d/${copy.data.id}/edit` };
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -44,7 +18,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const body = req.body || {};
-  if (body.event !== "payment_session.completed") return res.status(200).json({ received: true });
+  if (body.event !== "payment_session.completed") {
+    return res.status(200).json({ received: true });
+  }
 
   const data = body.data || {};
   const referenceId = String(data.reference_id || "");
@@ -64,24 +40,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (error || !user) return res.status(404).json({ error: "Customer tidak ditemukan." });
 
-    // Idempotency: Xendit can retry webhook delivery. If already active and
-    // provisioned, acknowledge without creating another spreadsheet.
-    if (user.is_active && user.spreadsheet_id) {
-      return res.status(200).json({ received: true, alreadyProvisioned: true });
+    // Payment activation only. The customer creates their own Google Sheet copy.
+    if (user.is_active) {
+      return res.status(200).json({ received: true, alreadyActive: true });
     }
-
-    const sheet = await createCustomerSpreadsheet(String(user.username || "Customer"));
 
     const { error: updateError } = await supabase
       .from("users")
-      .update({ spreadsheet_id: sheet.id, is_active: true })
+      .update({ is_active: true })
       .eq("dashboard_token", referenceId);
 
     if (updateError) throw new Error(updateError.message);
 
-    return res.status(200).json({ received: true, provisioned: true });
+    return res.status(200).json({ received: true, activated: true, needsSpreadsheet: !user.spreadsheet_id });
   } catch (error) {
-    console.error("xendit-webhook provisioning error:", error);
-    return res.status(500).json({ error: "Provisioning customer gagal; webhook akan dicoba lagi." });
+    console.error("xendit-webhook activation error:", error);
+    return res.status(500).json({ error: "Aktivasi customer gagal; webhook akan dicoba lagi." });
   }
 }
