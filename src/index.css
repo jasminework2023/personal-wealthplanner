@@ -238,8 +238,7 @@ html.dark .wp-calculator .card {
   background: var(--calc-surface) !important;
 }
 
-html.dark .wp-calculator button[style*="background: white"],
-html.dark .wp-calculator button[style*="background:"white""] {
+html.dark .wp-calculator button[style*="background: white"] {
   background: var(--calc-surface-2) !important;
   color: var(--calc-ink) !important;
 }
