@@ -8,6 +8,7 @@ export interface Transaction {
   category: string;
   description: string;
   amount: number;
+  sheetRow?: number;
 }
 
 export interface BudgetCategory {
