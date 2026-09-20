@@ -57,13 +57,14 @@ async function getTransactions(spreadsheetId: string, year?: number) {
   const typeMap: Record<string, string> = { income: "Income", expense: "Expense", saving: "Saving" };
 
   return rows
-    .filter((row) => {
+    .map((row, index) => ({ row, sheetRow: index + 10 }))
+    .filter(({ row }) => {
       if (!row || row.length < 3 || !row[2]) return false;
       if (!year) return true;
       const rowYear = Number(String(row[0] || "").split("/").pop());
       return !rowYear || rowYear === year;
     })
-    .map((row) => ({
+    .map(({ row, sheetRow }) => ({
       date: row[0] || "",
       month: row[1] || "",
       type: typeMap[String(row[2]).trim().toLowerCase()] || "Expense",
@@ -71,6 +72,7 @@ async function getTransactions(spreadsheetId: string, year?: number) {
       description: row[4] || "",
       amount: parseRupiah(row[5]),
       year: Number(String(row[0] || "").split("/").pop()) || undefined,
+      sheetRow,
     }));
 }
 
@@ -109,7 +111,7 @@ function parseAssetSection(rows: unknown[][], sectionLabel: string) {
   const startIdx = findRowIndex(rows, sectionLabel);
   if (startIdx === -1) return { items: [] as { name: string; value: number }[], total: 0 };
 
-  const items: { name: string; value: number }[] = [];
+  const items: { name: string; value: number; sheetRow: number }[] = [];
   let total = 0;
 
   for (let i = startIdx + 2; i < rows.length; i++) {
@@ -123,7 +125,7 @@ function parseAssetSection(rows: unknown[][], sectionLabel: string) {
     }
     if (SECTION_LABELS.includes(lower) && lower !== sectionLabel.toLowerCase()) break; // kena section lain, stop
     const value = lastNumericValue(row);
-    if (value > 0) items.push({ name: label, value });
+    if (value > 0) items.push({ name: label, value, sheetRow: i + 1 });
   }
   return { items, total };
 }
