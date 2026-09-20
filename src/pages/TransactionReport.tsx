@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, Plus, Sparkles } from "lucide-react";
+import { Search, Plus, Sparkles, Pencil, Download } from "lucide-react";
 import { Card } from "../components/Card";
 import { TransactionBadge } from "../components/TransactionBadge";
 import { AddTransactionModal } from "../components/AddTransactionModal";
@@ -7,6 +7,7 @@ import { DataStatusBanner } from "../components/DataStatusBanner";
 import { formatRupiah } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
 import type { Transaction, TransactionType } from "../data/types";
+import { EditTransactionModal } from "../components/EditTransactionModal";
 
 export function TransactionReport() {
   const { isRealData, username, error, transactions, setup } = useFinanceData(undefined, true);
@@ -16,6 +17,7 @@ export function TransactionReport() {
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
+  const [editing, setEditing] = useState<Transaction | null>(null);
 
   const allTxs = [...transactions, ...extraTxs];
   const categories = useMemo(() => {
@@ -81,7 +83,7 @@ export function TransactionReport() {
           <h1 className="text-2xl font-semibold text-forest-900">Transaction Report</h1>
           <p className="text-[14px] text-charcoal/60 mt-0.5">Catat dan pantau setiap pergerakan uangmu.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => {
               setModalMode("manual");
@@ -100,6 +102,11 @@ export function TransactionReport() {
           >
             <Sparkles size={15} /> Catat dengan AI
           </button>
+          <button type="button" onClick={() => {
+            const rows = [["Date","Month","Type","Category","Description","Amount"], ...filtered.map(t => [t.date,t.month,t.type,t.category,t.description,String(t.amount)])];
+            const csv = rows.map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+            const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"}); const url = URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="wealthplanner-transactions.csv"; a.click(); URL.revokeObjectURL(url);
+          }} className="flex items-center gap-1.5 border border-charcoal/15 bg-white rounded-lg px-3.5 py-2 text-[13px] font-medium hover:bg-charcoal/5"><Download size={15}/> Export CSV</button>
         </div>
       </div>
 
@@ -137,7 +144,11 @@ export function TransactionReport() {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="py-8 text-center text-charcoal/40 text-[13px]">Nggak ada transaksi yang cocok.</div>
+          <div className="py-10 text-center">
+            <div className="text-[14px] font-semibold text-forest-900">Belum ada transaksi yang cocok</div>
+            <p className="mt-1 text-[13px] text-charcoal/50">Mulai catat transaksi secara manual atau gunakan AI untuk membantu membaca transaksi.</p>
+            <button type="button" onClick={()=>{setModalMode("manual");setModalOpen(true)}} className="mt-4 rounded-lg bg-forest-600 px-4 py-2 text-[13px] font-semibold text-white">+ Tambah Transaksi</button>
+          </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-charcoal/8">
             <table className="w-full text-[13px] min-w-[680px]">
@@ -148,6 +159,7 @@ export function TransactionReport() {
                   <th className="py-2.5 font-medium">Category</th>
                   <th className="py-2.5 font-medium">Description</th>
                   <th className="py-2.5 px-4 font-medium text-right">Total</th>
+                  <th className="py-2.5 px-4 font-medium text-right">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -162,6 +174,7 @@ export function TransactionReport() {
                       <td className={`py-3 px-4 text-right font-medium ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>
                         {t.type === "Expense" ? "-" : "+"}{formatRupiah(t.amount)}
                       </td>
+                      <td className="py-3 px-4 text-right"><button onClick={()=>setEditing(t)} className="inline-flex items-center gap-1 rounded-md border border-charcoal/10 px-2 py-1 text-[11px] text-charcoal/60 hover:text-forest-700 hover:border-forest-200"><Pencil size={11}/> Edit</button></td>
                     </tr>
                   ))}
               </tbody>
@@ -169,6 +182,8 @@ export function TransactionReport() {
           </div>
         )}
       </Card>
+
+      <EditTransactionModal open={!!editing} transaction={editing} onClose={()=>setEditing(null)} onSaved={(next)=>{setExtraTxs(prev=>prev.map(x=>x===editing?next:x)); setEditing(null); window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));}} onDeleted={(old)=>{setExtraTxs(prev=>prev.filter(x=>x!==old));setEditing(null);window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));}} />
 
       <AddTransactionModal
         open={modalOpen}
