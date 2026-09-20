@@ -392,3 +392,8 @@ html.dark .wp-calculator button[style*="background: white"] {
 .wp-calculator input, .wp-calculator select, .wp-calculator textarea { background: var(--calc-surface-2) !important; color: var(--calc-ink) !important; border-color: var(--calc-border) !important; }
 .wp-calculator input::placeholder, .wp-calculator textarea::placeholder { color: var(--calc-muted) !important; }
 .wp-calculator option { background: var(--calc-surface) !important; color: var(--calc-ink) !important; }
+
+/* Chart readability: keep labels/values bright in dark mode. */
+html.dark .recharts-text, html.dark .recharts-text tspan, html.dark .recharts-cartesian-axis-tick-value, html.dark .recharts-label, html.dark .recharts-pie-label-text { fill: #f4faf7 !important; color: #f4faf7 !important; }
+html.dark .recharts-legend-item-text { color: #f4faf7 !important; }
+html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: #f4faf7 !important; }
