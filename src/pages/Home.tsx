@@ -34,7 +34,14 @@ export function Home() {
   const currentYear = new Date().getFullYear();
 
   const allTxs = [...transactions, ...extraTxs];
-  const recent = [...allTxs].reverse().slice(0, 5);
+  const parseRecentDate = (value:string, monthLabel?:string) => { const p=value.split("/").map(Number); if(p.length<3||p.some(Number.isNaN)) return 0; let [a,b,y]=p; const months=["january","february","march","april","may","june","july","august","september","october","november","december"]; const idx=months.indexOf((monthLabel||"").toLowerCase()); let m=b,d=a; if(idx>=0){m=idx+1; if(a===m&&b!==m)d=b; else d=a;} else if(a>12){d=a;m=b;} else if(b>12){d=b;m=a;} return new Date(y,m-1,d).getTime(); };
+  const recent = [...allTxs].sort((a,b)=>parseRecentDate(b.date,b.month)-parseRecentDate(a.date,a.month)).slice(0,5);
+  const nextStep = totalExpense > totalIncome && totalIncome > 0
+    ? "Pengeluaranmu bulan ini sudah lebih besar dari pemasukan. Cek kategori pengeluaran terbesar dan review budget."
+    : assets.target > 0 && assets.totalAssets < assets.target
+      ? `Target asetmu masih ${formatRupiah(Math.max(0, assets.target-assets.totalAssets))} lagi. Review Asset Tracker dan rencana investasimu.`
+      : totalSaving > 0 ? "Kamu sudah punya saving bulan ini. Lanjutkan konsistensi dan cek apakah target finansialmu sudah punya angka yang jelas."
+      : "Mulai dengan mencatat transaksi dan isi satu target finansial agar dashboard bisa memberi arah langkah berikutnya.";
   
   const cashFlowData = [
     { name: "Income", value: totalIncome },
@@ -76,6 +83,13 @@ export function Home() {
           </button>
         </div>
       </div>
+
+      <Card>
+        <div className="flex items-start gap-3">
+          <div className="h-9 w-9 shrink-0 rounded-xl bg-forest-50 text-forest-700 flex items-center justify-center">💡</div>
+          <div><p className="text-[11px] font-semibold uppercase tracking-wide text-forest-600">Your next step</p><p className="mt-1 text-[13px] leading-5 text-charcoal/70">{nextStep}</p></div>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Assets" value={formatRupiah(assets.totalAssets)} icon={Wallet} tone="forest" />
