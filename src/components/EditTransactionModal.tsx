@@ -1,0 +1,27 @@
+import { useEffect, useMemo, useState } from "react";
+import { Loader2, Trash2 } from "lucide-react";
+import { Modal } from "./Modal";
+import type { Transaction, TransactionType } from "../data/types";
+import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
+
+const API_BASE = "/api";
+const fallback = ["Gajian","Freelance Income","Business Income","Commission","Dividend / Interest","Side Hustle","Utilities","Internet & Phone","Insurance Premium","Food & Groceries","Transport","Entertainment","Education","Charity","Mutual Funds","Bonds","Gold","Deposito"];
+function toInputDate(value:string){const p=value.split("/").map(Number); if(p.length===3 && p.every(Number.isFinite)){const [d,m,y]=p; return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;} return new Date().toISOString().slice(0,10);}
+function fromInputDate(value:string){const [y,m,d]=value.split("-").map(Number); return {date:`${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")}/${y}`,month:new Date(y,m-1,d).toLocaleString("en-US",{month:"long"}),year:y};}
+export function EditTransactionModal({open,onClose,transaction,onSaved,onDeleted}:{open:boolean;onClose:()=>void;transaction:Transaction|null;onSaved:(t:Transaction)=>void;onDeleted:(t:Transaction)=>void}){
+ const {setup}=useFinanceData(); const [type,setType]=useState<TransactionType>(transaction?.type||"Expense"); const [category,setCategory]=useState(transaction?.category||fallback[9]); const [description,setDescription]=useState(transaction?.description||""); const [amount,setAmount]=useState(String(transaction?.amount||"")); const [date,setDate]=useState(toInputDate(transaction?.date||"")); const [saving,setSaving]=useState(false); const [error,setError]=useState("");
+ const cats=useMemo(()=>{const key=type.toLowerCase() as "income"|"expense"|"saving"; const a=setup[key]?.filter(x=>x.active&&x.name.trim()).map(x=>x.name)||[]; return a.length?a:fallback;},[setup,type]);
+ useEffect(()=>{if(!open||!transaction)return;setType(transaction.type);setCategory(transaction.category);setDescription(transaction.description);setAmount(String(transaction.amount));setDate(toInputDate(transaction.date));setError("");},[open,transaction]);
+ useEffect(()=>{if(!cats.includes(category))setCategory(cats[0]||fallback[0]);},[cats,category]);
+ async function save(){if(!transaction)return;const n=Number(amount);if(!description.trim()||!n||n<0){setError("Lengkapi deskripsi dan nominal.");return;}setSaving(true);setError("");try{const d=fromInputDate(date);const next={...transaction,type,category,description:description.trim(),amount:n,...d};const token=getStoredToken();if(token&&transaction.sheetRow){const r=await fetch(`${API_BASE}/update-transaction`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,sheetRow:transaction.sheetRow,transaction:next})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||"Gagal menyimpan");}onSaved(next);onClose();}catch(e){setError(e instanceof Error?e.message:"Gagal menyimpan");}finally{setSaving(false);}}
+ async function del(){if(!transaction)return;if(!window.confirm("Hapus transaksi ini? Data yang dihapus tidak dapat dikembalikan."))return;setSaving(true);setError("");try{const token=getStoredToken();if(token&&transaction.sheetRow){const r=await fetch(`${API_BASE}/delete-transaction`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,sheetRow:transaction.sheetRow})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||"Gagal menghapus");}onDeleted(transaction);onClose();}catch(e){setError(e instanceof Error?e.message:"Gagal menghapus");}finally{setSaving(false);}}
+ return <Modal open={open} onClose={onClose} title="Edit transaksi"><div className="flex flex-col gap-3">
+  <div className="flex gap-2">{(["Income","Expense","Saving"] as TransactionType[]).map(t=><button key={t} onClick={()=>setType(t)} className={`flex-1 rounded-lg border py-1.5 text-[13px] ${type===t?"border-forest-600 bg-forest-50 text-forest-700 font-medium":"border-charcoal/15 text-charcoal/60"}`}>{t}</button>)}</div>
+  <input type="date" value={date} onChange={e=>setDate(e.target.value)} className="w-full rounded-lg border border-charcoal/15 px-3 py-2 text-[14px]"/>
+  <select value={category} onChange={e=>setCategory(e.target.value)} className="w-full rounded-lg border border-charcoal/15 px-3 py-2 text-[14px] bg-white">{cats.map(c=><option key={c}>{c}</option>)}</select>
+  <input value={description} onChange={e=>setDescription(e.target.value)} placeholder="Catatan / deskripsi" className="w-full rounded-lg border border-charcoal/15 px-3 py-2 text-[14px]"/>
+  <input value={amount} onChange={e=>setAmount(e.target.value.replace(/\D/g,""))} inputMode="numeric" placeholder="Nominal" className="w-full rounded-lg border border-charcoal/15 px-3 py-2 text-[14px]"/>
+  {error&&<p className="text-[13px] text-rose-600">{error}</p>}
+  <div className="flex gap-2 pt-1"><button onClick={del} disabled={saving} className="flex items-center justify-center gap-1.5 rounded-lg border border-rose-200 px-3 py-2.5 text-[13px] font-medium text-rose-600 hover:bg-rose-50"><Trash2 size={14}/> Hapus</button><button onClick={save} disabled={saving} className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-forest-600 py-2.5 text-[14px] font-medium text-white hover:bg-forest-700">{saving?<Loader2 size={15} className="animate-spin"/>:"Simpan perubahan"}</button></div>
+ </div></Modal>
+}
