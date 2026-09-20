@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 const API_BASE = "/api";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Camera, Upload } from "lucide-react";
 import { Modal } from "./Modal";
 import type { Transaction, TransactionType } from "../data/types";
 import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
@@ -27,6 +27,9 @@ export function AddTransactionModal({
   const [aiText, setAiText] = useState("");
   const [aiPreview, setAiPreview] = useState<Partial<Transaction> | null>(null);
   const [aiError, setAiError] = useState("");
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState("");
+  const [receiptLoading, setReceiptLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const { setup } = useFinanceData();
   const activeCategories = useMemo(() => ({
@@ -74,6 +77,9 @@ export function AddTransactionModal({
     setAiText("");
     setAiPreview(null);
     setAiError("");
+    setReceiptFile(null);
+    setReceiptPreview("");
+    setReceiptLoading(false);
     setFormError("");
     setForm({ type: "Expense", category: activeCategories.Expense[0] || fallbackCategories[9], description: "", amount: "" });
   }
@@ -242,6 +248,12 @@ export function AddTransactionModal({
             onChange={(e) => setAiText(e.target.value)}
             className="w-full border border-charcoal/15 rounded-lg px-3 py-2 text-[14px]"
           />
+          <div className="rounded-xl border border-dashed border-rose-200 bg-rose-50/40 p-3">
+            <div className="flex items-center justify-between gap-2"><div><p className="text-[13px] font-semibold text-rose-700">Foto struk dengan AI</p><p className="text-[11px] text-charcoal/55 mt-0.5">Upload/foto struk, review hasilnya, lalu simpan.</p></div><Camera size={18} className="text-rose-600"/></div>
+            <label className="mt-2 flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 py-2 text-[12px] font-semibold text-rose-700"><Upload size={14}/> Pilih / Foto Struk<input type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{const file=e.target.files?.[0];if(!file)return;setReceiptFile(file);setReceiptPreview(URL.createObjectURL(file));setAiError("");}}/></label>
+            {receiptPreview&&<img src={receiptPreview} alt="Preview struk" className="mt-2 max-h-40 w-full rounded-lg object-contain bg-white"/>}
+            {receiptFile&&<button type="button" disabled={receiptLoading} onClick={async()=>{setReceiptLoading(true);setAiError("");try{const reader=new FileReader();const dataUrl=await new Promise<string>((resolve,reject)=>{reader.onload=()=>resolve(String(reader.result));reader.onerror=reject;reader.readAsDataURL(receiptFile);});const r=await fetch(`${API_BASE}/receipt-ai`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({image:dataUrl})});const j=await r.json();if(!r.ok)throw new Error(j.error||"Gagal membaca struk");setAiPreview(j.transaction);}catch(e){setAiError(e instanceof Error?e.message:"Gagal membaca struk");}finally{setReceiptLoading(false);}}} className="mt-2 w-full rounded-lg bg-rose-600 py-2 text-[12px] font-semibold text-white disabled:opacity-50">{receiptLoading?"Membaca struk…":"Baca struk dengan AI"}</button>}
+          </div>
           {aiError && <p className="text-[13px] text-rose-600">{aiError}</p>}
 
           {!aiPreview ? (
