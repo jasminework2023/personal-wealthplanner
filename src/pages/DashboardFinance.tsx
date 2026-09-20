@@ -1,6 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 const API_BASE = "/api";
-import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2 } from "lucide-react";
+import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StatCard } from "../components/StatCard";
 import { ChartCard, Card } from "../components/Card";
@@ -81,11 +81,15 @@ function EditableAssetItem({
   value,
   section,
   isRealData,
+  sheetRow,
+  onDeleted,
 }: {
   name: string;
   value: number;
   section: "liquid" | "investment";
   isRealData: boolean;
+  sheetRow?: number;
+  onDeleted?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [input, setInput] = useState(String(value));
@@ -143,9 +147,14 @@ function EditableAssetItem({
       <span className="flex items-center gap-2">
         <span className="font-medium">{formatRupiah(saved)}</span>
         {isRealData && (
-          <button onClick={() => { setInput(String(saved)); setEditing(true); }} className="opacity-0 group-hover:opacity-100 text-charcoal/40 hover:text-forest-700">
-            <Pencil size={11} />
-          </button>
+          <>
+            <button onClick={() => { setInput(String(saved)); setEditing(true); }} className="opacity-0 group-hover:opacity-100 text-charcoal/40 hover:text-forest-700" title="Edit">
+              <Pencil size={11} />
+            </button>
+            {sheetRow && <button onClick={async()=>{ if(!window.confirm(`Hapus asset ${name}? Data yang dihapus tidak dapat dikembalikan.`)) return; const token=getStoredToken(); const res=await fetch(`${API_BASE}/delete-asset-item`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,sheetRow})}); const data=await res.json().catch(()=>({})); if(!res.ok){alert(data.error||"Gagal menghapus asset");return;} onDeleted?.(); }} className="opacity-0 group-hover:opacity-100 text-charcoal/40 hover:text-rose-600" title="Hapus">
+              <Trash2 size={11} />
+            </button>}
+          </>
         )}
       </span>
       {err && <span className="text-[11px] text-rose-600 ml-2">{err}</span>}
@@ -323,7 +332,7 @@ export function DashboardFinance() {
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Liquid Assets</p>
                 {assets.liquidAssets.map((item) => (
-                  <EditableAssetItem key={item.name} name={item.name} value={item.value} section="liquid" isRealData={isRealData} />
+                  <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} section="liquid" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
                 ))}
                 {isRealData && (
                   <AddItemForm
@@ -347,7 +356,7 @@ export function DashboardFinance() {
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Investment Assets</p>
                 {assets.investmentAssets.map((item) => (
-                  <EditableAssetItem key={item.name} name={item.name} value={item.value} section="investment" isRealData={isRealData} />
+                  <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
                 ))}
                 {isRealData && (
                   <AddItemForm
