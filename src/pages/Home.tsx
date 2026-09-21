@@ -55,20 +55,20 @@ export function Home() {
     <div className="flex flex-col gap-6">
       <DataStatusBanner isRealData={isRealData} username={username} error={error} />
 
-      <div className="flex items-start justify-between flex-wrap gap-3">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-forest-900">
             {greetingWord()}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span>
           </h1>
           <p className="text-[14px] text-charcoal/60 mt-0.5">Ringkasan keuangan untuk {month} {currentYear}.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex gap-2 w-full lg:w-auto">
           <button
             onClick={() => {
               setModalMode("manual");
               setModalOpen(true);
             }}
-            className="flex items-center gap-1.5 border border-charcoal/15 bg-white rounded-lg px-3.5 py-2 text-[13px] font-medium hover:bg-charcoal/5"
+            className="flex items-center justify-center gap-1.5 border border-charcoal/15 bg-white rounded-lg px-3.5 py-2 text-[13px] font-medium hover:bg-charcoal/5"
           >
             <Plus size={15} /> Tambah Transaksi
           </button>
@@ -77,7 +77,7 @@ export function Home() {
               setModalMode("ai");
               setModalOpen(true);
             }}
-            className="flex items-center gap-1.5 bg-rose-600 text-white rounded-lg px-3.5 py-2 text-[13px] font-medium hover:bg-rose-700"
+            className="flex items-center justify-center gap-1.5 bg-rose-600 text-white rounded-lg px-3.5 py-2 text-[13px] font-medium hover:bg-rose-700"
           >
             <Sparkles size={15} /> Catat dengan AI
           </button>
