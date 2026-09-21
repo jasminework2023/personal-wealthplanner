@@ -396,3 +396,21 @@ html.dark .wp-calculator button[style*="background: white"] {
 html.dark .recharts-text, html.dark .recharts-text tspan, html.dark .recharts-cartesian-axis-tick-value, html.dark .recharts-label, html.dark .recharts-pie-label-text { fill: #f4faf7 !important; color: #f4faf7 !important; }
 html.dark .recharts-legend-item-text { color: #f4faf7 !important; }
 html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: #f4faf7 !important; }
+
+
+/* Mobile layout safeguards */
+@media (max-width: 767px) {
+  html, body, #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  button, input, select, textarea {
+    max-width: 100%;
+  }
+
+  .recharts-responsive-container {
+    max-width: 100% !important;
+  }
+}
