@@ -153,6 +153,7 @@ export function TransactionReport() {
             <button type="button" onClick={()=>{setModalMode("manual");setModalOpen(true)}} className="mt-4 rounded-lg bg-forest-600 px-4 py-2 text-[13px] font-semibold text-white">+ Tambah Transaksi</button>
           </div>
         ) : (
+          <>
           <div className="hidden md:block overflow-x-auto rounded-xl border border-charcoal/8">
             <table className="w-full text-[13px]">
               <thead>
@@ -205,6 +206,7 @@ export function TransactionReport() {
                 </div>
               ))}
           </div>
+          </>
         )}
       </Card>
 
