@@ -1,11 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-
-function db() {
-  return createClient(
-    process.env.SUPABASE_URL as string,
-    process.env.SUPABASE_ANON_KEY as string,
-  );
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
