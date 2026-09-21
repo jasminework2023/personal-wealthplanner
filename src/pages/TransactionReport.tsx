@@ -18,8 +18,11 @@ export function TransactionReport() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
   const [editing, setEditing] = useState<Transaction | null>(null);
+  const [deletedKeys, setDeletedKeys] = useState<Set<string>>(new Set());
 
-  const allTxs = [...transactions, ...extraTxs];
+  const transactionKey = (t: Transaction) =>
+    t.sheetRow ? `sheet:${t.sheetRow}` : `local:${t.date}|${t.type}|${t.category}|${t.description}|${t.amount}`;
+  const allTxs = [...transactions, ...extraTxs].filter((t) => !deletedKeys.has(transactionKey(t)));
   const categories = useMemo(() => {
     const setupCategories = [
       ...setup.income.filter((x) => x.active).map((x) => x.name),
@@ -78,18 +81,18 @@ export function TransactionReport() {
     <div className="flex flex-col gap-6">
       <DataStatusBanner isRealData={isRealData} username={username} error={error} />
 
-      <div className="flex items-start justify-between flex-wrap gap-3">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-forest-900">Transaction Report</h1>
           <p className="text-[14px] text-charcoal/60 mt-0.5">Catat dan pantau setiap pergerakan uangmu.</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-2 w-full lg:w-auto">
           <button
             onClick={() => {
               setModalMode("manual");
               setModalOpen(true);
             }}
-            className="flex items-center gap-1.5 border border-charcoal/15 bg-white rounded-lg px-3.5 py-2 text-[13px] font-medium hover:bg-charcoal/5"
+            className="flex items-center justify-center gap-1.5 border border-charcoal/15 bg-white rounded-lg px-3.5 py-2 text-[13px] font-medium hover:bg-charcoal/5"
           >
             <Plus size={15} /> Tambah Transaksi
           </button>
@@ -98,7 +101,7 @@ export function TransactionReport() {
               setModalMode("ai");
               setModalOpen(true);
             }}
-            className="flex items-center gap-1.5 bg-rose-600 text-white rounded-lg px-3.5 py-2 text-[13px] font-medium hover:bg-rose-700"
+            className="flex items-center justify-center gap-1.5 bg-rose-600 text-white rounded-lg px-3.5 py-2 text-[13px] font-medium hover:bg-rose-700"
           >
             <Sparkles size={15} /> Catat dengan AI
           </button>
@@ -106,7 +109,7 @@ export function TransactionReport() {
             const rows = [["Date","Month","Type","Category","Description","Amount"], ...filtered.map(t => [t.date,t.month,t.type,t.category,t.description,String(t.amount)])];
             const csv = rows.map(row => row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
             const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"}); const url = URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="wealthplanner-transactions.csv"; a.click(); URL.revokeObjectURL(url);
-          }} className="flex items-center gap-1.5 border border-charcoal/15 bg-white rounded-lg px-3.5 py-2 text-[13px] font-medium hover:bg-charcoal/5"><Download size={15}/> Export CSV</button>
+          }} className="flex items-center justify-center gap-1.5 border border-charcoal/15 bg-white rounded-lg px-3.5 py-2 text-[13px] font-medium hover:bg-charcoal/5"><Download size={15}/> Export CSV</button>
         </div>
       </div>
 
@@ -150,8 +153,8 @@ export function TransactionReport() {
             <button type="button" onClick={()=>{setModalMode("manual");setModalOpen(true)}} className="mt-4 rounded-lg bg-forest-600 px-4 py-2 text-[13px] font-semibold text-white">+ Tambah Transaksi</button>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-charcoal/8">
-            <table className="w-full text-[13px] min-w-[680px]">
+          <div className="hidden md:block overflow-x-auto rounded-xl border border-charcoal/8">
+            <table className="w-full text-[13px]">
               <thead>
                 <tr className="text-left text-charcoal/50 text-[12px] border-b border-charcoal/8 bg-charcoal/[0.025]">
                   <th className="py-2.5 px-4 font-medium">Date</th>
@@ -166,12 +169,12 @@ export function TransactionReport() {
                 {[...filtered]
                   .sort((a, b) => parseDate(b.date, b.month) - parseDate(a.date, a.month))
                   .map((t, i) => (
-                    <tr key={`${t.date}-${t.category}-${t.description}-${i}`} className="border-b border-charcoal/8 last:border-0 hover:bg-charcoal/[0.02]">
+                    <tr key={`${transactionKey(t)}-${i}`} className="border-b border-charcoal/8 last:border-0 hover:bg-charcoal/[0.02]">
                       <td className="py-3 px-4 whitespace-nowrap">{t.date}</td>
                       <td className="py-3"><TransactionBadge type={t.type} /></td>
                       <td className="py-3">{t.category}</td>
-                      <td className="py-3">{t.description}</td>
-                      <td className={`py-3 px-4 text-right font-medium ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>
+                      <td className="py-3 max-w-[260px] truncate">{t.description}</td>
+                      <td className={`py-3 px-4 text-right font-medium whitespace-nowrap ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>
                         {t.type === "Expense" ? "-" : "+"}{formatRupiah(t.amount)}
                       </td>
                       <td className="py-3 px-4 text-right"><button onClick={()=>setEditing(t)} className="inline-flex items-center gap-1 rounded-md border border-charcoal/10 px-2 py-1 text-[11px] text-charcoal/60 hover:text-forest-700 hover:border-forest-200"><Pencil size={11}/> Edit</button></td>
@@ -180,10 +183,32 @@ export function TransactionReport() {
               </tbody>
             </table>
           </div>
+
+          <div className="md:hidden flex flex-col gap-3">
+            {[...filtered]
+              .sort((a, b) => parseDate(b.date, b.month) - parseDate(a.date, a.month))
+              .map((t, i) => (
+                <div key={`${transactionKey(t)}-${i}`} className="rounded-xl border border-charcoal/10 p-3 bg-white/70">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-[13px] text-forest-900 break-words">{t.description}</p>
+                      <p className="text-[11px] text-charcoal/50 mt-0.5">{t.date} · {t.category}</p>
+                    </div>
+                    <button onClick={()=>setEditing(t)} className="shrink-0 inline-flex items-center gap-1 rounded-md border border-charcoal/10 px-2 py-1 text-[11px] text-charcoal/60"><Pencil size={11}/> Edit</button>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <TransactionBadge type={t.type} />
+                    <span className={`font-semibold text-[14px] ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>
+                      {t.type === "Expense" ? "-" : "+"}{formatRupiah(t.amount)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+          </div>
         )}
       </Card>
 
-      <EditTransactionModal open={!!editing} transaction={editing} onClose={()=>setEditing(null)} onSaved={(next)=>{setExtraTxs(prev=>prev.map(x=>x===editing?next:x)); setEditing(null); window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));}} onDeleted={(old)=>{setExtraTxs(prev=>prev.filter(x=>x!==old));setEditing(null);window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));}} />
+      <EditTransactionModal open={!!editing} transaction={editing} onClose={()=>setEditing(null)} onSaved={(next)=>{setExtraTxs(prev=>prev.map(x=>x===editing?next:x)); setEditing(null); window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));}} onDeleted={(old)=>{setDeletedKeys(prev=>new Set(prev).add(transactionKey(old)));setExtraTxs(prev=>prev.filter(x=>transactionKey(x)!==transactionKey(old)));setEditing(null);window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));}} />
 
       <AddTransactionModal
         open={modalOpen}
