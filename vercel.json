@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/api/:route*", "destination": "/api?route=:route*" },
     { "source": "/dashboard/assets/:path*", "destination": "/assets/:path*" },
     { "source": "/dashboard", "destination": "/index.html" },
     { "source": "/dashboard/:path*", "destination": "/index.html" },
