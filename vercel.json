@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/[...route].ts": {
+      "includeFiles": "server/api/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/dashboard/assets/:path*",
