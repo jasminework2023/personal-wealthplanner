@@ -8,10 +8,41 @@ import { google } from "googleapis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 function parseRupiah(value: unknown): number {
-  if (!value) return 0;
-  const cleaned = String(value).replace(/,/g, "").replace(/Rp/gi, "").replace(/\$/g, "").trim();
-  const n = parseFloat(cleaned);
-  return isNaN(n) ? 0 : n;
+  if (value === null || value === undefined || value === "") return 0;
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+
+  let cleaned = String(value)
+    .replace(/Rp/gi, "")
+    .replace(/IDR/gi, "")
+    .replace(/\$/g, "")
+    .replace(/\s/g, "")
+    .trim();
+
+  if (!cleaned) return 0;
+
+  // Google Sheets can return formatted values using either Indonesian
+  // separators (1.234.567,89) or US separators (1,234,567.89).
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+
+  if (lastComma !== -1 && lastDot !== -1) {
+    if (lastComma > lastDot) {
+      // 1.234,56 -> 1234.56
+      cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+    } else {
+      // 1,234.56 -> 1234.56
+      cleaned = cleaned.replace(/,/g, "");
+    }
+  } else if (lastComma !== -1) {
+    const decimals = cleaned.length - lastComma - 1;
+    cleaned = decimals === 3 ? cleaned.replace(/,/g, "") : cleaned.replace(",", ".");
+  } else if (lastDot !== -1) {
+    const decimals = cleaned.length - lastDot - 1;
+    cleaned = decimals === 3 ? cleaned.replace(/\./g, "") : cleaned;
+  }
+
+  const n = Number(cleaned.replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
 }
 
 function rowContains(row: unknown[], needle: string): boolean {
