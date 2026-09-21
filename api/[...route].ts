@@ -1,24 +1,24 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-import h_access from "../server/api/access.ts";
-import h_add_asset_item from "../server/api/add-asset-item.ts";
-import h_add_budget_category from "../server/api/add-budget-category.ts";
-import h_add_transaction from "../server/api/add-transaction.ts";
-import h_connect_sheet from "../server/api/connect-sheet.ts";
-import h_create_payment from "../server/api/create-payment.ts";
-import h_create_wealth_tracker_payment from "../server/api/create-wealth-tracker-payment.ts";
-import h_dashboard from "../server/api/dashboard.ts";
-import h_delete_asset_item from "../server/api/delete-asset-item.ts";
-import h_delete_transaction from "../server/api/delete-transaction.ts";
-import h_receipt_ai from "../server/api/receipt-ai.ts";
-import h_setup from "../server/api/setup.ts";
-import h_update_asset_target from "../server/api/update-asset-target.ts";
-import h_update_asset from "../server/api/update-asset.ts";
-import h_update_budget from "../server/api/update-budget.ts";
-import h_update_transaction from "../server/api/update-transaction.ts";
-import h_wealth_tracker_payment from "../server/api/wealth-tracker-payment.ts";
-import h_wealth_tracker_webhook from "../server/api/wealth-tracker-webhook.ts";
-import h_xendit_webhook from "../server/api/xendit-webhook.ts";
+import h_access from "../server/api/access.js";
+import h_add_asset_item from "../server/api/add-asset-item.js";
+import h_add_budget_category from "../server/api/add-budget-category.js";
+import h_add_transaction from "../server/api/add-transaction.js";
+import h_connect_sheet from "../server/api/connect-sheet.js";
+import h_create_payment from "../server/api/create-payment.js";
+import h_create_wealth_tracker_payment from "../server/api/create-wealth-tracker-payment.js";
+import h_dashboard from "../server/api/dashboard.js";
+import h_delete_asset_item from "../server/api/delete-asset-item.js";
+import h_delete_transaction from "../server/api/delete-transaction.js";
+import h_receipt_ai from "../server/api/receipt-ai.js";
+import h_setup from "../server/api/setup.js";
+import h_update_asset_target from "../server/api/update-asset-target.js";
+import h_update_asset from "../server/api/update-asset.js";
+import h_update_budget from "../server/api/update-budget.js";
+import h_update_transaction from "../server/api/update-transaction.js";
+import h_wealth_tracker_payment from "../server/api/wealth-tracker-payment.js";
+import h_wealth_tracker_webhook from "../server/api/wealth-tracker-webhook.js";
+import h_xendit_webhook from "../server/api/xendit-webhook.js";
 
 const handlers: Record<string, (req: VercelRequest, res: VercelResponse) => unknown> = {
   access: h_access,
