@@ -40,9 +40,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let serviceAccountEmail = "";
     try { serviceAccountEmail = String(getGoogleCredentials().client_email || ""); } catch { /* optional for onboarding */ }
 
+    const paymentActive = Boolean(user.is_active);
+    const ready = Boolean(paymentActive && user.spreadsheet_id);
+
     return res.status(200).json({
-      ready: Boolean(user.is_active && user.spreadsheet_id),
-      paymentActive: Boolean(user.is_active),
+      ready,
+      paymentActive,
+      activationStatus: paymentActive ? "active" : "waiting_payment_confirmation",
+      activationMessage: paymentActive
+        ? "Pembayaran sudah terkonfirmasi. Akses dashboard aktif."
+        : "Pembayaran belum terkonfirmasi. Sistem akan mengaktifkan akses otomatis setelah webhook pembayaran diterima.",
       username: user.username,
       dashboardUrl: `https://wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}`,
       spreadsheetUrl: user.spreadsheet_id
