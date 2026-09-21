@@ -58,20 +58,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
-import { createClient } from "@supabase/supabase-js";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-import crypto from "node:crypto";
-
-const PRICE = 139000;
-const PRODUCT_NAME = "Wealth Tracker AI";
-
-function db() {
-  return createClient(
-    process.env.SUPABASE_URL as string,
-    process.env.SUPABASE_ANON_KEY as string,
-  );
-}
-
 function xenditAuthHeader() {
   const key = process.env.XENDIT_SECRET_KEY;
   if (!key) throw new Error("XENDIT_SECRET_KEY belum diset");
