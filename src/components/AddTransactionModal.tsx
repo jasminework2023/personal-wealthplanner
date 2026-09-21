@@ -14,8 +14,8 @@ const fallbackCategories = [
 ];
 
 const MAX_RECEIPT_SOURCE_BYTES = 12 * 1024 * 1024;
-const MAX_RECEIPT_UPLOAD_BYTES = 3 * 1024 * 1024;
-const MAX_RECEIPT_DIMENSION = 1800;
+const MAX_RECEIPT_UPLOAD_BYTES = 2.2 * 1024 * 1024;
+const MAX_RECEIPT_DIMENSION = 1500;
 
 async function compressReceiptImage(file: File): Promise<string> {
   if (!file.type.startsWith("image/")) {
@@ -58,7 +58,7 @@ async function compressReceiptImage(file: File): Promise<string> {
       if (estimatedBytes <= MAX_RECEIPT_UPLOAD_BYTES) return dataUrl;
     }
 
-    throw new Error("Foto masih terlalu besar setelah dikompres. Coba foto struk lebih dekat dan tidak terlalu lebar.");
+    throw new Error("Foto masih terlalu besar setelah dikompres. Coba foto struk lebih dekat dengan pencahayaan yang cukup.");
   } finally {
     URL.revokeObjectURL(sourceUrl);
   }
@@ -349,12 +349,14 @@ export function AddTransactionModal({
           {aiError && <p className="text-[13px] text-rose-600">{aiError}</p>}
 
           {!aiPreview ? (
-            <button
-              onClick={handleAiParse}
-              className="w-full bg-rose-600 text-white rounded-lg py-2.5 text-[14px] font-medium hover:bg-rose-700 flex items-center justify-center gap-1.5"
-            >
-              <Sparkles size={14} /> Proses dengan AI
-            </button>
+            {!receiptFile && (
+              <button
+                onClick={handleAiParse}
+                className="w-full bg-rose-600 text-white rounded-lg py-2.5 text-[14px] font-medium hover:bg-rose-700 flex items-center justify-center gap-1.5"
+              >
+                <Sparkles size={14} /> Proses teks dengan AI
+              </button>
+            )}
           ) : (
             <div className="border border-forest-100 bg-forest-50 rounded-lg p-3 text-[13px] flex flex-col gap-1">
               <p className="font-medium text-forest-800 mb-1">Hasil deteksi AI:</p>
