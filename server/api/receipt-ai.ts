@@ -21,15 +21,12 @@ function approxDataUrlBytes(dataUrl: string): number {
 }
 
 function extractOutputText(data: any): string {
-  if (typeof data?.output_text === "string" && data.output_text.trim()) {
-    return data.output_text.trim();
+  const content = data?.choices?.[0]?.message?.content;
+  if (typeof content === "string" && content.trim()) return content.trim();
+  if (Array.isArray(content)) {
+    return content.map((item: any) => item?.text || "").join("").trim();
   }
-
-  return (data?.output || [])
-    .flatMap((item: any) => item?.content || [])
-    .map((content: any) => content?.text || "")
-    .join("")
-    .trim();
+  return "";
 }
 
 function normalizeTransaction(value: any) {
@@ -80,7 +77,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const model = process.env.OPENAI_RECEIPT_MODEL || "gpt-4.1-mini";
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -88,30 +85,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       body: JSON.stringify({
         model,
-        input: [
+        messages: [
+          {
+            role: "system",
+            content:
+              "You extract one transaction from a receipt image. Read only visible information. " +
+              "Use the final payable/total amount when clearly visible. " +
+              "If the receipt date is visible, return DD/MM/YYYY; otherwise return an empty string. " +
+              "Type must be Expense. Choose category only from the enum. Never invent missing values.",
+          },
           {
             role: "user",
             content: [
               {
-                type: "input_text",
-                text:
-                  "Extract the transaction from this receipt. Read only what is visible. " +
-                  "Use the final payable/total amount when clearly visible. " +
-                  "If the receipt date is visible, return it as DD/MM/YYYY; otherwise return an empty string. " +
-                  "Return type as Expense. Choose category only from the provided enum. " +
-                  "Do not invent missing values.",
+                type: "text",
+                text: "Extract the transaction from this receipt and return the structured fields.",
               },
               {
-                type: "input_image",
-                image_url: image,
-                detail: "high",
+                type: "image_url",
+                image_url: { url: image, detail: "high" },
               },
             ],
           },
         ],
-        text: {
-          format: {
-            type: "json_schema",
+        temperature: 0,
+        max_tokens: 300,
+        response_format: {
+          type: "json_schema",
+          json_schema: {
             name: "receipt_transaction",
             strict: true,
             schema: {
@@ -120,14 +121,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 amount: { type: "number" },
                 description: { type: "string" },
                 date: { type: "string" },
-                category: {
-                  type: "string",
-                  enum: [...ALLOWED_CATEGORIES],
-                },
-                type: {
-                  type: "string",
-                  enum: ["Expense"],
-                },
+                category: { type: "string", enum: [...ALLOWED_CATEGORIES] },
+                type: { type: "string", enum: ["Expense"] },
               },
               required: ["amount", "description", "date", "category", "type"],
               additionalProperties: false,
