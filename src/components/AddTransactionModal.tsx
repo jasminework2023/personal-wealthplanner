@@ -1,16 +1,68 @@
 import { useEffect, useMemo, useState } from "react";
-const API_BASE = "/api";
 import { Loader2, Sparkles, Camera, Upload } from "lucide-react";
 import { Modal } from "./Modal";
 import type { Transaction, TransactionType } from "../data/types";
 import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
 import { parseTransactionText } from "../lib/transactionParser";
 
+const API_BASE = "/api";
+
 const fallbackCategories = [
   "Gajian", "Freelance Income", "Business Income", "Commission", "Dividend / Interest", "Side Hustle",
   "Utilities", "Internet & Phone", "Insurance Premium", "Food & Groceries", "Transport", "Entertainment", "Education", "Charity",
   "Mutual Funds", "Bonds", "Gold", "Deposito",
 ];
+
+const MAX_RECEIPT_SOURCE_BYTES = 12 * 1024 * 1024;
+const MAX_RECEIPT_UPLOAD_BYTES = 3 * 1024 * 1024;
+const MAX_RECEIPT_DIMENSION = 1800;
+
+async function compressReceiptImage(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("File yang dipilih bukan gambar.");
+  }
+  if (file.size > MAX_RECEIPT_SOURCE_BYTES) {
+    throw new Error("Foto terlalu besar. Pilih foto di bawah 12 MB.");
+  }
+
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Foto tidak bisa dibaca. Coba foto ulang dengan kamera biasa."));
+      img.src = sourceUrl;
+    });
+
+    const scale = Math.min(1, MAX_RECEIPT_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight));
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Browser tidak mendukung pemrosesan foto.");
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(image, 0, 0, width, height);
+
+    // JPEG keeps receipt text sharp enough while making phone-camera payloads
+    // small enough for a Vercel Function request.
+    const qualities = [0.82, 0.72, 0.62, 0.52];
+    for (const quality of qualities) {
+      const dataUrl = canvas.toDataURL("image/jpeg", quality);
+      const base64Length = dataUrl.split(",")[1]?.length ?? 0;
+      const estimatedBytes = Math.ceil(base64Length * 3 / 4);
+      if (estimatedBytes <= MAX_RECEIPT_UPLOAD_BYTES) return dataUrl;
+    }
+
+    throw new Error("Foto masih terlalu besar setelah dikompres. Coba foto struk lebih dekat dan tidak terlalu lebar.");
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
 
 export function AddTransactionModal({
   open,
@@ -32,6 +84,12 @@ export function AddTransactionModal({
   const [receiptLoading, setReceiptLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const { setup } = useFinanceData();
+
+  useEffect(() => {
+    return () => {
+      if (receiptPreview) URL.revokeObjectURL(receiptPreview);
+    };
+  }, [receiptPreview]);
   const activeCategories = useMemo(() => ({
     Income: setup.income.filter((x) => x.active && x.name.trim()).map((x) => x.name),
     Expense: setup.expense.filter((x) => x.active && x.name.trim()).map((x) => x.name),
@@ -250,9 +308,43 @@ export function AddTransactionModal({
           />
           <div className="rounded-xl border border-dashed border-rose-200 bg-rose-50/40 p-3">
             <div className="flex items-center justify-between gap-2"><div><p className="text-[13px] font-semibold text-rose-700">Foto struk dengan AI</p><p className="text-[11px] text-charcoal/55 mt-0.5">Upload/foto struk, review hasilnya, lalu simpan.</p></div><Camera size={18} className="text-rose-600"/></div>
-            <label className="mt-2 flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 py-2 text-[12px] font-semibold text-rose-700"><Upload size={14}/> Pilih / Foto Struk<input type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{const file=e.target.files?.[0];if(!file)return;setReceiptFile(file);setReceiptPreview(URL.createObjectURL(file));setAiError("");}}/></label>
+            <label className="mt-2 flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 py-2 text-[12px] font-semibold text-rose-700"><Upload size={14}/> Pilih / Foto Struk<input type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{
+  const file=e.target.files?.[0];
+  e.currentTarget.value="";
+  if(!file)return;
+  if(!file.type.startsWith("image/")){
+    setAiError("Pilih file gambar untuk struk.");
+    return;
+  }
+  if(file.size > MAX_RECEIPT_SOURCE_BYTES){
+    setAiError("Foto terlalu besar. Pilih foto di bawah 12 MB.");
+    return;
+  }
+  setReceiptFile(file);
+  setReceiptPreview(URL.createObjectURL(file));
+  setAiError("");
+}}/></label>
             {receiptPreview&&<img src={receiptPreview} alt="Preview struk" className="mt-2 max-h-40 w-full rounded-lg object-contain bg-white"/>}
-            {receiptFile&&<button type="button" disabled={receiptLoading} onClick={async()=>{setReceiptLoading(true);setAiError("");try{const reader=new FileReader();const dataUrl=await new Promise<string>((resolve,reject)=>{reader.onload=()=>resolve(String(reader.result));reader.onerror=reject;reader.readAsDataURL(receiptFile);});const r=await fetch(`${API_BASE}/receipt-ai`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({image:dataUrl})});const j=await r.json();if(!r.ok)throw new Error(j.error||"Gagal membaca struk");setAiPreview(j.transaction);}catch(e){setAiError(e instanceof Error?e.message:"Gagal membaca struk");}finally{setReceiptLoading(false);}}} className="mt-2 w-full rounded-lg bg-rose-600 py-2 text-[12px] font-semibold text-white disabled:opacity-50">{receiptLoading?"Membaca struk…":"Baca struk dengan AI"}</button>}
+            {receiptFile&&<button type="button" disabled={receiptLoading} onClick={async()=>{
+  setReceiptLoading(true);
+  setAiError("");
+  try{
+    const dataUrl=await compressReceiptImage(receiptFile);
+    const r=await fetch(`${API_BASE}/receipt-ai`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({image:dataUrl}),
+    });
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(j.error||`Gagal membaca struk (HTTP ${r.status})`);
+    if(!j.transaction) throw new Error("AI tidak mengembalikan data transaksi. Coba foto ulang.");
+    setAiPreview(j.transaction);
+  }catch(e){
+    setAiError(e instanceof Error?e.message:"Gagal membaca struk");
+  }finally{
+    setReceiptLoading(false);
+  }
+}} className="mt-2 w-full rounded-lg bg-rose-600 py-2 text-[12px] font-semibold text-white disabled:opacity-50">{receiptLoading?"Mengompres & membaca…":"Baca struk dengan AI"}</button>}
           </div>
           {aiError && <p className="text-[13px] text-rose-600">{aiError}</p>}
 
