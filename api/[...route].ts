@@ -43,13 +43,23 @@ const handlers: Record<string, (req: VercelRequest, res: VercelResponse) => unkn
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const rawRoute = req.query.route;
-  const route = Array.isArray(rawRoute) ? rawRoute[0] : String(rawRoute || "");
-  const target = handlers[route];
+  // Vercel catch-all params are normally available as req.query.route.
+  // Keep a pathname fallback so this remains robust if the runtime supplies
+  // the route parameter in a different shape.
+  const routeParam = req.query.route;
+  let route = Array.isArray(routeParam) ? routeParam.join("/") : String(routeParam || "");
 
-  if (!target) {
-    return res.status(404).json({ error: `API route tidak ditemukan: ${route}` });
+  if (!route) {
+    const pathname = new URL(req.url || "/", "http://localhost").pathname;
+    route = pathname.replace(/^\/api\/?/, "").replace(/\/$/, "");
   }
 
-  return target(req, res);
+  const name = route.split("/").filter(Boolean)[0] || "";
+  const target = handlers[name];
+
+  if (!target) {
+    return res.status(404).json({ error: `API route tidak ditemukan: /api/${route}` });
+  }
+
+  return await target(req, res);
 }
