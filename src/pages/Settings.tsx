@@ -124,7 +124,7 @@ export function Settings() {
 
         {loading ? <div className="py-12 flex justify-center text-charcoal/40"><Loader2 className="animate-spin"/></div> :
           <div className="mt-6 overflow-x-auto pb-2">
-            <div className="grid min-w-[1120px] grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {SECTION_META.map((section) => (
                 <SetupSection key={section.key} meta={section} items={setup[section.key]} onAdd={() => addItem(section.key)} onRemove={(i) => removeItem(section.key, i)} onUpdate={(i, patch) => updateItem(section.key, i, patch)} />
               ))}
