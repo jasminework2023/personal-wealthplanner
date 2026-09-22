@@ -30,11 +30,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const referenceId = `wp_${Date.now()}_${crypto.randomBytes(8).toString("hex")}`;
     const dashboardToken = crypto.randomBytes(32).toString("hex");
 
-    // Create the customer record first. The account stays inactive until
-    // Xendit confirms payment through the server-side webhook.
+    // Store email so a legacy Xendit Invoice webhook can safely map
+    // payer_email back to the pending Wealthplanner customer.
     const { error: insertError } = await supabase().from("users").insert({
       username: cleanName,
       email: cleanEmail,
@@ -48,8 +47,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: "Gagal menyiapkan akun customer." });
     }
 
-    // reference_id carries the dashboard token so the webhook can find the
-    // pending customer without requiring another orders table for the MVP.
     const payload = {
       reference_id: dashboardToken,
       session_type: "PAY",
@@ -92,7 +89,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const data = await response.json();
     if (!response.ok) {
       console.error("Xendit create session error:", data);
-      // Clean up the pending row when checkout creation fails.
       await supabase().from("users").delete().eq("dashboard_token", dashboardToken);
       return res.status(502).json({ error: data?.message || "Gagal membuat checkout Xendit." });
     }
