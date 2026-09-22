@@ -37,6 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Xendit confirms payment through the server-side webhook.
     const { error: insertError } = await supabase().from("users").insert({
       username: cleanName,
+      email: cleanEmail,
       dashboard_token: dashboardToken,
       is_active: false,
       spreadsheet_id: null,
