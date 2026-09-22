@@ -118,7 +118,7 @@ export function DashboardWelcome() {
                 <div>
                   <h2 className="font-semibold text-forest-900">Aktivasi sedang diproses</h2>
                   <p className="mt-1 text-sm text-charcoal/60">
-                    Setelah Xendit mengirim konfirmasi pembayaran, akun akan otomatis aktif. Halaman ini mengecek status secara berkala.
+                    Setelah Lynk mengirim konfirmasi pembayaran, akun akan otomatis aktif. Halaman ini mengecek status secara berkala.
                   </p>
                 </div>
               </div>
