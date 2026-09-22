@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { sendWelcomeEmail } from "../lib/email";
+import { sendWelcomeEmail } from "../lib/email.js";
 
 function db() {
   return createClient(
@@ -27,6 +27,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const referenceId = String(data.reference_id || "");
   const amount = Number(data.amount || 0);
 
+  // Existing Wealthplanner Personal remains Rp149.000.
+  // Wealth Tracker AI uses Rp139.000. Both activate the same customer access
+  // record, while the product-specific checkout is created by its own endpoint.
   if (!referenceId || ![149000, 139000].includes(amount) || data.status !== "COMPLETED") {
     return res.status(400).json({ error: "Webhook pembayaran tidak valid." });
   }
@@ -35,15 +38,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const supabase = db();
     const { data: user, error } = await supabase
       .from("users")
-      .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active")
+      .select("user_id, username, email, spreadsheet_id, is_active")
       .eq("dashboard_token", referenceId)
       .single();
 
     if (error || !user) return res.status(404).json({ error: "Customer tidak ditemukan." });
 
-    // The email is saved at checkout time, so the webhook remains the source
-    // of truth for payment completion without relying on the browser redirect.
-    // Resend idempotency keeps webhook retries from sending duplicate emails.
     if (!user.is_active) {
       const { error: updateError } = await supabase
         .from("users")
@@ -54,28 +54,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (user.email) {
-      try {
-        await sendWelcomeEmail({
-          to: user.email,
-          name: user.username,
-          dashboardToken: referenceId,
-          referenceId,
-        });
-      } catch (emailError) {
-        console.error("welcome email error:", emailError);
-        // Return 500 so Xendit can retry the webhook. Resend requests use the
-        // same reference-based idempotency key in the API layer when supported.
-        return res.status(500).json({
-          error: "Pembayaran sudah diterima, tetapi email welcome gagal dikirim. Webhook akan dicoba lagi.",
-        });
-      }
+      await sendWelcomeEmail({
+        to: user.email,
+        name: user.username,
+        dashboardToken: referenceId,
+      });
     } else {
-      console.warn("welcome email skipped: users.email kosong", referenceId);
+      console.warn("Customer activated without email; welcome email skipped.", referenceId);
     }
 
     return res.status(200).json({
       received: true,
       activated: true,
+      alreadyActive: Boolean(user.is_active),
       emailSent: Boolean(user.email),
       product: amount === 139000 ? "wealth-tracker-ai" : "wealthplanner-personal",
       needsSpreadsheet: !user.spreadsheet_id,
