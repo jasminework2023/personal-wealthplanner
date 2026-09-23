@@ -4,7 +4,6 @@ import crypto from "node:crypto";
 
 const PRICE = 149000;
 const PRODUCT_NAME = "Wealthplanner Personal — Lifetime Access";
-const LYNK_CHECKOUT_URL = "https://lynk.id/jannatuljasmine_/ndwogm0rrg6z";
 
 function supabase() {
   return createClient(
@@ -24,30 +23,56 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: "Nama dan email wajib diisi." });
   }
 
+  const xenditKey = process.env.XENDIT_SECRET_KEY;
+  if (!xenditKey) {
+    return res.status(500).json({ error: "XENDIT_SECRET_KEY belum diset." });
+  }
+
   try {
     const dashboardToken = crypto.randomBytes(32).toString("hex");
 
-    // Store email so a legacy Xendit Invoice webhook can safely map
-    // payer_email back to the pending Wealthplanner customer.
     const { error: insertError } = await supabase().from("users").insert({
-  user_id: crypto.randomUUID(),
-  username: cleanName,
-  email: cleanEmail,
-  dashboard_token: dashboardToken,
-  is_active: false,
-  spreadsheet_id: null,
-});
+      user_id: crypto.randomUUID(),
+      username: cleanName,
+      email: cleanEmail,
+      dashboard_token: dashboardToken,
+      is_active: false,
+      spreadsheet_id: null,
+    });
 
     if (insertError) {
       console.error("create-payment user insert error:", insertError.message);
       return res.status(500).json({ error: "Gagal menyiapkan akun customer." });
     }
 
+    const invoiceRes = await fetch("https://api.xendit.co/v2/invoices", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${xenditKey}:`).toString("base64")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        external_id: dashboardToken,
+        amount: PRICE,
+        payer_email: cleanEmail,
+        description: PRODUCT_NAME,
+        success_redirect_url: `https://wealthplanner.id/dashboard?token=${dashboardToken}`,
+        failure_redirect_url: "https://wealthplanner.id/checkout?status=failed",
+      }),
+    });
+
+    const invoice = await invoiceRes.json();
+
+    if (!invoiceRes.ok) {
+      console.error("Xendit invoice error:", invoice);
+      return res.status(500).json({ error: "Gagal membuat invoice Xendit." });
+    }
+
     return res.status(200).json({
       success: true,
-      paymentLink: LYNK_CHECKOUT_URL,
+      paymentLink: invoice.invoice_url,
       referenceId: dashboardToken,
-      provider: "lynk",
+      provider: "xendit",
     });
   } catch (error) {
     console.error("create-payment error:", error);
