@@ -8,7 +8,7 @@ const PRODUCT_NAME = "Wealthplanner Personal — Lifetime Access";
 function supabase() {
   return createClient(
     process.env.SUPABASE_URL as string,
-    process.env.SUPABASE_ANON_KEY as string,
+    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
   );
 }
 
