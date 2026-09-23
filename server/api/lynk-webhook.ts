@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import crypto from "node:crypto";
-import sendActivationEmail from "../lib/email";
+import sendActivationEmail from "../lib/email.js";
 
 function db() {
   return createClient(
