@@ -8,7 +8,7 @@ const PRODUCT_NAME = "Wealth Tracker AI";
 function db() {
   return createClient(
     process.env.SUPABASE_URL as string,
-    process.env.SUPABASE_ANON_KEY as string,
+    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
   );
 }
 
