@@ -6,7 +6,7 @@ const PRICE = 139000;
 function db() {
   return createClient(
     process.env.SUPABASE_URL as string,
-    process.env.SUPABASE_ANON_KEY as string,
+    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
   );
 }
 
@@ -44,7 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: "Customer Wealth Tracker tidak ditemukan." });
     }
 
-    if (user.is_active) {
+    if (Number(user.is_active) === 1) {
       return res.status(200).json({ received: true, alreadyActive: true });
     }
 
