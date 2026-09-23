@@ -30,12 +30,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Store email so a legacy Xendit Invoice webhook can safely map
     // payer_email back to the pending Wealthplanner customer.
     const { error: insertError } = await supabase().from("users").insert({
-      username: cleanName,
-      email: cleanEmail,
-      dashboard_token: dashboardToken,
-      is_active: 0,
-      spreadsheet_id: null,
-    });
+  user_id: crypto.randomUUID(),
+  username: cleanName,
+  email: cleanEmail,
+  dashboard_token: dashboardToken,
+  is_active: false,
+  spreadsheet_id: null,
+});
 
     if (insertError) {
       console.error("create-payment user insert error:", insertError.message);
