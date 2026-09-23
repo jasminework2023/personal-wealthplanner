@@ -75,8 +75,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: "Customer tidak ditemukan." });
     }
 
-    // Idempotent: Lynk may retry the same successful event.
-    if (user.is_active) {
+    // Idempotent: Lynk may retry the same successful event. is_active is INTEGER 0/1.
+    if (Number(user.is_active) === 1) {
       return res.status(200).json({ received: true, alreadyActive: true });
     }
 
@@ -92,7 +92,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { error: updateError } = await supabase
       .from("users")
-      .update({ is_active: true, email: payerEmail })
+      .update({ is_active: 1, email: payerEmail })
       .eq("user_id", user.user_id);
 
     if (updateError) throw new Error(updateError.message);
