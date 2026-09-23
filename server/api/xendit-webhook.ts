@@ -122,6 +122,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const insert = await supabase
         .from("users")
         .insert({
+          user_id: crypto.randomUUID(),
           username,
           email: payerEmail,
           dashboard_token: dashboardToken,
