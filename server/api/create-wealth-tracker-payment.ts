@@ -22,11 +22,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
   const { name, email, phone } = req.body || {};
-  const cleanName = String(name || "").trim();
+  const Name = String(name || "").trim();
   const cleanEmail = String(email || "").trim().toLowerCase();
   const cleanPhone = String(phone || "").trim();
 
-  if (!cleanName || !cleanEmail || !/^\S+@\S+\.\S+$/.test(cleanEmail)) {
+  if (!Name || !cleanEmail || !/^\S+@\S+\.\S+$/.test(cleanEmail)) {
     return res.status(400).json({ error: "Nama dan email wajib diisi dengan benar." });
   }
 
@@ -35,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { error: insertError } = await db().from("users").insert({
       user_id: crypto.randomUUID(),
-      username: cleanName,
+      username: Name,
       dashboard_token: dashboardToken,
       is_active: 0,
       spreadsheet_id: null,
@@ -59,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         type: "INDIVIDUAL",
         email: cleanEmail,
         mobile_number: cleanPhone || undefined,
-        individual_detail: { given_names: cleanName },
+        individual_detail: { given_names: Name },
       },
       items: [{
         reference_id: "wealth-tracker-ai",
