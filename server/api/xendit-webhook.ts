@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import crypto from "node:crypto";
 import sendActivationEmail from "../lib/email.js";
 
 function db() {
@@ -29,32 +30,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const callbackToken = getCallbackToken(req);
   const expected = process.env.XENDIT_WEBHOOK_TOKEN;
-
   if (!expected || !callbackToken || callbackToken !== expected) {
     return res.status(401).json({ error: "Unauthorized webhook" });
   }
 
   const body = req.body || {};
-
-  /*
-   * This endpoint supports both:
-   * 1) Legacy Invoice webhook: status === "PAID"
-   * 2) Payment Session webhook: event === "payment_session.completed"
-   *
-   * Xendit documents these as different webhook models; legacy invoices
-   * send paid-invoice notifications, while Payment Sessions use their own
-   * lifecycle event. See Xendit's webhook docs.
-   */
-
   let amount = 0;
   let referenceId = "";
   let payerEmail = "";
   let payerName = "";
   let paid = false;
 
-  // Legacy Invoice payload, e.g.:
-  // { status: "PAID", amount: 149000, payer_email: "...", external_id: "WP-..." }
-  if (body.status === "PAID") {
+  // Legacy Invoice webhook
+  if (String(body.status || "").toUpperCase() === "PAID") {
     amount = Number(body.amount || body.paid_amount || 0);
     payerEmail = String(body.payer_email || "").trim().toLowerCase();
     payerName = String(body.payer_name || "").trim();
@@ -62,7 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     paid = true;
   }
 
-  // Payment Session payload.
+  // Payment Session webhook
   if (body.event === "payment_session.completed") {
     const data = body.data || {};
     amount = Number(data.amount || 0);
@@ -81,99 +69,88 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     paid = String(data.status || "COMPLETED").toUpperCase() === "COMPLETED";
   }
 
-  // Ignore unrelated webhook events with a successful acknowledgement.
-  if (!paid) {
-    return res.status(200).json({ received: true, ignored: true });
-  }
-
+  if (!paid) return res.status(200).json({ received: true, ignored: true });
   if (!isValidAmount(amount)) {
     return res.status(400).json({ error: "Webhook pembayaran tidak valid." });
   }
-
   if (!payerEmail && !referenceId) {
     return res.status(400).json({ error: "Identitas customer tidak ditemukan." });
   }
 
   try {
     const supabase = db();
+    let user: any = null;
 
-    /*
-     * New checkout records store the customer's email.
-     * Payment Session records can also be found directly by dashboard_token.
-     * Legacy Invoice payloads do not contain dashboard_token, so email is the
-     * safe bridge between the invoice and the pending customer record.
-     */
-    let user: {
-      user_id: string;
-      username: string;
-      email: string | null;
-      dashboard_token: string;
-      spreadsheet_id: string | null;
-      is_active: boolean;
-    } | null = null;
-
+    // New Payment Session: dashboard token is the safest lookup.
     if (body.event === "payment_session.completed" && referenceId) {
       const result = await supabase
         .from("users")
         .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active")
         .eq("dashboard_token", referenceId)
-        .single();
-
-      if (!result.error) user = result.data;
+        .maybeSingle();
+      if (!result.error && result.data) user = result.data;
     }
 
+    // Legacy Invoice: map by payer email when an account already exists.
     if (!user && payerEmail) {
       const result = await supabase
         .from("users")
         .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active")
         .eq("email", payerEmail)
-        .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-
       if (!result.error && result.data) user = result.data;
     }
 
-    if (!user) {
-      console.error("xendit-webhook customer not found", {
-        payerEmail,
-        referenceId,
-        amount,
-      });
-      return res.status(404).json({ error: "Customer tidak ditemukan." });
+    // Important: the database uses INTEGER 0/1 for is_active.
+    if (user && Number(user.is_active) === 1) {
+      return res.status(200).json({ received: true, alreadyActive: true });
     }
 
-    if (user.is_active) {
-      return res.status(200).json({
-        received: true,
-        alreadyActive: true,
-      });
+    // Recovery for a legacy paid Invoice whose checkout was created before
+    // the customer row was saved. The webhook is authenticated by Xendit's
+    // callback token and the amount is validated above, so we can safely
+    // create the missing access record instead of losing the payment.
+    if (!user) {
+      if (!payerEmail) {
+        return res.status(400).json({ error: "Email customer tidak ditemukan." });
+      }
+
+      const dashboardToken = crypto.randomBytes(32).toString("hex");
+      const username = payerName || payerEmail.split("@")[0] || "Customer";
+
+      const insert = await supabase
+        .from("users")
+        .insert({
+          username,
+          email: payerEmail,
+          dashboard_token: dashboardToken,
+          is_active: 0,
+          spreadsheet_id: null,
+        })
+        .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active")
+        .single();
+
+      if (insert.error || !insert.data) {
+        throw new Error(insert.error?.message || "Gagal membuat akun customer.");
+      }
+      user = insert.data;
     }
 
     const dashboardUrl =
       `https://wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}`;
 
-    /*
-     * Send the email before marking the account active. If Resend fails,
-     * return 500 so Xendit retries instead of activating silently.
-     */
-    if (payerEmail) {
-      await sendActivationEmail({
-        to: payerEmail,
-        name: payerName || user.username,
-        product: productName(amount),
-        dashboardUrl,
-      });
-    } else {
-      return res.status(400).json({ error: "Email customer tidak ditemukan." });
-    }
+    // Send email first. If Resend fails, return 500 so Xendit can retry.
+    await sendActivationEmail({
+      to: payerEmail || user.email,
+      name: payerName || user.username,
+      product: productName(amount),
+      dashboardUrl,
+    });
 
     const { error: updateError } = await supabase
       .from("users")
-      .update({
-        is_active: true,
-        email: payerEmail,
-      })
+      .update({ is_active: 1, email: payerEmail || user.email })
       .eq("user_id", user.user_id);
 
     if (updateError) throw new Error(updateError.message);
@@ -183,6 +160,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       activated: true,
       product: productName(amount),
       needsSpreadsheet: !user.spreadsheet_id,
+      recoveredMissingCustomer: true,
     });
   } catch (error) {
     console.error("xendit-webhook activation/email error:", error);
