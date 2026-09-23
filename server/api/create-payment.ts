@@ -36,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       username: cleanName,
       email: cleanEmail,
       dashboard_token: dashboardToken,
-      is_active: false,
+      is_active: 0,
       spreadsheet_id: null,
     });
 
