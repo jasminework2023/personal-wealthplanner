@@ -50,7 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { error: updateError } = await db()
       .from("users")
-      .update({ is_active: true })
+      .update({ is_active: 1 })
       .eq("dashboard_token", referenceId);
 
     if (updateError) throw new Error(updateError.message);
