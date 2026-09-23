@@ -1,90 +1,29 @@
-# Personal Wealthplanner — Dashboard
+# Paket perbaikan personal-wealthplanner
 
-Website dashboard keuangan personal, dibangun dari brief "Personal Finance
-Dashboard" — mempertahankan logika & data dari sistem Google Sheets/bot
-Telegram, dengan UI baru yang modern.
+4 file ini SUDAH lengkap (bukan potongan) — tinggal upload/replace file yang namanya sama persis di GitHub repo kamu, tempatnya sesuai struktur folder di dalam ZIP ini.
 
-## Isi
+## Apa yang diperbaiki di tiap file
 
-- **Home** — overview cepat: 4 stat card, cash flow chart, spending by
-  category (donut), financial goal, transaksi terbaru
-- **Dashboard Finance** *(halaman paling lengkap)* — ringkasan bulanan,
-  income overview, savings overview, expense overview (dengan peringatan
-  over-budget), asset tracker, dan stock portfolio
-- **Transaction Report** — tabel transaksi dengan search & filter
-- **Monthly Budgeting** — budget per kategori dengan status Healthy/Near
-  Limit/Over Budget
-- **Kalkulator Finansial** & **Proteksi Finansial** — link keluar ke
-  wealthplanner.id (bukan halaman duplikat)
-- **Tambah Transaksi** (manual) dan **Catat dengan AI** (mock parser —
-  siap disambungkan ke bot Telegram beneran nanti)
+1. vercel.json
+   - includeFiles sekarang mencakup server/lib/** juga (sebelumnya cuma server/api/**)
+   - Ini yang bikin webhook selalu 500 "Cannot find module"
 
-Semua data ada di `src/data/` (bukan hardcode di komponen), jadi gampang
-diganti API/database asli nanti.
+2. server/api/create-payment.ts
+   - Sekarang beneran bikin Xendit Invoice (sebelumnya kirim link Lynk statis)
+   - Insert user sekarang isi user_id (sebelumnya kosong -> gagal karena kolom NOT NULL)
+   - is_active dikirim sebagai 0 (integer), bukan false (boolean)
 
-## Cara jalanin di komputer sendiri
+3. server/api/create-wealth-tracker-payment.ts
+   - Insert user sekarang isi user_id
+   - is_active dikirim sebagai 0 (integer)
+   - Sisanya (flow Xendit Payment Session) tidak diubah, sudah benar
 
-```
-npm install
-npm run dev
-```
+4. server/api/lynk-webhook.ts
+   - is_active saat aktivasi sekarang dikirim sebagai 1 (integer), bukan true (boolean)
 
-Buka `http://localhost:5173` di browser.
+CATATAN: server/api/xendit-webhook.ts TIDAK termasuk di paket ini -- file itu di repo kamu
+sekarang sudah benar (sudah pakai is_active 0/1 dan sudah ada recovery logic). Tidak perlu diganti.
 
-## Cara deploy ke Vercel
-
-1. Bikin repo GitHub baru, upload semua isi folder ini (kecuali
-   `node_modules` dan `dist`, sudah di-exclude lewat `.gitignore`)
-2. Di Vercel, klik "Add New Project", pilih repo itu
-3. Vercel otomatis kenal ini project Vite — nggak perlu setting apa-apa,
-   langsung klik Deploy
-
-## Cara sambungin ke data asli (Supabase + Google Sheets bot)
-
-Dashboard ini otomatis pakai **data contoh** kalau belum ada token, dan
-otomatis pindah ke **data asli** begitu ketemu token dari bot Telegram.
-
-1. Tambah 3 environment variable di Vercel (Project Settings →
-   Environment Variables) — lihat `.env.example`:
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-   - `GOOGLE_CREDENTIALS` (JSON service account, sama persis dengan yang
-     dipakai bot di Railway)
-
-2. Setelah deploy, update link yang dikirim command `/dashboard` di
-   `bot.py` supaya mengarah ke domain project ini, misal:
-   ```
-   https://nama-project-kamu.vercel.app/?token={token}
-   ```
-
-3. User buka link itu dari Telegram → dashboard otomatis fetch data
-   asli lewat `api/dashboard.ts`, dan token tersimpan di browser
-   (localStorage) biar nggak perlu klik link lagi tiap buka dashboard.
-
-4. Ada juga jalur manual: buka dashboard tanpa token, nanti muncul
-   banner kuning dengan kotak buat tempel token manual — berguna kalau
-   mau ngetes tanpa Telegram.
-
-### Yang sudah konek ke data asli
-
-- Home: total income/expense/saving, cash flow, recent transactions
-- Dashboard Finance: Income/Expense/Saving Overview per kategori
-- Transaction Report: seluruh tabel & filter
-
-### Yang masih data contoh (belum ada sumbernya di bot)
-
-- Budget allocation per kategori (bot belum pernah nyatet budget,
-  cuma realisasi) — makanya progress bar budget disembunyikan kalau
-  lagi pakai data asli, cuma tampil angka realisasi polos
-- Asset Tracker & Stock Net Worth — bot nggak pernah nyatet data aset/
-  saham sama sekali, ini masih 100% mock sampai ada keputusan gimana
-  cara nyatetnya (command baru di bot? input manual di website?)
-
-
-
-## Belum ada di build ini
-
-Screenshot referensi yang disebut di brief belum ke-attach saat dibangun,
-jadi struktur kategori & angka diambil murni dari teks brief. Kalau ada
-kategori/kolom yang ternyata beda di screenshot asli, kabari aja buat
-disesuaikan.
+## Cara pakai
+Di GitHub, buka tiap file yang namanya sama, klik pensil (Edit), hapus semua isi lama,
+paste isi baru dari file yang sama di ZIP ini, lalu commit ke main.
