@@ -41,8 +41,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const dashboardToken = crypto.randomBytes(32).toString("hex");
 
-    const { error: insertError } = await db().from("users").insert({
-      username: name,
+       const { error: insertError } = await db().from("users").insert({
+      user_id: crypto.randomUUID(),
+      username: cleanName,
       dashboard_token: dashboardToken,
       is_active: false,
       spreadsheet_id: null,
