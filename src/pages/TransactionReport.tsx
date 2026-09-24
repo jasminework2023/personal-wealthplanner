@@ -18,11 +18,10 @@ export function TransactionReport() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
   const [editing, setEditing] = useState<Transaction | null>(null);
-  const [deletedKeys, setDeletedKeys] = useState<Set<string>>(new Set());
 
   const transactionKey = (t: Transaction) =>
     t.sheetRow ? `sheet:${t.sheetRow}` : `local:${t.date}|${t.type}|${t.category}|${t.description}|${t.amount}`;
-  const allTxs = [...transactions, ...extraTxs].filter((t) => !deletedKeys.has(transactionKey(t)));
+  const allTxs = [...transactions, ...extraTxs];
   const categories = useMemo(() => {
     const setupCategories = [
       ...setup.income.filter((x) => x.active).map((x) => x.name),
@@ -210,7 +209,27 @@ export function TransactionReport() {
         )}
       </Card>
 
-      <EditTransactionModal open={!!editing} transaction={editing} onClose={()=>setEditing(null)} onSaved={(next)=>{setExtraTxs(prev=>prev.map(x=>x===editing?next:x)); setEditing(null); window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));}} onDeleted={(old)=>{setDeletedKeys(prev=>new Set(prev).add(transactionKey(old)));setExtraTxs(prev=>prev.filter(x=>transactionKey(x)!==transactionKey(old)));setEditing(null);window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));}} />
+      <EditTransactionModal
+        open={!!editing}
+        transaction={editing}
+        onClose={() => setEditing(null)}
+        onSaved={() => {
+          // Real data always comes from the server; rely on the full
+          // refetch triggered below instead of patching local arrays by
+          // object reference (which never matched fetched transactions).
+          setEditing(null);
+          window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));
+        }}
+        onDeleted={() => {
+          // Do NOT keep a local "deletedKeys" set keyed by sheetRow.
+          // Google Sheets physically shifts every row below the deleted
+          // one up by one, so a stale sheetRow-based key ends up hiding a
+          // completely different (unrelated) transaction after the next
+          // refetch. A full refetch is the only correct source of truth.
+          setEditing(null);
+          window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));
+        }}
+      />
 
       <AddTransactionModal
         open={modalOpen}
