@@ -256,7 +256,7 @@ export function DashboardFinance() {
       </div>
 
       {/* A. Ringkasan Bulanan */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Monthly Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
         <StatCard
           label="Budget Expense"
