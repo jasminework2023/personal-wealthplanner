@@ -1114,8 +1114,16 @@ export function CalculatorDetail({ id, onBack, onSaveResult, onNavigate }) {
       .wp-calculator{--ink:var(--calc-ink);--ink-2:var(--calc-ink-2);--muted:var(--calc-muted);--accent:var(--calc-accent);--accent-ink:var(--calc-accent-ink);--surface:var(--calc-surface);--surface-2:var(--calc-surface-2);--border:var(--calc-border)}
       .wp-calculator .card{background:var(--calc-surface);border:1px solid var(--calc-border);border-radius:16px;padding:18px}
       .wp-calculator .card-tight{padding:12px 14px}
-      .wp-calculator .row{display:flex;align-items:center}.wp-calculator .row-between{display:flex;align-items:center;justify-content:space-between}
+      .wp-calculator .row{display:flex;align-items:center}.wp-calculator .row-between{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:4px 12px}
+      .wp-calculator .row-between > *{min-width:0}
+      .wp-calculator .row-between > *:last-child{margin-left:auto;text-align:right;overflow-wrap:anywhere;word-break:break-word}
       .wp-calculator .stack{display:flex;flex-direction:column}.wp-calculator .muted{color:var(--calc-muted)}.wp-calculator .ink-2{color:var(--calc-ink-2)}.wp-calculator .mono{font-variant-numeric:tabular-nums}.wp-calculator .divider{height:1px;background:var(--calc-border)}
+      /* Any two-column inline grid (e.g. Komponen biaya rows) stacks to one
+         column on narrow screens instead of clipping the value inside a
+         too-narrow input. */
+      @media (max-width: 420px) {
+        .wp-calculator [style*="1.1fr"]{grid-template-columns:1fr !important}
+      }
     `}</style>
     <button type="button" onClick={onBack} style={{width:"fit-content",border:0,background:"transparent",color:"var(--calc-ink-2)",fontSize:13,cursor:"pointer",padding:0}}>← Semua kalkulator</button>
     <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--calc-muted)"}}>FINANCIAL CALCULATOR</div><h1 style={{fontSize:28,lineHeight:1.15,color:"var(--calc-ink)",margin:"7px 0 6px"}}>{meta.title}</h1><p style={{margin:0,fontSize:13,color:"var(--calc-ink-2)"}}>{meta.desc}</p></div>
