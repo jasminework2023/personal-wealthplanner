@@ -91,7 +91,7 @@ export function Home() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Assets" value={formatRupiah(assets.totalAssets)} icon={Wallet} tone="forest" />
         <StatCard label="Monthly Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
         <StatCard label="Monthly Spending" value={formatRupiah(totalExpense)} icon={TrendingDown} tone="rose" />
