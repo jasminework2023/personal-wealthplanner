@@ -31,7 +31,7 @@ function asBool(value: unknown) {
 }
 
 async function getUser(token: string) {
-  const supabase = createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_ANON_KEY as string);
+  const supabase = createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SERVICE_ROLE_KEY as string);
   const { data, error } = await supabase
     .from("users")
     .select("username, spreadsheet_id, is_active")
