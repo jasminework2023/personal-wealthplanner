@@ -80,15 +80,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ received: true, alreadyActive: true });
     }
 
-    const dashboardUrl =
-      `https://wealthplanner.id/dashboard/welcome?token=${encodeURIComponent(user.dashboard_token)}`;
+    const dashboardUrl = user.spreadsheet_id
+      ? `https://wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}`
+      : `https://wealthplanner.id/dashboard/welcome?ref=${encodeURIComponent(user.dashboard_token)}`;
 
     await sendActivationEmail({
       to: payerEmail,
       name: payerName || user.username,
       product: amount === 139000 ? "Wealth Tracker AI" : "Wealthplanner Personal",
       dashboardUrl,
-      templateUrl: process.env.GOOGLE_TEMPLATE_URL || null,
     });
 
     const { error: updateError } = await supabase
