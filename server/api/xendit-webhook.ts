@@ -80,7 +80,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const supabase = db();
     let user: any = null;
-    let recoveredMissingCustomer = false;
 
     // New Payment Session: dashboard token is the safest lookup.
     if (body.event === "payment_session.completed" && referenceId) {
@@ -137,11 +136,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         throw new Error(insert.error?.message || "Gagal membuat akun customer.");
       }
       user = insert.data;
-      recoveredMissingCustomer = true;
     }
 
-    const dashboardUrl =
-      `https://wealthplanner.id/dashboard/welcome?token=${encodeURIComponent(user.dashboard_token)}`;
+    // New customers land on the onboarding page first (Make a Copy -> Connect
+    // Sheet flow) instead of the main dashboard, which would otherwise render
+    // empty/broken until a spreadsheet is actually connected.
+    const dashboardUrl = user.spreadsheet_id
+      ? `https://wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}`
+      : `https://wealthplanner.id/dashboard/welcome?ref=${encodeURIComponent(user.dashboard_token)}`;
 
     // Send email first. If Resend fails, return 500 so Xendit can retry.
     await sendActivationEmail({
@@ -149,7 +151,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       name: payerName || user.username,
       product: productName(amount),
       dashboardUrl,
-      templateUrl: process.env.GOOGLE_TEMPLATE_URL || null,
     });
 
     const { error: updateError } = await supabase
@@ -164,7 +165,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       activated: true,
       product: productName(amount),
       needsSpreadsheet: !user.spreadsheet_id,
-      recoveredMissingCustomer,
+      recoveredMissingCustomer: true,
     });
   } catch (error) {
     console.error("xendit-webhook activation/email error:", error);
