@@ -3,6 +3,7 @@ type ActivationEmailArgs = {
   name: string;
   product: string;
   dashboardUrl: string;
+  spreadsheetUrl?: string | null;
 };
 
 export async function sendActivationEmail({
@@ -10,12 +11,16 @@ export async function sendActivationEmail({
   name,
   product,
   dashboardUrl,
+  spreadsheetUrl,
 }: ActivationEmailArgs) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL || "Wealthplanner <hello@wealthplanner.id>";
 
   if (!apiKey) throw new Error("RESEND_API_KEY belum diset");
   if (!to) throw new Error("Email customer kosong");
+
+  const safeDashboardUrl = escapeHtml(dashboardUrl);
+  const safeSpreadsheetUrl = spreadsheetUrl ? escapeHtml(spreadsheetUrl) : "";
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -36,11 +41,18 @@ export async function sendActivationEmail({
             Akses dashboard kamu sudah diaktifkan.
           </p>
           <p>
-            <a href="${dashboardUrl}"
+            <a href="${safeDashboardUrl}"
                style="display:inline-block;padding:12px 18px;background:#173f35;color:#fff;text-decoration:none;border-radius:8px">
-              Buka Dashboard
+              Buka Dashboard Saya
             </a>
           </p>
+          ${safeSpreadsheetUrl ? `
+          <p>
+            <a href="${safeSpreadsheetUrl}"
+               style="display:inline-block;padding:12px 18px;background:#e9f4ef;color:#173f35;text-decoration:none;border-radius:8px;border:1px solid #cfe5db">
+              Buka Wealth Tracker
+            </a>
+          </p>` : ""}
           <p>Kalau ini pertama kali kamu masuk, ikuti langkah onboarding di dashboard.</p>
           <p>Terima kasih,<br>Wealthplanner.id</p>
         </div>
@@ -51,9 +63,7 @@ export async function sendActivationEmail({
   const result = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(
-      `Resend ${response.status}: ${JSON.stringify(result)}`,
-    );
+    throw new Error(`Resend ${response.status}: ${JSON.stringify(result)}`);
   }
 
   return result;
