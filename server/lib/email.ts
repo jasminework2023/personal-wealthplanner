@@ -31,32 +31,60 @@ export async function sendActivationEmail({
     body: JSON.stringify({
       from,
       to: [to],
-      subject: "Pembayaran berhasil — akses Wealthplanner kamu sudah aktif",
+      subject: "Selamat datang di Wealthplanner 🎉",
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.6;color:#173f35;max-width:620px;margin:auto">
-          <h2>Pembayaran berhasil 🎉</h2>
+          <h2>🎉 Selamat datang di Wealthplanner!</h2>
           <p>Halo ${escapeHtml(name)},</p>
           <p>
-            Pembayaran untuk <strong>${escapeHtml(product)}</strong> sudah kami terima.
-            Akses dashboard kamu sudah diaktifkan.
+            Pembayaran untuk <strong>${escapeHtml(product)}</strong> sudah berhasil kami terima.
+            Terima kasih sudah mempercayakan perjalanan perencanaan keuanganmu bersama Wealthplanner.
           </p>
           <p>
-            <a href="${safeDashboardUrl}"
-               style="display:inline-block;padding:12px 18px;background:#173f35;color:#fff;text-decoration:none;border-radius:8px">
-              Buka Dashboard Saya
-            </a>
+            Mulai sekarang, kamu sudah bisa mengakses <strong>dashboard keuangan pribadi</strong>
+            dari Personal Wealth Planner untuk mulai mencatat, memantau, dan merencanakan keuanganmu.
           </p>
+
+          <div style="margin-top:24px">
+            <h3 style="margin-bottom:8px">💻 Personal Wealth Planner</h3>
+            <p style="margin-top:0">
+              <a href="${safeDashboardUrl}"
+                 style="display:inline-block;padding:12px 18px;background:#173f35;color:#fff;text-decoration:none;border-radius:8px">
+                Buka Dashboard Saya
+              </a>
+            </p>
+            <p style="margin-top:4px;font-size:14px;color:#5f716b">
+              Untuk mengakses web app Personal Wealth Planner dan mulai menggunakan fitur-fitur di dalamnya.
+            </p>
+          </div>
+
           ${safeSpreadsheetUrl ? `
+          <div style="margin-top:24px">
+            <h3 style="margin-bottom:8px">📊 Wealth Tracker</h3>
+            <p style="margin-top:0">
+              <a href="${safeSpreadsheetUrl}"
+                 style="display:inline-block;padding:12px 18px;background:#e9f4ef;color:#173f35;text-decoration:none;border-radius:8px;border:1px solid #cfe5db">
+                Buka Sheet Wealthplanner
+              </a>
+            </p>
+            <p style="margin-top:4px;font-size:14px;color:#5f716b">
+              Untuk mengakses Sheet Personal Wealth Planner sebagai bagian dari proses pencatatan dan tracking keuanganmu.
+            </p>
+          </div>` : ""}
+
+          <p style="margin-top:24px">
+            📌 <strong>Petunjuk penggunaan tersedia di masing-masing link di atas.</strong>
+          </p>
+
           <p>
-            <a href="${safeSpreadsheetUrl}"
-               style="display:inline-block;padding:12px 18px;background:#e9f4ef;color:#173f35;text-decoration:none;border-radius:8px;border:1px solid #cfe5db">
-              Buka Wealth Tracker
-            </a>
-          </p>` : ""}
-          <p>Kalau ini pertama kali kamu masuk, ikuti langkah onboarding di dashboard.</p>
-          <p>Terima kasih,<br>Wealthplanner.id</p>
+            Semoga Wealthplanner bisa menjadi temanmu untuk membuat keuangan lebih terarah,
+            satu langkah demi satu langkah. 🌱
+          </p>
+          <p>Selamat memulai perjalanan finansialmu!</p>
+          <p><strong>Wealthplanner.id</strong></p>
         </div>
       `,
+
     }),
   });
 
