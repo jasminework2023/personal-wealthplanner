@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import crypto from "node:crypto";
 import sendActivationEmail from "../lib/email.js";
+import createCustomerSpreadsheet from "../lib/google-sheet.js";
 
 function db() {
   return createClient(
@@ -102,8 +103,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!result.error && result.data) user = result.data;
     }
 
-    // Important: the database uses INTEGER 0/1 for is_active.
-    if (user && Number(user.is_active) === 1) {
+    // If already active and the personal Sheet already exists, this webhook is a duplicate.
+    // If the Sheet is missing, continue so a previous partial failure can be repaired.
+    if (user && Number(user.is_active) === 1 && user.spreadsheet_id) {
       return res.status(200).json({ received: true, alreadyActive: true });
     }
 
@@ -138,20 +140,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       user = insert.data;
     }
 
+    const customerEmail = payerEmail || user.email;
+    const customerName = payerName || user.username;
     const dashboardUrl =
       `https://wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}`;
 
-    // Send email first. If Resend fails, return 500 so Xendit can retry.
+    // Create one personal copy of the template, or reuse the existing Sheet.
+    const spreadsheet = await createCustomerSpreadsheet({
+      customerEmail,
+      customerName,
+      existingSpreadsheetId: user.spreadsheet_id,
+    });
+
+    const { error: sheetUpdateError } = await supabase
+      .from("users")
+      .update({ spreadsheet_id: spreadsheet.id })
+      .eq("user_id", user.user_id);
+
+    if (sheetUpdateError) throw new Error(sheetUpdateError.message);
+
+    // Send email after the Sheet is ready. If Resend fails, Xendit can retry
+    // and the existing spreadsheet_id will be reused instead of creating another copy.
     await sendActivationEmail({
-      to: payerEmail || user.email,
-      name: payerName || user.username,
+      to: customerEmail,
+      name: customerName,
       product: productName(amount),
       dashboardUrl,
+      spreadsheetUrl: spreadsheet.url,
     });
 
     const { error: updateError } = await supabase
       .from("users")
-      .update({ is_active: 1, email: payerEmail || user.email })
+      .update({ is_active: 1, email: customerEmail })
       .eq("user_id", user.user_id);
 
     if (updateError) throw new Error(updateError.message);
@@ -160,8 +180,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       received: true,
       activated: true,
       product: productName(amount),
-      needsSpreadsheet: !user.spreadsheet_id,
-      recoveredMissingCustomer: true,
+      spreadsheetUrl: spreadsheet.url,
+      recoveredMissingCustomer: !user.email,
     });
   } catch (error) {
     console.error("xendit-webhook activation/email error:", error);
