@@ -223,7 +223,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
     window.addEventListener("wealthplanner:budget-updated", handleRefresh);
     window.addEventListener("wealthplanner:asset-updated", handleRefresh);
     window.addEventListener("visibilitychange", handleRefresh);
-    const interval = window.setInterval(loadData, 15000);
+    const interval = window.setInterval(loadData, 60000);
     return () => {
       cancelled = true;
       window.clearInterval(interval);
