@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import crypto from "node:crypto";
 import sendActivationEmail from "../lib/email.js";
+import createCustomerSpreadsheet from "../lib/google-sheet.js";
 
 function db() {
   return createClient(
@@ -75,19 +76,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: "Customer tidak ditemukan." });
     }
 
-    // Idempotent: Lynk may retry the same successful event. is_active is INTEGER 0/1.
-    if (Number(user.is_active) === 1) {
+    // If already active and the personal Sheet already exists, this webhook is a duplicate.
+    // If the Sheet is missing, continue so a previous partial failure can be repaired.
+    if (Number(user.is_active) === 1 && user.spreadsheet_id) {
       return res.status(200).json({ received: true, alreadyActive: true });
     }
 
+    const customerName = payerName || user.username;
     const dashboardUrl =
       `https://wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}`;
 
+    const spreadsheet = await createCustomerSpreadsheet({
+      customerEmail: payerEmail,
+      customerName,
+      existingSpreadsheetId: user.spreadsheet_id,
+    });
+
+    const { error: sheetUpdateError } = await supabase
+      .from("users")
+      .update({ spreadsheet_id: spreadsheet.id })
+      .eq("user_id", user.user_id);
+
+    if (sheetUpdateError) throw new Error(sheetUpdateError.message);
+
     await sendActivationEmail({
       to: payerEmail,
-      name: payerName || user.username,
+      name: customerName,
       product: amount === 139000 ? "Wealth Tracker AI" : "Wealthplanner Personal",
       dashboardUrl,
+      spreadsheetUrl: spreadsheet.url,
     });
 
     const { error: updateError } = await supabase
@@ -101,10 +118,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       received: true,
       activated: true,
       dashboardUrl,
-      spreadsheetUrl: user.spreadsheet_id
-        ? `https://docs.google.com/spreadsheets/d/${user.spreadsheet_id}/edit`
-        : null,
-      needsSpreadsheet: !user.spreadsheet_id,
+      spreadsheetUrl: spreadsheet.url,
+      needsSpreadsheet: false,
     });
   } catch (error) {
     console.error("lynk-webhook activation/email error:", error);
