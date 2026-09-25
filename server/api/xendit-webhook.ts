@@ -2,7 +2,6 @@ import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import crypto from "node:crypto";
 import sendActivationEmail from "../lib/email.js";
-import createCustomerSpreadsheet from "../lib/google-sheet.js";
 
 function db() {
   return createClient(
@@ -81,6 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const supabase = db();
     let user: any = null;
+    let recoveredMissingCustomer = false;
 
     // New Payment Session: dashboard token is the safest lookup.
     if (body.event === "payment_session.completed" && referenceId) {
@@ -103,9 +103,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!result.error && result.data) user = result.data;
     }
 
-    // If already active and the personal Sheet already exists, this webhook is a duplicate.
-    // If the Sheet is missing, continue so a previous partial failure can be repaired.
-    if (user && Number(user.is_active) === 1 && user.spreadsheet_id) {
+    // Important: the database uses INTEGER 0/1 for is_active.
+    if (user && Number(user.is_active) === 1) {
       return res.status(200).json({ received: true, alreadyActive: true });
     }
 
@@ -138,40 +137,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         throw new Error(insert.error?.message || "Gagal membuat akun customer.");
       }
       user = insert.data;
+      recoveredMissingCustomer = true;
     }
 
-    const customerEmail = payerEmail || user.email;
-    const customerName = payerName || user.username;
     const dashboardUrl =
-      `https://wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}`;
+      `https://wealthplanner.id/dashboard/welcome?token=${encodeURIComponent(user.dashboard_token)}`;
 
-    // Create one personal copy of the template, or reuse the existing Sheet.
-    const spreadsheet = await createCustomerSpreadsheet({
-      customerEmail,
-      customerName,
-      existingSpreadsheetId: user.spreadsheet_id,
-    });
-
-    const { error: sheetUpdateError } = await supabase
-      .from("users")
-      .update({ spreadsheet_id: spreadsheet.id })
-      .eq("user_id", user.user_id);
-
-    if (sheetUpdateError) throw new Error(sheetUpdateError.message);
-
-    // Send email after the Sheet is ready. If Resend fails, Xendit can retry
-    // and the existing spreadsheet_id will be reused instead of creating another copy.
+    // Send email first. If Resend fails, return 500 so Xendit can retry.
     await sendActivationEmail({
-      to: customerEmail,
-      name: customerName,
+      to: payerEmail || user.email,
+      name: payerName || user.username,
       product: productName(amount),
       dashboardUrl,
-      spreadsheetUrl: spreadsheet.url,
+      templateUrl: process.env.GOOGLE_TEMPLATE_URL || null,
     });
 
     const { error: updateError } = await supabase
       .from("users")
-      .update({ is_active: 1, email: customerEmail })
+      .update({ is_active: 1, email: payerEmail || user.email })
       .eq("user_id", user.user_id);
 
     if (updateError) throw new Error(updateError.message);
@@ -180,8 +163,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       received: true,
       activated: true,
       product: productName(amount),
-      spreadsheetUrl: spreadsheet.url,
-      recoveredMissingCustomer: !user.email,
+      needsSpreadsheet: !user.spreadsheet_id,
+      recoveredMissingCustomer,
     });
   } catch (error) {
     console.error("xendit-webhook activation/email error:", error);
