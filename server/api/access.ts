@@ -40,8 +40,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let serviceAccountEmail = "";
     try { serviceAccountEmail = String(getGoogleCredentials().client_email || ""); } catch { /* optional for onboarding */ }
 
-    const paymentActive = Boolean(user.is_active);
+    const paymentActive = Number(user.is_active) === 1;
     const ready = Boolean(paymentActive && user.spreadsheet_id);
+
+    const templateSource = process.env.GOOGLE_TEMPLATE_URL || "https://docs.google.com/spreadsheets/d/1N-IJSv76LwaBv-RNmf-fPtI5oCBsa2cM0VYZWAI1apo";
+    const templateMatch = templateSource.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    const templateUrl = templateMatch
+      ? `https://docs.google.com/spreadsheets/d/${templateMatch[1]}/copy`
+      : templateSource;
 
     return res.status(200).json({
       ready,
@@ -51,11 +57,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ? "Pembayaran sudah terkonfirmasi. Akses dashboard aktif."
         : "Pembayaran belum terkonfirmasi. Sistem akan mengaktifkan akses otomatis setelah webhook pembayaran diterima.",
       username: user.username,
-      dashboardUrl: `https://wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}`,
+      dashboardUrl: `https://wealthplanner.id/dashboard/welcome?token=${encodeURIComponent(user.dashboard_token)}`,
       spreadsheetUrl: user.spreadsheet_id
         ? `https://docs.google.com/spreadsheets/d/${user.spreadsheet_id}/edit`
         : null,
-      templateUrl: process.env.GOOGLE_TEMPLATE_URL || null,
+      templateUrl,
       serviceAccountEmail,
     });
   } catch (error) {
