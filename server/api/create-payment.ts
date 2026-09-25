@@ -56,7 +56,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         amount: PRICE,
         payer_email: cleanEmail,
         description: PRODUCT_NAME,
-        success_redirect_url: `https://wealthplanner.id/dashboard?token=${dashboardToken}`,
+        success_redirect_url: `https://wealthplanner.id/dashboard/welcome?ref=${encodeURIComponent(dashboardToken)}`,
         failure_redirect_url: "https://wealthplanner.id/checkout?status=failed",
       }),
     });
