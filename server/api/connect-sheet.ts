@@ -26,8 +26,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const token = String(req.body?.token || "").trim();
   const spreadsheetId = extractSpreadsheetId(req.body?.spreadsheetId || req.body?.spreadsheetUrl || "");
+
   if (!token) return res.status(400).json({ error: "Token tidak ditemukan." });
-  if (!spreadsheetId) return res.status(400).json({ error: "Link atau Spreadsheet ID belum diisi." });
+  if (!spreadsheetId) return res.status(400).json({ error: "Link Google Sheet belum diisi." });
+  if (!/^[a-zA-Z0-9-_]+$/.test(spreadsheetId)) {
+    return res.status(400).json({ error: "Link Google Sheet tidak valid." });
+  }
 
   try {
     const supabase = createClient(
@@ -44,8 +48,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (userError || !user) return res.status(404).json({ error: "Akun tidak ditemukan." });
     if (!user.is_active) return res.status(403).json({ error: "Pembayaran belum terkonfirmasi." });
 
-    // Verify that the system account can access the customer's copied Sheet.
-    // The customer keeps ownership of the copy; the system only needs access to run the dashboard/bot.
+    // The customer owns the copy. We only verify that our Google service account
+    // can read it; this is required because the dashboard uses the Sheet as its data source.
     const sheets = getSheetsClient();
     const meta = await sheets.spreadsheets.get({
       spreadsheetId,
@@ -66,12 +70,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       spreadsheetId,
       spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`,
       title: meta.data.properties?.title || "Google Sheet",
-      dashboardUrl: `https://wealthplanner.id/dashboard?token=${encodeURIComponent(token)}`,
+      dashboardUrl: `https://wealthplanner.id/dashboard/welcome?token=${encodeURIComponent(token)}`,
     });
   } catch (error) {
     console.error("connect-sheet error:", error);
     return res.status(400).json({
-      error: "Sheet belum bisa diakses sistem. Pastikan kamu sudah Make a copy dari template lalu share Sheet tersebut dengan email sistem yang ditampilkan di halaman ini.",
+      error: "Sheet belum bisa diakses. Setelah Make a copy, buka Share pada Sheet tersebut dan tambahkan email sistem yang tampil di halaman ini sebagai Editor.",
     });
   }
 }
