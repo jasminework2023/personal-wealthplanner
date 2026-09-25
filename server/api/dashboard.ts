@@ -77,14 +77,27 @@ async function getSheetsClient() {
   return google.sheets({ version: "v4", auth });
 }
 
-// ---------- TRANSACTION ----------
-async function getTransactions(spreadsheetId: string, year?: number) {
+// One batchGet instead of 3 separate values.get calls: this alone cuts the
+// Google Sheets API "read requests per minute" quota this endpoint consumes
+// by roughly two thirds on every dashboard load / poll cycle.
+async function fetchAllRanges(spreadsheetId: string) {
   const sheets = await getSheetsClient();
-  const res = await sheets.spreadsheets.values.get({
+  const res = await sheets.spreadsheets.values.batchGet({
     spreadsheetId,
-    range: "Transaction!B10:G",
+    ranges: ["Transaction!B10:G", "Budgeting!B1:N40", "Asset Tracker!B1:N45"],
   });
-  const rows = res.data.values || [];
+  const [transactionRows, budgetRows, assetRows] = (res.data.valueRanges || []).map(
+    (r) => r.values || []
+  );
+  return {
+    transactionRows: transactionRows || [],
+    budgetRows: budgetRows || [],
+    assetRows: assetRows || [],
+  };
+}
+
+// ---------- TRANSACTION ----------
+function getTransactions(rows: unknown[][], year?: number) {
   const typeMap: Record<string, string> = { income: "Income", expense: "Expense", saving: "Saving" };
 
   return rows
@@ -108,14 +121,7 @@ async function getTransactions(spreadsheetId: string, year?: number) {
 }
 
 // ---------- BUDGETING ----------
-async function getBudgetByCategory(spreadsheetId: string, monthName: string): Promise<Record<string, number>> {
-  const sheets = await getSheetsClient();
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "Budgeting!B1:N40",
-  });
-  const rows = res.data.values || [];
-
+function getBudgetByCategory(rows: unknown[][], monthName: string): Record<string, number> {
   const headerIdx = findRowIndex(rows, monthName);
   if (headerIdx === -1) return {};
   const header = rows[headerIdx] || [];
@@ -194,14 +200,7 @@ function parseStockSection(rows: unknown[][], sectionLabel: string) {
   return { stocks, subtotalValue };
 }
 
-async function getAssetTracker(spreadsheetId: string) {
-  const sheets = await getSheetsClient();
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "Asset Tracker!B1:N45",
-  });
-  const rows = res.data.values || [];
-
+function getAssetTracker(rows: unknown[][]) {
   const liquid = parseAssetSection(rows, "Liquid Assets");
   const investment = parseAssetSection(rows, "Investment Assets");
   const stocksID = parseStockSection(rows, "Indonesia Stock");
@@ -266,11 +265,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const requestedYear = Number(req.query.year) || new Date().getFullYear();
     const allYears = String(req.query.allYears || "") === "1";
 
-    const [transactions, budgetByCategory, assets] = await Promise.all([
-      getTransactions(user.spreadsheet_id, allYears ? undefined : requestedYear),
-      getBudgetByCategory(user.spreadsheet_id, requestedMonth).catch(() => ({})),
-      getAssetTracker(user.spreadsheet_id).catch(() => null),
-    ]);
+    const { transactionRows, budgetRows, assetRows } = await fetchAllRanges(user.spreadsheet_id);
+
+    const transactions = getTransactions(transactionRows, allYears ? undefined : requestedYear);
+    let budgetByCategory: Record<string, number> = {};
+    try {
+      budgetByCategory = getBudgetByCategory(budgetRows, requestedMonth);
+    } catch {
+      budgetByCategory = {};
+    }
+    let assets = null as ReturnType<typeof getAssetTracker> | null;
+    try {
+      assets = getAssetTracker(assetRows);
+    } catch {
+      assets = null;
+    }
 
     return res.status(200).json({
       username: user.username,
