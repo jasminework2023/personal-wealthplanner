@@ -35,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const sectionLabel = section === "liquid" ? "Liquid Assets" : "Investment Assets";
 
   try {
-    const supabase = createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_ANON_KEY as string);
+    const supabase = createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SERVICE_ROLE_KEY as string);
     const { data: user, error } = await supabase
       .from("users")
       .select("spreadsheet_id, is_active")
