@@ -50,7 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!["Income", "Expense", "Saving"].includes(type)) return res.status(400).json({ error: "Tipe budget tidak valid" });
 
   try {
-    const supabase = createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_ANON_KEY as string);
+    const supabase = createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SERVICE_ROLE_KEY as string);
     const { data: user, error } = await supabase.from("users").select("spreadsheet_id, is_active").eq("dashboard_token", token).single();
     if (error || !user || !user.is_active || !user.spreadsheet_id) return res.status(404).json({ error: "Akun tidak ditemukan" });
 
