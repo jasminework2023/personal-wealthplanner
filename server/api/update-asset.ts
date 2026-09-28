@@ -69,6 +69,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error("update-asset error:", (err as Error).message);
-    return res.status(500).json({ error: "Gagal menyimpan" });
+    return res.status(500).json({ error: "Gagal menyimpan" + (err instanceof Error ? " (" + err.message.slice(0, 200) + ")" : "") });
   }
 }
