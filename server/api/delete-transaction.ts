@@ -3,20 +3,27 @@ import { google } from "googleapis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 function sheetsClient() {
-  const c = JSON.parse(process.env.GOOGLE_CREDENTIALS as string);
+  const raw = process.env.GOOGLE_CREDENTIALS;
+  if (!raw) throw new Error("GOOGLE_CREDENTIALS belum dikonfigurasi");
+
+  const c = JSON.parse(raw);
   const auth = new google.auth.JWT({
     email: c.client_email,
     key: c.private_key,
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
+
   return google.sheets({ version: "v4", auth });
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
 
   const { token, sheetRow } = req.body || {};
   const row = Number(sheetRow);
+
   if (!token || !Number.isInteger(row) || row < 10) {
     return res.status(400).json({ error: "Data transaksi tidak valid" });
   }
@@ -26,6 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       process.env.SUPABASE_URL as string,
       process.env.SUPABASE_SERVICE_ROLE_KEY as string,
     );
+
     const { data: u, error } = await sb
       .from("users")
       .select("spreadsheet_id,is_active")
@@ -37,43 +45,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const sheets = sheetsClient();
-    const spreadsheet = await sheets.spreadsheets.get({
-      spreadsheetId: u.spreadsheet_id,
-      fields: "sheets.properties",
-    });
-    const transactionSheet = spreadsheet.data.sheets?.find(
-      (sheet) => sheet.properties?.title === "Transaction",
-    );
-    const sheetId = transactionSheet?.properties?.sheetId;
 
-    if (sheetId === undefined || sheetId === null) {
-      return res.status(404).json({ error: "Sheet Transaction tidak ditemukan" });
-    }
-
-    // Physically remove the row instead of merely clearing its cells.
-    // This prevents the deleted transaction from remaining in the report and
-    // keeps subsequent Transaction rows contiguous.
-    await sheets.spreadsheets.batchUpdate({
+    // IMPORTANT: do not physically delete the Google Sheets row.
+    // Physical deletion shifts every row below it and invalidates the
+    // sheetRow identifiers returned to the frontend. Clearing B:G keeps
+    // the row number stable, so subsequent edit/delete operations continue
+    // to target the same physical row.
+    await sheets.spreadsheets.values.clear({
       spreadsheetId: u.spreadsheet_id,
-      requestBody: {
-        requests: [
-          {
-            deleteDimension: {
-              range: {
-                sheetId,
-                dimension: "ROWS",
-                startIndex: row - 1,
-                endIndex: row,
-              },
-            },
-          },
-        ],
-      },
+      range: `Transaction!B${row}:G${row}`,
     });
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, sheetRow: row });
   } catch (e) {
     console.error("delete-transaction error:", e);
-    return res.status(500).json({ error: "Gagal menghapus transaksi" + (e instanceof Error ? " (" + e.message.slice(0, 200) + ")" : "") });
+    return res.status(500).json({
+      error:
+        "Gagal menghapus transaksi" +
+        (e instanceof Error ? ` (${e.message.slice(0, 200)})` : ""),
+    });
   }
 }
