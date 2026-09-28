@@ -114,6 +114,24 @@ interface RawState {
 
 const CURRENT_MONTH_NAME = new Date().toLocaleString("en-US", { month: "long" });
 
+// Dedupe request ke API: banyak komponen memanggil useFinanceData() sekaligus.
+// Tanpa ini, tiap komponen menembak /api/dashboard & /api/setup sendiri-sendiri
+// dan kuota baca Google Sheets (per menit) cepat habis.
+const sharedRequests = new Map<string, { p: Promise<{ ok: boolean; data: any }>; t: number }>();
+function sharedFetch(url: string, ttlMs: number): Promise<{ ok: boolean; data: any }> {
+  const now = Date.now();
+  const hit = sharedRequests.get(url);
+  if (hit && now - hit.t < ttlMs) return hit.p;
+  const p = fetch(url)
+    .then(async (r) => ({ ok: r.ok, data: await r.json().catch(() => ({})) }))
+    .catch((e) => {
+      sharedRequests.delete(url);
+      throw e;
+    });
+  sharedRequests.set(url, { p, t: now });
+  return p;
+}
+
 export function useFinanceData(monthOverride?: string, includeAllMonths = false, yearOverride?: number): FinanceData {
   const initialMonth = monthOverride || CURRENT_MONTH_NAME;
   const currentYear = new Date().getFullYear();
@@ -139,7 +157,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
   useEffect(() => {
     let cancelled = false;
 
-    const loadData = () => {
+    const loadData = (force = false) => {
       captureTokenFromUrl();
       const token = getStoredToken();
       const requestedMonth = monthOverride || CURRENT_MONTH_NAME;
@@ -158,14 +176,12 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
       }
 
       setState((s) => ({ ...s, loading: true, error: null, month: requestedMonth }));
+      const ttl = force ? 1500 : 20000;
       Promise.all([
-        fetch(`${API_BASE}/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}`),
-        fetch(`${API_BASE}/setup?token=${encodeURIComponent(token)}`),
+        sharedFetch(`${API_BASE}/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}`, ttl),
+        sharedFetch(`${API_BASE}/setup?token=${encodeURIComponent(token)}`, ttl),
       ])
-        .then(async ([dashboardResponse, setupResponse]) => ({
-          dashboard: { ok: dashboardResponse.ok, data: await dashboardResponse.json() },
-          setup: { ok: setupResponse.ok, data: await setupResponse.json() },
-        }))
+        .then(([dashboard, setup]) => ({ dashboard, setup }))
         .then(({ dashboard, setup }) => {
           const { ok, data } = dashboard;
           if (cancelled) return;
@@ -217,13 +233,18 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
     };
 
     loadData();
-    const handleRefresh = () => loadData();
+    const handleRefresh = () => loadData(true);
+    const handleVisible = () => {
+      if (document.visibilityState === "visible") loadData();
+    };
     window.addEventListener("wealthplanner:transaction-added", handleRefresh);
     window.addEventListener("wealthplanner:setup-changed", handleRefresh);
     window.addEventListener("wealthplanner:budget-updated", handleRefresh);
     window.addEventListener("wealthplanner:asset-updated", handleRefresh);
-    window.addEventListener("visibilitychange", handleRefresh);
-    const interval = window.setInterval(loadData, 60000);
+    window.addEventListener("visibilitychange", handleVisible);
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") loadData();
+    }, 180000);
     return () => {
       cancelled = true;
       window.clearInterval(interval);
@@ -231,7 +252,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
       window.removeEventListener("wealthplanner:setup-changed", handleRefresh);
       window.removeEventListener("wealthplanner:budget-updated", handleRefresh);
       window.removeEventListener("wealthplanner:asset-updated", handleRefresh);
-      window.removeEventListener("visibilitychange", handleRefresh);
+      window.removeEventListener("visibilitychange", handleVisible);
     };
   }, [monthOverride, includeAllMonths, yearOverride]);
 
