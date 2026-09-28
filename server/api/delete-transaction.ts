@@ -74,6 +74,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ success: true });
   } catch (e) {
     console.error("delete-transaction error:", e);
-    return res.status(500).json({ error: "Gagal menghapus transaksi" });
+    return res.status(500).json({ error: "Gagal menghapus transaksi" + (e instanceof Error ? " (" + e.message.slice(0, 200) + ")" : "") });
   }
 }
