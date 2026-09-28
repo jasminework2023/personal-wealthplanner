@@ -17,9 +17,7 @@ function sheetsClient() {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
   const { token, sheetRow } = req.body || {};
   const row = Number(sheetRow);
@@ -45,16 +43,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const sheets = sheetsClient();
+    const range = `Transaction!B${row}:G${row}`;
 
-    // IMPORTANT: do not physically delete the Google Sheets row.
-    // Physical deletion shifts every row below it and invalidates the
-    // sheetRow identifiers returned to the frontend. Clearing B:G keeps
-    // the row number stable, so subsequent edit/delete operations continue
-    // to target the same physical row.
     await sheets.spreadsheets.values.clear({
       spreadsheetId: u.spreadsheet_id,
-      range: `Transaction!B${row}:G${row}`,
+      range,
     });
+
+    // Verify the row is really empty before reporting success.
+    const verify = await sheets.spreadsheets.values.get({
+      spreadsheetId: u.spreadsheet_id,
+      range,
+    });
+    const remaining = (verify.data.values?.[0] || []).some((v) => String(v ?? "").trim() !== "");
+
+    if (remaining) {
+      return res.status(500).json({ error: "Transaksi gagal dihapus dari Google Sheet" });
+    }
 
     return res.status(200).json({ success: true, sheetRow: row });
   } catch (e) {
