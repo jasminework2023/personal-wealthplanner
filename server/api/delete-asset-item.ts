@@ -1,5 +1,75 @@
 import { createClient } from "@supabase/supabase-js";
 import { google } from "googleapis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-function sheetsClient(){const c=JSON.parse(process.env.GOOGLE_CREDENTIALS as string);const auth=new google.auth.JWT({email:c.client_email,key:c.private_key,scopes:["https://www.googleapis.com/auth/spreadsheets"]});return google.sheets({version:"v4",auth});}
-export default async function handler(req:VercelRequest,res:VercelResponse){if(req.method!=="POST")return res.status(405).json({error:"Method Not Allowed"});const {token,sheetRow}=req.body||{};const row=Number(sheetRow);if(!token||!Number.isInteger(row)||row<1)return res.status(400).json({error:"Data tidak valid"});try{const sb=createClient(process.env.SUPABASE_URL as string,process.env.SUPABASE_SERVICE_ROLE_KEY as string);const {data:u,error}=await sb.from("users").select("spreadsheet_id,is_active").eq("dashboard_token",token).single();if(error||!u?.is_active||!u.spreadsheet_id)return res.status(404).json({error:"Akun tidak ditemukan"});await sheetsClient().spreadsheets.values.clear({spreadsheetId:u.spreadsheet_id,range:`Asset Tracker!B${row}:E${row}`});return res.status(200).json({success:true});}catch(e){console.error(e);return res.status(500).json({error:"Gagal menghapus asset"});}}
+
+function sheetsClient() {
+  const raw = process.env.GOOGLE_CREDENTIALS;
+  if (!raw) throw new Error("GOOGLE_CREDENTIALS belum dikonfigurasi");
+
+  const c = JSON.parse(raw);
+  const auth = new google.auth.JWT({
+    email: c.client_email,
+    key: c.private_key,
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+
+  return google.sheets({ version: "v4", auth });
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
+
+  const { token, sheetRow } = req.body || {};
+  const row = Number(sheetRow);
+
+  if (!token || !Number.isInteger(row) || row < 1) {
+    return res.status(400).json({ error: "Data asset tidak valid" });
+  }
+
+  try {
+    const sb = createClient(
+      process.env.SUPABASE_URL as string,
+      process.env.SUPABASE_SERVICE_ROLE_KEY as string,
+    );
+
+    const { data: u, error } = await sb
+      .from("users")
+      .select("spreadsheet_id,is_active")
+      .eq("dashboard_token", token)
+      .single();
+
+    if (error || !u?.is_active || !u.spreadsheet_id) {
+      return res.status(404).json({ error: "Akun tidak ditemukan" });
+    }
+
+    const sheets = sheetsClient();
+    // Clear the whole editable asset row. The dashboard parser scans B:N,
+    // so clearing only B:E could leave another value in F:N and make the
+    // deleted asset appear again after refresh.
+    const range = `Asset Tracker!B${row}:N${row}`;
+
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId: u.spreadsheet_id,
+      range,
+    });
+
+    const verify = await sheets.spreadsheets.values.get({
+      spreadsheetId: u.spreadsheet_id,
+      range,
+    });
+    const remaining = (verify.data.values?.[0] || []).some((v) => String(v ?? "").trim() !== "");
+
+    if (remaining) {
+      return res.status(500).json({ error: "Asset gagal dihapus dari Google Sheet" });
+    }
+
+    return res.status(200).json({ success: true, sheetRow: row });
+  } catch (e) {
+    console.error("delete-asset-item error:", e);
+    return res.status(500).json({
+      error:
+        "Gagal menghapus asset" +
+        (e instanceof Error ? ` (${e.message.slice(0, 200)})` : ""),
+    });
+  }
+}
