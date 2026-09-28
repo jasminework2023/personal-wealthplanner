@@ -1,0 +1,27 @@
+WEALTHPLANNER CRUD PATCH v2
+
+This is an OVERLAY PATCH. Do not replace the whole project with a different
+folder structure.
+
+Copy these files into the existing project at the same relative paths:
+
+  api/delete-transaction.ts
+  api/update-transaction.ts
+  api/receipt-ai.ts
+  api/health.ts
+  server/api/delete-transaction.ts
+  server/api/update-transaction.ts
+
+The UI, src/, package.json, Google Sheet schema, Supabase schema, and existing
+catch-all API are intentionally left untouched.
+
+After deployment, verify first:
+  https://YOUR-DOMAIN/api/health
+
+Expected JSON:
+  {"ok":true,"service":"wealthplanner-api","version":"crud-explicit-routes-v2"}
+
+Then test Edit and Delete on one transaction.
+
+Delete now clears Transaction!B:G on the target row instead of physically
+deleting the spreadsheet row. This prevents sheetRow values from shifting.
