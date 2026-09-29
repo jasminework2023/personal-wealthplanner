@@ -1,3 +1,4 @@
+[PATCH_PAYMENT_EMAIL_SETUP.md](https://github.com/user-attachments/files/32788924/PATCH_PAYMENT_EMAIL_SETUP.md)
 # Wealthplanner — Payment → Email → Dashboard → Make a Copy → Connect Sheet
 
 Patch ini **tidak menghapus Google Sheet** dan **tidak mengubah sistem Telegram / transaksi / budgeting / asset**.
@@ -73,3 +74,6 @@ Jangan menghapus service account atau mengganti permission Google Sheets API yan
 ## Catatan
 
 Build project sebelumnya belum berhasil dijalankan di environment kerja karena dependency `vite` belum terpasang. Jadi patch ini tidak boleh dianggap sebagai build-verified sampai dependency project di-install dan `npm run build` dijalankan di environment project.
+
+## Telegram integration note
+The payment email now includes an optional one-click **Hubungkan Telegram** link. The customer does not need to type a Telegram ID. The link uses a one-time code stored on the same `users` row as the existing dashboard token and expires after 24 hours. See `SUPABASE_TELEGRAM_MIGRATION.sql` and `TELEGRAM_DEPLOY_CHECKLIST.md`.
