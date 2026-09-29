@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import crypto from "node:crypto";
+import { parseTransactionText } from "../../src/lib/transactionParser.js";
 
 const LINK_TTL_MS = 24 * 60 * 60 * 1000;
 const PENDING_TTL_MS = 15 * 60 * 1000;
@@ -70,8 +71,7 @@ function isValidWebhook(req: VercelRequest) {
 async function parseText(text: string) {
   // Keep the same parser used by the dashboard so Telegram and web produce the
   // same transaction shape and category inference.
-  const module = await import("../../src/lib/transactionParser.js");
-  return module.parseTransactionText(text);
+  return parseTransactionText(text);
 }
 
 async function addTransaction(token: string, transaction: any) {
