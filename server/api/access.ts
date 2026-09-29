@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data: user, error } = await supabase
       .from("users")
-      .select("username, dashboard_token, spreadsheet_id, is_active")
+      .select("username, dashboard_token, spreadsheet_id, is_active, telegram_chat_id")
       .eq("dashboard_token", ref)
       .single();
 
@@ -63,6 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         : null,
       templateUrl,
       serviceAccountEmail,
+      telegramConnected: Boolean(user.telegram_chat_id),
     });
   } catch (error) {
     console.error("access error:", error);
