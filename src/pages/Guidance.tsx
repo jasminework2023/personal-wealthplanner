@@ -19,7 +19,6 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "../components/Card";
 import { getStoredToken } from "../lib/useFinanceData";
 
-const telegramUrl = (import.meta.env.VITE_TELEGRAM_URL || "").trim();
 
 function FeatureButton({
   children,
@@ -105,6 +104,7 @@ function StepCopy({ children }: { children: ReactNode }) {
 
 export function Guidance() {
   const [spreadsheetUrl, setSpreadsheetUrl] = useState("");
+  const [telegramUrl, setTelegramUrl] = useState("");
 
   useEffect(() => {
     const token = getStoredToken();
@@ -112,6 +112,14 @@ export function Guidance() {
     fetch(`${API_BASE}/setup?token=${encodeURIComponent(token)}`)
       .then(async (res) => (res.ok ? res.json() : null))
       .then((data) => setSpreadsheetUrl(data?.spreadsheetUrl || ""))
+      .catch(() => undefined);
+    fetch(`${API_BASE}/telegram-link`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    })
+      .then(async (res) => (res.ok ? res.json() : null))
+      .then((data) => setTelegramUrl(data?.telegramUrl || ""))
       .catch(() => undefined);
   }, []);
 
@@ -149,7 +157,7 @@ export function Guidance() {
           </div>
         </div>
         {!telegramUrl && (
-          <p className="mt-3 text-[11px] text-charcoal/40">Link Telegram dapat diatur melalui environment variable <span className="font-semibold">VITE_TELEGRAM_URL</span>.</p>
+          <p className="mt-3 text-[11px] text-charcoal/40">Hubungkan Telegram melalui halaman aktivasi jika kamu ingin mencatat transaksi langsung dari Telegram.</p>
         )}
       </Card>
 
