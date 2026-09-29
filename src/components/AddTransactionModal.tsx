@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { Loader2, Sparkles, Camera, Upload } from "lucide-react";
 import { Modal } from "./Modal";
 import type { Transaction, TransactionType } from "../data/types";
@@ -62,6 +62,21 @@ async function compressReceiptImage(file: File): Promise<string> {
   } finally {
     URL.revokeObjectURL(sourceUrl);
   }
+}
+
+// "D/M/YYYY" <-> "YYYY-MM-DD" untuk <input type="date">
+function todayIso() {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
+}
+function toIsoDate(d?: string) {
+  const [day, month, year] = String(d || "").split("/").map(Number);
+  if (!day || !month || !year || year < 2000) return todayIso();
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+function fromIsoDate(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${d}/${m}/${y}`;
 }
 
 export function AddTransactionModal({
@@ -164,6 +179,7 @@ export function AddTransactionModal({
       }
       onAdd(transaction);
       window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added", { detail: transaction }));
+      window.setTimeout(() => window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added")), 2500);
       handleClose();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Gagal menyimpan transaksi";
@@ -195,6 +211,24 @@ export function AddTransactionModal({
     });
   }
 
+  function handleReceiptPick(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.currentTarget.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setAiError("Pilih file gambar untuk struk.");
+      return;
+    }
+    if (file.size > MAX_RECEIPT_SOURCE_BYTES) {
+      setAiError("Foto terlalu besar. Pilih foto di bawah 12 MB.");
+      return;
+    }
+    setAiPreview(null);
+    setReceiptFile(file);
+    setReceiptPreview(URL.createObjectURL(file));
+    setAiError("");
+  }
+
   function handleAiParse() {
     if (!aiText.trim()) {
       setAiError("Ketik dulu transaksinya, misalnya: Tadi beli makan 35 ribu");
@@ -206,24 +240,33 @@ export function AddTransactionModal({
       return;
     }
     setAiError("");
-    setAiPreview(parsed);
+    setAiPreview({ ...parsed, category: resolveCategory(parsed.type, parsed.category) });
   }
 
   async function handleAiConfirm() {
     if (!aiPreview) return;
     const now = new Date();
     const type = (aiPreview.type as TransactionType) ?? "Expense";
+    const amount = Math.round(Number(aiPreview.amount));
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setAiError("Nominal harus lebih dari 0.");
+      return;
+    }
+    if (!String(aiPreview.description || "").trim()) {
+      setAiError("Deskripsi tidak boleh kosong.");
+      return;
+    }
     const parsedDate = aiPreview.date || now.toLocaleDateString("id-ID");
     const [day, monthNumber, year] = parsedDate.split("/").map(Number);
-    const parsed = day && monthNumber && year ? new Date(year, monthNumber - 1, day) : now;
+    const parsed = day && monthNumber && year && year >= 2000 ? new Date(year, monthNumber - 1, day) : now;
     await persistTransaction({
-      date: parsedDate,
+      date: parsed === now ? now.toLocaleDateString("id-ID") : parsedDate,
       month: parsed.toLocaleString("en-US", { month: "long" }),
       year: parsed.getFullYear(),
       type,
-      category: resolveCategory(type, aiPreview.category ?? fallbackCategories[9]),
-      description: aiPreview.description ?? "Transaksi",
-      amount: aiPreview.amount ?? 0,
+      category: aiPreview.category ?? resolveCategory(type, fallbackCategories[9]),
+      description: String(aiPreview.description).trim(),
+      amount,
     });
   }
 
@@ -308,22 +351,10 @@ export function AddTransactionModal({
           />
           <div className="rounded-xl border border-dashed border-rose-200 bg-rose-50/40 p-3">
             <div className="flex items-center justify-between gap-2"><div><p className="text-[13px] font-semibold text-rose-700">Foto struk dengan AI</p><p className="text-[11px] text-charcoal/55 mt-0.5">Upload/foto struk, review hasilnya, lalu simpan.</p></div><Camera size={18} className="text-rose-600"/></div>
-            <label className="mt-2 flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 py-2 text-[12px] font-semibold text-rose-700"><Upload size={14}/> Pilih / Foto Struk<input type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{
-  const file=e.target.files?.[0];
-  e.currentTarget.value="";
-  if(!file)return;
-  if(!file.type.startsWith("image/")){
-    setAiError("Pilih file gambar untuk struk.");
-    return;
-  }
-  if(file.size > MAX_RECEIPT_SOURCE_BYTES){
-    setAiError("Foto terlalu besar. Pilih foto di bawah 12 MB.");
-    return;
-  }
-  setReceiptFile(file);
-  setReceiptPreview(URL.createObjectURL(file));
-  setAiError("");
-}}/></label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 py-2 text-[12px] font-semibold text-rose-700"><Camera size={14}/> Foto Struk<input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleReceiptPick}/></label>
+              <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 py-2 text-[12px] font-semibold text-rose-700"><Upload size={14}/> Pilih dari Galeri<input type="file" accept="image/*" className="hidden" onChange={handleReceiptPick}/></label>
+            </div>
             {receiptPreview&&<img src={receiptPreview} alt="Preview struk" className="mt-2 max-h-40 w-full rounded-lg object-contain bg-white"/>}
             {receiptFile&&<button type="button" disabled={receiptLoading} onClick={async()=>{
   setReceiptLoading(true);
@@ -338,7 +369,13 @@ export function AddTransactionModal({
     const j=await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(j.error||`Gagal membaca struk (HTTP ${r.status})`);
     if(!j.transaction) throw new Error("AI tidak mengembalikan data transaksi. Coba foto ulang.");
-    setAiPreview(j.transaction);
+    const rt = j.transaction as Partial<Transaction>;
+    setAiPreview({
+      ...rt,
+      type: "Expense",
+      category: resolveCategory("Expense", rt.category ?? "Other"),
+      date: fromIsoDate(toIsoDate(rt.date)),
+    });
   }catch(e){
     setAiError(e instanceof Error?e.message:"Gagal membaca struk");
   }finally{
@@ -359,19 +396,25 @@ export function AddTransactionModal({
             )
           ) : (
             <div className="border border-forest-100 bg-forest-50 rounded-lg p-3 text-[13px] flex flex-col gap-1">
-              <p className="font-medium text-forest-800 mb-1">Hasil deteksi AI:</p>
-              <p>
-                Type: <span className="font-medium">{aiPreview.type}</span>
-              </p>
-              <p>
-                Category: <span className="font-medium">{aiPreview.category}</span>
-              </p>
-              <p>
-                Amount: <span className="font-medium">Rp{aiPreview.amount?.toLocaleString("id-ID")}</span>
-              </p>
-              <p>
-                Description: <span className="font-medium">{aiPreview.description}</span>
-              </p>
+              <p className="font-medium text-forest-800 mb-1">Hasil deteksi AI (bisa diedit):</p>
+              <label className="text-[11px] text-charcoal/60">Tanggal
+                <input type="date" value={toIsoDate(aiPreview.date)} onChange={(e) => e.target.value && setAiPreview({ ...aiPreview, date: fromIsoDate(e.target.value) })}
+                  className="mt-0.5 w-full border border-charcoal/15 rounded-lg px-2 py-1.5 text-[13px] bg-white" />
+              </label>
+              <label className="text-[11px] text-charcoal/60">Kategori
+                <select value={aiPreview.category ?? ""} onChange={(e) => setAiPreview({ ...aiPreview, category: e.target.value })}
+                  className="mt-0.5 w-full border border-charcoal/15 rounded-lg px-2 py-1.5 text-[13px] bg-white">
+                  {Array.from(new Set([aiPreview.category ?? "", ...(activeCategories[(aiPreview.type as TransactionType) ?? "Expense"].length ? activeCategories[(aiPreview.type as TransactionType) ?? "Expense"] : fallbackCategories)])).filter(Boolean).map((c) => <option key={c}>{c}</option>)}
+                </select>
+              </label>
+              <label className="text-[11px] text-charcoal/60">Deskripsi
+                <input value={aiPreview.description ?? ""} onChange={(e) => setAiPreview({ ...aiPreview, description: e.target.value })}
+                  className="mt-0.5 w-full border border-charcoal/15 rounded-lg px-2 py-1.5 text-[13px] bg-white" />
+              </label>
+              <label className="text-[11px] text-charcoal/60">Jumlah (Rp)
+                <input inputMode="numeric" value={aiPreview.amount ?? ""} onChange={(e) => setAiPreview({ ...aiPreview, amount: Number(e.target.value.replace(/\D/g, "")) })}
+                  className="mt-0.5 w-full border border-charcoal/15 rounded-lg px-2 py-1.5 text-[13px] bg-white" />
+              </label>
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => setAiPreview(null)}
