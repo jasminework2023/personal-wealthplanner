@@ -5,6 +5,8 @@ type ActivationEmailArgs = {
   dashboardUrl: string;
   telegramUrl?: string | null;
   templateUrl?: string | null;
+  /** Optional Resend Idempotency-Key so a retried webhook can never send twice. */
+  idempotencyKey?: string | null;
 };
 
 const DEFAULT_TEMPLATE_URL = "https://docs.google.com/spreadsheets/d/1N-IJSv76LwaBv-RNmf-fPtI5oCBsa2cM0VYZWAI1apo/copy";
@@ -23,6 +25,7 @@ export async function sendActivationEmail({
   dashboardUrl,
   telegramUrl,
   templateUrl,
+  idempotencyKey,
 }: ActivationEmailArgs) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL || "Wealthplanner <hello@wealthplanner.id>";
@@ -37,11 +40,12 @@ export async function sendActivationEmail({
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
+      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
     },
     body: JSON.stringify({
       from,
       to: [to],
-      subject: "Selamat datang di Wealthplanner 🎉",
+      subject: "🎉 Selamat datang di Wealthplanner!",
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.7;color:#173f35;max-width:620px;margin:auto;background:#fff">
           <h2 style="margin:0 0 18px">🎉 Selamat datang di Wealthplanner!</h2>
@@ -56,9 +60,9 @@ export async function sendActivationEmail({
           </p>
 
           <div style="margin:26px 0 10px;padding:18px;border:1px solid #dce9e4;border-radius:14px;background:#f8fbfa">
-            <p style="margin:0 0 10px;font-weight:700">📌 Silakan klik link berikut untuk mulai melakukan aktivasi:</p>
+            <p style="margin:0 0 10px;font-weight:700">📌 Klik tombol berikut untuk membuka dashboard dan memulai aktivasi:</p>
             <a href="${escapeHtml(dashboardUrl)}" style="display:inline-block;padding:12px 18px;background:#286650;color:#fff;text-decoration:none;border-radius:9px;font-weight:700">
-              Mulai Aktivasi Wealthplanner
+              Buka Dashboard Saya
             </a>
             <p style="margin:10px 0 0;font-size:12px;color:#66736f;word-break:break-all">
               ${escapeHtml(dashboardUrl)}
