@@ -85,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (body.event === "payment_session.completed" && referenceId) {
       const result = await supabase
         .from("users")
-        .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active")
+        .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active, telegram_chat_id, telegram_link_code, telegram_link_expires_at")
         .eq("dashboard_token", referenceId)
         .maybeSingle();
       if (!result.error && result.data) user = result.data;
@@ -95,7 +95,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!user && payerEmail) {
       const result = await supabase
         .from("users")
-        .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active")
+        .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active, telegram_chat_id, telegram_link_code, telegram_link_expires_at")
         .eq("email", payerEmail)
         .limit(1)
         .maybeSingle();
@@ -129,7 +129,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           is_active: 0,
           spreadsheet_id: null,
         })
-        .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active")
+        .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active, telegram_chat_id, telegram_link_code, telegram_link_expires_at")
         .single();
 
       if (insert.error || !insert.data) {
@@ -141,9 +141,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // New customers land on the onboarding page first (Make a Copy -> Connect
     // Sheet flow) instead of the main dashboard, which would otherwise render
     // empty/broken until a spreadsheet is actually connected.
-    const dashboardUrl = user.spreadsheet_id
-      ? `https://wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}`
-      : `https://wealthplanner.id/dashboard/welcome?ref=${encodeURIComponent(user.dashboard_token)}`;
+    const dashboardUrl = `https://www.wealthplanner.id/dashboard/welcome?token=${encodeURIComponent(user.dashboard_token)}`;
+
+    // Create a short-lived one-time Telegram linking code. The customer never
+    // needs to know their numeric Telegram ID; they simply click the button.
+    let telegramUrl: string | null = null;
+    if (user.telegram_chat_id) {
+      telegramUrl = `https://t.me/${String(process.env.TELEGRAM_BOT_USERNAME || "wealthplannerAI").replace(/^@/, "")}`;
+    } else {
+      const now = Date.now();
+      const existingExpiry = user.telegram_link_expires_at ? Date.parse(user.telegram_link_expires_at) : 0;
+      const code = user.telegram_link_code && existingExpiry > now
+        ? user.telegram_link_code
+        : crypto.randomBytes(18).toString("base64url");
+      const expiresAt = existingExpiry > now && user.telegram_link_code
+        ? user.telegram_link_expires_at
+        : new Date(now + 24 * 60 * 60 * 1000).toISOString();
+
+      const { error: linkError } = await supabase
+        .from("users")
+        .update({ telegram_link_code: code, telegram_link_expires_at: expiresAt })
+        .eq("user_id", user.user_id);
+      if (linkError) throw new Error(linkError.message);
+      telegramUrl = `https://t.me/${String(process.env.TELEGRAM_BOT_USERNAME || "wealthplannerAI").replace(/^@/, "")}?start=${encodeURIComponent(code)}`;
+    }
 
     // Send email first. If Resend fails, return 500 so Xendit can retry.
     await sendActivationEmail({
@@ -151,6 +172,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       name: payerName || user.username,
       product: productName(amount),
       dashboardUrl,
+      telegramUrl,
     });
 
     const { error: updateError } = await supabase
