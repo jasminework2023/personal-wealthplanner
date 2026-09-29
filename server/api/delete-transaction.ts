@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (error || !u) {
-      return res.status(404).json({ error: "Akun tidak ditemukan (token tidak cocok di database)" });
+      return res.status(404).json({ error: `Akun tidak ditemukan (token tidak cocok di database) [debug: len=${token.length}, awal=${token.slice(0,4)}, akhir=${token.slice(-4)}]` });
     }
     if (!u.is_active) {
       return res.status(403).json({ error: "Akun belum aktif" });
