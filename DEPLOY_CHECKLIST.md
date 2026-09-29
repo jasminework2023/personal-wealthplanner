@@ -7,8 +7,12 @@ Set these in **Project Settings → Environment Variables** for the environment 
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `GOOGLE_CREDENTIALS`
-- `OPENAI_API_KEY` — required for receipt AI
+- `GROQ_API_KEY` — receipt AI provider utama (opsional jika memakai OpenAI saja)
+- `GROQ_RECEIPT_MODEL` — nama model vision Groq; pastikan valid di console Groq
+- `OPENAI_API_KEY` — cadangan / provider alternatif receipt AI
 - `OPENAI_RECEIPT_MODEL` — optional; defaults to `gpt-4.1-mini`
+
+Minimal salah satu dari `GROQ_API_KEY` atau `OPENAI_API_KEY` harus diisi.
 
 Payment features additionally need the Xendit variables used by the payment routes.
 
@@ -22,7 +26,7 @@ The receipt flow now:
 2. Resizes it to a maximum of 1800px.
 3. Compresses it to JPEG and keeps the request payload around 3 MB or less.
 4. Sends the image to `/api/receipt-ai`.
-5. Uses OpenAI Responses API image input plus a strict JSON schema.
+5. Memanggil Groq lebih dulu, lalu fallback ke OpenAI (chat completions + image input) kalau Groq server error / penuh.
 6. Shows the detected transaction for review.
 7. Saves only after the user presses **Konfirmasi & simpan**.
 
