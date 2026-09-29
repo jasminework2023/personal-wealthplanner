@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+
 type ActivationEmailArgs = {
   to: string;
   name: string;
@@ -24,18 +26,7 @@ export async function sendActivationEmail({
   if (!apiKey) throw new Error("RESEND_API_KEY belum diset");
   if (!to) throw new Error("Email customer kosong");
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
-    },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      subject: "🎉 Selamat datang di Wealthplanner!",
-      html: `
+  const html = `
         <div style="font-family:Arial,sans-serif;line-height:1.7;color:#173f35;max-width:620px;margin:auto;padding:0 16px;background:#fff">
           <h2 style="margin:0 0 18px">🎉 Selamat datang di Wealthplanner!</h2>
           <p>Halo ${escapeHtml(name)},</p>
@@ -68,7 +59,26 @@ export async function sendActivationEmail({
           <p>Selamat memulai perjalanan finansialmu!</p>
           <p><strong>Wealthplanner.id</strong></p>
         </div>
-      `,
+      `;
+
+  // Resend rejects (409) a reused Idempotency-Key whose payload differs. Tying the
+  // key to a fingerprint of the content means: an identical retry of the same
+  // payment is still de-duplicated, while a changed template / name is not blocked.
+  const contentHash = crypto.createHash("sha256").update(html).digest("hex").slice(0, 12);
+  const resendKey = idempotencyKey ? `${idempotencyKey}-${contentHash}` : null;
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      ...(resendKey ? { "Idempotency-Key": resendKey } : {}),
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject: "🎉 Selamat datang di Wealthplanner!",
+      html,
     }),
   });
 
