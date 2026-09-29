@@ -2,12 +2,30 @@
   "functions": {
     "api/[...route].ts": {
       "includeFiles": "server/{api,lib}/**"
+    },
+    "api/telegram-webhook.ts": {
+      "includeFiles": "server/{api,lib}/**"
+    },
+    "api/telegram-link.ts": {
+      "includeFiles": "server/{api,lib}/**"
     }
   },
   "rewrites": [
-    { "source": "/dashboard/assets/:path*", "destination": "/assets/:path*" },
-    { "source": "/dashboard", "destination": "/index.html" },
-    { "source": "/dashboard/:path*", "destination": "/index.html" },
-    { "source": "/", "destination": "/index.html" }
+    {
+      "source": "/dashboard/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
   ]
 }
