@@ -3,6 +3,9 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import crypto from "node:crypto";
 import sendActivationEmail from "../lib/email.js";
 
+const USER_COLUMNS =
+  "user_id, username, email, dashboard_token, spreadsheet_id, is_active, telegram_chat_id, telegram_link_code, telegram_link_expires_at, last_payment_id, welcome_email_sent_at";
+
 function db() {
   return createClient(
     process.env.SUPABASE_URL as string,
@@ -37,6 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const body = req.body || {};
   let amount = 0;
   let referenceId = "";
+  let paymentId = "";
   let payerEmail = "";
   let payerName = "";
   let paid = false;
@@ -44,9 +48,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Legacy Invoice webhook
   if (String(body.status || "").toUpperCase() === "PAID") {
     amount = Number(body.amount || body.paid_amount || 0);
-    payerEmail = String(body.payer_email || "").trim().toLowerCase();
-    payerName = String(body.payer_name || "").trim();
+    payerEmail = String(body.payer_email || body.customer?.email || "").trim().toLowerCase();
+    payerName = String(body.payer_name || body.customer?.given_names || "").trim();
     referenceId = String(body.external_id || "").trim();
+    // Invoice id is unique per invoice and identical across Xendit retries.
+    paymentId = String(body.id || body.external_id || "").trim();
     paid = true;
   }
 
@@ -66,6 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       data.customer?.name ||
       "",
     ).trim();
+    paymentId = String(data.payment_session_id || data.id || body.id || data.reference_id || "").trim();
     paid = String(data.status || "COMPLETED").toUpperCase() === "COMPLETED";
   }
 
@@ -76,41 +83,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!payerEmail && !referenceId) {
     return res.status(400).json({ error: "Identitas customer tidak ditemukan." });
   }
+  if (!paymentId) {
+    return res.status(400).json({ error: "ID pembayaran tidak ditemukan." });
+  }
+
+  const supabase = db();
+  let claimedUserId: string | null = null;
 
   try {
-    const supabase = db();
     let user: any = null;
 
     // New Payment Session: dashboard token is the safest lookup.
     if (body.event === "payment_session.completed" && referenceId) {
       const result = await supabase
         .from("users")
-        .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active, telegram_chat_id, telegram_link_code, telegram_link_expires_at")
+        .select(USER_COLUMNS)
         .eq("dashboard_token", referenceId)
         .maybeSingle();
-      if (!result.error && result.data) user = result.data;
+      if (result.error) throw new Error(result.error.message);
+      if (result.data) user = result.data;
     }
 
     // Legacy Invoice: map by payer email when an account already exists.
     if (!user && payerEmail) {
       const result = await supabase
         .from("users")
-        .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active, telegram_chat_id, telegram_link_code, telegram_link_expires_at")
+        .select(USER_COLUMNS)
         .eq("email", payerEmail)
         .limit(1)
         .maybeSingle();
-      if (!result.error && result.data) user = result.data;
-    }
-
-    // Important: the database uses INTEGER 0/1 for is_active.
-    if (user && Number(user.is_active) === 1) {
-      return res.status(200).json({ received: true, alreadyActive: true });
+      if (result.error) throw new Error(result.error.message);
+      if (result.data) user = result.data;
     }
 
     // Recovery for a legacy paid Invoice whose checkout was created before
-    // the customer row was saved. The webhook is authenticated by Xendit's
-    // callback token and the amount is validated above, so we can safely
-    // create the missing access record instead of losing the payment.
+    // the customer row was saved (wealthplanner.id/api/create-payment does not
+    // create a users row). Webhook is authenticated by callback token and the
+    // amount is validated above, so we create the missing record.
+    let recoveredMissingCustomer = false;
     if (!user) {
       if (!payerEmail) {
         return res.status(400).json({ error: "Email customer tidak ditemukan." });
@@ -128,23 +138,74 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           dashboard_token: dashboardToken,
           is_active: 0,
           spreadsheet_id: null,
+          // Recording the payment id on insert lets the unique index on
+          // last_payment_id reject a concurrent duplicate delivery of the same
+          // payment instead of creating a second customer (and second email).
+          last_payment_id: paymentId,
         })
-        .select("user_id, username, email, dashboard_token, spreadsheet_id, is_active, telegram_chat_id, telegram_link_code, telegram_link_expires_at")
+        .select(USER_COLUMNS)
         .single();
 
-      if (insert.error || !insert.data) {
-        throw new Error(insert.error?.message || "Gagal membuat akun customer.");
+      if (insert.data) {
+        user = insert.data;
+        recoveredMissingCustomer = true;
+      } else {
+        // Lost the race to another delivery of the same payment: use its row.
+        const existing = await supabase
+          .from("users")
+          .select(USER_COLUMNS)
+          .eq("last_payment_id", paymentId)
+          .maybeSingle();
+        if (!existing.data) {
+          throw new Error(insert.error?.message || "Gagal membuat akun customer.");
+        }
+        user = existing.data;
       }
-      user = insert.data;
     }
 
+    // Idempotency: this exact payment was already processed and its email sent.
+    // (Replaces the old "is_active === 1" shortcut, which silently skipped the
+    // email for any repeat payment by an already-active email address.)
+    if (user.last_payment_id === paymentId && user.welcome_email_sent_at) {
+      return res.status(200).json({ received: true, duplicate: true });
+    }
+
+    // Atomic claim (compare-and-swap). Only one concurrent delivery of the same
+    // payment can win this update; the rest get zero rows back and stop here.
+    // The claim also records the payment and activates the account, so access is
+    // never lost just because the email provider is temporarily down.
+    const sentAt = new Date().toISOString();
+    let claimQuery = supabase
+      .from("users")
+      .update({
+        last_payment_id: paymentId,
+        welcome_email_sent_at: sentAt,
+        is_active: 1,
+        email: payerEmail || user.email,
+      })
+      .eq("user_id", user.user_id);
+
+    if (user.last_payment_id === paymentId) {
+      // Retry after an earlier email failure (flag was cleared on rollback).
+      claimQuery = claimQuery.eq("last_payment_id", paymentId).is("welcome_email_sent_at", null);
+    } else if (user.last_payment_id) {
+      claimQuery = claimQuery.eq("last_payment_id", user.last_payment_id);
+    } else {
+      claimQuery = claimQuery.is("last_payment_id", null);
+    }
+
+    const claim = await claimQuery.select("user_id");
+    if (claim.error) throw new Error(claim.error.message);
+    if (!claim.data || claim.data.length === 0) {
+      return res.status(200).json({ received: true, duplicate: true, inProgress: true });
+    }
+    claimedUserId = user.user_id;
+
     // New customers land on the onboarding page first (Make a Copy -> Connect
-    // Sheet flow) instead of the main dashboard, which would otherwise render
-    // empty/broken until a spreadsheet is actually connected.
+    // Sheet flow) instead of the main dashboard.
     const dashboardUrl = `https://www.wealthplanner.id/dashboard/welcome?token=${encodeURIComponent(user.dashboard_token)}`;
 
-    // Create a short-lived one-time Telegram linking code. The customer never
-    // needs to know their numeric Telegram ID; they simply click the button.
+    // Create a short-lived one-time Telegram linking code. (Unchanged behaviour.)
     let telegramUrl: string | null = null;
     if (user.telegram_chat_id) {
       telegramUrl = `https://t.me/${String(process.env.TELEGRAM_BOT_USERNAME || "wealthplannerAI").replace(/^@/, "")}`;
@@ -166,31 +227,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       telegramUrl = `https://t.me/${String(process.env.TELEGRAM_BOT_USERNAME || "wealthplannerAI").replace(/^@/, "")}?start=${encodeURIComponent(code)}`;
     }
 
-    // Send email first. If Resend fails, return 500 so Xendit can retry.
+    // Recipient = the email that paid. Sender comes from RESEND_FROM_EMAIL
+    // (default: Wealthplanner <hello@wealthplanner.id>).
     await sendActivationEmail({
       to: payerEmail || user.email,
       name: payerName || user.username,
       product: productName(amount),
       dashboardUrl,
       telegramUrl,
+      idempotencyKey: `welcome-${paymentId}`,
     });
-
-    const { error: updateError } = await supabase
-      .from("users")
-      .update({ is_active: 1, email: payerEmail || user.email })
-      .eq("user_id", user.user_id);
-
-    if (updateError) throw new Error(updateError.message);
 
     return res.status(200).json({
       received: true,
       activated: true,
+      emailSent: true,
       product: productName(amount),
       needsSpreadsheet: !user.spreadsheet_id,
-      recoveredMissingCustomer: true,
+      recoveredMissingCustomer,
     });
   } catch (error) {
     console.error("xendit-webhook activation/email error:", error);
+
+    // If we claimed the payment but the email did not go out, release the
+    // "email sent" flag (keep is_active = 1) so Xendit's retry can send it.
+    if (claimedUserId) {
+      const { error: rollbackError } = await supabase
+        .from("users")
+        .update({ welcome_email_sent_at: null })
+        .eq("user_id", claimedUserId)
+        .eq("last_payment_id", paymentId);
+      if (rollbackError) console.error("xendit-webhook rollback error:", rollbackError.message);
+    }
+
     return res.status(500).json({
       error: "Aktivasi atau pengiriman email gagal; webhook akan dicoba lagi.",
     });
