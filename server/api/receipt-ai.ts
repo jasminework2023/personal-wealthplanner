@@ -46,10 +46,41 @@ function stripCodeFence(text: string): string {
   return fenced ? fenced[1].trim() : trimmed;
 }
 
+// Model (terutama Groq json_object) kadang mengembalikan nominal sebagai string
+// ("35.000" / "Rp 35.000,00"). Number("35.000") = 35, jadi harus dibersihkan dulu.
+function parseAmount(raw: unknown): number {
+  if (typeof raw === "number") return Math.round(raw);
+  let s = String(raw ?? "").replace(/rp\.?/gi, "").replace(/\s/g, "");
+  s = s.replace(/[.,]\d{1,2}$/, (m) => (/^[.,]\d{3}$/.test(m) ? m : "")); // buang desimal
+  s = s.replace(/[^\d]/g, "");
+  return s ? Number(s) : NaN;
+}
+
+// Terima DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY, YYYY-MM-DD, dan tahun 2 digit.
+// Hasil selalu "D/M/YYYY" (sama dengan toLocaleDateString("id-ID") di input manual),
+// atau "" kalau tidak valid -> klien memakai tanggal hari ini / pilihan user.
+function normalizeReceiptDate(raw: string): string {
+  const s = raw.trim();
+  if (!s) return "";
+  let d: number, m: number, y: number;
+  let match = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+  if (match) {
+    y = +match[1]; m = +match[2]; d = +match[3];
+  } else {
+    match = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})$/);
+    if (!match) return "";
+    d = +match[1]; m = +match[2]; y = +match[3];
+    if (y < 100) y += 2000;
+  }
+  const dt = new Date(y, m - 1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return "";
+  return `${d}/${m}/${y}`;
+}
+
 function normalizeTransaction(value: any) {
-  const amount = Number(value?.amount);
+  const amount = parseAmount(value?.amount);
   const description = String(value?.description || "").trim();
-  const date = String(value?.date || "").trim();
+  const date = normalizeReceiptDate(String(value?.date || ""));
   const category = String(value?.category || "Other").trim();
 
   if (!Number.isFinite(amount) || amount <= 0) {
