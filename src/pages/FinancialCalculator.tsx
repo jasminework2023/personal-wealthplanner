@@ -37,6 +37,13 @@ function NumberInput({ label, value, onChange, prefix, suffix, min=0, step=1, hi
 }
 function Slider({ label,value,onChange,min,max,step=1,format }) { return <div><div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}><span style={{fontSize:12,fontWeight:600,color:"var(--calc-ink-2)"}}>{label}</span><span style={{fontSize:12,fontWeight:700,color:"var(--calc-ink)"}}>{format?format(value):value}</span></div><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))} style={{width:"100%"}}/></div>; }
 function ResultTile({ label,value,sub }) { return <div style={{background:"var(--calc-tint)",border:"1px solid var(--calc-tint-border)",borderRadius:16,padding:"22px 22px 24px"}}><div style={{fontSize:10,fontWeight:700,letterSpacing:".08em",color:"var(--calc-ink-2)"}}>{label}</div><div style={{fontSize:"clamp(30px,4vw,48px)",lineHeight:1.05,fontWeight:800,color:"var(--calc-accent)",marginTop:9}}>{value}</div>{sub&&<div style={{fontSize:12,color:"var(--calc-ink-2)",marginTop:9}}>{sub}</div>}</div>; }
+function ScoreRow({ label, value, status, target }) {
+  const color = status === "good" ? "#2e9e6b" : status === "ok" ? "#e0a100" : "#d64545";
+  return <div className="card card-tight row-between" style={{background:"var(--calc-surface)",border:"1px solid var(--calc-border)",borderRadius:14,padding:"12px 14px",alignItems:"center"}}>
+    <div><div style={{fontSize:14,fontWeight:600,color:"var(--calc-ink)"}}>{label}</div><div className="muted mono" style={{fontSize:11,marginTop:2}}>target {target}</div></div>
+    <div style={{display:"flex",alignItems:"center",gap:12}}><span className="mono" style={{fontWeight:600,color:"var(--calc-ink)"}}>{value}</span><span style={{width:10,height:10,borderRadius:999,background:color,display:"inline-block"}}/></div>
+  </div>;
+}
 function Card({children,style}) { return <div className="wp-calc-card" style={{background:"var(--calc-surface)",border:"1px solid var(--calc-border)",borderRadius:16,padding:18,...style}}>{children}</div>; }
 
 function CalculatorBody({ id, onSaveResult, onNavigate }) {
