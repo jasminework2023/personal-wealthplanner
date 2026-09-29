@@ -3,6 +3,7 @@ type ActivationEmailArgs = {
   name: string;
   product: string;
   dashboardUrl: string;
+  telegramUrl?: string | null;
   templateUrl?: string | null;
 };
 
@@ -20,6 +21,7 @@ export async function sendActivationEmail({
   name,
   product,
   dashboardUrl,
+  telegramUrl,
   templateUrl,
 }: ActivationEmailArgs) {
   const apiKey = process.env.RESEND_API_KEY;
@@ -41,8 +43,8 @@ export async function sendActivationEmail({
       to: [to],
       subject: "Selamat datang di Wealthplanner 🎉",
       html: `
-        <div style="font-family:Arial,sans-serif;line-height:1.65;color:#173f35;max-width:620px;margin:auto">
-          <h2 style="margin-bottom:18px">🎉 Selamat datang di Wealthplanner!</h2>
+        <div style="font-family:Arial,sans-serif;line-height:1.7;color:#173f35;max-width:620px;margin:auto;background:#fff">
+          <h2 style="margin:0 0 18px">🎉 Selamat datang di Wealthplanner!</h2>
           <p>Halo ${escapeHtml(name)},</p>
           <p>
             Pembayaran untuk <strong>${escapeHtml(product)}</strong> sudah berhasil kami terima.
@@ -53,30 +55,33 @@ export async function sendActivationEmail({
             untuk membantu kamu mencatat, memantau, dan merencanakan keuangan dengan lebih terarah.
           </p>
 
-          <div style="margin:28px 0 10px">
-            <h3 style="margin:0 0 8px;color:#173f35">💻 Personal Wealth Planner</h3>
-            <a href="${escapeHtml(dashboardUrl)}"
-               style="display:inline-block;padding:12px 18px;background:#173f35;color:#fff;text-decoration:none;border-radius:8px;font-weight:700">
-              Buka Dashboard Saya
+          <div style="margin:26px 0 10px;padding:18px;border:1px solid #dce9e4;border-radius:14px;background:#f8fbfa">
+            <p style="margin:0 0 10px;font-weight:700">📌 Silakan klik link berikut untuk mulai melakukan aktivasi:</p>
+            <a href="${escapeHtml(dashboardUrl)}" style="display:inline-block;padding:12px 18px;background:#286650;color:#fff;text-decoration:none;border-radius:9px;font-weight:700">
+              Mulai Aktivasi Wealthplanner
             </a>
-            <p style="margin:8px 0 0;font-size:13px;color:#66736f">Untuk mengakses web app Personal Wealth Planner.</p>
+            <p style="margin:10px 0 0;font-size:12px;color:#66736f;word-break:break-all">
+              ${escapeHtml(dashboardUrl)}
+            </p>
           </div>
 
-          <div style="margin:24px 0 10px">
-            <h3 style="margin:0 0 8px;color:#173f35">📊 Wealth Tracker</h3>
-            <a href="${escapeHtml(copyTemplateUrl)}"
-               style="display:inline-block;padding:12px 18px;background:#fff;color:#173f35;text-decoration:none;border:1px solid #b9d0c8;border-radius:8px;font-weight:700">
-              Buat Wealth Tracker Saya
+          <div style="margin:18px 0 10px;padding:18px;border:1px solid #dce9e4;border-radius:14px">
+            <p style="margin:0 0 8px;font-weight:700">1️⃣ Buat Google Sheet pribadi</p>
+            <p style="margin:0 0 12px;font-size:13px;color:#66736f">Setelah membuka halaman aktivasi, ikuti langkah <strong>Make a copy</strong> lalu hubungkan Sheet tersebut ke Wealthplanner.</p>
+            <a href="${escapeHtml(copyTemplateUrl)}" style="display:inline-block;padding:10px 15px;background:#edf6f2;color:#173f35;text-decoration:none;border:1px solid #c5ddd4;border-radius:8px;font-weight:700">
+              Buka Template Google Sheet
             </a>
-            <p style="margin:8px 0 0;font-size:13px;color:#66736f">Untuk membuat salinan Wealth Tracker pribadi di Google Drive kamu.</p>
           </div>
 
-          <p style="margin-top:22px;font-size:13px;color:#66736f">
-            📌 Petunjuk penggunaan tersedia di masing-masing link di atas. Setelah membuat salinan Wealth Tracker,
-            buka dashboard dan hubungkan Sheet tersebut agar dapat digunakan bersama Personal Wealth Planner.
-          </p>
+          <div style="margin:18px 0 10px;padding:18px;border:1px solid #dce9e4;border-radius:14px;background:#fbfaf8">
+            <p style="margin:0 0 8px;font-weight:700">2️⃣ Hubungkan Telegram (opsional)</p>
+            <p style="margin:0 0 12px;font-size:13px;color:#66736f">
+              Tidak perlu mencari atau mengetik ID Telegram. Cukup klik tombol di bawah. Link ini bersifat pribadi dan berlaku terbatas.
+            </p>
+            ${telegramUrl ? `<a href="${escapeHtml(telegramUrl)}" style="display:inline-block;padding:10px 15px;background:#286650;color:#fff;text-decoration:none;border-radius:8px;font-weight:700">Hubungkan Telegram</a>` : `<p style="margin:0;font-size:13px;color:#66736f">Hubungkan Telegram dapat dilakukan dari Dashboard setelah aktivasi.</p>`}
+          </div>
 
-          <p style="margin-top:28px">
+          <p style="margin-top:24px">
             Semoga Wealthplanner bisa menjadi temanmu untuk membuat keuangan lebih terarah, satu langkah demi satu langkah. 🌱
           </p>
           <p>Selamat memulai perjalanan finansialmu!</p>
