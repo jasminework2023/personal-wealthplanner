@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, CheckCircle2, Clock3, ExternalLink, FileSpreadsheet, Loader2, Link2, RefreshCw } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock3, ExternalLink, FileSpreadsheet, Loader2, Link2, MessageCircle, RefreshCw } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card } from "../components/Card";
 import { setStoredToken } from "../lib/useFinanceData";
@@ -17,6 +17,9 @@ export function DashboardWelcome() {
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [telegramConnected, setTelegramConnected] = useState(false);
+  const [telegramUrl, setTelegramUrl] = useState("");
+  const [telegramLoading, setTelegramLoading] = useState(false);
 
   const checkActivation = useCallback(async (silent = false) => {
     if (!token) return;
@@ -29,6 +32,7 @@ export function DashboardWelcome() {
       if (!res.ok) throw new Error(body.error || "Gagal mengecek status akun.");
       setData(body);
       if (body.spreadsheetUrl) setSpreadsheet(body.spreadsheetUrl);
+      setTelegramConnected(Boolean(body.telegramConnected));
       setError("");
     } catch (e) {
       if (!silent) setError(e instanceof Error ? e.message : "Gagal mengecek status aktivasi.");
@@ -55,6 +59,31 @@ export function DashboardWelcome() {
     const interval = window.setInterval(() => checkActivation(true), 5000);
     return () => window.clearInterval(interval);
   }, [token, checkActivation]);
+
+
+  async function connectTelegram() {
+    setError("");
+    setTelegramLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/telegram-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || "Gagal menyiapkan Telegram.");
+      if (body.connected) {
+        setTelegramConnected(true);
+        return;
+      }
+      setTelegramUrl(body.telegramUrl || "");
+      if (body.telegramUrl) window.open(body.telegramUrl, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menyiapkan Telegram.");
+    } finally {
+      setTelegramLoading(false);
+    }
+  }
 
   async function connectSheet() {
     setError("");
@@ -169,6 +198,25 @@ export function DashboardWelcome() {
                     <button onClick={connectSheet} disabled={!spreadsheet.trim() || connecting} className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 disabled:opacity-40">
                       {connecting ? <Loader2 size={15} className="animate-spin" /> : <Link2 size={15} />} Hubungkan
                     </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700">3</div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-semibold text-forest-900">Hubungkan Telegram <span className="font-normal text-charcoal/40">(opsional)</span></h2>
+                  <p className="mt-1 text-sm text-charcoal/60">Tidak perlu mencari atau mengetik ID Telegram. Cukup klik tombol di bawah untuk menghubungkan akunmu dengan @wealthplannerAI.</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {telegramConnected ? (
+                      <div className="inline-flex items-center gap-2 rounded-xl bg-forest-50 px-4 py-2.5 text-sm font-semibold text-forest-700"><CheckCircle2 size={16} /> Telegram sudah terhubung</div>
+                    ) : (
+                      <button onClick={connectTelegram} disabled={telegramLoading} className="inline-flex items-center gap-2 rounded-xl bg-forest-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest-700 disabled:opacity-50">
+                        {telegramLoading ? <Loader2 size={15} className="animate-spin" /> : <MessageCircle size={15} />}
+                        {telegramLoading ? "Menyiapkan..." : "Hubungkan Telegram"}
+                      </button>
+                    )}
+                    {telegramUrl && !telegramConnected && <a href={telegramUrl} target="_blank" rel="noreferrer" className="text-xs font-semibold text-forest-700 underline">Buka link Telegram</a>}
                   </div>
                 </div>
               </div>
