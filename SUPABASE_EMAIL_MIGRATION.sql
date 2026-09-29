@@ -1,14 +1,10 @@
--- Run once in Supabase SQL Editor before deploying the Telegram integration.
+-- Jalankan SEKALI di Supabase SQL Editor SEBELUM deploy webhook baru.
+-- Aman dijalankan ulang (idempotent).
 alter table public.users
-  add column if not exists telegram_chat_id text,
-  add column if not exists telegram_link_code text,
-  add column if not exists telegram_link_expires_at timestamptz,
-  add column if not exists telegram_pending_receipt jsonb;
+  add column if not exists last_payment_id text,
+  add column if not exists welcome_email_sent_at timestamptz;
 
-create unique index if not exists users_telegram_chat_id_uidx
-  on public.users (telegram_chat_id)
-  where telegram_chat_id is not null;
-
-create unique index if not exists users_telegram_link_code_uidx
-  on public.users (telegram_link_code)
-  where telegram_link_code is not null;
+-- Index unik ini yang mencegah dua delivery webhook bersamaan
+-- untuk pembayaran yang sama membuat dua customer / dua email.
+create unique index if not exists users_last_payment_id_uidx
+  on public.users (last_payment_id) where last_payment_id is not null;
