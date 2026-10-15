@@ -457,6 +457,7 @@ function PensionCalc({ onSaveResult, onNavigate }) {
 // ============================================================
 function HajiCalc({ onSaveResult, onNavigate }) {
   const [daftarHaji, setDaftarHaji] = React.useState(40000000);
+  const [nilaiManfaatSubsidi, setNilaiManfaatSubsidi] = React.useState(0);
   const [targetBerangkat, setTargetBerangkat] = React.useState(2028);
   const [dpSetoran, setDpSetoran] = React.useState(10000000);
   const [inflasi, setInflasi] = React.useState(5);
@@ -467,7 +468,12 @@ function HajiCalc({ onSaveResult, onNavigate }) {
   
   const totalBiayaMendasar = daftarHaji;
   const totalBiayaDenganInflasi = totalBiayaMendasar * Math.pow(1 + inflasi / 100, tahunMenuju);
-  const sisaDanaDibutuhkan = Math.max(totalBiayaDenganInflasi - dpSetoran, 0);
+  // Nilai manfaat dan dukungan pemerintah dimasukkan sebagai estimasi gabungan,
+  // lalu diproyeksikan dengan asumsi inflasi yang sama. Default 0 agar simulasi
+  // tetap konservatif bila pengguna belum memiliki estimasi resmi.
+  const estimasiBantuanSaatBerangkat = nilaiManfaatSubsidi * Math.pow(1 + inflasi / 100, tahunMenuju);
+  const estimasiBiayaJemaah = Math.max(totalBiayaDenganInflasi - estimasiBantuanSaatBerangkat, 0);
+  const sisaDanaDibutuhkan = Math.max(estimasiBiayaJemaah - dpSetoran, 0);
   const totalBulan = tahunMenuju > 0 ? tahunMenuju * 12 : 0;
   const returnBulanan = returnInvestasi / 100 / 12;
   // Kalau ada estimasi return investasi, setoran bulanan dihitung pakai rumus
@@ -486,7 +492,8 @@ function HajiCalc({ onSaveResult, onNavigate }) {
     <CalcLayout
       inputs={
         <>
-          <NumberInput label="Biaya daftar haji" prefix="Rp" value={daftarHaji} onChange={setDaftarHaji} step={1000000} />
+          <NumberInput label="Biaya haji saat ini (acuan)" prefix="Rp" value={daftarHaji} onChange={setDaftarHaji} step={1000000} />
+          <NumberInput label="Perkiraan Nilai Manfaat Haji & Subsidi Pemerintah" prefix="Rp" value={nilaiManfaatSubsidi} onChange={setNilaiManfaatSubsidi} step={1000000} hint="Masukkan estimasi gabungan bantuan pembiayaan. Isi 0 jika belum ada estimasi." />
           <NumberInput label="Target tahun keberangkatan" value={targetBerangkat} onChange={setTargetBerangkat} min={tahunSaatIni} max={tahunSaatIni + 30} step={1} />
           <NumberInput label="DP / Setoran awal" prefix="Rp" value={dpSetoran} onChange={setDpSetoran} step={1000000} />
           <Slider label="Estimasi inflasi biaya haji" value={inflasi} onChange={setInflasi} min={0} max={10} step={0.5} format={(v) => `${v}%`} />
@@ -504,11 +511,11 @@ function HajiCalc({ onSaveResult, onNavigate }) {
               <div className="muted" style={{ fontSize: 12 }}>Dalam {tahunMenuju} tahun</div>
             </div>
             <div className="card" style={{ flex: 1, background: "var(--surface-2)" }}>
-              <div className="muted" style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>TOTAL BIAYA (Inflasi {inflasi}%)</div>
+              <div className="muted" style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>ESTIMASI BIAYA JEMAAH (SETELAH BANTUAN)</div>
               <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontSize: 28, fontWeight: 700, lineHeight: 1, marginBottom: 4 }}>
-                {formatIDR(Math.round(totalBiayaDenganInflasi))}
+                {formatIDR(Math.round(estimasiBiayaJemaah))}
               </div>
-              <div className="muted" style={{ fontSize: 12 }}>Dari {formatIDR(totalBiayaMendasar)}</div>
+              <div className="muted" style={{ fontSize: 12 }}>Estimasi total biaya {formatIDR(Math.round(totalBiayaDenganInflasi))} − bantuan {formatIDR(Math.round(estimasiBantuanSaatBerangkat))}</div>
             </div>
           </div>
 
@@ -539,7 +546,7 @@ function HajiCalc({ onSaveResult, onNavigate }) {
 
           <div style={{ marginTop: 16, padding: "12px 16px", background: "var(--surface-2)", borderRadius: 14, fontSize: 13, color: "var(--ink-2)", lineHeight: 1.55 }}>
             🕋 <span style={{ marginLeft: 8 }}>
-              Tahukah kamu? Biaya haji riil (BPIH) untuk Haji Reguler sebagian ditanggung Nilai Manfaat dana kelolaan BPKH — sekitar 30–40% per tahun (BPIH 2026: ±Rp87,4 juta, sementara yang dibayar jemaah/Bipih hanya ±Rp54,2 juta). Namun besaran subsidi ini ditetapkan ulang tiap tahun lewat Keppres dan cenderung menurun, jadi kalkulator ini sengaja menghitung skenario kamu menabung penuh — biar rencana kamu tetap aman meski subsidi berubah nanti.
+              Untuk Haji Reguler, total biaya penyelenggaraan (BPIH) tidak selalu sama dengan biaya yang dibayar jemaah (Bipih). Masukkan perkiraan gabungan Nilai Manfaat Haji dan subsidi pemerintah jika ingin memperhitungkan bantuan tersebut. Nilai aktual dapat berubah setiap tahun; proyeksi bantuan di kalkulator ini hanya asumsi, bukan angka resmi untuk tahun keberangkatan mendatang.
             </span>
           </div>
 
@@ -548,7 +555,7 @@ function HajiCalc({ onSaveResult, onNavigate }) {
           </div>
         </>
       }
-      onSave={() => onSaveResult({ id: "haji", title: "Haji & Umroh", value: `${targetBerangkat} · Rp ${formatIDR(Math.round(budiBulanan))}/bln`, plan: { type: "hajj", targetAmount: totalBiayaDenganInflasi, monthlyAmount: budiBulanan, timeframe: tahunMenuju, preparedAssets: dpSetoran, targetYear: targetBerangkat } })}
+      onSave={() => onSaveResult({ id: "haji", title: "Haji & Umroh", value: `${targetBerangkat} · Rp ${formatIDR(Math.round(budiBulanan))}/bln`, plan: { type: "hajj", targetAmount: estimasiBiayaJemaah, monthlyAmount: budiBulanan, timeframe: tahunMenuju, preparedAssets: dpSetoran, targetYear: targetBerangkat } })}
       onNavigate={onNavigate}
       calcId="haji"
       relatedId={null}
