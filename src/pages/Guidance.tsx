@@ -212,7 +212,7 @@ export function Guidance() {
           <Card className="p-4 sm:p-5">
             <div className="flex items-start gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-500"><ArrowRight size={17} /></div>
-              <div className="min-w-0"><h3 className="text-[15px] font-semibold text-forest-900">07 — Konsultasikan Rencanamu</h3><StepCopy>Setelah mengetahui kondisi keuangan, tujuan, dan kebutuhan proteksimu, lanjutkan ke <strong className="text-forest-800">Konsultasi dengan Life Planner</strong> untuk mendapatkan proposal yang sesuai dengan kebutuhan perencanaanmu.</StepCopy><div className="mt-3"><a href="https://gri.my.id/f1/GJ5115" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-3 py-2 text-[12px] font-semibold text-white hover:bg-forest-700">Konsultasi dengan Life Planner <ExternalLink size={13} /></a></div></div>
+              <div className="min-w-0"><h3 className="text-[15px] font-semibold text-forest-900">07 — Konsultasikan Rencanamu</h3><StepCopy>Setelah mengetahui kondisi keuangan, tujuan, dan kebutuhan proteksimu, lanjutkan ke <strong className="text-forest-800">Konsultasi dengan Life Planner</strong> untuk mendapatkan proposal yang sesuai dengan kebutuhan perencanaanmu.</StepCopy><div className="mt-3"><a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-3 py-2 text-[12px] font-semibold text-white hover:bg-forest-700">Konsultasi dengan Life Planner <ExternalLink size={13} /></a></div></div>
             </div>
           </Card>
         </div>
