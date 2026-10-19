@@ -62,7 +62,7 @@ function Brand() {
           <img src={logoMark} alt="Wealthplanner" className="h-auto w-full object-contain" />
         </div>
         <div className="min-w-0">
-          <p className="text-[15px] font-semibold text-white tracking-tight">Wealthplanner</p>
+          <p className="text-[15px] font-semibold text-white tracking-tight">wealthplanner.id</p>
           <p className="text-[12px] text-white/65">Personal Finance</p>
         </div>
       </div>
