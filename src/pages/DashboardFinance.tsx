@@ -1,6 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 const API_BASE = "/api";
-import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2 } from "lucide-react";
+import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StatCard } from "../components/StatCard";
 import { ChartCard, Card } from "../components/Card";
@@ -218,6 +218,7 @@ export function DashboardFinance() {
   const [editingAssetTarget, setEditingAssetTarget] = useState(false);
   const [assetTargetInput, setAssetTargetInput] = useState("");
   const [savingAssetTarget, setSavingAssetTarget] = useState(false);
+  const [activeReportTab, setActiveReportTab] = useState<"income" | "assets" | "cashflow">("income");
 
   useEffect(() => {
     localStorage.setItem(MANUAL_STOCKS_KEY, JSON.stringify(manualStocks));
@@ -238,7 +239,7 @@ export function DashboardFinance() {
   const incomeRows = byCategory("Income");
   const savingRows = byCategory("Saving");
   const expenseRows = byCategory("Expense");
-  const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);
+  const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);\n  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];\n  const activeTabIndex = reportTabs.findIndex((tab) => tab.id === activeReportTab);\n  const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
 
   return (
     <div className="flex flex-col gap-6">
@@ -255,46 +256,34 @@ export function DashboardFinance() {
         </div>
       </div>
 
-      {/* A. Ringkasan Bulanan */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Monthly Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
-        <StatCard
-          label="Budget Expense"
-          value={budgetExpensePlan > 0 ? formatRupiah(budgetExpensePlan) : "Belum Aktivasi Budget"}
-          icon={Landmark}
-          tone="neutral"
-        />
-        <StatCard label="Monthly Spending" value={formatRupiah(totalExpense)} icon={TrendingDown} tone="rose" />
-        <StatCard label="Monthly Savings" value={formatRupiah(totalSaving)} icon={PiggyBank} tone="forest" />
+      <div className="rounded-2xl border border-forest-100 bg-white p-3 sm:p-4">
+        <div className="flex items-center gap-2">
+          <button type="button" aria-label="Laporan sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-charcoal/10 text-forest-700 hover:bg-forest-50"><ChevronLeft size={18}/></button>
+          <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+            {reportTabs.map((tab, index) => <button key={tab.id} type="button" onClick={() => setActiveReportTab(tab.id)} className={`min-w-max flex-1 rounded-xl px-3 py-2.5 text-[12px] sm:text-[13px] font-semibold transition-colors ${activeReportTab===tab.id?"bg-forest-700 text-white shadow-sm":"text-charcoal/60 hover:bg-forest-50 hover:text-forest-800"}`}>{tab.label}</button>)}
+          </div>
+          <button type="button" aria-label="Laporan berikutnya" onClick={() => selectReportTab(activeTabIndex + 1)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-charcoal/10 text-forest-700 hover:bg-forest-50"><ChevronRight size={18}/></button>
+        </div>
+        <p className="mt-2 px-1 text-[11px] text-charcoal/45">Geser pilihan atau gunakan panah untuk melihat laporan lainnya.</p>
       </div>
 
-      {/* B. Income Overview */}
-      <ChartCard title="Income Overview" subtitle="Realisasi pendapatan per kategori bulan ini">
-        <div>
-          {incomeRows.map((c) => (
-            <BudgetRow key={c.category} category={c.category} allocation={c.allocation} realization={c.realization} />
-          ))}
+      {activeReportTab === "income" && <>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <StatCard label="Total Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
+          <StatCard label="Total Expense" value={formatRupiah(totalExpense)} icon={TrendingDown} tone="rose" />
+          <StatCard label="Net Result" value={formatRupiah(totalIncome-totalExpense)} icon={Landmark} tone="neutral" />
         </div>
-      </ChartCard>
-
-      {/* C. Savings Overview */}
-      <ChartCard title="Savings Overview" subtitle={`Total savings ${formatRupiah(totalSaving)}`}>
-        <div>
-          {savingRows.map((c) => (
-            <BudgetRow key={c.category} category={c.category} allocation={c.allocation} realization={c.realization} />
-          ))}
+        <ChartCard title="Income Statement" subtitle="Perbandingan pendapatan, pengeluaran, dan tabungan bulan ini.">
+          <ResponsiveContainer width="100%" height={260}><BarChart data={[{name:"Income",amount:totalIncome},{name:"Expense",amount:totalExpense},{name:"Saving",amount:totalSaving}]} margin={{top:10,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:12}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" fill="var(--chart-2)" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
+        </ChartCard>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <ChartCard title="Income per Kategori" subtitle="Realisasi pendapatan"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
+          <ChartCard title="Expense per Kategori" subtitle="Realisasi pengeluaran"><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
+          <ChartCard title="Saving per Kategori" subtitle="Realisasi tabungan"><div>{savingRows.length?savingRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data saving.</p>}</div></ChartCard>
         </div>
-      </ChartCard>
+      </>}
 
-      {/* D. Expense Overview */}
-      <ChartCard title="Expense Overview" subtitle="Kategori yang melebihi budget ditandai jelas">
-        <div>
-          {expenseRows.map((c) => (
-            <BudgetRow key={c.category} category={c.category} allocation={c.allocation} realization={c.realization} />
-          ))}
-        </div>
-      </ChartCard>
-
+      {activeReportTab === "assets" && <>
       {/* E. Asset Tracker */}
       <ChartCard title="Asset Tracker" subtitle="Pantau aset saat ini dan progres menuju target.">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -397,6 +386,23 @@ export function DashboardFinance() {
         </div>
       </ChartCard>
 
+      </>}
+
+      {activeReportTab === "cashflow" && <>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <StatCard label="Cash In" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
+          <StatCard label="Cash Out" value={formatRupiah(totalExpense+totalSaving)} icon={TrendingDown} tone="rose" />
+          <StatCard label="Net Cashflow" value={formatRupiah(totalIncome-totalExpense-totalSaving)} icon={Landmark} tone="neutral" />
+        </div>
+        <ChartCard title="Cashflow Tracker" subtitle="Arus kas bersih setelah pengeluaran dan alokasi tabungan.">
+          <ResponsiveContainer width="100%" height={260}><BarChart data={[{name:"Cash In",amount:totalIncome},{name:"Expenses",amount:totalExpense},{name:"Savings",amount:totalSaving},{name:"Net Cashflow",amount:totalIncome-totalExpense-totalSaving}]} margin={{top:10,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:11}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" fill="var(--chart-2)" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
+        </ChartCard>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <ChartCard title="Cash In Detail" subtitle="Pemasukan per kategori"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
+          <ChartCard title="Cash Out Detail" subtitle="Pengeluaran per kategori"><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
+          <ChartCard title="Saving Detail" subtitle="Tabungan per kategori"><div>{savingRows.length?savingRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data saving.</p>}</div></ChartCard>
+        </div>
+      </>}
       {/* Stock Net Worth hidden in Phase 1 until live market-price data is available. */}
 
       <AddTransactionModal
