@@ -1,6 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 const API_BASE = "/api";
-import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight, CalendarDays, X, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StatCard } from "../components/StatCard";
 import { ChartCard, Card } from "../components/Card";
@@ -211,7 +211,15 @@ function BudgetRow({
 }
 
 export function DashboardFinance() {
-  const { loading, error, isRealData, username, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData();
+  const now = new Date();
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const [selectedMonth, setSelectedMonth] = useState(monthNames[now.getMonth()]);
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [periodOpen, setPeriodOpen] = useState(false);
+  const [draftMonth, setDraftMonth] = useState(monthNames[now.getMonth()]);
+  const [draftYear, setDraftYear] = useState(now.getFullYear());
+  const [assetValuesHidden, setAssetValuesHidden] = useState(false);
+  const { loading, error, isRealData, username, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData(selectedMonth, false, selectedYear);
   const [manualStocks, setManualStocks] = useState<ManualStock[]>(() => loadManualStocks());
   const [transactionModalOpen, setTransactionModalOpen] = useState(false);
   const [transactionMode, setTransactionMode] = useState<"manual" | "ai">("ai");
@@ -259,6 +267,34 @@ export function DashboardFinance() {
         </div>
       </div>
 
+      <div className="flex justify-end">
+        <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex max-w-full items-center gap-2 rounded-full border border-charcoal/10 bg-white px-3.5 py-2 text-[13px] font-medium text-forest-900 shadow-sm">
+          <CalendarDays size={16} className="shrink-0 text-forest-700" />
+          <span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span>
+          <ChevronRight size={15} className="rotate-90 text-charcoal/50" />
+        </button>
+      </div>
+      {periodOpen && <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setPeriodOpen(false); }}>
+        <div role="dialog" aria-modal="true" aria-labelledby="finance-period-title" className="w-full max-w-md rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-3xl">
+          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-charcoal/15 sm:hidden" />
+          <div className="flex items-center justify-between">
+            <h3 id="finance-period-title" className="text-[17px] font-semibold text-forest-900">Pilih periode</h3>
+            <button type="button" aria-label="Tutup" onClick={() => setPeriodOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal/60 hover:bg-charcoal/5"><X size={19}/></button>
+          </div>
+          <div className="mt-5 flex items-center justify-between">
+            <button type="button" aria-label="Tahun sebelumnya" onClick={() => setDraftYear((y) => y - 1)} className="flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 text-forest-700"><ChevronLeft size={18}/></button>
+            <span className="text-[16px] font-semibold text-forest-900">{draftYear}</span>
+            <button type="button" aria-label="Tahun berikutnya" disabled={draftYear >= now.getFullYear()} onClick={() => setDraftYear((y) => Math.min(now.getFullYear(), y + 1))} className="flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 text-forest-700 disabled:opacity-25"><ChevronRight size={18}/></button>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {monthNames.map((month, index) => {
+              const disabled = draftYear > now.getFullYear() || (draftYear === now.getFullYear() && index > now.getMonth());
+              return <button key={month} type="button" disabled={disabled} onClick={() => setDraftMonth(month)} className={`rounded-xl px-2 py-3 text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-25 ${draftMonth === month ? "bg-[#0B4D38] text-white" : "bg-charcoal/[0.04] text-charcoal/75 hover:bg-forest-50"}`}>{month.slice(0,3)}</button>;
+            })}
+          </div>
+          <button type="button" onClick={() => { setSelectedMonth(draftMonth); setSelectedYear(draftYear); setPeriodOpen(false); }} className="mt-5 w-full rounded-xl bg-[#0B4D38] px-4 py-3 text-[14px] font-semibold text-white hover:bg-[#083c2c]">Terapkan</button>
+        </div>
+      </div>}
       <section className="bg-white">
         <div className="flex items-center justify-between gap-3">
           <button type="button" aria-label="Sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full border border-charcoal/10 text-forest-700 transition-colors hover:bg-forest-50"><ChevronLeft size={18}/></button>
