@@ -9,8 +9,8 @@ import { Wallet, ArrowLeftRight, Target, BookOpen, Plus, Sparkles, X } from "luc
 
 const titles: Record<string, string> = {
   "/": "Home",
-  "/finance": "Dashboard Finance",
-  "/transactions": "Transaction Report",
+  "/finance": "Report",
+  "/transactions": "Community",
   "/budgeting": "Budgeting & Realization",
   "/calculator": "Financial Calculator",
   "/protection": "Proteksi Finansial",
