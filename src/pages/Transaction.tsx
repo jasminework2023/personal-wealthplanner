@@ -12,9 +12,9 @@ type Filter = "All" | TransactionType;
 
 function transactionParts(value: string): { day: number; month: number; year: number } {
   const raw = String(value || "").trim();
-  const iso = raw.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})/);
+  const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
   if (iso) return { year: Number(iso[1]), month: Number(iso[2]), day: Number(iso[3]) };
-  const parts = raw.split(/[\\/. -]/).map(Number);
+  const parts = raw.split(/[\/. -]/).map(Number);
   if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return { day: 0, month: 0, year: 0 };
   let [day, month, year] = parts;
   if (day <= 12 && month > 12) [day, month] = [month, day];
