@@ -1,6 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 const API_BASE = "/api";
-import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight, CalendarDays, X, Eye, EyeOff, Wallet, CircleDollarSign } from "lucide-react";
+import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight, CalendarDays, X, Eye, EyeOff, Wallet, CircleDollarSign, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StatCard } from "../components/StatCard";
 import { ChartCard, Card } from "../components/Card";
@@ -405,16 +405,42 @@ export function DashboardFinance() {
       </>}
 
       {activeReportTab === "cashflow" && <>
-        <div className="rounded-2xl bg-[#F6C445] p-4 text-black sm:p-5">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 text-[13px] sm:text-sm">
-            <div className="border-b border-black/15 pb-2 font-medium">Cash In</div>
-            <div className="border-b border-black/15 pb-2 text-right font-semibold tabular-nums">{formatRupiah(totalIncome)}</div>
-            <div className="border-b border-black/15 pb-2 font-medium">Cash Out</div>
-            <div className="border-b border-black/15 pb-2 text-right font-semibold tabular-nums">{formatRupiah(totalExpense+totalSaving)}</div>
-            <div className="font-medium">Net Cashflow</div>
-            <div className="text-right font-semibold tabular-nums">{formatRupiah(totalIncome-totalExpense-totalSaving)}</div>
-          </div>
-        </div>
+        {(() => {
+          const monthIndex = monthNames.indexOf(selectedMonth);
+          const previousMonth = monthNames[(monthIndex + 11) % 12];
+          const previousYear = monthIndex === 0 ? selectedYear - 1 : selectedYear;
+          const previousTransactions = historyData.transactions.filter((t) => {
+            const year = Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear));
+            return String(t.month || "").toLowerCase() === previousMonth.toLowerCase() && year === previousYear;
+          });
+          const previousIncome = previousTransactions.filter((t) => t.type === "Income").reduce((sum, t) => sum + t.amount, 0);
+          const previousExpense = previousTransactions.filter((t) => t.type === "Expense").reduce((sum, t) => sum + t.amount, 0);
+          const previousSaving = previousTransactions.filter((t) => t.type === "Saving").reduce((sum, t) => sum + t.amount, 0);
+          const netCashflow = totalIncome - totalExpense - totalSaving;
+          const previousNetCashflow = previousIncome - previousExpense - previousSaving;
+          const trend = previousTransactions.length > 0 && previousNetCashflow !== 0
+            ? ((netCashflow - previousNetCashflow) / Math.abs(previousNetCashflow)) * 100
+            : null;
+          const netDigits = String(Math.round(Math.abs(netCashflow))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+          return <div className="rounded-[22px] bg-[#F6C445] p-4 text-black">
+            <p className="text-[13px] text-[#5A4A12]">Net cashflow</p>
+            <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
+              <span className="shrink-0 text-[15px] text-[#5A4A12]">Rp</span>
+              <span className="min-w-0 text-[clamp(24px,8vw,32px)] font-medium leading-tight tracking-[-0.5px] text-[#123524] tabular-nums">{netCashflow < 0 ? "-" : ""}{netDigits}</span>
+            </div>
+            {trend !== null && <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#123524]/[0.12] px-2.5 py-1 text-[12px] font-medium text-[#123524]"><span>{trend >= 0 ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</span><span>{trend >= 0 ? "+" : ""}{Math.round(trend)}% dari bulan lalu</span></div>}
+            <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
+              <div className="min-w-0 rounded-2xl bg-white p-3">
+                <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#DFF3E7] text-[#0B6B47]"><ArrowDownLeft size={16}/></span><span className="text-[12px] text-[#6B7B70]">Cash in</span></div>
+                <p className="mt-2 whitespace-nowrap text-[clamp(12px,3.8vw,15px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalIncome)}</p>
+              </div>
+              <div className="min-w-0 rounded-2xl bg-white p-3">
+                <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FDE3EA] text-[#C23A5B]"><ArrowUpRight size={16}/></span><span className="text-[12px] text-[#6B7B70]">Cash out</span></div>
+                <p className="mt-2 whitespace-nowrap text-[clamp(12px,3.8vw,15px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalExpense+totalSaving)}</p>
+              </div>
+            </div>
+          </div>;
+        })()}
         <ChartCard title="Cashflow Tracker" subtitle="Cash out menggabungkan pengeluaran dan tabungan.">
           <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Cash In",amount:totalIncome},{name:"Cash Out",amount:totalExpense+totalSaving},{name:"Net Cashflow",amount:totalIncome-totalExpense-totalSaving}]} barCategoryGap="18%" margin={{top:10,right:8,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:10}} interval={0} axisLine={false} tickLine={false}/><YAxis width={44} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" radius={[7,7,0,0]} maxBarSize={68}>{[{color:"#0B6B47"},{color:"#F4577A"},{color:"#FFA24C"}].map((item,index)=><Cell key={index} fill={item.color}/>)}</Bar></BarChart></ResponsiveContainer>
         </ChartCard>
