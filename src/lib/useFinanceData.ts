@@ -176,10 +176,17 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
       }
 
       setState((s) => ({ ...s, loading: true, error: null, month: requestedMonth }));
-      const ttl = force ? 1500 : 20000;
+      const dashboardUrl = `${API_BASE}/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}`;
+      const setupUrl = `${API_BASE}/setup?token=${encodeURIComponent(token)}`;
+      // After a successful write, bypass the in-memory request cache so the next read reflects Google Sheets.
+      if (force) {
+        sharedRequests.delete(dashboardUrl);
+        sharedRequests.delete(setupUrl);
+      }
+      const ttl = force ? 0 : 20000;
       Promise.all([
-        sharedFetch(`${API_BASE}/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}`, ttl),
-        sharedFetch(`${API_BASE}/setup?token=${encodeURIComponent(token)}`, ttl),
+        sharedFetch(dashboardUrl, ttl),
+        sharedFetch(setupUrl, ttl),
       ])
         .then(([dashboard, setup]) => ({ dashboard, setup }))
         .then(({ dashboard, setup }) => {
