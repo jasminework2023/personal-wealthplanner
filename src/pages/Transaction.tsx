@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, PiggyBank, Plus, Receipt, Search, CalendarDays, SlidersHorizontal, X, Pencil, Trash2 } from "lucide-react";
 import { AddTransactionModal } from "../components/AddTransactionModal";
 import { EditTransactionModal } from "../components/EditTransactionModal";
@@ -43,7 +43,8 @@ function formatTransactionDate(value: string): string {
 
 export function Transaction() {
   const { loading, error, isRealData, username, transactions } = useFinanceData(undefined, true);
-  const language = getAppLanguage();
+  const [language, setLanguage] = useState(getAppLanguage());
+  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const txText = language === "id" ? { title: "Transaksi", intro: "Kelola dan telusuri semua transaksi keuanganmu.", all: "Semua Transaksi", allMonths: "Semua bulan", add: "Tambah Transaksi", list: "Daftar Transaksi", search: "Cari transaksi...", filter: "Filter transaksi", month: "Bulan", year: "Tahun", allYears: "Semua tahun", apply: "Terapkan filter", loading: "Memuat transaksi...", empty: "Belum ada transaksi", emptyHint: "Coba ubah filter atau tambahkan transaksi baru.", close: "Tutup filter", newestToOldest: "Urutkan dari terbaru ke terlama", oldestToNewest: "Urutkan dari terlama ke terbaru", edit: "Edit transaksi" } : { title: "Transaction", intro: "Manage and review all your financial transactions.", all: "All Transactions", allMonths: "All months", add: "Add Transaction", list: "Transaction List", search: "Search transactions...", filter: "Filter transactions", month: "Month", year: "Year", allYears: "All years", apply: "Apply filters", loading: "Loading transactions...", empty: "No transactions yet", emptyHint: "Try changing the filters or add a new transaction.", close: "Close filter", newestToOldest: "Sort newest to oldest", oldestToNewest: "Sort oldest to newest", edit: "Edit transaction" };
   const [filter, setFilter] = useState<Filter>("All");
   const [search, setSearch] = useState("");
