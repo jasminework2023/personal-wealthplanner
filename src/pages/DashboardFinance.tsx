@@ -288,7 +288,8 @@ export function DashboardFinance() {
         })()}
         <ChartCard title="Income Statement" subtitle="Pendapatan dan pengeluaran aktual pada periode ini.">
           <div className="w-full">
-            <ResponsiveContainer width="100%" height={290}><BarChart data={[{name:"Income",income:totalIncome,expense:0},{name:"Expense",income:0,expense:totalExpense}]} barCategoryGap="18%" barGap={8} margin={{top:14,right:8,left:0,bottom:6}}><XAxis dataKey="name" tick={{fontSize:12}} axisLine={false} tickLine={false}/><YAxis width={48} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="income" name="Total Income" fill="#0B6B47" radius={[8,8,0,0]} maxBarSize={90}/><Bar dataKey="expense" name="Total Expense" fill="#F4577A" radius={[8,8,0,0]} maxBarSize={90}/></BarChart></ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Periode ini",income:totalIncome,expense:totalExpense}]} barCategoryGap="8%" barGap={12} margin={{top:10,right:8,left:0,bottom:0}}><XAxis dataKey="name" hide/><YAxis width={48} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="income" name="Total Income" fill="#0B6B47" radius={[8,8,0,0]} maxBarSize={88}/><Bar dataKey="expense" name="Total Expense" fill="#F4577A" radius={[8,8,0,0]} maxBarSize={88}/></BarChart></ResponsiveContainer>
+            <div className="mt-2 flex justify-center gap-5 text-xs text-charcoal/65"><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#0B6B47]"/>Income</span><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#F4577A]"/>Expense</span></div>
           </div>
         </ChartCard>
         <div className="grid gap-4 lg:grid-cols-3">
