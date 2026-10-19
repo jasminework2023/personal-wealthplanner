@@ -176,12 +176,23 @@ export function Home() {
           <h2 className="text-[16px] font-semibold text-forest-900">Tujuan Keuangan</h2>
           <button onClick={() => navigate("/goals")} className="inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700">Lihat semua <ChevronRight size={14}/></button>
         </div>
-        {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.slice(0, 2).map((plan) => (
-          <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-2xl border border-rose-100 bg-white p-4 text-left shadow-sm hover:border-rose-200">
-            <div className="flex items-center gap-2"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-forest-700"><Target size={18}/></span><span className="text-[13px] font-semibold text-forest-900">{plan.name}</span></div>
-            <p className="mt-3 text-[11px] text-charcoal/50">Simulasi tersimpan · buka untuk detail</p>
-          </button>
-        ))}</div> : <div className="rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-5 text-center"><Target size={22} className="mx-auto text-forest-700"/><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-3 rounded-xl bg-forest-700 px-4 py-2 text-[12px] font-semibold text-white">Buka Calculator</button></div>}
+        {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.slice(0, 2).map((plan) => {
+          let goalSettings: { names?: Record<string, string>; allocations?: Record<string, Record<string, number>> } = {};
+          try { goalSettings = JSON.parse(localStorage.getItem("wealthplanner_goal_asset_allocations_v1") || "{}"); } catch { goalSettings = {}; }
+          const target = plan.targetAmount ?? plan.obligationAmount ?? plan.homePrice ?? plan.loanAmount ?? 0;
+          const allocated = Object.values(goalSettings.allocations?.[plan.id] || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+          const progress = target > 0 ? Math.min(100, Math.max(0, allocated / target * 100)) : 0;
+          const goalName = goalSettings.names?.[plan.id] || plan.name;
+          return <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-2xl border border-rose-100 bg-white p-4 text-left shadow-sm transition hover:border-rose-200 hover:shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full" style={{ background: "conic-gradient(#1F6B4A " + progress + "%, #FCE7EF " + progress + "%)" }}>
+                <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-white"><span className="text-[15px] font-bold tabular-nums text-forest-800">{Math.round(progress)}%</span></div>
+              </div>
+              <div className="min-w-0 flex-1"><p className="text-[13px] font-semibold text-forest-900">{goalName}</p><p className="mt-1 text-[11px] text-charcoal/55">Terkumpul</p><p className="text-[12px] font-semibold text-forest-800">{formatRupiah(allocated)} <span className="font-normal text-charcoal/45">dari {formatRupiah(target)}</span></p></div>
+            </div>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-rose-50"><div className="h-full rounded-full bg-forest-600 transition-all" style={{ width: progress + "%" }}/></div>
+          </button>;
+        })}</div> : <div className="rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-5 text-center"><Target size={22} className="mx-auto text-forest-700"/><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-3 rounded-xl bg-forest-700 px-4 py-2 text-[12px] font-semibold text-white">Buka Calculator</button></div>}
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
