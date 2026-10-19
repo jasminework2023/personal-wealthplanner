@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { StatCard } from "../components/StatCard";
 import { ChartCard, Card } from "../components/Card";
 import { BudgetProgressBar, StatusBadge } from "../components/ProgressBar";
-import { DataStatusBanner } from "../components/DataStatusBanner";
 import { formatRupiah, formatCompact, formatPercent } from "../lib/format";
 import { usagePercentage, budgetStatus } from "../data/types";
 import { useFinanceData, getStoredToken } from "../lib/useFinanceData";
@@ -221,8 +220,6 @@ export function DashboardFinance() {
   const [assetValuesHidden, setAssetValuesHidden] = useState(false);
   const { loading, error, isRealData, username, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData(selectedMonth, false, selectedYear);
   const [manualStocks, setManualStocks] = useState<ManualStock[]>(() => loadManualStocks());
-  const [transactionModalOpen, setTransactionModalOpen] = useState(false);
-  const [transactionMode, setTransactionMode] = useState<"manual" | "ai">("ai");
   const [editingAssetTarget, setEditingAssetTarget] = useState(false);
   const [assetTargetInput, setAssetTargetInput] = useState("");
   const [savingAssetTarget, setSavingAssetTarget] = useState(false);
@@ -248,23 +245,15 @@ export function DashboardFinance() {
   const savingRows = byCategory("Saving");
   const expenseRows = byCategory("Expense");
   const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);
-  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];
+  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "cashflow" as const, label: "Cashflow Tracker" }, { id: "assets" as const, label: "Asset Tracker" }];
   const activeTabIndex = reportTabs.findIndex((tab) => tab.id === activeReportTab);
   const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
 
   return (
     <div className="flex flex-col gap-6">
-      <DataStatusBanner isRealData={isRealData} username={username} error={error} />
-
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold text-forest-900">Dashboard Finance</h1>
-          <p className="text-[14px] text-charcoal/60 mt-0.5">Ringkasan lengkap kondisi keuanganmu bulan ini.</p>
-        </div>
-        <div className="flex gap-2">
-          <button type="button" onClick={() => { setTransactionMode("ai"); setTransactionModalOpen(true); }} className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3.5 py-2 text-[13px] font-medium text-white hover:bg-rose-700">✨ Catat dengan AI</button>
-          <button type="button" onClick={() => { setTransactionMode("manual"); setTransactionModalOpen(true); }} className="inline-flex items-center gap-1.5 rounded-lg border border-charcoal/15 bg-white px-3.5 py-2 text-[13px] font-medium hover:bg-charcoal/5">+ Tambah Transaksi</button>
-        </div>
+      <div className="flex items-center justify-between gap-2 -mt-3">
+        <h1 className="text-[19px] font-medium leading-tight text-forest-900">Financial Report</h1>
+        {isRealData && <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-forest-700"><Check size={14} strokeWidth={2.5} aria-hidden="true" /> Data tersambung</span>}
       </div>
 
       <div className="flex justify-end">
@@ -321,13 +310,12 @@ export function DashboardFinance() {
             <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalIncome-totalExpense)}</p>
           </div>
         </div>
-        <ChartCard title="Income Statement" subtitle="Perbandingan pendapatan, pengeluaran, dan tabungan bulan ini.">
-          <ResponsiveContainer width="100%" height={260}><BarChart data={[{name:"Income",amount:totalIncome},{name:"Expense",amount:totalExpense},{name:"Saving",amount:totalSaving}]} margin={{top:10,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:12}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" fill="var(--chart-2)" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
+        <ChartCard title="Income Statement" subtitle="Pendapatan, pengeluaran, dan surplus/defisit bulan ini.">
+          <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Income",amount:totalIncome},{name:"Expense",amount:totalExpense}]} margin={{top:8,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:12}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" fill="var(--chart-2)" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
         </ChartCard>
         <div className="grid gap-4 lg:grid-cols-3">
           <ChartCard title="Income per Kategori" subtitle="Realisasi pendapatan"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
           <ChartCard title="Expense per Kategori" subtitle="Realisasi pengeluaran"><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
-          <ChartCard title="Saving per Kategori" subtitle="Realisasi tabungan"><div>{savingRows.length?savingRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data saving.</p>}</div></ChartCard>
         </div>
       </>}
 
@@ -463,12 +451,6 @@ export function DashboardFinance() {
       </>}
       {/* Stock Net Worth hidden in Phase 1 until live market-price data is available. */}
 
-      <AddTransactionModal
-        open={transactionModalOpen}
-        onClose={() => setTransactionModalOpen(false)}
-        initialMode={transactionMode}
-        onAdd={() => {}}
-      />
     </div>
   );
 }
