@@ -116,9 +116,9 @@ export function Settings() {
             <div><h3 className="text-[15px] font-semibold text-forest-900">{id ? "Pengaturan Baseline Keuangan" : "Financial Baseline Setup"}</h3><p className="text-[12px] text-charcoal/50 mt-0.5">{id ? "Pilih kategori yang ingin digunakan. Klik + untuk menambahkan kategori sendiri." : "Centang kategori yang ingin dipakai. Klik + untuk menambah kategori sendiri."}</p></div>
           </div>
           <div className="flex items-center gap-2">
-            {spreadsheetUrl && <a href={spreadsheetUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-charcoal/12 bg-white px-3 py-2 text-[12px] font-medium text-charcoal/70 hover:border-forest-200 hover:text-forest-700"><ExternalLink size={13}/> Open Spreadsheet</a>}
+            {spreadsheetUrl && <a href={spreadsheetUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-charcoal/12 bg-white px-3 py-2 text-[12px] font-medium text-charcoal/70 hover:border-forest-200 hover:text-forest-700"><ExternalLink size={13}/> {id ? "Buka Spreadsheet" : "Open Spreadsheet"}</a>}
             <button onClick={saveSetup} disabled={!changed || saving || loading} className="inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-4 py-2 text-[12px] font-semibold text-white hover:bg-forest-700 disabled:opacity-40">
-              {saving ? <Loader2 size={13} className="animate-spin"/> : <Check size={13}/>} {saving ? "Saving..." : "Save Setup"}
+              {saving ? <Loader2 size={13} className="animate-spin"/> : <Check size={13}/>} {saving ? (id ? "Menyimpan..." : "Saving...") : (id ? "Simpan Pengaturan" : "Save Setup")}
             </button>
           </div>
         </div>
@@ -138,26 +138,31 @@ export function Settings() {
       </Card>
 
       <Card className="max-w-2xl">
-        <div className="flex items-center gap-2 mb-4"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-forest-50 text-forest-700"><UserIcon size={17}/></span><h3 className="text-[15px] font-semibold text-forest-900">Profile</h3></div>
-        <div className="mb-5"><label className="text-[13px] font-medium text-charcoal/75">Language / Bahasa</label><p className="text-[12px] text-charcoal/50 mt-0.5 mb-2">Pilih bahasa tampilan aplikasi.</p><select value={language} onChange={(e) => { const next = e.target.value as AppLanguage; setLanguage(next); setAppLanguage(next); }} className="w-full max-w-xs border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] bg-white"><option value="id">Bahasa Indonesia</option><option value="en">{id ? "English" : "English"}</option></select></div>
-        <label className="text-[13px] font-medium text-charcoal/75">Display Name</label>
-        <p className="text-[12px] text-charcoal/50 mt-0.5 mb-2">Dipakai untuk sapaan di dashboard. Kalau kosong, nama akun digunakan sebagai fallback.</p>
-        <div className="flex gap-2"><input value={name} onChange={(e) => setName(e.target.value)} placeholder={username || "Nama kamu"} className="flex-1 border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] outline-none focus:border-forest-400 focus:ring-2 focus:ring-forest-50"/><button onClick={handleSaveName} className="flex items-center gap-1.5 bg-forest-600 text-white rounded-lg px-4 py-2 text-[13px] font-medium hover:bg-forest-700">{savedName && <Check size={14}/>} {savedName ? "Tersimpan" : "Simpan"}</button></div>
+        <div className="flex items-center gap-2 mb-4"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-forest-50 text-forest-700"><UserIcon size={17}/></span><h3 className="text-[15px] font-semibold text-forest-900">{id ? "Profil" : "Profile"}</h3></div>
+        <div className="mb-5"><label className="text-[13px] font-medium text-charcoal/75">{id ? "Bahasa Aplikasi" : "App Language"}</label><p className="text-[12px] text-charcoal/50 mt-0.5 mb-2">{id ? "Pilih bahasa tampilan aplikasi." : "Choose the app display language."}</p><select value={language} onChange={(e) => { const next = e.target.value as AppLanguage; setLanguage(next); setAppLanguage(next); }} className="w-full max-w-xs border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] bg-white"><option value="id">Bahasa Indonesia</option><option value="en">{id ? "English" : "English"}</option></select></div>
+        <label className="text-[13px] font-medium text-charcoal/75">{id ? "Nama Tampilan" : "Display Name"}</label>
+        <p className="text-[12px] text-charcoal/50 mt-0.5 mb-2">{id ? "Dipakai untuk sapaan di dashboard. Kalau kosong, nama akun digunakan sebagai fallback." : "Used for dashboard greetings. If blank, your account name will be used."}</p>
+        <div className="flex gap-2"><input value={name} onChange={(e) => setName(e.target.value)} placeholder={username || (id ? "Nama kamu" : "Your name")} className="flex-1 border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] outline-none focus:border-forest-400 focus:ring-2 focus:ring-forest-50"/><button onClick={handleSaveName} className="flex items-center gap-1.5 bg-forest-600 text-white rounded-lg px-4 py-2 text-[13px] font-medium hover:bg-forest-700">{savedName && <Check size={14}/>} {savedName ? (id ? "Tersimpan" : "Saved") : (id ? "Simpan" : "Save")}</button></div>
       </Card>
     </div>
   );
 }
 
 function SetupSection({ meta, items, onAdd, onRemove, onUpdate }: { meta: typeof SECTION_META[number]; items: SetupItem[]; onAdd: () => void; onRemove: (index: number) => void; onUpdate: (index: number, patch: Partial<SetupItem>) => void; }) {
+  const [language, setLanguage] = useState<AppLanguage>(() => getAppLanguage());
+  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
+  const id = language === "id";
+  const title = id ? ({ income: "Pemasukan", expense: "Pengeluaran", saving: "Tabungan & Investasi", bank: "Akun Bank" } as Record<SectionKey,string>)[meta.key] : meta.title;
+  const subtitle = id ? ({ income: "Sumber pemasukan", expense: "Pengeluaran & anggaran", saving: "Tabungan & investasi", bank: "Akun kas & bank" } as Record<SectionKey,string>)[meta.key] : ({ income: "Income sources", expense: "Expenses & budget", saving: "Savings & investments", bank: "Cash & bank accounts" } as Record<SectionKey,string>)[meta.key];
   return (
     <div className="rounded-xl border border-charcoal/8 bg-white overflow-hidden">
-      <div className={`${meta.tone} px-3 py-2 text-white`}><div className="flex items-center justify-between"><p className="text-[13px] font-semibold">{meta.title}</p><span className="text-[10px] text-white/75">{items.filter(i => i.active).length} active</span></div><p className="text-[10px] text-white/75 mt-0.5">{meta.subtitle}</p></div>
-      <div className="px-2 py-1.5 bg-charcoal/[0.025] border-b border-charcoal/8 flex items-center justify-between text-[10px] font-semibold text-charcoal/50 uppercase tracking-wide"><span>Category</span><span>Status</span></div>
+      <div className={`${meta.tone} px-3 py-2 text-white`}><div className="flex items-center justify-between"><p className="text-[13px] font-semibold">{title}</p><span className="text-[10px] text-white/75">{items.filter(i => i.active).length} {id ? "aktif" : "active"}</span></div><p className="text-[10px] text-white/75 mt-0.5">{subtitle}</p></div>
+      <div className="px-2 py-1.5 bg-charcoal/[0.025] border-b border-charcoal/8 flex items-center justify-between text-[10px] font-semibold text-charcoal/50 uppercase tracking-wide"><span>{id ? "Kategori" : "Category"}</span><span>{id ? "Status" : "Status"}</span></div>
       <div className="p-1.5 max-h-[420px] overflow-y-auto">
         {items.map((item, index) => (
           <div key={`${meta.key}-${index}`} className="group flex items-center gap-1.5 rounded-md px-1.5 py-1 hover:bg-charcoal/[0.035]">
             <GripVertical size={12} className="text-charcoal/20 shrink-0" />
-            <input value={item.name} onChange={(e) => onUpdate(index, { name: e.target.value })} placeholder="Nama kategori" className="min-w-0 flex-1 bg-transparent text-[12px] text-charcoal outline-none border-b border-transparent focus:border-forest-300 py-0.5" />
+            <input value={item.name} onChange={(e) => onUpdate(index, { name: e.target.value })} placeholder={id ? "Nama kategori" : "Category name"} className="min-w-0 flex-1 bg-transparent text-[12px] text-charcoal outline-none border-b border-transparent focus:border-forest-300 py-0.5" />
             <button type="button" onClick={() => onUpdate(index, { active: !item.active })} aria-label={item.active ? "Nonaktifkan" : "Aktifkan"} className={`relative shrink-0 h-5 w-5 rounded border transition ${item.active ? "border-forest-500 bg-forest-600 text-white" : "border-charcoal/30 bg-white text-transparent"}`}><Check size={13} className="absolute inset-0 m-auto" /></button>
             <button type="button" onClick={() => onRemove(index)} aria-label="Hapus kategori" className="shrink-0 p-1 text-charcoal/20 opacity-0 group-hover:opacity-100 hover:text-rose-600"><Trash2 size={12}/></button>
           </div>
