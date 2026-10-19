@@ -10,6 +10,13 @@
       "includeFiles": "server/{api,lib}/**"
     }
   },
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/dashboard",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/dashboard/assets/:path*",
@@ -21,10 +28,6 @@
     },
     {
       "source": "/dashboard/:path*",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/",
       "destination": "/index.html"
     }
   ]
