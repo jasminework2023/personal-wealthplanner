@@ -336,21 +336,22 @@ export function DashboardFinance() {
       <ChartCard title="Asset Tracker" subtitle="Pantau aset saat ini dan progres menuju target.">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <div className="rounded-xl bg-forest-50/70 p-3">
-                <p className="text-[11px] text-charcoal/55">Aset Saat Ini</p>
-                <p className="mt-1 text-[17px] font-semibold text-forest-900">{formatRupiah(assets.totalAssets)}</p>
-              </div>
-              <div className="rounded-xl bg-white border border-charcoal/8 p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] text-charcoal/55">Target</p>
-                  {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="text-[11px] font-semibold text-forest-700 hover:underline">Edit</button>}
+            <div className="mb-4 rounded-2xl bg-[#0B4D38] p-4 text-white sm:p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12px] text-white/70">Total aset</p>
+                  <p className="mt-1 break-words text-2xl font-semibold leading-tight">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
+                  <p className="mt-2 text-[12px] text-white/75">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
                 </div>
-                {editingAssetTarget ? <div className="mt-2 flex gap-2"><input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 flex-1 rounded-lg border border-charcoal/15 px-2.5 py-2 text-[13px] outline-none focus:border-forest-400" placeholder="Target aset" /><button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) throw new Error("Gagal menyimpan target"); setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { console.error(e); } finally { setSavingAssetTarget(false); } }} className="rounded-lg bg-forest-600 px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-50">{savingAssetTarget ? "..." : "Save"}</button></div> : <p className="mt-1 text-[17px] font-semibold text-forest-900">{assets.target > 0 ? formatRupiah(assets.target) : "Belum diatur"}</p>}
+                <button type="button" onClick={() => setAssetValuesHidden((hidden) => !hidden)} aria-label={assetValuesHidden ? "Tampilkan nominal aset" : "Sembunyikan nominal aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">{assetValuesHidden ? <Eye size={17}/> : <EyeOff size={17}/>}</button>
               </div>
-              <div className="rounded-xl bg-white border border-charcoal/8 p-3">
-                <p className="text-[11px] text-charcoal/55">Progress ke Target</p>
-                <p className="mt-1 text-[17px] font-semibold text-forest-700">{assets.target > 0 ? formatPercent(assetProgress) : "—"}</p>
+              {assets.target > 0 && <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/20"><div className="h-full rounded-full bg-[#6EE7A8]" style={{width:`${Math.min(Math.max(assetProgress,0),100)}%`}} /></div>}
+              <div className="mt-4 rounded-xl bg-white/10 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] text-white/75">Target aset</p>
+                  {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="text-[11px] font-semibold text-white underline underline-offset-2">Edit</button>}
+                </div>
+                {editingAssetTarget ? <div className="mt-2 flex gap-2"><input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 flex-1 rounded-lg border border-white/20 bg-white px-2.5 py-2 text-[13px] text-charcoal outline-none focus:border-forest-400" placeholder="Target aset" /><button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) throw new Error("Gagal menyimpan target"); setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { console.error(e); } finally { setSavingAssetTarget(false); } }} className="rounded-lg bg-white px-3 py-2 text-[12px] font-semibold text-forest-900 disabled:opacity-50">{savingAssetTarget ? "..." : "Simpan"}</button></div> : <p className="mt-1 text-[16px] font-semibold">{assets.target > 0 ? (assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.target)) : "Belum diatur"}</p>}
               </div>
             </div>
             {assets.target > 0 && (
