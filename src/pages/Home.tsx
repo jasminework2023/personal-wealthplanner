@@ -23,7 +23,7 @@ const menus = [
   { label: "Calculator", icon: Calculator, to: "/calculator" },
   { label: "Goals", icon: Target, to: "/goals" },
   { label: "Protection", icon: ShieldCheck, to: "/protection" },
-  { label: "Community", icon: ChartNoAxesCombined, to: "/transactions" },
+  { label: "Community", icon: ChartNoAxesCombined, soon: true },
   { label: "AI Assistant", icon: Bot, soon: true },
   { label: "Guide", icon: BookOpen, to: "/guidance" },
 ];
