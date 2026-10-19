@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "../components/Card";
+import { getAppLanguage } from "../lib/format";
 import { getStoredToken } from "../lib/useFinanceData";
 
 
@@ -103,6 +104,8 @@ function StepCopy({ children }: { children: ReactNode }) {
 }
 
 export function Guidance() {
+  const language = getAppLanguage();
+  const id = language === "id";
   const [spreadsheetUrl, setSpreadsheetUrl] = useState("");
   const [telegramUrl, setTelegramUrl] = useState("");
 
