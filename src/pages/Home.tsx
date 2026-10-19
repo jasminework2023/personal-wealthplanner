@@ -17,13 +17,13 @@ import { loadFinancialPlans } from "../lib/financialPlans";
 
 const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 const menus = [
-  { label: "Transaction", icon: ArrowLeftRight, to: "/transactions" },
+  { label: "Transaction", icon: ArrowLeftRight, to: "/transaction" },
   { label: "Budget", icon: Wallet, to: "/budgeting" },
   { label: "Report", icon: Landmark, to: "/finance" },
   { label: "Calculator", icon: Calculator, to: "/calculator" },
   { label: "Goals", icon: Target, to: "/goals" },
   { label: "Protection", icon: ShieldCheck, to: "/protection" },
-  { label: "Community", icon: ChartNoAxesCombined, to: "/finance" },
+  { label: "Community", icon: ChartNoAxesCombined, to: "/transactions" },
   { label: "AI Assistant", icon: Bot, soon: true },
   { label: "Guide", icon: BookOpen, to: "/guidance" },
 ];
