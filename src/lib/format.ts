@@ -38,3 +38,16 @@ export function formatPercent(n: number): string {
     maximumFractionDigits: 2,
   }) + "%";
 }
+
+/** Format a whole-number amount for a locale-aware numeric input. */
+export function formatAmountInput(value: number | string): string {
+  const digits = String(value ?? "").replace(/\D/g, "");
+  if (!digits) return "";
+  return Number(digits).toLocaleString(getAppLanguage() === "id" ? "id-ID" : "en-US");
+}
+
+/** Parse a locale-formatted whole-number amount without changing its value. */
+export function parseAmountInput(value: string): number {
+  const digits = String(value ?? "").replace(/\D/g, "");
+  return digits ? Number(digits) : 0;
+}
