@@ -15,8 +15,8 @@ import logoMark from "../assets/logo-mark-white.png";
 
 const mainLinks = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/finance", label: "Dashboard Finance", icon: LayoutDashboard },
-  { to: "/transactions", label: "Transaction Report", icon: Receipt },
+  { to: "/finance", label: "Report", icon: LayoutDashboard },
+  { to: "/transactions", label: "Community", icon: BookOpen },
   { to: "/budgeting", label: "Monthly Budget", icon: CalendarRange },
 ];
 
