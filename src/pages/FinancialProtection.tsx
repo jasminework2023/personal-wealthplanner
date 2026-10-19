@@ -66,6 +66,9 @@ function CurrencyInput({ value, onChange, placeholder = "0" }: { value: number; 
 }
 
 export function FinancialProtection() {
+  const [language, setLanguage] = useState(getAppLanguage());
+  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
+  const id = language === "id";
   const language = getAppLanguage();
   const id = language === "id";
   const { totalIncome, totalExpense, assets } = useFinanceData();
