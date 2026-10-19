@@ -104,7 +104,8 @@ function StepCopy({ children }: { children: ReactNode }) {
 }
 
 export function Guidance() {
-  const language = getAppLanguage();
+  const [language, setLanguage] = useState(getAppLanguage());
+  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const id = language === "id";
   const [spreadsheetUrl, setSpreadsheetUrl] = useState("");
   const [telegramUrl, setTelegramUrl] = useState("");
@@ -132,7 +133,7 @@ export function Guidance() {
         <div className="inline-flex items-center gap-2 rounded-full bg-forest-50 px-3 py-1.5 text-[11px] font-semibold text-forest-700">
           <BookOpen size={14} /> Guidance
         </div>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-forest-900 sm:text-3xl">Mulai Perjalanan Finansialmu Bersama Wealthplanner</h1>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-forest-900 sm:text-3xl">{id ? "Mulai Perjalanan Finansialmu Bersama Wealthplanner" : "Start Your Financial Journey with Wealthplanner"}</h1>
         <p className="mt-2 max-w-3xl text-[14px] leading-6 text-charcoal/60">
           Ikuti alur berikut untuk membangun data keuangan, memahami kondisi saat ini, menyusun tujuan, dan mempersiapkan perlindungan secara lebih terstruktur.
         </p>
@@ -141,7 +142,7 @@ export function Guidance() {
       <Card className="overflow-hidden bg-gradient-to-br from-white via-forest-50/45 to-rose-50/30">
         <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-charcoal/40">Satu ekosistem</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-charcoal/40">{id ? "Satu ekosistem" : "One ecosystem"}</p>
             <h2 className="mt-1 text-[18px] font-semibold text-forest-900">Telegram × Spreadsheet × Dashboard</h2>
             <p className="mt-2 max-w-2xl text-[13px] leading-5 text-charcoal/60">
               Gunakan masing-masing sesuai fungsinya. Telegram membantu pencatatan cepat, Spreadsheet menjadi tempat pengelolaan data, dan Dashboard menjadi pusat untuk melihat kondisi serta membuat perencanaan.
@@ -160,7 +161,7 @@ export function Guidance() {
           </div>
         </div>
         {!telegramUrl && (
-          <p className="mt-3 text-[11px] text-charcoal/40">Hubungkan Telegram melalui halaman aktivasi jika kamu ingin mencatat transaksi langsung dari Telegram.</p>
+          <p className="mt-3 text-[11px] text-charcoal/40">{id ? "Hubungkan Telegram melalui halaman aktivasi jika kamu ingin mencatat transaksi langsung dari Telegram." : "Connect Telegram through the activation page to record transactions directly from Telegram."}</p>
         )}
       </Card>
 
