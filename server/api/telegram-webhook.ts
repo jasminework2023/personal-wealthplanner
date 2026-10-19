@@ -199,6 +199,10 @@ async function handleStart(chatId: string, username: string, args: string) {
 
 async function handleText(chatId: string, text: string) {
   const user = await getUserByChatId(chatId);
+  if (!user) {
+    await sendMessage(chatId, activeUserOrMessage(user));
+    return;
+  }
   const blocked = activeUserOrMessage(user);
   if (blocked) {
     await sendMessage(chatId, blocked);
@@ -218,6 +222,10 @@ async function handleText(chatId: string, text: string) {
 
 async function handlePhoto(chatId: string, fileId: string) {
   const user = await getUserByChatId(chatId);
+  if (!user) {
+    await sendMessage(chatId, activeUserOrMessage(user));
+    return;
+  }
   const blocked = activeUserOrMessage(user);
   if (blocked) {
     await sendMessage(chatId, blocked);
@@ -308,6 +316,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         await handleStart(chatId, username, args);
       } else if (text.startsWith("/dashboard")) {
         const user = await getUserByChatId(chatId);
+        if (!user) {
+          await sendMessage(chatId, activeUserOrMessage(user));
+          return res.status(200).json({ ok: true });
+        }
         const blocked = activeUserOrMessage(user);
         if (blocked) await sendMessage(chatId, blocked);
         else await sendMessage(chatId, `📊 Dashboard kamu:\nhttps://www.wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}`);

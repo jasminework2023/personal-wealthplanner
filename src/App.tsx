@@ -3,6 +3,7 @@ import { AppShell } from "./components/AppShell";
 import { Home } from "./pages/Home";
 import { DashboardFinance } from "./pages/DashboardFinance";
 import { TransactionReport } from "./pages/TransactionReport";
+import { Transaction } from "./pages/Transaction";
 import { MonthlyBudgeting } from "./pages/MonthlyBudgeting";
 import { Settings } from "./pages/Settings";
 import { Guidance } from "./pages/Guidance";
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/finance" element={<DashboardFinance />} />
           <Route path="/transactions" element={<TransactionReport />} />
+          <Route path="/transaction" element={<Transaction />} />
           <Route path="/budgeting" element={<MonthlyBudgeting />} />
           <Route path="/calculator" element={<CalculatorRoute />} />
           <Route path="/calculator/:id" element={<CalculatorRoute />} />

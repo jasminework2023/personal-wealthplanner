@@ -19,11 +19,11 @@ const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(-
 const menus = [
   { label: "Transaction", icon: ArrowLeftRight, to: "/transactions" },
   { label: "Budget", icon: Wallet, to: "/budgeting" },
-  { label: "Asset", icon: Landmark, to: "/finance" },
+  { label: "Report", icon: Landmark, to: "/finance" },
   { label: "Calculator", icon: Calculator, to: "/calculator" },
   { label: "Goals", icon: Target, to: "/goals" },
   { label: "Protection", icon: ShieldCheck, to: "/protection" },
-  { label: "Report", icon: ChartNoAxesCombined, to: "/finance" },
+  { label: "Community", icon: ChartNoAxesCombined, to: "/transactions" },
   { label: "AI Assistant", icon: Bot, soon: true },
   { label: "Guide", icon: BookOpen, to: "/guidance" },
 ];
