@@ -91,6 +91,10 @@ export function AddTransactionModal({
   initialMode?: "manual" | "ai";
 }) {
   const [mode, setMode] = useState<"manual" | "ai">(initialMode);
+
+  useEffect(() => {
+    if (open) setMode(initialMode);
+  }, [open, initialMode]);
   const [aiText, setAiText] = useState("");
   const [aiPreview, setAiPreview] = useState<Partial<Transaction> | null>(null);
   const [aiError, setAiError] = useState("");
