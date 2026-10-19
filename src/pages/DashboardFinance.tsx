@@ -239,7 +239,10 @@ export function DashboardFinance() {
   const incomeRows = byCategory("Income");
   const savingRows = byCategory("Saving");
   const expenseRows = byCategory("Expense");
-  const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);\n  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];\n  const activeTabIndex = reportTabs.findIndex((tab) => tab.id === activeReportTab);\n  const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
+  const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);
+  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];
+  const activeTabIndex = reportTabs.findIndex((tab) => tab.id === activeReportTab);
+  const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
 
   return (
     <div className="flex flex-col gap-6">
