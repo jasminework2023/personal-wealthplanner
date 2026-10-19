@@ -205,7 +205,7 @@ export function Home() {
       </div>
 
       <Card>
-        <div className="mb-3 flex items-center justify-between"><h2 className="text-[15px] font-semibold text-forest-900">Transaksi Terbaru</h2><button onClick={() => navigate("/transactions")} className="inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700">Semua transaksi <ChevronRight size={14}/></button></div>
+        <div className="mb-3 flex items-center justify-between"><h2 className="text-[15px] font-semibold text-forest-900">Transaksi Terbaru</h2><button onClick={() => navigate("/transaction")} className="inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700">Semua transaksi <ChevronRight size={14}/></button></div>
         {recent.length ? <div className="flex flex-col divide-y divide-charcoal/8">{recent.map((t, i) => <div key={t.sheetRow ?? `${t.date}-${t.description}-${i}`} className="flex items-center justify-between gap-3 py-3"><div className="flex min-w-0 items-center gap-3"><TransactionBadge type={t.type}/><div className="min-w-0"><p className="truncate text-[13px] font-medium">{t.description}</p><p className="text-[11px] text-charcoal/50">{t.category} · {t.date}</p></div></div><p className={`shrink-0 text-[13px] font-semibold ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>{t.type === "Expense" ? "−" : "+"}{formatRupiah(t.amount)}</p></div>)}</div> : <p className="py-8 text-center text-[12px] text-charcoal/45">Belum ada transaksi. Tekan tombol + untuk mulai mencatat.</p>}
       </Card>
 
