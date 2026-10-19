@@ -1,7 +1,6 @@
 const API_BASE = "/api";
 import { useEffect, useState } from "react";
 import { Check, Pencil, Loader2 } from "lucide-react";
-import { StatCard } from "../components/StatCard";
 import { ChartCard } from "../components/Card";
 import { StatusBadge } from "../components/ProgressBar";
 import { formatRupiah, formatPercent } from "../lib/format";
