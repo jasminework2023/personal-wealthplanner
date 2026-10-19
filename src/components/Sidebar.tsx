@@ -1,13 +1,14 @@
 import { NavLink } from "react-router-dom";
 import {
   Home,
-  LayoutDashboard,
+  ChartNoAxesCombined,
   Receipt,
   CalendarRange,
   Calculator,
   Shield,
   Settings,
   BookOpen,
+  UsersRound,
   X,
   ExternalLink,
 } from "lucide-react";
@@ -15,8 +16,8 @@ import logoMark from "../assets/logo-mark-white.png";
 
 const mainLinks = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/finance", label: "Report", icon: LayoutDashboard },
-  { to: "/transactions", label: "Community", icon: BookOpen },
+  { to: "/finance", label: "Report", icon: ChartNoAxesCombined },
+  { to: "/transactions", label: "Community", icon: UsersRound },
   { to: "/budgeting", label: "Monthly Budget", icon: CalendarRange },
 ];
 
