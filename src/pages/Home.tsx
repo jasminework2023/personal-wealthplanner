@@ -15,6 +15,7 @@ import { useFinanceData } from "../lib/useFinanceData";
 import { getDisplayName, greetingWord } from "../lib/settings";
 import type { Transaction } from "../data/types";
 import { loadFinancialPlans } from "../lib/financialPlans";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 const menus = [
@@ -64,6 +65,15 @@ export function Home() {
 
   return (
     <div className="flex flex-col gap-5 pb-6">
+      <div className="mb-0 flex items-center justify-between">
+        <span className="text-[17px] font-bold tracking-tight text-forest-700">wealthplanner.id</span>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => navigate("/guidance")} aria-label="Guidance" title="Guidance" className="flex h-9 w-9 items-center justify-center rounded-full border border-forest-100 bg-white text-forest-700 shadow-sm transition hover:border-forest-200">
+            <BookOpen size={18} />
+          </button>
+          <ThemeToggle variant="compact" />
+        </div>
+      </div>
       <DataStatusBanner isRealData={isRealData} username={username} error={error} />
       <div className="flex flex-col gap-1">
         <p className="text-[12px] font-medium text-charcoal/45">{today}</p>
@@ -71,22 +81,21 @@ export function Home() {
         <p className="text-[13px] text-charcoal/55">Ringkasan keuanganmu untuk {month} {currentYear}.</p>
       </div>
 
-      <Card className="overflow-hidden border-0 bg-forest-700 text-white">
-        <div className="flex flex-col items-center text-center py-3">
-          <p className="text-[13px] font-medium text-white/75">Total Aset</p>
-          <p className="mt-2 text-[clamp(27px,6vw,38px)] leading-tight font-semibold tracking-tight break-words">{formatRupiah(assets.totalAssets)}</p>
-          <p className="mt-2 text-[11px] text-white/65">Berdasarkan data aset yang tercatat</p>
+      <Card className="overflow-hidden border-0 bg-[#1E4737] p-4 text-white shadow-md sm:p-5">
+        <div className="flex flex-col items-center text-center py-1">
+          <p className="text-[12px] font-medium text-white/80">Total Aset</p>
+          <p className="mt-1.5 text-[clamp(25px,5.8vw,34px)] leading-tight font-semibold tracking-tight break-words">{formatRupiah(assets.totalAssets)}</p>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-white/15 pt-4">
-          <div className="rounded-xl bg-white/10 p-3">
-            <div className="flex items-center gap-1.5 text-[11px] text-white/70"><TrendingUp size={14}/> Pemasukan</div>
-            <p className="mt-1 text-[15px] font-semibold">{formatRupiah(totalIncome)}</p>
-            <p className="text-[10px] text-white/55">Bulan ini</p>
+        <div className="mt-3 grid grid-cols-2 gap-2.5 border-t border-white/15 pt-3">
+          <div className="rounded-xl bg-[#ADFF2F] p-2.5 text-[#173B25] sm:p-3">
+            <div className="flex items-center gap-1.5 text-[11px] font-medium"><TrendingUp size={14}/> Pemasukan</div>
+            <p className="mt-1 break-words text-[clamp(12px,3.2vw,15px)] font-bold leading-tight">{formatRupiah(totalIncome)}</p>
+            <p className="mt-1 text-[10px] opacity-75">Bulan ini</p>
           </div>
-          <div className="rounded-xl bg-white/10 p-3">
-            <div className="flex items-center gap-1.5 text-[11px] text-white/70"><TrendingDown size={14}/> Pengeluaran</div>
-            <p className="mt-1 text-[15px] font-semibold">{formatRupiah(totalExpense)}</p>
-            <p className="text-[10px] text-white/55">Bulan ini</p>
+          <div className="rounded-xl bg-[#FFB6C1] p-2.5 text-[#572B36] sm:p-3">
+            <div className="flex items-center gap-1.5 text-[11px] font-medium"><TrendingDown size={14}/> Pengeluaran</div>
+            <p className="mt-1 break-words text-[clamp(12px,3.2vw,15px)] font-bold leading-tight">{formatRupiah(totalExpense)}</p>
+            <p className="mt-1 text-[10px] opacity-75">Bulan ini</p>
           </div>
         </div>
       </Card>
@@ -99,9 +108,9 @@ export function Home() {
         <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
           {menus.map(({ label, icon: Icon, to, soon }) => (
             <button key={label} type="button" disabled={Boolean(soon)} onClick={() => to && navigate(to)}
-              className={`relative flex min-h-[105px] flex-col items-center justify-center gap-2 rounded-2xl border border-rose-100/80 bg-white px-2 py-3 text-center shadow-sm transition ${soon ? "cursor-not-allowed opacity-80" : "hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md"}`}>
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-forest-700">
-                <Icon size={21} strokeWidth={1.9}/>
+              className={`relative flex min-h-[88px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-rose-100/80 bg-white px-1.5 py-2.5 text-center shadow-sm transition sm:min-h-[98px] sm:gap-2 sm:px-2 sm:py-3 ${soon ? "cursor-not-allowed opacity-80" : "hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md"}`}>
+              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-rose-50 text-forest-700 sm:h-10 sm:w-10">
+                <Icon size={19} strokeWidth={1.9}/>
               </span>
               <span className="text-[11px] sm:text-[12px] font-semibold leading-tight text-forest-900">{label}</span>
               {soon && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[9px] font-semibold text-rose-700">Coming soon</span>}
