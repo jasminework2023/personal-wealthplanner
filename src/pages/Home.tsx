@@ -9,7 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { Card, ChartCard } from "../components/Card";
 import { TransactionBadge } from "../components/TransactionBadge";
 import { AddTransactionModal } from "../components/AddTransactionModal";
-import { formatRupiah, formatCompact } from "../lib/format";
+import { formatRupiah, formatCompact, getAppLanguage } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
 import { getDisplayName, greetingWord } from "../lib/settings";
 import type { Transaction } from "../data/types";
@@ -17,19 +17,22 @@ import { loadFinancialPlans } from "../lib/financialPlans";
 
 const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 const menus = [
-  { label: "Transaction", icon: ArrowLeftRight, to: "/transaction" },
-  { label: "Budget", icon: Wallet, to: "/budgeting" },
-  { label: "Report", icon: Landmark, to: "/finance" },
-  { label: "Calculator", icon: Calculator, to: "/calculator" },
-  { label: "Goals", icon: Target, to: "/goals" },
-  { label: "Protection", icon: ShieldCheck, to: "/protection" },
-  { label: "Community", icon: ChartNoAxesCombined, soon: true },
-  { label: "AI Assistant", icon: Bot, soon: true },
-  { label: "Guide", icon: BookOpen, to: "/guidance" },
+  { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction" },
+  { key: "budget", label: "Budget", icon: Wallet, to: "/budgeting" },
+  { key: "report", label: "Report", icon: Landmark, to: "/finance" },
+  { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator" },
+  { key: "goals", label: "Goals", icon: Target, to: "/goals" },
+  { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection" },
+  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true },
+  { key: "ai", label: "AI Assistant", icon: Bot, soon: true },
+  { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance" },
 ];
 
 export function Home() {
   const navigate = useNavigate();
+  const [language, setLanguage] = useState(getAppLanguage());
+  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
+  const id = language === "id";
   const { error, isRealData, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month, assets } = useFinanceData();
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [assetsVisible, setAssetsVisible] = useState(true);
@@ -40,7 +43,7 @@ export function Home() {
   const displayName = getDisplayName() || username;
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
-  const monthInIndonesian = currentDate.toLocaleDateString("id-ID", { month: "long" });
+  const monthInIndonesian = currentDate.toLocaleDateString(id ? "id-ID" : "en-US", { month: "long" });
   const monthLabel = monthInIndonesian.charAt(0).toUpperCase() + monthInIndonesian.slice(1);
   const plans = loadFinancialPlans();
   const allTxs = [...transactions, ...extraTxs];
@@ -87,7 +90,7 @@ export function Home() {
 
       <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[26px] bg-[#123524] p-[22px] text-white shadow-none" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
         <div className="flex items-center justify-between">
-          <p className="flex items-center gap-2 text-[14px] font-normal text-[#A9C9B8]"><CircleDollarSign size={17} strokeWidth={1.8}/>Total Aset</p>
+          <p className="flex items-center gap-2 text-[14px] font-normal text-[#A9C9B8]"><CircleDollarSign size={17} strokeWidth={1.8}/>{id ? "Total Aset" : "Total Assets"}</p>
           <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-8 w-8 items-center justify-center text-[#A9C9B8]">
             {assetsVisible ? <Eye size={22} strokeWidth={2}/> : <EyeOff size={22} strokeWidth={2}/>}
           </button>
@@ -205,15 +208,15 @@ export function Home() {
       </div>
 
       <Card>
-        <div className="mb-3 flex items-center justify-between"><h2 className="text-[15px] font-semibold text-forest-900">Transaksi Terbaru</h2><button onClick={() => navigate("/transaction")} className="inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700">Semua transaksi <ChevronRight size={14}/></button></div>
-        {recent.length ? <div className="flex flex-col divide-y divide-charcoal/8">{recent.map((t, i) => <div key={t.sheetRow ?? `${t.date}-${t.description}-${i}`} className="flex items-center justify-between gap-3 py-3"><div className="flex min-w-0 items-center gap-3"><TransactionBadge type={t.type}/><div className="min-w-0"><p className="truncate text-[13px] font-medium">{t.description}</p><p className="text-[11px] text-charcoal/50">{t.category} · {t.date}</p></div></div><p className={`shrink-0 text-[13px] font-semibold ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>{t.type === "Expense" ? "−" : "+"}{formatRupiah(t.amount)}</p></div>)}</div> : <p className="py-8 text-center text-[12px] text-charcoal/45">Belum ada transaksi. Tekan tombol + untuk mulai mencatat.</p>}
+        <div className="mb-3 flex items-center justify-between"><h2 className="text-[15px] font-semibold text-forest-900">{id ? "Transaksi Terbaru" : "Recent Transactions"}</h2><button onClick={() => navigate("/transaction")} className="inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700">Semua transaksi <ChevronRight size={14}/></button></div>
+        {recent.length ? <div className="flex flex-col divide-y divide-charcoal/8">{recent.map((t, i) => <div key={t.sheetRow ?? `${t.date}-${t.description}-${i}`} className="flex items-center justify-between gap-3 py-3"><div className="flex min-w-0 items-center gap-3"><TransactionBadge type={t.type}/><div className="min-w-0"><p className="truncate text-[13px] font-medium">{t.description}</p><p className="text-[11px] text-charcoal/50">{t.category} · {t.date}</p></div></div><p className={`shrink-0 text-[13px] font-semibold ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>{t.type === "Expense" ? "−" : "+"}{formatRupiah(t.amount)}</p></div>)}</div> : <p className="py-8 text-center text-[12px] text-charcoal/45">{id ? "Belum ada transaksi. Tekan tombol + untuk mulai mencatat." : "No transactions yet. Press + to start recording."}</p>}
       </Card>
 
       {quickAddOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/35 p-4 sm:items-center" onClick={() => setQuickAddOpen(false)}>
         <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
           <div className="mb-4 flex items-center justify-between"><h3 className="text-[16px] font-semibold text-forest-900">Tambah Data</h3><button onClick={() => setQuickAddOpen(false)} aria-label="Tutup" className="rounded-lg p-1 text-charcoal/50"><X size={18}/></button></div>
-          <button onClick={() => { setModalMode("manual"); setModalOpen(true); setQuickAddOpen(false); }} className="mb-2 flex w-full items-center gap-3 rounded-2xl border border-rose-100 p-3 text-left hover:bg-rose-50/50"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-forest-700"><Plus size={19}/></span><span><span className="block text-[13px] font-semibold text-forest-900">Catat Transaksi</span><span className="block text-[11px] text-charcoal/50">Isi pemasukan, pengeluaran, atau tabungan</span></span></button>
-          <button onClick={() => { setModalMode("ai"); setModalOpen(true); setQuickAddOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl border border-rose-100 p-3 text-left hover:bg-rose-50/50"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-forest-700"><Sparkles size={19}/></span><span><span className="block text-[13px] font-semibold text-forest-900">Catat dengan AI</span><span className="block text-[11px] text-charcoal/50">Tulis transaksi atau unggah foto struk</span></span></button>
+          <button onClick={() => { setModalMode("manual"); setModalOpen(true); setQuickAddOpen(false); }} className="mb-2 flex w-full items-center gap-3 rounded-2xl border border-rose-100 p-3 text-left hover:bg-rose-50/50"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-forest-700"><Plus size={19}/></span><span><span className="block text-[13px] font-semibold text-forest-900">{id ? "Catat Transaksi" : "Record Transaction"}</span><span className="block text-[11px] text-charcoal/50">{id ? "Isi pemasukan, pengeluaran, atau tabungan" : "Enter income, expenses, or savings"}</span></span></button>
+          <button onClick={() => { setModalMode("ai"); setModalOpen(true); setQuickAddOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl border border-rose-100 p-3 text-left hover:bg-rose-50/50"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-forest-700"><Sparkles size={19}/></span><span><span className="block text-[13px] font-semibold text-forest-900">{id ? "Catat dengan AI" : "Track with AI"}</span><span className="block text-[11px] text-charcoal/50">Tulis transaksi atau unggah foto struk</span></span></button>
         </div>
       </div>}
 
