@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Calculator, Target, Trash2, Pencil, Check, X, Wallet, Plus, ChevronDown } from "lucide-react";
 import { Card } from "../components/Card";
+import { getAppLanguage } from "../lib/format";
 import { getPlanTypeLabel, loadFinancialPlans, removeFinancialPlan } from "../lib/financialPlans";
 import { formatRupiah } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
@@ -31,6 +32,8 @@ function getPlanTarget(plan: ReturnType<typeof loadFinancialPlans>[number]) {
 }
 
 export function Goals() {
+  const language = getAppLanguage();
+  const id = language === "id";
   const navigate = useNavigate();
   const { assets } = useFinanceData();
   const [plans, setPlans] = useState(() => loadFinancialPlans());
