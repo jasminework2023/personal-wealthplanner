@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, PiggyBank, Plus, Receipt, Search, CalendarDays, SlidersHorizontal, X } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, PiggyBank, Plus, Receipt, Search, CalendarDays, SlidersHorizontal, X, Pencil, Trash2 } from "lucide-react";
 import { AddTransactionModal } from "../components/AddTransactionModal";
+import { EditTransactionModal } from "../components/EditTransactionModal";
 import { Card } from "../components/Card";
 import { DataStatusBanner } from "../components/DataStatusBanner";
 import { formatRupiah } from "../lib/format";
@@ -23,6 +24,7 @@ export function Transaction() {
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<TransactionItem | null>(null);
 
   const availableYears = useMemo(() => Array.from(new Set(transactions.map((t) => {
     const parts = String(t.date || "").split("/").map(Number);
@@ -86,13 +88,14 @@ export function Transaction() {
                 const Icon = iconFor(t.type);
                 const amountPrefix = t.type === "Expense" ? "−" : "+";
                 const amountColor = t.type === "Income" ? "text-emerald-700" : t.type === "Expense" ? "text-rose-600" : "text-orange-600";
-                return <div key={`${t.sheetRow ?? "local"}-${t.date}-${t.category}-${i}`} className="flex items-center gap-3 py-3">
+                return <div key={`${t.sheetRow ?? "local"}-${t.date}-${t.category}-${i}`} className="flex items-center gap-2 py-3">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colorFor(t.type)}`}><Icon size={18} /></div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-forest-900">{t.description || t.category}</p>
                     <p className="mt-0.5 text-xs text-charcoal/50">{t.category} · {t.date}</p>
                   </div>
                   <p className={`shrink-0 text-right text-sm font-semibold ${amountColor}`}>{amountPrefix}{formatRupiah(t.amount)}</p>
+                  <button type="button" aria-label="Edit transaksi" title="Edit transaksi" onClick={() => setEditingTransaction(t)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-forest-700 hover:bg-forest-50"><Pencil size={16}/></button>
                 </div>;
               })}
             </div>
@@ -100,6 +103,19 @@ export function Transaction() {
         </div>
       </Card>
       <AddTransactionModal open={modalOpen} onClose={() => setModalOpen(false)} onAdd={(_transaction: TransactionItem) => {}} />
+      <EditTransactionModal
+        open={editingTransaction !== null}
+        transaction={editingTransaction}
+        onClose={() => setEditingTransaction(null)}
+        onSaved={() => {
+          setEditingTransaction(null);
+          window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));
+        }}
+        onDeleted={() => {
+          setEditingTransaction(null);
+          window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));
+        }}
+      />
     </div>
   );
 }
