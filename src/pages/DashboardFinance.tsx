@@ -271,10 +271,19 @@ export function DashboardFinance() {
       </section>
 
       {activeReportTab === "income" && <>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <StatCard label="Total Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
-          <StatCard label="Total Expense" value={formatRupiah(totalExpense)} icon={TrendingDown} tone="rose" />
-          <StatCard label="Net Result" value={formatRupiah(totalIncome-totalExpense)} icon={Landmark} tone="neutral" />
+        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-[#0B4D38] p-4 text-white sm:gap-4 sm:p-5">
+          <div className="min-w-0 border-r border-white/15 pr-2">
+            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Total income</p>
+            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalIncome)}</p>
+          </div>
+          <div className="min-w-0 border-r border-white/15 px-1 sm:px-2">
+            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Total expense</p>
+            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalExpense)}</p>
+          </div>
+          <div className="min-w-0 pl-1 sm:pl-2">
+            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Net result</p>
+            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalIncome-totalExpense)}</p>
+          </div>
         </div>
         <ChartCard title="Income Statement" subtitle="Perbandingan pendapatan, pengeluaran, dan tabungan bulan ini.">
           <ResponsiveContainer width="100%" height={260}><BarChart data={[{name:"Income",amount:totalIncome},{name:"Expense",amount:totalExpense},{name:"Saving",amount:totalSaving}]} margin={{top:10,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:12}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" fill="var(--chart-2)" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
@@ -392,10 +401,19 @@ export function DashboardFinance() {
       </>}
 
       {activeReportTab === "cashflow" && <>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <StatCard label="Cash In" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
-          <StatCard label="Cash Out" value={formatRupiah(totalExpense+totalSaving)} icon={TrendingDown} tone="rose" />
-          <StatCard label="Net Cashflow" value={formatRupiah(totalIncome-totalExpense-totalSaving)} icon={Landmark} tone="neutral" />
+        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-[#0B4D38] p-4 text-white sm:gap-4 sm:p-5">
+          <div className="min-w-0 border-r border-white/15 pr-2">
+            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Cash in</p>
+            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalIncome)}</p>
+          </div>
+          <div className="min-w-0 border-r border-white/15 px-1 sm:px-2">
+            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Cash out</p>
+            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalExpense+totalSaving)}</p>
+          </div>
+          <div className="min-w-0 pl-1 sm:pl-2">
+            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Net cashflow</p>
+            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalIncome-totalExpense-totalSaving)}</p>
+          </div>
         </div>
         <ChartCard title="Cashflow Tracker" subtitle="Arus kas bersih setelah pengeluaran dan alokasi tabungan.">
           <ResponsiveContainer width="100%" height={260}><BarChart data={[{name:"Cash In",amount:totalIncome},{name:"Expenses",amount:totalExpense},{name:"Savings",amount:totalSaving},{name:"Net Cashflow",amount:totalIncome-totalExpense-totalSaving}]} margin={{top:10,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:11}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" fill="var(--chart-2)" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
