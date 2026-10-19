@@ -10,6 +10,7 @@ import { DashboardWelcome } from "./pages/DashboardWelcome";
 import { FinancialProtection } from "./pages/FinancialProtection";
 import { FinancialCalculator, CalculatorDetail } from "./pages/FinancialCalculator";
 import { saveFinancialPlan } from "./lib/financialPlans";
+import { Goals } from "./pages/Goals";
 
 function CalculatorRoute() {
   const navigate = useNavigate();
@@ -57,6 +58,7 @@ export default function App() {
           <Route path="/calculator" element={<CalculatorRoute />} />
           <Route path="/calculator/:id" element={<CalculatorRoute />} />
           <Route path="/protection" element={<FinancialProtection />} />
+          <Route path="/goals" element={<Goals />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/guidance" element={<Guidance />} />
         </Route>
