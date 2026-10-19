@@ -10,9 +10,22 @@ import type { Transaction as TransactionItem, TransactionType } from "../data/ty
 
 type Filter = "All" | TransactionType;
 
-function transactionDateValue(value: string) {
-  const [day, month, year] = String(value || "").split("/").map(Number);
-  return year && month && day ? new Date(year, month - 1, day).getTime() : 0;
+function transactionParts(value: string): { day: number; month: number; year: number } {
+  const raw = String(value || "").trim();
+  const iso = raw.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})/);
+  if (iso) return { year: Number(iso[1]), month: Number(iso[2]), day: Number(iso[3]) };
+  const parts = raw.split(/[\\/. -]/).map(Number);
+  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return { day: 0, month: 0, year: 0 };
+  let [day, month, year] = parts;
+  if (day <= 12 && month > 12) [day, month] = [month, day];
+  if (year < 100) year += year < 50 ? 2000 : 1900;
+  return { day, month, year };
+}
+function transactionDateValue(value: string): number {
+  const { day, month, year } = transactionParts(value);
+  return year && month >= 1 && month <= 12 && day >= 1 && day <= 31
+    ? new Date(year, month - 1, day).getTime()
+    : 0;
 }
 
 export function Transaction() {
@@ -27,16 +40,16 @@ export function Transaction() {
   const [editingTransaction, setEditingTransaction] = useState<TransactionItem | null>(null);
 
   const availableYears = useMemo(() => Array.from(new Set(transactions.map((t) => {
-    const parts = String(t.date || "").split("/").map(Number);
-    return parts.length === 3 && parts[2] ? String(parts[2]) : "";
+    const parts = transactionParts(t.date);
+    return parts.year ? String(parts.year) : "";
   }).filter(Boolean))).sort((a, b) => Number(b) - Number(a)), [transactions]);
 
   const filteredTransactions = useMemo(() => transactions
     .filter((t) => filter === "All" || t.type === filter)
     .filter((t) => {
-      const parts = String(t.date || "").split("/").map(Number);
-      const month = parts.length === 3 ? parts[1] : 0;
-      const year = parts.length === 3 ? parts[2] : 0;
+      const parts = transactionParts(t.date);
+      const month = parts.month;
+      const year = parts.year;
       return (selectedMonth === "all" || month === Number(selectedMonth)) && (selectedYear === "all" || year === Number(selectedYear));
     })
     .filter(() => true)
