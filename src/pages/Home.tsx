@@ -40,7 +40,10 @@ export function Home() {
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const displayName = getDisplayName() || username;
-  const currentYear = new Date().getFullYear();
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const monthInIndonesian = currentDate.toLocaleDateString("id-ID", { month: "long" });
+  const monthLabel = monthInIndonesian.charAt(0).toUpperCase() + monthInIndonesian.slice(1);
   const plans = loadFinancialPlans();
   const allTxs = [...transactions, ...extraTxs];
   const parseRecentDate = (value: string, monthLabel?: string) => {
@@ -91,7 +94,7 @@ export function Home() {
       <div className="flex flex-col gap-1">
         <p className="text-[12px] font-medium text-charcoal/45">{today}</p>
         <h1 className="text-[25px] sm:text-[28px] font-semibold tracking-tight text-forest-900">{greetingWord()}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
-        <p className="text-[13px] text-charcoal/55">Ringkasan keuanganmu untuk {month} {currentYear}.</p>
+        <p className="text-[13px] text-charcoal/55">Ringkasan keuanganmu untuk {monthLabel} {currentYear}.</p>
       </div>
 
       <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[26px] bg-[#123524] p-[22px] text-white shadow-none" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
@@ -137,12 +140,12 @@ export function Home() {
           </div>
         )}
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="flex min-h-[112px] min-w-0 flex-col rounded-2xl bg-white/[0.09] p-3">
+          <div className="flex min-h-0 min-w-0 flex-col rounded-2xl bg-white/[0.09] p-3">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><ArrowDownLeft size={17} strokeWidth={2}/></span>
               <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">Pemasukan</span>
             </div>
-            <p className="mt-auto break-words pt-3 text-[clamp(11px,3.8vw,16px)] font-medium leading-tight tabular-nums">{formatRupiah(totalIncome)}</p>
+            <p className="mt-1 break-words text-[clamp(11px,3.8vw,16px)] font-medium leading-tight tabular-nums">{formatRupiah(totalIncome)}</p>
           </div>
           <div className="flex min-h-[112px] min-w-0 flex-col rounded-2xl bg-white/[0.09] p-3">
             <div className="flex min-w-0 items-center gap-2">
