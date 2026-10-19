@@ -28,6 +28,8 @@ export function Settings() {
   const [name, setName] = useState(() => getDisplayName());
   const [savedName, setSavedName] = useState(false);
   const [language, setLanguage] = useState<AppLanguage>(() => getAppLanguage());
+  useEffect(() => { const updateLanguage = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", updateLanguage); return () => window.removeEventListener("wealthplanner:language-changed", updateLanguage); }, []);
+  const id = language === "id";
   const [setup, setSetup] = useState<SetupState>(EMPTY_SETUP);
   const [original, setOriginal] = useState<SetupState>(EMPTY_SETUP);
   const [spreadsheetUrl, setSpreadsheetUrl] = useState("");
@@ -103,15 +105,15 @@ export function Settings() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold text-forest-900">Profile & Settings</h1>
-        <p className="text-[14px] text-charcoal/60 mt-0.5">Aktifkan baseline keuanganmu. Perubahan di sini akan ditulis ke spreadsheet.</p>
+        <h1 className="text-2xl font-semibold text-forest-900">{id ? "Profil & Pengaturan" : "Profile & Settings"}</h1>
+        <p className="text-[14px] text-charcoal/60 mt-0.5">{id ? "Atur profil dan baseline keuanganmu. Perubahan setup akan disimpan ke spreadsheet." : "Aktifkan baseline keuanganmu. Perubahan di sini akan ditulis ke spreadsheet."}</p>
       </div>
 
       <Card>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-forest-50 text-forest-700"><Settings2 size={18} /></span>
-            <div><h3 className="text-[15px] font-semibold text-forest-900">Financial Baseline Setup</h3><p className="text-[12px] text-charcoal/50 mt-0.5">Centang kategori yang ingin dipakai. Klik + untuk menambah kategori sendiri.</p></div>
+            <div><h3 className="text-[15px] font-semibold text-forest-900">{id ? "Pengaturan Baseline Keuangan" : "Financial Baseline Setup"}</h3><p className="text-[12px] text-charcoal/50 mt-0.5">{id ? "Pilih kategori yang ingin digunakan. Klik + untuk menambahkan kategori sendiri." : "Centang kategori yang ingin dipakai. Klik + untuk menambah kategori sendiri."}</p></div>
           </div>
           <div className="flex items-center gap-2">
             {spreadsheetUrl && <a href={spreadsheetUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-charcoal/12 bg-white px-3 py-2 text-[12px] font-medium text-charcoal/70 hover:border-forest-200 hover:text-forest-700"><ExternalLink size={13}/> Open Spreadsheet</a>}
@@ -137,7 +139,7 @@ export function Settings() {
 
       <Card className="max-w-2xl">
         <div className="flex items-center gap-2 mb-4"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-forest-50 text-forest-700"><UserIcon size={17}/></span><h3 className="text-[15px] font-semibold text-forest-900">Profile</h3></div>
-        <div className="mb-5"><label className="text-[13px] font-medium text-charcoal/75">Language / Bahasa</label><p className="text-[12px] text-charcoal/50 mt-0.5 mb-2">Pilih bahasa tampilan aplikasi.</p><select value={language} onChange={(e) => { const next = e.target.value as AppLanguage; setLanguage(next); setAppLanguage(next); }} className="w-full max-w-xs border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] bg-white"><option value="id">Bahasa Indonesia</option><option value="en">English</option></select></div>
+        <div className="mb-5"><label className="text-[13px] font-medium text-charcoal/75">Language / Bahasa</label><p className="text-[12px] text-charcoal/50 mt-0.5 mb-2">Pilih bahasa tampilan aplikasi.</p><select value={language} onChange={(e) => { const next = e.target.value as AppLanguage; setLanguage(next); setAppLanguage(next); }} className="w-full max-w-xs border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] bg-white"><option value="id">Bahasa Indonesia</option><option value="en">{id ? "English" : "English"}</option></select></div>
         <label className="text-[13px] font-medium text-charcoal/75">Display Name</label>
         <p className="text-[12px] text-charcoal/50 mt-0.5 mb-2">Dipakai untuk sapaan di dashboard. Kalau kosong, nama akun digunakan sebagai fallback.</p>
         <div className="flex gap-2"><input value={name} onChange={(e) => setName(e.target.value)} placeholder={username || "Nama kamu"} className="flex-1 border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] outline-none focus:border-forest-400 focus:ring-2 focus:ring-forest-50"/><button onClick={handleSaveName} className="flex items-center gap-1.5 bg-forest-600 text-white rounded-lg px-4 py-2 text-[13px] font-medium hover:bg-forest-700">{savedName && <Check size={14}/>} {savedName ? "Tersimpan" : "Simpan"}</button></div>
