@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Wallet, TrendingUp, TrendingDown, PiggyBank, Plus, Sparkles,
   ArrowLeftRight, Landmark, Calculator, Target, ShieldCheck,
-  ChartNoAxesCombined, Bot, BookOpen, ChevronRight, X, Eye, EyeOff,
+  ChartNoAxesCombined, Bot, BookOpen, ChevronRight, X, Eye, EyeOff, ArrowDownLeft, ArrowUpRight,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { Card, ChartCard } from "../components/Card";
@@ -92,7 +92,7 @@ export function Home() {
         <p className="text-[13px] text-charcoal/55">Ringkasan keuanganmu untuk {month} {currentYear}.</p>
       </div>
 
-      <Card className="w-full overflow-hidden border-0 !rounded-[26px] bg-[#123524] p-[22px] text-white shadow-none">
+      <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[26px] bg-[#123524] p-[22px] text-white shadow-none">
         <div className="flex items-center justify-between">
           <p className="text-[14px] font-normal text-[#A9C9B8]">Total aset</p>
           <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-8 w-8 items-center justify-center text-[#A9C9B8]">
@@ -114,14 +114,14 @@ export function Home() {
         <div className="mt-5 grid grid-cols-2 gap-3">
           <div className="flex min-h-[112px] min-w-0 flex-col rounded-2xl bg-white/[0.09] p-3">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><TrendingDown size={17} strokeWidth={2}/></span>
+              <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><ArrowDownLeft size={17} strokeWidth={2}/></span>
               <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">Pemasukan</span>
             </div>
             <p className="mt-auto break-words pt-3 text-[clamp(11px,3.8vw,16px)] font-medium leading-tight tabular-nums">{formatRupiah(totalIncome)}</p>
           </div>
           <div className="flex min-h-[112px] min-w-0 flex-col rounded-2xl bg-white/[0.09] p-3">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#FFB4A2]/[0.18] text-[#FFB4A2]"><TrendingUp size={17} strokeWidth={2}/></span>
+              <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#FFB4A2]/[0.18] text-[#FFB4A2]"><ArrowUpRight size={17} strokeWidth={2}/></span>
               <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">Pengeluaran</span>
             </div>
             <p className="mt-auto break-words pt-3 text-[clamp(11px,3.8vw,16px)] font-medium leading-tight tabular-nums">{formatRupiah(totalExpense)}</p>
