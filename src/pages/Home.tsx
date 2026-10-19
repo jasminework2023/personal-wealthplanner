@@ -9,13 +9,11 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { Card, ChartCard } from "../components/Card";
 import { TransactionBadge } from "../components/TransactionBadge";
 import { AddTransactionModal } from "../components/AddTransactionModal";
-import { DataStatusBanner } from "../components/DataStatusBanner";
 import { formatRupiah, formatCompact } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
 import { getDisplayName, greetingWord } from "../lib/settings";
 import type { Transaction } from "../data/types";
 import { loadFinancialPlans } from "../lib/financialPlans";
-import { ThemeToggle } from "../components/ThemeToggle";
 
 const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 const menus = [
@@ -81,18 +79,8 @@ export function Home() {
 
   return (
     <div className="flex flex-col gap-5 pb-6">
-      <div className="mb-0 flex items-center justify-between">
-        <span className="text-[17px] font-bold tracking-tight text-forest-700">wealthplanner.id</span>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => navigate("/guidance")} aria-label="Guidance" title="Guidance" className="flex h-9 w-9 items-center justify-center rounded-full border border-forest-100 bg-white text-forest-700 shadow-sm transition hover:border-forest-200">
-            <BookOpen size={18} />
-          </button>
-          <ThemeToggle variant="compact" />
-        </div>
-      </div>
-      <DataStatusBanner isRealData={isRealData} username={username} error={error} />
       <div className="flex flex-col gap-1">
-        <p className="text-[12px] font-medium text-charcoal/45">{today}</p>
+        <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/45">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
         <h1 className="text-[25px] sm:text-[28px] font-semibold tracking-tight text-forest-900">{greetingWord()}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
         <p className="text-[13px] text-charcoal/55">Ringkasan keuanganmu untuk {monthLabel} {currentYear}.</p>
       </div>
@@ -209,17 +197,6 @@ export function Home() {
         <div className="mb-3 flex items-center justify-between"><h2 className="text-[15px] font-semibold text-forest-900">Transaksi Terbaru</h2><button onClick={() => navigate("/transactions")} className="inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700">Semua transaksi <ChevronRight size={14}/></button></div>
         {recent.length ? <div className="flex flex-col divide-y divide-charcoal/8">{recent.map((t, i) => <div key={t.sheetRow ?? `${t.date}-${t.description}-${i}`} className="flex items-center justify-between gap-3 py-3"><div className="flex min-w-0 items-center gap-3"><TransactionBadge type={t.type}/><div className="min-w-0"><p className="truncate text-[13px] font-medium">{t.description}</p><p className="text-[11px] text-charcoal/50">{t.category} · {t.date}</p></div></div><p className={`shrink-0 text-[13px] font-semibold ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>{t.type === "Expense" ? "−" : "+"}{formatRupiah(t.amount)}</p></div>)}</div> : <p className="py-8 text-center text-[12px] text-charcoal/45">Belum ada transaksi. Tekan tombol + untuk mulai mencatat.</p>}
       </Card>
-
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-rose-100 bg-white/95 px-3 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur lg:hidden">
-        <div className="mx-auto grid max-w-md grid-cols-5 items-end gap-1">
-          <button onClick={() => navigate("/")} className="flex flex-col items-center gap-1 py-1 text-forest-700"><Wallet size={19}/><span className="text-[10px] font-medium">Home</span></button>
-          <button onClick={() => navigate("/transactions")} className="flex flex-col items-center gap-1 py-1 text-charcoal/55"><ArrowLeftRight size={19}/><span className="text-[10px] font-medium">Transaksi</span></button>
-          <button onClick={() => setQuickAddOpen(true)} aria-label="Tambah cepat" className="-mt-5 mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-forest-700 text-white shadow-lg ring-4 ring-white"><Plus size={24}/></button>
-          <button onClick={() => navigate("/goals")} className="flex flex-col items-center gap-1 py-1 text-charcoal/55"><Target size={19}/><span className="text-[10px] font-medium">Goals</span></button>
-          <button onClick={() => navigate("/settings")} className="flex flex-col items-center gap-1 py-1 text-charcoal/55"><BookOpen size={19}/><span className="text-[10px] font-medium">Profil</span></button>
-        </div>
-      </div>
-      <div className="h-16 lg:hidden"/>
 
       {quickAddOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/35 p-4 sm:items-center" onClick={() => setQuickAddOpen(false)}>
         <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
