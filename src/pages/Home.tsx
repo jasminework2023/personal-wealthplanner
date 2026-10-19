@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Wallet, TrendingUp, TrendingDown, PiggyBank, Plus, Sparkles,
   ArrowLeftRight, Landmark, Calculator, Target, ShieldCheck,
-  ChartNoAxesCombined, Bot, BookOpen, ChevronRight, X,
+  ChartNoAxesCombined, Bot, BookOpen, ChevronRight, X, Eye, EyeOff,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { Card, ChartCard } from "../components/Card";
@@ -33,7 +33,7 @@ const menus = [
 export function Home() {
   const navigate = useNavigate();
   const { error, isRealData, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month, assets } = useFinanceData();
-  const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
+  const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);\n  const [assetsVisible, setAssetsVisible] = useState(true);\n  const [assetTrend, setAssetTrend] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
   const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -62,6 +62,17 @@ export function Home() {
   const cashFlowData = [{ name: "Pemasukan", value: totalIncome }, { name: "Pengeluaran", value: totalExpense }, { name: "Tabungan", value: totalSaving }];
   const spendingByCategory = byCategory("Expense").filter((c) => c.realization > 0).map((c) => ({ name: c.category, value: c.realization }));
   const today = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  useEffect(() => {
+    const now = new Date();
+    const key = (date: Date) => "wealthplanner_asset_snapshot_" + date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
+    const prefix = isRealData ? (localStorage.getItem("wealthplanner_token") || "account") : "demo";
+    const previousDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    try {
+      const previousAssets = Number(localStorage.getItem(prefix + "_" + key(previousDate)));
+      setAssetTrend(Number.isFinite(previousAssets) && previousAssets > 0 ? ((assets.totalAssets - previousAssets) / previousAssets) * 100 : null);
+      localStorage.setItem(prefix + "_" + key(now), String(assets.totalAssets));
+    } catch { setAssetTrend(null); }
+  }, [assets.totalAssets, isRealData]);
 
   return (
     <div className="flex flex-col gap-5 pb-6">
@@ -81,21 +92,39 @@ export function Home() {
         <p className="text-[13px] text-charcoal/55">Ringkasan keuanganmu untuk {month} {currentYear}.</p>
       </div>
 
-      <Card className="overflow-hidden border-0 bg-[#1E4737] p-4 text-white shadow-md sm:p-5">
-        <div className="flex flex-col items-center text-center py-1">
-          <p className="text-[12px] font-medium text-white/80">Total Aset</p>
-          <p className="mt-1.5 text-[clamp(25px,5.8vw,34px)] leading-tight font-semibold tracking-tight break-words">{formatRupiah(assets.totalAssets)}</p>
+      <Card className="w-full overflow-hidden border-0 !rounded-[26px] bg-[#123524] p-[22px] text-white shadow-none">
+        <div className="flex items-center justify-between">
+          <p className="text-[14px] font-normal text-[#A9C9B8]">Total aset</p>
+          <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-8 w-8 items-center justify-center text-[#A9C9B8]">
+            {assetsVisible ? <Eye size={22} strokeWidth={2}/> : <EyeOff size={22} strokeWidth={2}/>}
+          </button>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2.5 border-t border-white/15 pt-3">
-          <div className="rounded-xl bg-[#ADFF2F] p-2.5 text-[#173B25] sm:p-3">
-            <div className="flex items-center gap-1.5 text-[11px] font-medium"><TrendingUp size={14}/> Pemasukan</div>
-            <p className="mt-1 break-words text-[clamp(12px,3.2vw,15px)] font-bold leading-tight">{formatRupiah(totalIncome)}</p>
-            <p className="mt-1 text-[10px] opacity-75">Bulan ini</p>
+        <div className="mt-1 flex min-w-0 items-baseline gap-1.5 whitespace-nowrap">
+          <span className="shrink-0 text-[16px] font-normal text-[#A9C9B8]">Rp</span>
+          <span className="min-w-0 text-[clamp(19px,7.8vw,31px)] font-medium leading-tight tracking-[-0.5px] tabular-nums">
+            {assetsVisible ? new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(assets.totalAssets) : "••••••••"}
+          </span>
+        </div>
+        {assetTrend !== null && Number.isFinite(assetTrend) && (
+          <div className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium ${assetTrend >= 0 ? "bg-[#6EE7A8]/[0.16] text-[#6EE7A8]" : "bg-[#FFB4A2]/[0.16] text-[#FFB4A2]"}`}>
+            {assetTrend >= 0 ? <TrendingUp size={15} strokeWidth={2}/> : <TrendingDown size={15} strokeWidth={2}/>}
+            <span>{assetTrend >= 0 ? "+" : ""}{assetTrend.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% bulan ini</span>
           </div>
-          <div className="rounded-xl bg-[#FFB6C1] p-2.5 text-[#572B36] sm:p-3">
-            <div className="flex items-center gap-1.5 text-[11px] font-medium"><TrendingDown size={14}/> Pengeluaran</div>
-            <p className="mt-1 break-words text-[clamp(12px,3.2vw,15px)] font-bold leading-tight">{formatRupiah(totalExpense)}</p>
-            <p className="mt-1 text-[10px] opacity-75">Bulan ini</p>
+        )}
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="flex min-h-[112px] min-w-0 flex-col rounded-2xl bg-white/[0.09] p-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><TrendingDown size={17} strokeWidth={2}/></span>
+              <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">Pemasukan</span>
+            </div>
+            <p className="mt-auto break-words pt-3 text-[clamp(11px,3.8vw,16px)] font-medium leading-tight tabular-nums">{formatRupiah(totalIncome)}</p>
+          </div>
+          <div className="flex min-h-[112px] min-w-0 flex-col rounded-2xl bg-white/[0.09] p-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#FFB4A2]/[0.18] text-[#FFB4A2]"><TrendingUp size={17} strokeWidth={2}/></span>
+              <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">Pengeluaran</span>
+            </div>
+            <p className="mt-auto break-words pt-3 text-[clamp(11px,3.8vw,16px)] font-medium leading-tight tabular-nums">{formatRupiah(totalExpense)}</p>
           </div>
         </div>
       </Card>
