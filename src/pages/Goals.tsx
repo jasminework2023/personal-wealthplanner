@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Calculator, Target, Trash2, Pencil, Check, X, Wallet, Plus, ChevronDown } from "lucide-react";
 import { Card } from "../components/Card";
@@ -32,7 +32,8 @@ function getPlanTarget(plan: ReturnType<typeof loadFinancialPlans>[number]) {
 }
 
 export function Goals() {
-  const language = getAppLanguage();
+  const [language, setLanguage] = useState(getAppLanguage());
+  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const id = language === "id";
   const navigate = useNavigate();
   const { assets } = useFinanceData();
@@ -117,7 +118,7 @@ export function Goals() {
     <div className="flex flex-col gap-5 pb-6">
       <div className="flex items-start gap-3">
         <button onClick={() => navigate("/")} aria-label="Kembali ke Home" className="mt-1 rounded-xl border border-rose-100 bg-white p-2 text-forest-700"><ArrowLeft size={17}/></button>
-        <div><h1 className="text-2xl font-semibold tracking-tight text-forest-900">Goals & Rencana Keuangan</h1><p className="mt-1 text-[13px] leading-5 text-charcoal/55">Hubungkan tujuan keuangan dengan aset yang memang kamu siapkan untuk mencapainya.</p></div>
+        <div><h1 className="text-2xl font-semibold tracking-tight text-forest-900">{id ? "Goals & Rencana Keuangan" : "Goals & Financial Plans"}</h1><p className="mt-1 text-[13px] leading-5 text-charcoal/55">{id ? "Hubungkan tujuan keuangan dengan aset yang memang kamu siapkan untuk mencapainya." : "Connect financial goals with the assets you set aside to achieve them."}</p></div>
       </div>
 
       {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.map((plan) => {
@@ -152,11 +153,11 @@ export function Goals() {
                 return <div key={assetId} className="flex items-center justify-between gap-2 rounded-xl border border-rose-100 px-3 py-2"><div className="min-w-0"><p className="truncate text-[12px] font-medium text-forest-900">{asset?.name || assetId.split(":").slice(1).join(":")}</p><p className="text-[11px] text-charcoal/55">{formatRupiah(value)}</p></div><button onClick={() => removeAllocation(plan.id, assetId)} className="rounded-lg p-1.5 text-charcoal/40 hover:bg-rose-50 hover:text-rose-600" aria-label="Hapus alokasi aset"><X size={14}/></button></div>;
               })}</div> : <p className="text-[11px] text-charcoal/50">Belum ada aset yang dialokasikan.</p>}
               {allocatingId === plan.id ? <div className="mt-3 flex flex-col gap-2 rounded-xl border border-forest-100 p-3">
-                <label className="text-[11px] font-medium text-charcoal/65">Pilih aset</label>
+                <label className="text-[11px] font-medium text-charcoal/65">{id ? "Pilih aset" : "Select asset"}</label>
                 <div className="relative"><select value={selectedAsset} onChange={(e) => setSelectedAsset(e.target.value)} className="w-full appearance-none rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-[12px] text-forest-900"><option value="">Pilih aset...</option>{assetOptions.map((asset) => { const already = planAllocations[asset.id] || 0; const available = Math.max(0, asset.value - ((totalAllocatedByAsset[asset.id] || 0) - already)); return <option key={asset.id} value={asset.id}>{asset.name} · tersedia {formatRupiah(available)}</option>; })}</select><ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/40"/></div>
                 <label className="text-[11px] font-medium text-charcoal/65">Nominal yang dialokasikan (Rp)</label>
                 <input inputMode="numeric" type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Contoh: 5000000" className="w-full rounded-xl border border-rose-100 px-3 py-2 text-[12px] text-forest-900 outline-none focus:ring-2 focus:ring-forest-100"/>
-                <div className="flex gap-2"><button onClick={() => saveAllocation(plan.id)} className="flex-1 rounded-xl bg-forest-700 px-3 py-2 text-[12px] font-semibold text-white">Simpan alokasi</button><button onClick={() => { setAllocatingId(null); setAmount(""); setSelectedAsset(""); }} className="rounded-xl border border-rose-100 px-3 py-2 text-[12px] text-charcoal/65">Batal</button></div>
+                <div className="flex gap-2"><button onClick={() => saveAllocation(plan.id)} className="flex-1 rounded-xl bg-forest-700 px-3 py-2 text-[12px] font-semibold text-white">Simpan alokasi</button><button onClick={() => { setAllocatingId(null); setAmount(""); setSelectedAsset(""); }} className="rounded-xl border border-rose-100 px-3 py-2 text-[12px] text-charcoal/65">{id ? "Batal" : "Cancel"}</button></div>
               </div> : <button onClick={() => { setAllocatingId(plan.id); setSelectedAsset(""); setAmount(""); }} className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-forest-100 px-3 py-2 text-[12px] font-semibold text-forest-700 hover:bg-forest-50"><Plus size={14}/> Alokasikan dana</button>}
             </div>
             <button onClick={() => navigate(`/calculator/${plan.calculatorId}`)} className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-forest-100 px-3 py-2 text-[12px] font-semibold text-forest-700 hover:bg-forest-50"><Calculator size={14}/> Buka simulasi</button>
