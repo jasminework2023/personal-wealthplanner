@@ -1,4 +1,4 @@
-@tailwind base;
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap");\n@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -413,4 +413,10 @@ html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: 
   .recharts-responsive-container {
     max-width: 100% !important;
   }
+}
+
+
+/* Typography is scoped to the mobile Home asset summary card. */
+.home-asset-summary {
+  font-family: "Poppins", sans-serif;
 }
