@@ -1,6 +1,7 @@
 import { Menu, BookOpen, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
+import { getAppLanguage } from "../lib/format";
 
 export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () => void }) {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () 
         <ChevronRight size={13} className="shrink-0 text-charcoal/40" />
         <span className="truncate text-[13px] font-semibold">{title}</span>
       </div>
-      <button type="button" onClick={() => navigate("/guidance")} aria-label="Guidance" title="Guidance" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-forest-700 hover:bg-charcoal/5">
+      <button type="button" onClick={() => navigate("/guidance")} aria-label={getAppLanguage() === "id" ? "Panduan" : "Guidance"} title={getAppLanguage() === "id" ? "Panduan" : "Guidance"} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-forest-700 hover:bg-charcoal/5">
         <BookOpen size={18} />
       </button>
       <ThemeToggle variant="compact" />
