@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Wallet, TrendingUp, TrendingDown, PiggyBank, Plus, Sparkles,
+  Wallet, CircleDollarSign, TrendingUp, TrendingDown, PiggyBank, Plus, Sparkles,
   ArrowLeftRight, Landmark, Calculator, Target, ShieldCheck,
   ChartNoAxesCombined, Bot, BookOpen, ChevronRight, X, Eye, EyeOff, ArrowDownLeft, ArrowUpRight,
 } from "lucide-react";
@@ -87,7 +87,7 @@ export function Home() {
 
       <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[26px] bg-[#123524] p-[22px] text-white shadow-none" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
         <div className="flex items-center justify-between">
-          <p className="text-[14px] font-normal text-[#A9C9B8]">Total aset</p>
+          <p className="flex items-center gap-2 text-[14px] font-normal text-[#A9C9B8]"><CircleDollarSign size={17} strokeWidth={1.8}/>Total Aset</p>
           <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-8 w-8 items-center justify-center text-[#A9C9B8]">
             {assetsVisible ? <Eye size={22} strokeWidth={2}/> : <EyeOff size={22} strokeWidth={2}/>}
           </button>
