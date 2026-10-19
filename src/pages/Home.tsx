@@ -33,7 +33,9 @@ const menus = [
 export function Home() {
   const navigate = useNavigate();
   const { error, isRealData, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month, assets } = useFinanceData();
-  const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);\n  const [assetsVisible, setAssetsVisible] = useState(true);\n  const [assetTrend, setAssetTrend] = useState<number | null>(null);
+  const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
+  const [assetsVisible, setAssetsVisible] = useState(true);
+  const [assetTrend, setAssetTrend] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
   const [quickAddOpen, setQuickAddOpen] = useState(false);
