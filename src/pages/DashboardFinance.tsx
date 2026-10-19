@@ -405,22 +405,18 @@ export function DashboardFinance() {
       </>}
 
       {activeReportTab === "cashflow" && <>
-        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-[#0B4D38] p-4 text-white sm:gap-4 sm:p-5">
-          <div className="min-w-0 border-r border-white/15 pr-2">
-            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Cash in</p>
-            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalIncome)}</p>
-          </div>
-          <div className="min-w-0 border-r border-white/15 px-1 sm:px-2">
-            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Cash out</p>
-            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalExpense+totalSaving)}</p>
-          </div>
-          <div className="min-w-0 pl-1 sm:pl-2">
-            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Net cashflow</p>
-            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalIncome-totalExpense-totalSaving)}</p>
+        <div className="rounded-2xl bg-[#F6C445] p-4 text-black sm:p-5">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 text-[13px] sm:text-sm">
+            <div className="border-b border-black/15 pb-2 font-medium">Cash In</div>
+            <div className="border-b border-black/15 pb-2 text-right font-semibold tabular-nums">{formatRupiah(totalIncome)}</div>
+            <div className="border-b border-black/15 pb-2 font-medium">Cash Out</div>
+            <div className="border-b border-black/15 pb-2 text-right font-semibold tabular-nums">{formatRupiah(totalExpense+totalSaving)}</div>
+            <div className="font-medium">Net Cashflow</div>
+            <div className="text-right font-semibold tabular-nums">{formatRupiah(totalIncome-totalExpense-totalSaving)}</div>
           </div>
         </div>
-        <ChartCard title="Cashflow Tracker" subtitle="Arus kas bersih setelah pengeluaran dan alokasi tabungan.">
-          <ResponsiveContainer width="100%" height={260}><BarChart data={[{name:"Cash In",amount:totalIncome},{name:"Expenses",amount:totalExpense},{name:"Savings",amount:totalSaving},{name:"Net Cashflow",amount:totalIncome-totalExpense-totalSaving}]} margin={{top:10,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:11}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" fill="var(--chart-2)" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
+        <ChartCard title="Cashflow Tracker" subtitle="Cash out menggabungkan pengeluaran dan tabungan.">
+          <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Cash In",amount:totalIncome},{name:"Cash Out",amount:totalExpense+totalSaving},{name:"Net Cashflow",amount:totalIncome-totalExpense-totalSaving}]} barCategoryGap="18%" margin={{top:10,right:8,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:10}} interval={0} axisLine={false} tickLine={false}/><YAxis width={44} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" radius={[7,7,0,0]} maxBarSize={68}>{[{color:"#0B6B47"},{color:"#F4577A"},{color:"#FFA24C"}].map((item,index)=><Cell key={index} fill={item.color}/>)}</Bar></BarChart></ResponsiveContainer>
         </ChartCard>
         <div className="grid gap-4 lg:grid-cols-3">
           <ChartCard title="Cash In Detail" subtitle="Pemasukan per kategori"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="income"/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
