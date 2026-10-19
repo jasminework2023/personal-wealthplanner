@@ -417,7 +417,15 @@ html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: 
 }
 
 
-/* Typography is scoped to the mobile Home asset summary card. */
+/* Home asset summary must remain dark green in both light and dark themes. */
 .home-asset-summary {
+  font-family: "Poppins", sans-serif;
+  background-color: #123524 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+.home-asset-summary > div,
+.home-asset-summary p,
+.home-asset-summary span {
   font-family: "Poppins", sans-serif;
 }
