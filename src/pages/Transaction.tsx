@@ -72,21 +72,7 @@ export function Transaction() {
           </div>
           {calendarOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-3 sm:items-center"><div className="w-full max-w-sm rounded-2xl bg-white p-4 shadow-xl"><div className="mb-4 flex items-center justify-between"><h3 className="font-semibold text-forest-900">Filter transaksi</h3><button type="button" aria-label="Tutup filter" onClick={() => setCalendarOpen(false)} className="rounded-full p-1 text-charcoal/60"><X size={20}/></button></div><button type="button" onClick={() => {setSelectedMonth("all");setSelectedYear("all");setCalendarOpen(false);}} className={`mb-3 w-full rounded-xl border px-3 py-2.5 text-left text-sm ${selectedMonth === "all" && selectedYear === "all" ? "border-forest-700 bg-forest-50 text-forest-900" : "border-charcoal/10 text-charcoal"}`}>Semua Transaksi</button><p className="mb-1 text-xs text-charcoal/60">Bulan</p><select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="mb-3 w-full rounded-xl border border-charcoal/10 bg-white px-3 py-2.5 text-sm text-forest-900"><option value="all">Semua bulan</option>{["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((month, i) => <option key={month} value={String(i + 1)}>{month}</option>)}</select><p className="mb-1 text-xs text-charcoal/60">Tahun</p><select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="mb-4 w-full rounded-xl border border-charcoal/10 bg-white px-3 py-2.5 text-sm text-forest-900"><option value="all">Semua tahun</option>{availableYears.map((year) => <option key={year} value={year}>{year}</option>)}</select><button type="button" onClick={() => setCalendarOpen(false)} className="w-full rounded-xl bg-forest-700 py-2.5 text-sm font-semibold text-white">Terapkan filter</button></div></div>}
           <div className="flex gap-2 overflow-x-auto whitespace-nowrap pb-1">
-            <label className="flex flex-col gap-1 text-xs text-charcoal/60">Bulan
-              <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="w-full rounded-xl border border-charcoal/10 bg-white px-3 py-2 text-sm text-forest-900 outline-none focus:border-forest-500">
-                <option value="all">Semua bulan</option>
-                {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((month, i) => <option key={month} value={String(i + 1)}>{month}</option>)}
-              </select>
-            </label>
-            <label className="flex flex-col gap-1 text-xs text-charcoal/60">Tahun
-              <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="w-full rounded-xl border border-charcoal/10 bg-white px-3 py-2 text-sm text-forest-900 outline-none focus:border-forest-500">
-                <option value="all">Semua tahun</option>
-                {availableYears.map((year) => <option key={year} value={year}>{year}</option>)}
-              </select>
-            </label>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {filters.map((item) => <button key={item} type="button" onClick={() => setFilter(item)} className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition ${filter === item ? "bg-forest-700 text-white" : "bg-forest-50 text-forest-800 hover:bg-forest-100"}`}>{item === "All" ? "Semua" : item === "Income" ? "Pemasukan" : item === "Expense" ? "Pengeluaran" : "Tabungan"}</button>)}
+            {filters.map((item) => <button key={item} type="button" onClick={() => setFilter(item)} className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition ${filter === item ? "bg-forest-700 text-white" : "bg-forest-50 text-forest-800 hover:bg-forest-100"}`}>{item === "All" ? "Semua" : item === "Income" ? "Pemasukan" : item === "Expense" ? "Pengeluaran" : "Tabungan"}</button>)}
           </div>
           {loading ? <p className="py-10 text-center text-sm text-charcoal/50">Memuat transaksi...</p> : filteredTransactions.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center">
