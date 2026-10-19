@@ -164,9 +164,9 @@ function EditableAssetItem({
 const PIE_COLORS = ["var(--chart-2)", "var(--chart-5)", "var(--chart-1)", "var(--chart-8)", "var(--chart-3)"];
 
 function BudgetRow({
-  category, allocation, realization, kind,
-}: { category: string; allocation: number; realization: number; kind: "income" | "expense" | "saving" }) {
-  const hasBudget = allocation > 0;
+  category, allocation, realization, kind, showBudget = true,
+}: { category: string; allocation: number; realization: number; kind: "income" | "expense" | "saving"; showBudget?: boolean }) {
+  const hasBudget = showBudget && allocation > 0;
   const pct = usagePercentage(realization, allocation);
   const overBy = pct > 100 ? pct - 100 : 0;
   const amountColor = kind === "expense" ? "text-[#F4577A]" : kind === "income" ? "text-[#0B6B47]" : "text-[#FFA24C]";
@@ -185,6 +185,7 @@ export function DashboardFinance() {
   const [draftYear, setDraftYear] = useState(now.getFullYear());
   const [assetValuesHidden, setAssetValuesHidden] = useState(false);
   const { loading, error, isRealData, username, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData(selectedMonth, false, selectedYear);
+  const historyData = useFinanceData(selectedMonth, true, selectedYear);
   const [manualStocks, setManualStocks] = useState<ManualStock[]>(() => loadManualStocks());
   const [editingAssetTarget, setEditingAssetTarget] = useState(false);
   const [assetTargetInput, setAssetTargetInput] = useState("");
@@ -256,26 +257,43 @@ export function DashboardFinance() {
       </section>
 
       {activeReportTab === "income" && <>
-        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-[#0B4D38] p-4 text-white sm:gap-4 sm:p-5">
-          <div className="min-w-0 border-r border-white/15 pr-2">
-            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Total income</p>
-            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalIncome)}</p>
+        {(() => {
+          const monthIndex = monthNames.indexOf(selectedMonth);
+          const previousMonth = monthNames[(monthIndex + 11) % 12];
+          const previousYear = monthIndex === 0 ? selectedYear - 1 : selectedYear;
+          const previousTransactions = historyData.transactions.filter((t) => {
+            const year = Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear));
+            return String(t.month || "").toLowerCase() === previousMonth.toLowerCase() && year === previousYear;
+          });
+          const previousIncome = previousTransactions.filter((t) => t.type === "Income").reduce((sum, t) => sum + t.amount, 0);
+          const previousExpense = previousTransactions.filter((t) => t.type === "Expense").reduce((sum, t) => sum + t.amount, 0);
+          const changePct = (current: number, previous: number) => previous > 0 ? ((current - previous) / previous) * 100 : null;
+          const incomeChange = changePct(totalIncome, previousIncome);
+          const expenseChange = changePct(totalExpense, previousExpense);
+          const ChangeLabel = ({ value }: { value: number | null }) => value === null
+            ? <p className="mt-2 text-[12px] text-white/60">—</p>
+            : <p className={`mt-2 flex items-center gap-1 text-[12px] font-semibold ${value >= 0 ? "text-[#6EE7A8]" : "text-[#FFB4D2]"}`}><span>{value >= 0 ? "↑" : "↓"}</span><span>{value >= 0 ? "+" : ""}{value.toFixed(1).replace(".", ",")}%</span></p>;
+          return <div className="grid grid-cols-2 gap-0 rounded-2xl bg-[#0B4D38] p-4 text-white sm:p-5">
+            <div className="min-w-0 border-r border-white/20 pr-3 sm:pr-5">
+              <p className="text-[12px] leading-tight text-white/75 sm:text-sm">Total Income</p>
+              <p className="mt-2 break-words text-[17px] font-semibold leading-tight sm:text-xl">{formatRupiah(totalIncome)}</p>
+              <ChangeLabel value={incomeChange}/>
+            </div>
+            <div className="min-w-0 pl-3 sm:pl-5">
+              <p className="text-[12px] leading-tight text-white/75 sm:text-sm">Total Expense</p>
+              <p className="mt-2 break-words text-[17px] font-semibold leading-tight sm:text-xl">{formatRupiah(totalExpense)}</p>
+              <ChangeLabel value={expenseChange}/>
+            </div>
+          </div>;
+        })()}
+        <ChartCard title="Income Statement" subtitle="Pendapatan dan pengeluaran aktual pada periode ini.">
+          <div className="w-full">
+            <ResponsiveContainer width="100%" height={290}><BarChart data={[{name:"Income",income:totalIncome,expense:0},{name:"Expense",income:0,expense:totalExpense}]} barCategoryGap="18%" barGap={8} margin={{top:14,right:8,left:0,bottom:6}}><XAxis dataKey="name" tick={{fontSize:12}} axisLine={false} tickLine={false}/><YAxis width={48} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="income" name="Total Income" fill="#0B6B47" radius={[8,8,0,0]} maxBarSize={90}/><Bar dataKey="expense" name="Total Expense" fill="#F4577A" radius={[8,8,0,0]} maxBarSize={90}/></BarChart></ResponsiveContainer>
           </div>
-          <div className="min-w-0 border-r border-white/15 px-1 sm:px-2">
-            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Total expense</p>
-            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalExpense)}</p>
-          </div>
-          <div className="min-w-0 pl-1 sm:pl-2">
-            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Surplus/defisit</p>
-            <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalIncome-totalExpense)}</p>
-          </div>
-        </div>
-        <ChartCard title="Income Statement" subtitle="Pendapatan, pengeluaran, dan surplus/defisit bulan ini.">
-          <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Income",income:totalIncome,expense:0},{name:"Expense",income:0,expense:totalExpense}]} margin={{top:8,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:12}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="income" name="Pendapatan" fill="#0B6B47" radius={[6,6,0,0]}/><Bar dataKey="expense" name="Pengeluaran" fill="#F4577A" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
         </ChartCard>
         <div className="grid gap-4 lg:grid-cols-3">
-          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0B6B47]/10 text-[#0B6B47]"><Wallet size={15}/></span>Income per Category</span>} subtitle="Realisasi pendapatan"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="income"/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
-          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F4577A]/10 text-[#F4577A]"><CircleDollarSign size={15}/></span>Expense per Category</span>} subtitle="Realisasi pengeluaran"><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="expense"/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
+          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0B6B47]/10 text-[#0B6B47]"><Wallet size={15}/></span>Income per Category</span>} subtitle="Realisasi pendapatan"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="income" showBudget={false}/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
+          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F4577A]/10 text-[#F4577A]"><CircleDollarSign size={15}/></span>Expense per Category</span>} subtitle="Realisasi pengeluaran"><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="expense" showBudget={false}/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
         </div>
       </>}
 
