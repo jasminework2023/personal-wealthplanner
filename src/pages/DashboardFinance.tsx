@@ -259,16 +259,16 @@ export function DashboardFinance() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-forest-100 bg-white p-3 sm:p-4">
-        <div className="flex items-center gap-2">
-          <button type="button" aria-label="Laporan sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-charcoal/10 text-forest-700 hover:bg-forest-50"><ChevronLeft size={18}/></button>
-          <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
-            {reportTabs.map((tab, index) => <button key={tab.id} type="button" onClick={() => setActiveReportTab(tab.id)} className={`min-w-max flex-1 rounded-xl px-3 py-2.5 text-[12px] sm:text-[13px] font-semibold transition-colors ${activeReportTab===tab.id?"bg-forest-700 text-white shadow-sm":"text-charcoal/60 hover:bg-forest-50 hover:text-forest-800"}`}>{tab.label}</button>)}
-          </div>
-          <button type="button" aria-label="Laporan berikutnya" onClick={() => selectReportTab(activeTabIndex + 1)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-charcoal/10 text-forest-700 hover:bg-forest-50"><ChevronRight size={18}/></button>
+      <section className="bg-white">
+        <div className="flex items-center justify-between gap-3">
+          <button type="button" aria-label="Sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full border border-charcoal/10 text-forest-700 transition-colors hover:bg-forest-50"><ChevronLeft size={18}/></button>
+          <h2 aria-live="polite" className="min-w-0 flex-1 text-center text-[18px] font-medium leading-tight text-forest-900">{reportTabs[activeTabIndex].label}</h2>
+          <button type="button" aria-label="Berikutnya" onClick={() => selectReportTab(activeTabIndex + 1)} className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full border border-charcoal/10 text-forest-700 transition-colors hover:bg-forest-50"><ChevronRight size={18}/></button>
         </div>
-        <p className="mt-2 px-1 text-[11px] text-charcoal/45">Geser pilihan atau gunakan panah untuk melihat laporan lainnya.</p>
-      </div>
+        <div className="mt-3 flex items-center justify-center gap-2" aria-label="Pilihan laporan">
+          {reportTabs.map((tab) => <span key={tab.id} className={`h-1.5 rounded-full transition-all duration-150 ${activeReportTab===tab.id?"w-5 bg-forest-700":"w-1.5 bg-charcoal/20"}`} />)}
+        </div>
+      </section>
 
       {activeReportTab === "income" && <>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
