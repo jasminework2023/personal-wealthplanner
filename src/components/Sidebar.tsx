@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { getAppLanguage } from "../lib/format";
 import {
   Home,
   BarChart3,
@@ -64,7 +66,7 @@ function Brand() {
         </div>
         <div className="min-w-0">
           <p className="text-[15px] font-semibold text-white tracking-tight">wealthplanner.id</p>
-          <p className="text-[12px] text-white/65">Personal Finance</p>
+          <p className="text-[12px] text-white/65">{getAppLanguage() === "id" ? "Keuangan Pribadi" : "Personal Finance"}</p>
         </div>
       </div>
     </div>
@@ -72,29 +74,32 @@ function Brand() {
 }
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+  const [language, setLanguage] = useState(getAppLanguage());
+  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
+  const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", guidance: "Panduan", profile: "Profil & Pengaturan", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", guidance: "Guidance", profile: "Profile & Settings", website: "Website", personalFinance: "Personal Finance" };
   return (
     <div className="flex flex-col h-full">
       <Brand />
 
       <div className="px-2 flex-1 overflow-y-auto">
-        <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-white/50 mt-2 mb-1.5">Main</p>
+        <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-white/50 mt-2 mb-1.5">{labels.main}</p>
         <nav className="flex flex-col gap-0.5 mb-4">
-          {mainLinks.map((l) => <NavItem key={l.to} {...l} onNavigate={onNavigate} />)}
+          {mainLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/finance" ? labels.report : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.label} onNavigate={onNavigate} />)}
         </nav>
 
-        <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-white/50 mt-2 mb-1.5">Tools</p>
+        <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-white/50 mt-2 mb-1.5">{labels.tools}</p>
         <nav className="flex flex-col gap-0.5">
-          {toolLinks.map((l) => <NavItem key={l.to} {...l} onNavigate={onNavigate} />)}
+          {toolLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/calculator" ? labels.calculator : labels.protection} onNavigate={onNavigate} />)}
           <a href="https://www.wealthplanner.id" target="_blank" rel="noreferrer" onClick={onNavigate} className="group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] text-white hover:bg-white/10 hover:text-white transition-all">
             <ExternalLink size={18} strokeWidth={2} className="text-white/75 group-hover:text-rose-300" />
-            Website
+            {labels.website}
           </a>
         </nav>
       </div>
 
       <div className="px-2 pb-4 pt-2 border-t border-white/12 flex flex-col gap-0.5">
-        <NavItem to="/guidance" label="Guidance" icon={BookOpen} onNavigate={onNavigate} />
-        <NavItem to="/settings" label="Profile & Settings" icon={Settings} onNavigate={onNavigate} />
+        <NavItem to="/guidance" label={labels.guidance} icon={BookOpen} onNavigate={onNavigate} />
+        <NavItem to="/settings" label={labels.profile} icon={Settings} onNavigate={onNavigate} />
       </div>
     </div>
   );
