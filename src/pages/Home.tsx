@@ -113,7 +113,30 @@ export function Home() {
             <span>{assetTrend >= 0 ? "+" : ""}{assetTrend.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% bulan ini</span>
           </div>
         )}
-        <div className="mt-5 grid grid-cols-2 gap-3">
+        {assets.target > 0 && (
+          <div className="mt-4">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <span className="text-[13px] font-normal text-[#A9C9B8]">% dari target</span>
+              <span className="shrink-0 text-[14px] font-medium text-white tabular-nums">
+                {Math.round((assets.totalAssets / assets.target) * 100)}%
+              </span>
+            </div>
+            <div
+              className="h-2.5 w-full overflow-hidden rounded-full bg-white/[0.16]"
+              role="progressbar"
+              aria-label="Progress target aset"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.min(100, Math.max(0, Math.round((assets.totalAssets / assets.target) * 100)))}
+            >
+              <div
+                className="h-full rounded-full bg-[#6EE7A8] transition-[width] duration-500"
+                style={{ width: `${Math.min(100, Math.max(0, (assets.totalAssets / assets.target) * 100))}%` }}
+              />
+            </div>
+          </div>
+        )}
+        <div className="mt-4 grid grid-cols-2 gap-2">
           <div className="flex min-h-[112px] min-w-0 flex-col rounded-2xl bg-white/[0.09] p-3">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><ArrowDownLeft size={17} strokeWidth={2}/></span>
