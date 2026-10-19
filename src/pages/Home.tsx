@@ -94,7 +94,7 @@ export function Home() {
         <p className="text-[13px] text-charcoal/55">Ringkasan keuanganmu untuk {month} {currentYear}.</p>
       </div>
 
-      <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[26px] bg-[#123524] p-[22px] text-white shadow-none">
+      <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[26px] bg-[#123524] p-[22px] text-white shadow-none" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
         <div className="flex items-center justify-between">
           <p className="text-[14px] font-normal text-[#A9C9B8]">Total aset</p>
           <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-8 w-8 items-center justify-center text-[#A9C9B8]">
