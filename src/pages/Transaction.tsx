@@ -12,20 +12,33 @@ type Filter = "All" | TransactionType;
 
 function transactionParts(value: string): { day: number; month: number; year: number } {
   const raw = String(value || "").trim();
-  const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if (iso) return { year: Number(iso[1]), month: Number(iso[2]), day: Number(iso[3]) };
-  const parts = raw.split(/[\/. -]/).map(Number);
-  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return { day: 0, month: 0, year: 0 };
-  let [day, month, year] = parts;
-  if (day <= 12 && month > 12) [day, month] = [month, day];
+  // ISO dates are unambiguous: YYYY-MM-DD.
+  const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:$|T|\s)/);
+  let day: number, month: number, year: number;
+  if (iso) {
+    year = Number(iso[1]); month = Number(iso[2]); day = Number(iso[3]);
+  } else {
+    const parts = raw.split(/[\/. -]/).filter(Boolean).map(Number);
+    if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return { day: 0, month: 0, year: 0 };
+    [day, month, year] = parts;
+    // Normalize US-style MM/DD/YYYY only when the first number cannot be a day.
+    if (day <= 12 && month > 12) [day, month] = [month, day];
+  }
   if (year < 100) year += year < 50 ? 2000 : 1900;
   return { day, month, year };
 }
 function transactionDateValue(value: string): number {
   const { day, month, year } = transactionParts(value);
-  return year && month >= 1 && month <= 12 && day >= 1 && day <= 31
-    ? new Date(year, month - 1, day).getTime()
-    : 0;
+  if (!year || month < 1 || month > 12 || day < 1 || day > 31) return 0;
+  const date = new Date(year, month - 1, day);
+  // Reject impossible dates such as 31/02/2026 instead of silently rolling them forward.
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return 0;
+  return date.getTime();
+}
+function formatTransactionDate(value: string): string {
+  const { day, month, year } = transactionParts(value);
+  if (!transactionDateValue(value)) return String(value || "—");
+  return [day, month, year].map((part, index) => String(part).padStart(index === 2 ? 4 : 2, "0")).join("/");
 }
 
 export function Transaction() {
@@ -105,7 +118,7 @@ export function Transaction() {
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colorFor(t.type)}`}><Icon size={18} /></div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-forest-900">{t.description || t.category}</p>
-                    <p className="mt-0.5 text-xs text-charcoal/50">{t.category} · {t.date}</p>
+                    <p className="mt-0.5 text-xs text-charcoal/50">{t.category} · {formatTransactionDate(t.date)}</p>
                   </div>
                   <p className={`shrink-0 text-right text-sm font-semibold ${amountColor}`}>{amountPrefix}{formatRupiah(t.amount)}</p>
                   <button type="button" aria-label="Edit transaksi" title="Edit transaksi" onClick={() => setEditingTransaction(t)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-forest-700 hover:bg-forest-50"><Pencil size={16}/></button>
