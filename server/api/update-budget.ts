@@ -76,7 +76,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     if (rowIdx === -1) return res.status(404).json({ error: `Kategori ${category} tidak ditemukan di section ${type}` });
 
-    const cell = `Budgeting!${colLetter(colIdx)}${rowIdx + 1}`;
+    // Values were read from B1:N80, so column index 0 maps to sheet column B, not A.
+    const cell = `Budgeting!${colLetter(colIdx + 1)}${rowIdx + 1}`;
     await sheets.spreadsheets.values.update({ spreadsheetId: user.spreadsheet_id, range: cell, valueInputOption: "USER_ENTERED", requestBody: { values: [[Number(amount)]] } });
     return res.status(200).json({ success: true });
   } catch (err) {
