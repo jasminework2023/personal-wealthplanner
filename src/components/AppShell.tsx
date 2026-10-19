@@ -5,12 +5,12 @@ import { DesktopSidebar, MobileSidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { DateHeader } from "./DateHeader";
 import { ThemeToggle } from "./ThemeToggle";
-import { Wallet, ArrowLeftRight, Target, BookOpen, Plus, Sparkles, X, Receipt } from "lucide-react";
+import { Wallet, ArrowLeftRight, Target, UserRound, Plus, Sparkles, X, ChartNoAxesCombined } from "lucide-react";
 
 const titles: Record<string, string> = {
   "/": "Home",
   "/finance": "Report",
-  "/transactions": "Community",
+  "/transactions": "Report",
   "/transaction": "Transaction",
   "/budgeting": "Budgeting & Realization",
   "/calculator": "Financial Calculator",
@@ -44,10 +44,10 @@ export function AppShell() {
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-rose-100 bg-white/95 px-3 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur lg:hidden">
           <div className="mx-auto grid max-w-md grid-cols-5 items-end gap-1">
             <button onClick={() => navigate("/")} className={`flex flex-col items-center gap-1 py-1 ${location.pathname === "/" ? "text-forest-700" : "text-charcoal/55"}`}><Wallet size={19}/><span className="text-[10px] font-medium">Home</span></button>
-            <button onClick={() => navigate("/transaction")} className={`flex flex-col items-center gap-1 py-1 ${location.pathname === "/transaction" ? "text-forest-700" : "text-charcoal/55"}`}><Receipt size={19}/><span className="text-[10px] font-medium">Transaction</span></button>
+            <button onClick={() => navigate("/finance")} className={`flex flex-col items-center gap-1 py-1 ${location.pathname === "/finance" ? "text-forest-700" : "text-charcoal/55"}`}><ChartNoAxesCombined size={19}/><span className="text-[10px] font-medium">Report</span></button>
             <button onClick={() => setQuickAddOpen(true)} aria-label="Tambah transaksi" className="-mt-5 mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-forest-700 text-white shadow-lg ring-4 ring-white"><Plus size={24}/></button>
             <button onClick={() => navigate("/goals")} className={`flex flex-col items-center gap-1 py-1 ${location.pathname === "/goals" ? "text-forest-700" : "text-charcoal/55"}`}><Target size={19}/><span className="text-[10px] font-medium">Goals</span></button>
-            <button onClick={() => navigate("/settings")} className={`flex flex-col items-center gap-1 py-1 ${location.pathname === "/settings" ? "text-forest-700" : "text-charcoal/55"}`}><BookOpen size={19}/><span className="text-[10px] font-medium">Profil</span></button>
+            <button onClick={() => navigate("/settings")} className={`flex flex-col items-center gap-1 py-1 ${location.pathname === "/settings" ? "text-forest-700" : "text-charcoal/55"}`}><UserRound size={19}/><span className="text-[10px] font-medium">Profil</span></button>
           </div>
         </div>
         {quickAddOpen && <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/35 p-4 sm:items-center" onClick={() => setQuickAddOpen(false)}>
