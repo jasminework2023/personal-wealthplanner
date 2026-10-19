@@ -140,19 +140,19 @@ export function Home() {
           </div>
         )}
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="flex min-h-0 min-w-0 flex-col rounded-2xl bg-white/[0.09] p-3">
+          <div className="flex min-w-0 flex-col self-start rounded-2xl bg-white/[0.09] p-3">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><ArrowDownLeft size={17} strokeWidth={2}/></span>
               <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">Pemasukan</span>
             </div>
             <p className="mt-1 break-words text-[clamp(11px,3.8vw,16px)] font-medium leading-tight tabular-nums">{formatRupiah(totalIncome)}</p>
           </div>
-          <div className="flex min-h-[112px] min-w-0 flex-col rounded-2xl bg-white/[0.09] p-3">
+          <div className="flex min-w-0 flex-col self-start rounded-2xl bg-white/[0.09] p-3">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#FFB4A2]/[0.18] text-[#FFB4A2]"><ArrowUpRight size={17} strokeWidth={2}/></span>
               <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">Pengeluaran</span>
             </div>
-            <p className="mt-auto break-words pt-3 text-[clamp(11px,3.8vw,16px)] font-medium leading-tight tabular-nums">{formatRupiah(totalExpense)}</p>
+            <p className="mt-1 break-words text-[clamp(11px,3.8vw,16px)] font-medium leading-tight tabular-nums">{formatRupiah(totalExpense)}</p>
           </div>
         </div>
       </Card>
