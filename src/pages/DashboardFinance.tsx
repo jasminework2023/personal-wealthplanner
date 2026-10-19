@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { StatCard } from "../components/StatCard";
 import { ChartCard, Card } from "../components/Card";
 import { BudgetProgressBar, StatusBadge } from "../components/ProgressBar";
-import { formatRupiah, formatCompact, formatPercent } from "../lib/format";
+import { formatRupiah, formatCompact, formatPercent, getAppLanguage } from "../lib/format";
 import { usagePercentage, budgetStatus } from "../data/types";
 import { useFinanceData, getStoredToken } from "../lib/useFinanceData";
 import { AddItemForm } from "../components/AddItemForm";
@@ -57,8 +57,8 @@ function ManualStockForm({ onSaved }: { onSaved: (stock: ManualStock) => void })
   const inputClass = "w-full rounded-lg border border-charcoal/12 bg-white px-2.5 py-2 text-[12px] outline-none focus:border-forest-400";
   return (
     <div className="mt-4 rounded-xl border border-dashed border-forest-100 bg-forest-50/40 p-4">
-      <p className="text-[12px] font-semibold text-forest-900">Tambah saham manual</p>
-      <p className="mt-0.5 text-[11px] text-charcoal/50">V1: harga saat ini diinput manual. Belum terhubung ke market-price API.</p>
+      <p className="text-[12px] font-semibold text-forest-900">{id ? "Tambah saham manual" : "Add manual stock"}</p>
+      <p className="mt-0.5 text-[11px] text-charcoal/50">{id ? "V1: harga saat ini diinput manual. Belum terhubung ke market-price API." : "V1: current prices are entered manually. Not connected to a market-price API."}</p>
       <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         <input value={ticker} onChange={(e) => setTicker(e.target.value)} placeholder="Stock Code" className={inputClass} />
         <select value={market} onChange={(e) => setMarket(e.target.value as "ID" | "US")} className={inputClass}>
@@ -176,6 +176,9 @@ function BudgetRow({
   </div>;
 }
 export function DashboardFinance() {
+  const [language, setLanguage] = useState(getAppLanguage());
+  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
+  const id = language === "id";
   const now = new Date();
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const [selectedMonth, setSelectedMonth] = useState(monthNames[now.getMonth()]);
@@ -219,7 +222,7 @@ export function DashboardFinance() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-2 -mt-3">
-        <h1 className="text-[19px] font-medium leading-tight text-forest-900">Financial Report</h1>
+        <h1 className="text-[19px] font-medium leading-tight text-forest-900">{id ? "Financial Report" : "Laporan Keuangan"}</h1>
         <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-full border border-charcoal/10 bg-transparent px-2.5 py-1.5 text-[12px] font-medium text-forest-900">
           <CalendarDays size={15} className="shrink-0 text-forest-700" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-charcoal/50" />
         </button>
