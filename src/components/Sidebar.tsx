@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import {
   Home,
-  ChartNoAxesCombined,
+  BarChart3,
   Receipt,
   CalendarRange,
   Calculator,
@@ -16,7 +16,7 @@ import logoMark from "../assets/logo-mark-white.png";
 
 const mainLinks = [
   { to: "/", label: "Home", icon: Home },
-  { to: "/finance", label: "Report", icon: ChartNoAxesCombined },
+  { to: "/finance", label: "Report", icon: BarChart3 },
   { to: "/transactions", label: "Community", icon: UsersRound },
   { to: "/budgeting", label: "Monthly Budget", icon: CalendarRange },
 ];
