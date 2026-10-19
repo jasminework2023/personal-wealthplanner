@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, GraduationCap, Home, PiggyBank, Shield, Trash2, WalletCards } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card } from "../components/Card";
+import { getAppLanguage } from "../lib/format";
 import { formatCompact, formatRupiah } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
 import { FinancialPlan, getPlanTypeLabel, loadFinancialPlans, removeFinancialPlan, saveFinancialPlan } from "../lib/financialPlans";
@@ -65,6 +66,8 @@ function CurrencyInput({ value, onChange, placeholder = "0" }: { value: number; 
 }
 
 export function FinancialProtection() {
+  const language = getAppLanguage();
+  const id = language === "id";
   const { totalIncome, totalExpense, assets } = useFinanceData();
   const location = useLocation();
   const navigate = useNavigate();
@@ -121,7 +124,7 @@ export function FinancialProtection() {
   }
 
   return <div className="flex flex-col gap-6">
-    <div><h1 className="text-2xl font-semibold text-forest-900">Financial Protection</h1><p className="mt-1 text-[14px] text-charcoal/60">Lihat rencana yang ingin kamu jaga dan bagian yang masih perlu dipersiapkan.</p></div>
+    <div><h1 className="text-2xl font-semibold text-forest-900">{id ? "Proteksi Finansial" : "Financial Protection"}</h1><p className="mt-1 text-[14px] text-charcoal/60">Lihat rencana yang ingin kamu jaga dan bagian yang masih perlu dipersiapkan.</p></div>
 
     <Card className="overflow-hidden border-forest-100 bg-gradient-to-br from-white via-forest-50/50 to-rose-50/30">
       <div className="flex flex-col gap-5">
