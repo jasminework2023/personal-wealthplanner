@@ -4,6 +4,7 @@ import { Modal } from "./Modal";
 import type { Transaction, TransactionType } from "../data/types";
 import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
 import { parseTransactionText } from "../lib/transactionParser";
+import { formatAmountInput, parseAmountInput } from "../lib/format";
 
 const API_BASE = "/api";
 
@@ -195,7 +196,7 @@ export function AddTransactionModal({
   }
 
   async function handleManualSubmit() {
-    if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
+    if (!form.amount || parseAmountInput(form.amount) <= 0) {
       setFormError("Masukkan jumlah yang valid.");
       return;
     }
@@ -211,7 +212,7 @@ export function AddTransactionModal({
       type: form.type,
       category: form.category,
       description: form.description.trim(),
-      amount: Number(form.amount),
+      amount: parseAmountInput(form.amount),
     });
   }
 
@@ -331,7 +332,7 @@ export function AddTransactionModal({
             placeholder="Jumlah (Rp)"
             inputMode="numeric"
             value={form.amount}
-            onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value.replace(/\D/g, "") }))}
+            onChange={(e) => setForm((f) => ({ ...f, amount: formatAmountInput(e.target.value) }))}
             className="w-full border border-charcoal/15 rounded-lg px-3 py-2 text-[14px]"
           />
           {formError && <p className="text-[13px] text-rose-600">{formError}</p>}
