@@ -1,6 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 const API_BASE = "/api";
-import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight, CalendarDays, X, Eye, EyeOff } from "lucide-react";
+import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight, CalendarDays, X, Eye, EyeOff, Wallet, CircleDollarSign } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StatCard } from "../components/StatCard";
 import { ChartCard, Card } from "../components/Card";
@@ -164,51 +164,17 @@ function EditableAssetItem({
 const PIE_COLORS = ["var(--chart-2)", "var(--chart-5)", "var(--chart-1)", "var(--chart-8)", "var(--chart-3)"];
 
 function BudgetRow({
-  category,
-  allocation,
-  realization,
-}: {
-  category: string;
-  allocation: number;
-  realization: number;
-}) {
+  category, allocation, realization, kind,
+}: { category: string; allocation: number; realization: number; kind: "income" | "expense" | "saving" }) {
   const hasBudget = allocation > 0;
   const pct = usagePercentage(realization, allocation);
-  const status = budgetStatus(pct);
   const overBy = pct > 100 ? pct - 100 : 0;
-  return (
-    <div className="py-3 border-b border-charcoal/8 last:border-0">
-      <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
-        <p className="text-[14px] font-medium">{category}</p>
-        {hasBudget ? (
-          <StatusBadge status={status} />
-        ) : (
-          <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-charcoal/5 text-charcoal/50">
-            Belum ada budget
-          </span>
-        )}
-      </div>
-      <div className="flex items-center justify-between text-[12px] text-charcoal/55 mb-1.5">
-        <span>
-          {formatRupiah(realization)}
-          {hasBudget ? ` / ${formatRupiah(allocation)}` : ""}
-        </span>
-        {hasBudget && <span className="font-medium">{formatPercent(pct)}</span>}
-      </div>
-      {hasBudget && (
-        <>
-          <BudgetProgressBar usagePct={pct} />
-          {overBy > 0 && (
-            <p className="text-[12px] text-rose-600 mt-1.5 flex items-center gap-1">
-              <AlertTriangle size={12} /> {category} sudah melebihi budget sebesar {formatPercent(Math.round(overBy * 10) / 10)}.
-            </p>
-          )}
-        </>
-      )}
-    </div>
-  );
+  const amountColor = kind === "expense" ? "text-[#F4577A]" : kind === "income" ? "text-[#0B6B47]" : "text-[#FFA24C]";
+  return <div className="py-2.5 border-b border-charcoal/8 last:border-0">
+    <div className="flex items-center justify-between gap-3"><p className="min-w-0 flex-1 truncate text-[13px] font-medium text-charcoal/80">{category}</p><p className={`shrink-0 text-[13px] font-semibold tabular-nums ${amountColor}`}>{formatRupiah(realization)}</p></div>
+    {hasBudget && <div className="mt-1.5"><div className="flex items-center justify-between text-[11px] text-charcoal/50 mb-1"><span>Budget {formatRupiah(allocation)}</span><span className="font-medium">{formatPercent(pct)}</span></div><BudgetProgressBar usagePct={pct} />{overBy > 0 && <p className="text-[11px] text-rose-600 mt-1"><AlertTriangle size={11} className="inline mr-1" />Melebihi budget {formatPercent(Math.round(overBy * 10) / 10)}</p>}</div>}
+  </div>;
 }
-
 export function DashboardFinance() {
   const now = new Date();
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -253,14 +219,8 @@ export function DashboardFinance() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-2 -mt-3">
         <h1 className="text-[19px] font-medium leading-tight text-forest-900">Financial Report</h1>
-        {isRealData && <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-forest-700"><Check size={14} strokeWidth={2.5} aria-hidden="true" /> Data tersambung</span>}
-      </div>
-
-      <div className="flex justify-end">
-        <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex max-w-full items-center gap-2 rounded-full border border-charcoal/10 bg-white px-3.5 py-2 text-[13px] font-medium text-forest-900 shadow-sm">
-          <CalendarDays size={16} className="shrink-0 text-forest-700" />
-          <span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span>
-          <ChevronRight size={15} className="rotate-90 text-charcoal/50" />
+        <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-full border border-charcoal/10 bg-transparent px-2.5 py-1.5 text-[12px] font-medium text-forest-900">
+          <CalendarDays size={15} className="shrink-0 text-forest-700" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-charcoal/50" />
         </button>
       </div>
       {periodOpen && <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setPeriodOpen(false); }}>
@@ -284,7 +244,7 @@ export function DashboardFinance() {
           <button type="button" onClick={() => { setSelectedMonth(draftMonth); setSelectedYear(draftYear); setPeriodOpen(false); }} className="mt-5 w-full rounded-xl bg-[#0B4D38] px-4 py-3 text-[14px] font-semibold text-white hover:bg-[#083c2c]">Terapkan</button>
         </div>
       </div>}
-      <section className="bg-white">
+      <section className="bg-transparent">
         <div className="flex items-center justify-between gap-3">
           <button type="button" aria-label="Sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full border border-charcoal/10 text-forest-700 transition-colors hover:bg-forest-50"><ChevronLeft size={18}/></button>
           <h2 aria-live="polite" className="min-w-0 flex-1 text-center text-[18px] font-medium leading-tight text-forest-900">{reportTabs[activeTabIndex].label}</h2>
@@ -306,16 +266,16 @@ export function DashboardFinance() {
             <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalExpense)}</p>
           </div>
           <div className="min-w-0 pl-1 sm:pl-2">
-            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Net result</p>
+            <p className="text-[11px] leading-tight text-white/70 sm:text-xs">Surplus/defisit</p>
             <p className="mt-2 break-words text-[15px] font-semibold leading-tight sm:text-lg">{formatRupiah(totalIncome-totalExpense)}</p>
           </div>
         </div>
         <ChartCard title="Income Statement" subtitle="Pendapatan, pengeluaran, dan surplus/defisit bulan ini.">
-          <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Income",amount:totalIncome},{name:"Expense",amount:totalExpense}]} margin={{top:8,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:12}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" fill="var(--chart-2)" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
+          <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Income",income:totalIncome,expense:0},{name:"Expense",income:0,expense:totalExpense}]} margin={{top:8,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:12}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="income" name="Pendapatan" fill="#0B6B47" radius={[6,6,0,0]}/><Bar dataKey="expense" name="Pengeluaran" fill="#F4577A" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
         </ChartCard>
         <div className="grid gap-4 lg:grid-cols-3">
-          <ChartCard title="Income per Kategori" subtitle="Realisasi pendapatan"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
-          <ChartCard title="Expense per Kategori" subtitle="Realisasi pengeluaran"><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
+          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0B6B47]/10 text-[#0B6B47]"><Wallet size={15}/></span>Income per Category</span>} subtitle="Realisasi pendapatan"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="income"/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
+          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F4577A]/10 text-[#F4577A]"><CircleDollarSign size={15}/></span>Expense per Category</span>} subtitle="Realisasi pengeluaran"><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="expense"/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
         </div>
       </>}
 
@@ -444,9 +404,9 @@ export function DashboardFinance() {
           <ResponsiveContainer width="100%" height={260}><BarChart data={[{name:"Cash In",amount:totalIncome},{name:"Expenses",amount:totalExpense},{name:"Savings",amount:totalSaving},{name:"Net Cashflow",amount:totalIncome-totalExpense-totalSaving}]} margin={{top:10,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:11}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" fill="var(--chart-2)" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
         </ChartCard>
         <div className="grid gap-4 lg:grid-cols-3">
-          <ChartCard title="Cash In Detail" subtitle="Pemasukan per kategori"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
-          <ChartCard title="Cash Out Detail" subtitle="Pengeluaran per kategori"><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
-          <ChartCard title="Saving Detail" subtitle="Tabungan per kategori"><div>{savingRows.length?savingRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data saving.</p>}</div></ChartCard>
+          <ChartCard title="Cash In Detail" subtitle="Pemasukan per kategori"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="income"/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
+          <ChartCard title="Cash Out Detail" subtitle="Pengeluaran per kategori"><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="expense"/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
+          <ChartCard title="Saving Detail" subtitle="Tabungan per kategori"><div>{savingRows.length?savingRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="saving"/>):<p className="text-sm text-charcoal/45">Belum ada data saving.</p>}</div></ChartCard>
         </div>
       </>}
       {/* Stock Net Worth hidden in Phase 1 until live market-price data is available. */}
