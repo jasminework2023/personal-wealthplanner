@@ -133,7 +133,7 @@ export function Guidance() {
         <div className="inline-flex items-center gap-2 rounded-full bg-forest-50 px-3 py-1.5 text-[11px] font-semibold text-forest-700">
           <BookOpen size={14} /> Guidance
         </div>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-forest-900 sm:text-3xl">{id ? "Mulai Perjalanan Finansialmu Bersama Wealthplanner" : "Start Your Financial Journey with Wealthplanner"}</h1>
+        <h1 className="mt-3 text-[26px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900 sm:text-3xl">{id ? "Mulai Perjalanan Finansialmu Bersama Wealthplanner" : "Start Your Financial Journey with Wealthplanner"}</h1>
         <p className="mt-2 max-w-3xl text-[14px] leading-6 text-charcoal/60">
           Ikuti alur berikut untuk membangun data keuangan, memahami kondisi saat ini, menyusun tujuan, dan mempersiapkan perlindungan secara lebih terstruktur.
         </p>
