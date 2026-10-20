@@ -25,7 +25,7 @@ export function StatCard({
     <Card className="flex items-start justify-between">
       <div className="min-w-0">
         <p className="text-[13px] text-charcoal/60 mb-1">{label}</p>
-        <p className="text-2xl font-semibold text-forest-900 tracking-tight break-words">{value}</p>
+        <p className="text-[clamp(11px,2.5vw,24px)] font-semibold text-forest-900 tracking-tight whitespace-nowrap tabular-nums">{value}</p>
         {trend && <p className="text-[12px] text-charcoal/50 mt-1">{trend}</p>}
       </div>
       {Icon && (
