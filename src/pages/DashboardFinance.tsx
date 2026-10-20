@@ -35,6 +35,7 @@ function loadManualStocks(): ManualStock[] {
 }
 
 function ManualStockForm({ onSaved }: { onSaved: (stock: ManualStock) => void }) {
+  const id = getAppLanguage() === "id";
   const [ticker, setTicker] = useState("");
   const [market, setMarket] = useState<"ID" | "US">("ID");
   const [shares, setShares] = useState("");
@@ -90,6 +91,7 @@ function EditableAssetItem({
   sheetRow?: number;
   onDeleted?: () => void;
 }) {
+  const id = getAppLanguage() === "id";
   const [editing, setEditing] = useState(false);
   const [input, setInput] = useState(String(value));
   const [saving, setSaving] = useState(false);
