@@ -89,25 +89,25 @@ export function Home() {
     <div className="flex flex-col gap-6 pb-6">
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/50">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
-        <h1 className="text-[27px] sm:text-[30px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
+        <h1 className="text-[21px] sm:text-[24px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
         <p className="text-[13.5px] text-charcoal/60">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
       </div>
 
-      <Card className="home-asset-summary hero-forest w-full overflow-hidden border-0 !rounded-[28px] bg-[#123524] p-6 text-white shadow-float" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
+      <Card className="home-asset-summary hero-forest w-full overflow-hidden border-0 !rounded-[22px] bg-[#123524] p-4 text-white shadow-float" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
         <div className="flex items-center justify-between">
-          <p className="flex items-center gap-2 text-[14px] font-normal text-[#A9C9B8]"><CircleDollarSign size={17} strokeWidth={1.8}/>{id ? "Total Aset" : "Total Assets"}</p>
+          <p className="flex items-center gap-2 text-[11.5px] font-normal text-[#A9C9B8]"><CircleDollarSign size={17} strokeWidth={1.8}/>{id ? "Total Aset" : "Total Assets"}</p>
           <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[#A9C9B8]">
             {assetsVisible ? <Eye size={18} strokeWidth={2}/> : <EyeOff size={18} strokeWidth={2}/>}
           </button>
         </div>
         <div className="mt-2 flex min-w-0 items-baseline gap-1.5 whitespace-nowrap">
-          <span className="shrink-0 text-[17px] font-normal text-[#A9C9B8]">Rp</span>
-          <span className="num min-w-0 text-[clamp(26px,9.6vw,38px)] font-semibold leading-[1.05]">
+          <span className="shrink-0 text-[14px] font-normal text-[#A9C9B8]">Rp</span>
+          <span className="min-w-0 text-[clamp(22px,7.2vw,30px)] font-medium leading-tight tracking-[-0.5px] tabular-nums">
             {assetsVisible ? new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(assets.totalAssets) : "••••••••"}
           </span>
         </div>
         {assetTrend !== null && Number.isFinite(assetTrend) && (
-          <div className={`mt-3.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold ${assetTrend >= 0 ? "bg-[#6EE7A8]/[0.16] text-[#6EE7A8]" : "bg-[#FFB4A2]/[0.16] text-[#FFB4A2]"}`}>
+          <div className={`mt-2.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold ${assetTrend >= 0 ? "bg-[#6EE7A8]/[0.16] text-[#6EE7A8]" : "bg-[#FFB4A2]/[0.16] text-[#FFB4A2]"}`}>
             {assetTrend >= 0 ? <TrendingUp size={15} strokeWidth={2}/> : <TrendingDown size={15} strokeWidth={2}/>}
             <span>{assetTrend >= 0 ? "+" : ""}{assetTrend.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% bulan ini</span>
           </div>
@@ -139,16 +139,16 @@ export function Home() {
           <div className="flex min-w-0 flex-col self-start rounded-2xl bg-white/[0.10] p-3.5 backdrop-blur-sm">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><ArrowDownLeft size={17} strokeWidth={2}/></span>
-              <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">{id ? "Pemasukan" : "Income"}</span>
+              <span className="truncate text-[11.5px] font-normal text-[#A9C9B8]">{id ? "Pemasukan" : "Income"}</span>
             </div>
-            <p className="num mt-2 break-words text-[clamp(12px,4vw,16px)] font-semibold leading-tight">{formatRupiah(totalIncome)}</p>
+            <p className="mt-1.5 break-words text-[clamp(12px,3.6vw,14px)] font-medium leading-tight tracking-[-0.2px] tabular-nums">{formatRupiah(totalIncome)}</p>
           </div>
           <div className="flex min-w-0 flex-col self-start rounded-2xl bg-white/[0.10] p-3.5 backdrop-blur-sm">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#FFB4A2]/[0.18] text-[#FFB4A2]"><ArrowUpRight size={17} strokeWidth={2}/></span>
-              <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">{id ? "Pengeluaran" : "Expense"}</span>
+              <span className="truncate text-[11.5px] font-normal text-[#A9C9B8]">{id ? "Pengeluaran" : "Expense"}</span>
             </div>
-            <p className="num mt-2 break-words text-[clamp(12px,4vw,16px)] font-semibold leading-tight">{formatRupiah(totalExpense)}</p>
+            <p className="mt-1.5 break-words text-[clamp(12px,3.6vw,14px)] font-medium leading-tight tracking-[-0.2px] tabular-nums">{formatRupiah(totalExpense)}</p>
           </div>
         </div>
       </Card>
