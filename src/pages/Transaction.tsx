@@ -77,33 +77,33 @@ export function Transaction() {
 
   const filters: Filter[] = ["All", "Income", "Expense", "Saving"];
   const iconFor = (type: TransactionType) => type === "Income" ? ArrowDownLeft : type === "Expense" ? ArrowUpRight : PiggyBank;
-  const colorFor = (type: TransactionType) => type === "Income" ? "bg-emerald-50 text-emerald-700" : type === "Expense" ? "bg-rose-50 text-rose-600" : "bg-orange-50 text-orange-600";
+  const colorFor = (type: TransactionType) => type === "Income" ? "bg-[#DFF3E7] text-[#0B6B47]" : type === "Expense" ? "bg-[#FDE3EA] text-[#C23A5B]" : "bg-[#E8DDFA] text-[#6F46B0]";
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-forest-900">{txText.title}</h1>
-          <p className="mt-1 text-sm text-charcoal/60">{txText.intro}</p>
+          <h1 className="page-title">{txText.title}</h1>
+          <p className="page-sub">{txText.intro}</p>
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setCalendarOpen(true)} className="inline-flex items-center gap-2 rounded-xl border border-charcoal/10 bg-white px-3 py-2.5 text-xs font-medium text-forest-900"><CalendarDays size={16}/><span>{selectedMonth === "all" && selectedYear === "all" ? txText.all : `${selectedMonth === "all" ? txText.allMonths : ["","Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][Number(selectedMonth)]} ${selectedYear === "all" ? "" : selectedYear}`.trim()}</span></button>
-          <button type="button" onClick={() => setModalOpen(true)} className="inline-flex items-center gap-2 rounded-xl bg-forest-700 px-3 py-2.5 text-xs font-semibold text-white hover:bg-forest-800 sm:px-4 sm:text-sm"><Plus size={16} /> {txText.add}</button>
+          <button type="button" onClick={() => setCalendarOpen(true)} className="inline-flex items-center gap-2 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-xs font-semibold text-forest-900 shadow-sm"><CalendarDays size={16}/><span>{selectedMonth === "all" && selectedYear === "all" ? txText.all : `${selectedMonth === "all" ? txText.allMonths : ["","Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][Number(selectedMonth)]} ${selectedYear === "all" ? "" : selectedYear}`.trim()}</span></button>
+          <button type="button" onClick={() => setModalOpen(true)} className="inline-flex items-center gap-1.5 rounded-full bg-[#F59BB8] px-4 py-2.5 text-xs font-bold text-[#123524] shadow-pop sm:text-sm"><Plus size={16} /> {txText.add}</button>
         </div>
       </div>
 
       <Card>
         <div className="flex flex-col gap-4 p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="font-semibold text-forest-900">{txText.list}</h2>
-            <div className="flex items-center gap-2 sm:w-72"><label className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-charcoal/10 bg-white px-3 py-2">
+            <h2 className="section-title">{txText.list}</h2>
+            <div className="flex items-center gap-2 sm:w-72"><label className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-charcoal/10 bg-white px-4 py-2.5">
               <Search size={16} className="text-charcoal/40" />
               <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={txText.search} className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
-            </label><button type="button" aria-label={sortOrder === "newest" ? txText.newestToOldest : txText.oldestToNewest} onClick={() => setSortOrder((current) => current === "newest" ? "oldest" : "newest")} className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-charcoal/10 ${sortOrder === "newest" ? "bg-forest-50 text-forest-800" : "bg-white text-forest-800"}`}><SlidersHorizontal size={17}/></button></div>
+            </label><button type="button" aria-label={sortOrder === "newest" ? txText.newestToOldest : txText.oldestToNewest} onClick={() => setSortOrder((current) => current === "newest" ? "oldest" : "newest")} className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-charcoal/10 ${sortOrder === "newest" ? "bg-forest-50 text-forest-800" : "bg-white text-forest-800"}`}><SlidersHorizontal size={17}/></button></div>
           </div>
           {calendarOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-3 sm:items-center"><div className="w-full max-w-sm rounded-2xl bg-white p-4 shadow-xl"><div className="mb-4 flex items-center justify-between"><h3 className="font-semibold text-forest-900">{txText.filter}</h3><button type="button" aria-label={txText.close} onClick={() => setCalendarOpen(false)} className="rounded-full p-1 text-charcoal/60"><X size={20}/></button></div><button type="button" onClick={() => {setSelectedMonth("all");setSelectedYear("all");setCalendarOpen(false);}} className={`mb-3 w-full rounded-xl border px-3 py-2.5 text-left text-sm ${selectedMonth === "all" && selectedYear === "all" ? "border-forest-700 bg-forest-50 text-forest-900" : "border-charcoal/10 text-charcoal"}`}>{txText.all}</button><p className="mb-1 text-xs text-charcoal/60">{txText.month}</p><select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="mb-3 w-full rounded-xl border border-charcoal/10 bg-white px-3 py-2.5 text-sm text-forest-900"><option value="all">{txText.allMonths}</option>{["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((month, i) => <option key={month} value={String(i + 1)}>{month}</option>)}</select><p className="mb-1 text-xs text-charcoal/60">{txText.year}</p><select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="mb-4 w-full rounded-xl border border-charcoal/10 bg-white px-3 py-2.5 text-sm text-forest-900"><option value="all">{txText.allYears}</option>{availableYears.map((year) => <option key={year} value={year}>{year}</option>)}</select><button type="button" onClick={() => setCalendarOpen(false)} className="w-full rounded-xl bg-forest-700 py-2.5 text-sm font-semibold text-white">{txText.apply}</button></div></div>}
           <div className="flex gap-2 overflow-x-auto whitespace-nowrap pb-1">
-            {filters.map((item) => <button key={item} type="button" onClick={() => setFilter(item)} className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition ${filter === item ? "bg-forest-700 text-white" : "bg-forest-50 text-forest-800 hover:bg-forest-100"}`}>{item === "All" ? "Semua" : item === "Income" ? "Pemasukan" : item === "Expense" ? "Pengeluaran" : "Tabungan"}</button>)}
+            {filters.map((item) => <button key={item} type="button" onClick={() => setFilter(item)} className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition ${filter === item ? "bg-[#123524] text-white shadow-sm" : "bg-charcoal/[0.05] text-forest-800 hover:bg-charcoal/10"}`}>{item === "All" ? "Semua" : item === "Income" ? "Pemasukan" : item === "Expense" ? "Pengeluaran" : "Tabungan"}</button>)}
           </div>
           {loading ? <p className="py-10 text-center text-sm text-charcoal/50">{txText.loading}</p> : filteredTransactions.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center">
@@ -116,15 +116,15 @@ export function Transaction() {
               {filteredTransactions.map((t, i) => {
                 const Icon = iconFor(t.type);
                 const amountPrefix = t.type === "Expense" ? "−" : "+";
-                const amountColor = t.type === "Income" ? "text-emerald-700" : t.type === "Expense" ? "text-rose-600" : "text-orange-600";
-                return <div key={`${t.sheetRow ?? "local"}-${t.date}-${t.category}-${i}`} className="flex items-center gap-2 py-3">
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colorFor(t.type)}`}><Icon size={18} /></div>
+                const amountColor = t.type === "Income" ? "text-[#0B6B47]" : t.type === "Expense" ? "text-rose-600" : "text-[#6F46B0]";
+                return <div key={`${t.sheetRow ?? "local"}-${t.date}-${t.category}-${i}`} className="flex items-center gap-3 py-3">
+                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${colorFor(t.type)}`}><Icon size={19} /></div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-forest-900">{t.description || t.category}</p>
-                    <p className="mt-0.5 text-xs text-charcoal/50">{t.category} · {formatTransactionDate(t.date)}</p>
+                    <p className="truncate text-[13.5px] font-semibold text-forest-900">{t.description || t.category}</p>
+                    <p className="mt-0.5 truncate text-[11.5px] text-charcoal/50">{t.category} · {formatTransactionDate(t.date)}</p>
                   </div>
-                  <p className={`shrink-0 text-right text-sm font-semibold ${amountColor}`}>{amountPrefix}{formatRupiah(t.amount)}</p>
-                  <button type="button" aria-label={txText.edit} title={txText.edit} onClick={() => setEditingTransaction(t)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-forest-700 hover:bg-forest-50"><Pencil size={16}/></button>
+                  <p className={`num shrink-0 text-right text-[13.5px] font-semibold ${amountColor}`}>{amountPrefix}{formatRupiah(t.amount)}</p>
+                  <button type="button" aria-label={txText.edit} title={txText.edit} onClick={() => setEditingTransaction(t)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-charcoal/40 hover:bg-forest-50 hover:text-forest-700"><Pencil size={16}/></button>
                 </div>;
               })}
             </div>
