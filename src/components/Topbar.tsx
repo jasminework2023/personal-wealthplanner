@@ -1,4 +1,4 @@
-import { Menu, BookOpen, ChevronRight } from "lucide-react";
+import { Menu, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { getAppLanguage } from "../lib/format";
@@ -6,20 +6,19 @@ import { getAppLanguage } from "../lib/format";
 export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () => void }) {
   const navigate = useNavigate();
   return (
-    <header className="lg:hidden sticky top-0 z-30 bg-cream/90 backdrop-blur border-b border-charcoal/8 px-4 py-3 flex items-center gap-2">
+    <header className="lg:hidden sticky top-0 z-30 bg-cream/85 backdrop-blur-xl px-4 pb-2.5 pt-[max(10px,env(safe-area-inset-top))] flex items-center gap-3">
       <button
         onClick={onMenuClick}
         aria-label="Buka menu"
-        className="p-2 rounded-lg hover:bg-charcoal/5 -ml-2"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm"
       >
-        <Menu size={20} />
+        <Menu size={19} />
       </button>
-      <div className="min-w-0 flex-1 flex items-center gap-1 truncate text-forest-900">
-        <span className="shrink-0 text-[12px] font-bold tracking-tight">wealthplanner.id</span>
-        <ChevronRight size={13} className="shrink-0 text-charcoal/40" />
-        <span className="truncate text-[13px] font-semibold">{title}</span>
+      <div className="min-w-0 flex-1 leading-none">
+        <p className="truncate text-[10.5px] font-semibold tracking-[0.02em] text-charcoal/45">wealthplanner.id</p>
+        <p className="mt-1 truncate text-[17px] font-bold tracking-[-0.025em] text-forest-900">{title}</p>
       </div>
-      <button type="button" onClick={() => navigate("/guidance")} aria-label={getAppLanguage() === "id" ? "Panduan" : "Guidance"} title={getAppLanguage() === "id" ? "Panduan" : "Guidance"} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-forest-700 hover:bg-charcoal/5">
+      <button type="button" onClick={() => navigate("/guidance")} aria-label={getAppLanguage() === "id" ? "Panduan" : "Guidance"} title={getAppLanguage() === "id" ? "Panduan" : "Guidance"} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm">
         <BookOpen size={18} />
       </button>
       <ThemeToggle variant="compact" />
