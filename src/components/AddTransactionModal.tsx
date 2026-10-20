@@ -316,7 +316,7 @@ export function AddTransactionModal({
           <select
             value={form.category}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-            className="w-full rounded-xl border border-charcoal/10 bg-white px-3.5 py-3 text-[14px] text-charcoal outline-none transition focus:border-forest-400 focus:ring-2 focus:ring-forest-100"
+            className="w-full border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px] bg-white"
           >
             {(activeCategories[form.type].length ? activeCategories[form.type] : fallbackCategories).map((c) => (
               <option key={c}>{c}</option>
@@ -326,7 +326,7 @@ export function AddTransactionModal({
             placeholder="Deskripsi (misal: Makan siang)"
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            className="w-full rounded-xl border border-charcoal/10 bg-white px-3.5 py-3 text-[14px] text-charcoal outline-none transition focus:border-forest-400 focus:ring-2 focus:ring-forest-100"
+            className="w-full border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px] bg-white"
           />
           <input
             placeholder="Jumlah (Rp)"
