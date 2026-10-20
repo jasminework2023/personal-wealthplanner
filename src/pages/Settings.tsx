@@ -109,7 +109,7 @@ export function Settings() {
         <p className="page-sub">{id ? "Atur profil dan baseline keuanganmu. Perubahan setup akan disimpan ke spreadsheet." : "Aktifkan baseline keuanganmu. Perubahan di sini akan ditulis ke spreadsheet."}</p>
       </div>
 
-      <Card>
+      <Card className="!p-4 sm:!p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#CFEFDD] text-[#0B6B47]"><Settings2 size={18} /></span>
