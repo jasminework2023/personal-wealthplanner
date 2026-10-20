@@ -182,6 +182,7 @@ export function DashboardFinance() {
   const [assetTargetInput, setAssetTargetInput] = useState("");
   const [savingAssetTarget, setSavingAssetTarget] = useState(false);
   const [activeReportTab, setActiveReportTab] = useState<"income" | "assets" | "cashflow">("income");
+  const [incomeTrendMetric, setIncomeTrendMetric] = useState<"income" | "expense">("income");
 
   useEffect(() => {
     localStorage.setItem(MANUAL_STOCKS_KEY, JSON.stringify(manualStocks));
@@ -270,14 +271,16 @@ export function DashboardFinance() {
           })}
         </div>
         <ChartCard title="Income Statement" subtitle={"Perbandingan bulanan " + currentYear + " vs " + previousYear + "."}>
+          <div className="mb-3 flex gap-2">
+            <button type="button" onClick={() => setIncomeTrendMetric("income")} className={"rounded-lg px-3 py-1.5 text-[11px] font-semibold " + (incomeTrendMetric === "income" ? "bg-forest-700 text-white" : "bg-forest-50 text-forest-700")}>Income</button>
+            <button type="button" onClick={() => setIncomeTrendMetric("expense")} className={"rounded-lg px-3 py-1.5 text-[11px] font-semibold " + (incomeTrendMetric === "expense" ? "bg-forest-700 text-white" : "bg-forest-50 text-forest-700")}>Expense</button>
+          </div>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={monthlyComparison} margin={{top:10,right:12,left:0,bottom:4}}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)"/><XAxis dataKey="month" tick={{fontSize:11}}/>
               <YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} width={48}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Legend/>
-              <Line type="monotone" dataKey="incomeCurrent" name={"Income " + currentYear} stroke="var(--chart-2)" strokeWidth={2.5} dot={{r:3}} connectNulls/>
-              <Line type="monotone" dataKey="incomePrevious" name={"Income " + previousYear} stroke="var(--chart-2)" strokeDasharray="5 4" strokeWidth={2} dot={{r:2}} connectNulls/>
-              <Line type="monotone" dataKey="expenseCurrent" name={"Expense " + currentYear} stroke="var(--chart-expense)" strokeWidth={2.5} dot={{r:3}} connectNulls/>
-              <Line type="monotone" dataKey="expensePrevious" name={"Expense " + previousYear} stroke="var(--chart-expense)" strokeDasharray="5 4" strokeWidth={2} dot={{r:2}} connectNulls/>
+              <Line type="monotone" dataKey={incomeTrendMetric + "Current"} name={(incomeTrendMetric === "income" ? "Income " : "Expense ") + currentYear} stroke="var(--chart-2)" strokeWidth={2.5} dot={{r:3}} connectNulls/>
+              <Line type="monotone" dataKey={incomeTrendMetric + "Previous"} name={(incomeTrendMetric === "income" ? "Income " : "Expense ") + previousYear} stroke="var(--chart-expense)" strokeWidth={2.5} strokeDasharray="5 4" dot={{r:3}} connectNulls/>
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
