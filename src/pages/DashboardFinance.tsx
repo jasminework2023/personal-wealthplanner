@@ -35,9 +35,6 @@ function loadManualStocks(): ManualStock[] {
 }
 
 function ManualStockForm({ onSaved }: { onSaved: (stock: ManualStock) => void }) {
-  const [language, setLanguage] = useState(getAppLanguage());
-  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
-  const id = language === "id";
   const [ticker, setTicker] = useState("");
   const [market, setMarket] = useState<"ID" | "US">("ID");
   const [shares, setShares] = useState("");
@@ -93,9 +90,6 @@ function EditableAssetItem({
   sheetRow?: number;
   onDeleted?: () => void;
 }) {
-  const [language, setLanguage] = useState(getAppLanguage());
-  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
-  const id = language === "id";
   const [editing, setEditing] = useState(false);
   const [input, setInput] = useState(String(value));
   const [saving, setSaving] = useState(false);
@@ -221,7 +215,7 @@ export function DashboardFinance() {
   const savingRows = byCategory("Saving");
   const expenseRows = byCategory("Expense");
   const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);
-  const reportTabs = [{ id: "income" as const, label: id ? "Laporan Laba Rugi" : "Income Statement" }, { id: "cashflow" as const, label: id ? "Pelacak Arus Kas" : "Cashflow Tracker" }, { id: "assets" as const, label: id ? "Pelacak Aset" : "Asset Tracker" }];
+  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "cashflow" as const, label: "Cashflow Tracker" }, { id: "assets" as const, label: "Asset Tracker" }];
   const activeTabIndex = reportTabs.findIndex((tab) => tab.id === activeReportTab);
   const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
 
@@ -230,15 +224,15 @@ export function DashboardFinance() {
       <div className="flex items-center justify-between gap-2 -mt-3">
         <h1 className="text-[19px] font-medium leading-tight text-forest-900">{id ? "Laporan Keuangan" : "Financial Statement"}</h1>
         <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-full border border-charcoal/10 bg-transparent px-2.5 py-1.5 text-[12px] font-medium text-forest-900">
-          <CalendarDays size={15} className="shrink-0 text-forest-700" /><span>{displayMonth(selectedMonth)} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-charcoal/50" />
+          <CalendarDays size={15} className="shrink-0 text-forest-700" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-charcoal/50" />
         </button>
       </div>
       {periodOpen && <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setPeriodOpen(false); }}>
         <div role="dialog" aria-modal="true" aria-labelledby="finance-period-title" className="w-full max-w-md rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-3xl">
           <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-charcoal/15 sm:hidden" />
           <div className="flex items-center justify-between">
-            <h3 id="finance-period-title" className="text-[17px] font-semibold text-forest-900">{id ? "Pilih Periode" : "Select Period"}</h3>
-            <button type="button" aria-label={id ? "Tutup" : "Close"} onClick={() => setPeriodOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal/60 hover:bg-charcoal/5"><X size={19}/></button>
+            <h3 id="finance-period-title" className="text-[17px] font-semibold text-forest-900">Pilih periode</h3>
+            <button type="button" aria-label="Tutup" onClick={() => setPeriodOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal/60 hover:bg-charcoal/5"><X size={19}/></button>
           </div>
           <div className="mt-5 flex items-center justify-between">
             <button type="button" aria-label="Tahun sebelumnya" onClick={() => setDraftYear((y) => y - 1)} className="flex h-9 w-9 items-center justify-center rounded-full border border-charcoal/10 text-forest-700"><ChevronLeft size={18}/></button>
@@ -248,10 +242,10 @@ export function DashboardFinance() {
           <div className="mt-4 grid grid-cols-3 gap-2">
             {monthNames.map((month, index) => {
               const disabled = draftYear > now.getFullYear() || (draftYear === now.getFullYear() && index > now.getMonth());
-              return <button key={month} type="button" disabled={disabled} onClick={() => setDraftMonth(month)} className={`rounded-xl px-2 py-3 text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-25 ${draftMonth === month ? "bg-[#0B4D38] text-white" : "bg-charcoal/[0.04] text-charcoal/75 hover:bg-forest-50"}`}>{displayMonth(month).slice(0,3)}</button>;
+              return <button key={month} type="button" disabled={disabled} onClick={() => setDraftMonth(month)} className={`rounded-xl px-2 py-3 text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-25 ${draftMonth === month ? "bg-[#0B4D38] text-white" : "bg-charcoal/[0.04] text-charcoal/75 hover:bg-forest-50"}`}>{month.slice(0,3)}</button>;
             })}
           </div>
-          <button type="button" onClick={() => { setSelectedMonth(draftMonth); setSelectedYear(draftYear); setPeriodOpen(false); }} className="mt-5 w-full rounded-xl bg-[#0B4D38] px-4 py-3 text-[14px] font-semibold text-white hover:bg-[#083c2c]">{id ? "Terapkan" : "Apply"}</button>
+          <button type="button" onClick={() => { setSelectedMonth(draftMonth); setSelectedYear(draftYear); setPeriodOpen(false); }} className="mt-5 w-full rounded-xl bg-[#0B4D38] px-4 py-3 text-[14px] font-semibold text-white hover:bg-[#083c2c]">Terapkan</button>
         </div>
       </div>}
       <section className="bg-transparent">
@@ -284,12 +278,12 @@ export function DashboardFinance() {
             : <p className={`mt-2 flex items-center gap-1 text-[12px] font-semibold ${value >= 0 ? "text-[#6EE7A8]" : "text-[#FFB4D2]"}`}><span>{value >= 0 ? "↑" : "↓"}</span><span>{value >= 0 ? "+" : ""}{value.toFixed(1).replace(".", ",")}%</span></p>;
           return <div className="grid grid-cols-2 gap-0 rounded-2xl bg-[#0B4D38] p-4 text-white sm:p-5">
             <div className="min-w-0 border-r border-white/20 pr-3 sm:pr-5">
-              <p className="text-[12px] leading-tight text-white/75 sm:text-sm">{id ? "Total Pemasukan" : "Total Income"}</p>
+              <p className="text-[12px] leading-tight text-white/75 sm:text-sm">Total Income</p>
               <p className="mt-2 break-words text-[17px] font-semibold leading-tight sm:text-xl">{formatRupiah(totalIncome)}</p>
               <ChangeLabel value={incomeChange}/>
             </div>
             <div className="min-w-0 pl-3 sm:pl-5">
-              <p className="text-[12px] leading-tight text-white/75 sm:text-sm">{id ? "Total Pengeluaran" : "Total Expense"}</p>
+              <p className="text-[12px] leading-tight text-white/75 sm:text-sm">Total Expense</p>
               <p className="mt-2 break-words text-[17px] font-semibold leading-tight sm:text-xl">{formatRupiah(totalExpense)}</p>
               <ChangeLabel value={expenseChange}/>
             </div>
@@ -297,8 +291,8 @@ export function DashboardFinance() {
         })()}
         <ChartCard title={id ? "Laporan Laba Rugi" : "Income Statement"} subtitle={id ? "Pemasukan dan pengeluaran aktual pada periode ini." : "Actual income and expenses for this period."}>
           <div className="w-full">
-            <ResponsiveContainer width="100%" height={230}><BarChart data={[{name: id ? "Periode ini" : "This period",income:totalIncome,expense:totalExpense}]} barCategoryGap="8%" barGap={12} margin={{top:10,right:8,left:0,bottom:0}}><XAxis dataKey="name" hide/><YAxis width={48} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="income" name={id ? "Total Pemasukan" : "Total Income"} fill="#0B6B47" radius={[8,8,0,0]} maxBarSize={88}/><Bar dataKey="expense" name={id ? "Total Pengeluaran" : "Total Expense"} fill="#F4577A" radius={[8,8,0,0]} maxBarSize={88}/></BarChart></ResponsiveContainer>
-            <div className="mt-2 flex justify-center gap-5 text-xs text-charcoal/65"><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#0B6B47]"/>{id ? "Pemasukan" : "Income"}</span><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#F4577A]"/>{id ? "Pengeluaran" : "Expense"}</span></div>
+            <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Periode ini",income:totalIncome,expense:totalExpense}]} barCategoryGap="8%" barGap={12} margin={{top:10,right:8,left:0,bottom:0}}><XAxis dataKey="name" hide/><YAxis width={48} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="income" name="Total Income" fill="#0B6B47" radius={[8,8,0,0]} maxBarSize={88}/><Bar dataKey="expense" name="Total Expense" fill="#F4577A" radius={[8,8,0,0]} maxBarSize={88}/></BarChart></ResponsiveContainer>
+            <div className="mt-2 flex justify-center gap-5 text-xs text-charcoal/65"><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#0B6B47]"/>Income</span><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#F4577A]"/>Expense</span></div>
           </div>
         </ChartCard>
         <div className="grid gap-4 lg:grid-cols-3">
@@ -315,11 +309,11 @@ export function DashboardFinance() {
             <div className="mb-4 rounded-2xl bg-[#0B4D38] p-4 text-white sm:p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12px] text-white/70">{id ? "Total Aset" : "Total Assets"}</p>
+                  <p className="text-[12px] text-white/70">Total aset</p>
                   <p className="mt-1 break-words text-2xl font-semibold leading-tight">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
-                  <p className="mt-2 text-[12px] text-white/75">{assets.target > 0 ? `${formatPercent(assetProgress)} ${id ? "dari target aset" : "of asset goal"}` : (id ? "Target aset belum diatur" : "Asset goal not set")}</p>
+                  <p className="mt-2 text-[12px] text-white/75">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
                 </div>
-                <button type="button" onClick={() => setAssetValuesHidden((hidden) => !hidden)} aria-label={assetValuesHidden ? (id ? "Tampilkan nominal aset" : "Show asset amount") : (id ? "Sembunyikan nominal aset" : "Hide asset amount")} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">{assetValuesHidden ? <Eye size={17}/> : <EyeOff size={17}/>}</button>
+                <button type="button" onClick={() => setAssetValuesHidden((hidden) => !hidden)} aria-label={assetValuesHidden ? "Tampilkan nominal aset" : "Sembunyikan nominal aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">{assetValuesHidden ? <Eye size={17}/> : <EyeOff size={17}/>}</button>
               </div>
               {assets.target > 0 && <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/20"><div className="h-full rounded-full bg-[#6EE7A8]" style={{width:`${Math.min(Math.max(assetProgress,0),100)}%`}} /></div>}
               <div className="mt-4 rounded-xl bg-white/10 p-3">
@@ -451,11 +445,11 @@ export function DashboardFinance() {
           </div>;
         })()}
         <ChartCard title={id ? "Pelacak Arus Kas" : "Cashflow Tracker"} subtitle={id ? "Arus kas keluar mencakup pengeluaran dan tabungan." : "Cash out includes expenses and savings."}>
-          <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:id ? "Uang Masuk" : "Cash In",amount:totalIncome},{name:id ? "Uang Keluar" : "Cash Out",amount:totalExpense+totalSaving},{name:id ? "Arus Kas Bersih" : "Net Cashflow",amount:totalIncome-totalExpense-totalSaving}]} barCategoryGap="18%" margin={{top:10,right:8,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:10}} interval={0} axisLine={false} tickLine={false}/><YAxis width={44} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name={id ? "Nominal" : "Amount"} radius={[7,7,0,0]} maxBarSize={68}>{[{color:"#0B6B47"},{color:"#F4577A"},{color:"#FFA24C"}].map((item,index)=><Cell key={index} fill={item.color}/>)}</Bar></BarChart></ResponsiveContainer>
+          <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Cash In",amount:totalIncome},{name:"Cash Out",amount:totalExpense+totalSaving},{name:"Net Cashflow",amount:totalIncome-totalExpense-totalSaving}]} barCategoryGap="18%" margin={{top:10,right:8,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:10}} interval={0} axisLine={false} tickLine={false}/><YAxis width={44} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" radius={[7,7,0,0]} maxBarSize={68}>{[{color:"#0B6B47"},{color:"#F4577A"},{color:"#FFA24C"}].map((item,index)=><Cell key={index} fill={item.color}/>)}</Bar></BarChart></ResponsiveContainer>
         </ChartCard>
         <div className="grid gap-4 lg:grid-cols-3">
-          <ChartCard title={id ? "Rincian Pemasukan" : "Cash In Details"} subtitle={id ? "Pemasukan per kategori" : "Income by category"}><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="income"/>):<p className="text-sm text-charcoal/45">{id ? "Belum ada data pemasukan." : "No income data yet."}</p>}</div></ChartCard>
-          <ChartCard title={id ? "Rincian Pengeluaran" : "Cash Out Details"} subtitle={id ? "Pengeluaran per kategori" : "Expenses by category"}><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="expense"/>):<p className="text-sm text-charcoal/45">{id ? "Belum ada data pengeluaran." : "No expense data yet."}</p>}</div></ChartCard>
+          <ChartCard title={id ? "Rincian Pemasukan" : "Cash In Details"} subtitle={id ? "Pemasukan per kategori" : "Income by category"}><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="income"/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
+          <ChartCard title={id ? "Rincian Pengeluaran" : "Cash Out Details"} subtitle={id ? "Pengeluaran per kategori" : "Expenses by category"}><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="expense"/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
           <ChartCard title={id ? "Rincian Tabungan" : "Savings Details"} subtitle={id ? "Tabungan per kategori" : "Savings by category"}><div>{savingRows.length?savingRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="saving"/>):<p className="text-sm text-charcoal/45">{id ? "Belum ada data tabungan." : "No savings data yet."}</p>}</div></ChartCard>
         </div>
       </>}
