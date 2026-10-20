@@ -15,8 +15,8 @@ const EMPTY_SETUP: SetupState = { income: [], expense: [], saving: [], bank: [] 
 const SECTION_META: { key: SectionKey; title: string; subtitle: string; tone: string }[] = [
   { key: "income", title: "Income", subtitle: "Sumber pemasukan", tone: "bg-[#0B6B47]" },
   { key: "expense", title: "Expense", subtitle: "Pengeluaran & budget", tone: "bg-[#D44F76]" },
-  { key: "saving", title: "Saving & Investment", subtitle: "Tabungan & investasi", tone: "bg-[#caa474]" },
-  { key: "bank", title: "Bank Account", subtitle: "Akun kas & bank", tone: "bg-[#caa474]" },
+  { key: "saving", title: "Saving & Investment", subtitle: "Tabungan & investasi", tone: "bg-[#D9822B]" },
+  { key: "bank", title: "Bank Account", subtitle: "Akun kas & bank", tone: "bg-[#6F46B0]" },
 ];
 
 function cloneSetup(value: SetupState): SetupState {
