@@ -303,7 +303,7 @@ export function DashboardFinance() {
           <div className="order-2 lg:order-2">
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-[13px] font-semibold text-forest-900">Detail Aset</p>
-              {(assets.liquidAssets.length + assets.investmentAssets.length > 4) && (
+              {((assets.liquidAssets.length > 2 || assets.investmentAssets.length > 2)) && (
                 <button type="button" onClick={() => setShowAllAssets((value) => !value)} className="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-semibold text-forest-700 hover:text-forest-900">
                   {showAllAssets ? "Sembunyikan" : "Lihat semua"} <ChevronRight size={14} className={showAllAssets ? "rotate-90" : ""}/>
                 </button>
@@ -342,7 +342,7 @@ export function DashboardFinance() {
             {(assets.liquidAssets.length > 0 || isRealData) && (
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Liquid Assets</p>
-                {assets.liquidAssets.slice(0, showAllAssets ? undefined : 2).map((item) => (
+                {assets.liquidAssets.slice(0, showAllAssets ? assets.liquidAssets.length : 2).map((item) => (
                   <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assets.totalAssets > 0 ? item.value / assets.totalAssets * 100 : 0} section="liquid" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
                 ))}
                 {isRealData && (
@@ -366,7 +366,7 @@ export function DashboardFinance() {
             {(assets.investmentAssets.length > 0 || isRealData) && (
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Investment Assets</p>
-                {assets.investmentAssets.slice(0, showAllAssets ? undefined : 2).map((item) => (
+                {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => (
                   <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assets.totalAssets > 0 ? item.value / assets.totalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
                 ))}
                 {isRealData && (
