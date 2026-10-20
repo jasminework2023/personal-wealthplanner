@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Calculator, Target, Trash2, Pencil, Check, X, Wallet, Plus, ChevronDown } from "lucide-react";
 import { Card } from "../components/Card";
-import { getPlanTypeLabel, loadFinancialPlans, removeFinancialPlan } from "../lib/financialPlans";
+import { getPlanTypeLabel, loadFinancialPlans, removeFinancialPlan, saveFinancialPlan, type FinancialPlanType } from "../lib/financialPlans";
 import { formatRupiah } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
 
@@ -33,13 +33,27 @@ function getPlanTarget(plan: ReturnType<typeof loadFinancialPlans>[number]) {
 export function Goals() {
   const navigate = useNavigate();
   const { assets } = useFinanceData();
-  const [plans, setPlans] = useState(() => loadFinancialPlans());
+  const [plans, setPlans] = useState(() => {
+    const loaded = loadFinancialPlans();
+    try {
+      const order = JSON.parse(localStorage.getItem("wealthplanner_goal_order_v1") || "[]") as string[];
+      return [...loaded].sort((a, b) => {
+        const ai = order.indexOf(a.id), bi = order.indexOf(b.id);
+        return (ai < 0 ? Number.MAX_SAFE_INTEGER : ai) - (bi < 0 ? Number.MAX_SAFE_INTEGER : bi);
+      });
+    } catch { return loaded; }
+  });
   const [settings, setSettings] = useState<GoalSettings>(() => loadGoalSettings());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
   const [allocatingId, setAllocatingId] = useState<string | null>(null);
   const [selectedAsset, setSelectedAsset] = useState("");
   const [amount, setAmount] = useState("");
+  const [isAddingGoal, setIsAddingGoal] = useState(false);
+  const [newGoalName, setNewGoalName] = useState("");
+  const [newGoalTarget, setNewGoalTarget] = useState("");
+  const [newGoalType, setNewGoalType] = useState<FinancialPlanType>("cashflow");
+  const [draggedGoalId, setDraggedGoalId] = useState<string | null>(null);
 
   const assetOptions = useMemo(() => [
     ...assets.liquidAssets.map((a) => ({ id: "liquid:" + a.name, name: a.name, value: a.value })),
@@ -59,6 +73,37 @@ export function Goals() {
   function updateSettings(next: GoalSettings) {
     setSettings(next);
     saveGoalSettings(next);
+  }
+
+  function addGoal() {
+    const name = newGoalName.trim();
+    if (!name) return;
+    saveFinancialPlan({
+      calculatorId: "manual-goal-" + Date.now(),
+      type: newGoalType,
+      name,
+      targetAmount: Math.max(0, Number(newGoalTarget) || 0),
+    });
+    const next = loadFinancialPlans();
+    setPlans(next);
+    localStorage.setItem("wealthplanner_goal_order_v1", JSON.stringify(next.map((plan) => plan.id)));
+    setNewGoalName("");
+    setNewGoalTarget("");
+    setNewGoalType("cashflow");
+    setIsAddingGoal(false);
+  }
+
+  function reorderGoal(targetId: string) {
+    if (!draggedGoalId || draggedGoalId === targetId) return;
+    const next = [...plans];
+    const from = next.findIndex((plan) => plan.id === draggedGoalId);
+    const to = next.findIndex((plan) => plan.id === targetId);
+    if (from < 0 || to < 0) return;
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setPlans(next);
+    localStorage.setItem("wealthplanner_goal_order_v1", JSON.stringify(next.map((plan) => plan.id)));
+    setDraggedGoalId(null);
   }
 
   function deletePlan(id: string) {
@@ -114,8 +159,21 @@ export function Goals() {
     <div className="flex flex-col gap-5 pb-6">
       <div className="flex items-start gap-3">
         <button onClick={() => navigate("/")} aria-label="Kembali ke Home" className="mt-1 rounded-xl border border-rose-100 bg-white p-2 text-forest-700"><ArrowLeft size={17}/></button>
-        <div><h1 className="text-2xl font-semibold tracking-tight text-forest-900">Goals & Rencana Keuangan</h1><p className="mt-1 text-[13px] leading-5 text-charcoal/55">Hubungkan tujuan keuangan dengan aset yang memang kamu siapkan untuk mencapainya.</p></div>
+        <div className="min-w-0 flex-1"><h1 className="text-2xl font-semibold tracking-tight text-forest-900">Goals & Rencana Keuangan</h1><p className="mt-1 text-[13px] leading-5 text-charcoal/55">Hubungkan tujuan keuangan dengan aset yang memang kamu siapkan untuk mencapainya.</p></div>
+        <button type="button" onClick={() => setIsAddingGoal((open) => !open)} className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-forest-700 px-3 py-2.5 text-[12px] font-semibold text-white"><Plus size={15}/> Tambah Goal</button>
       </div>
+
+      {isAddingGoal && <Card className="border border-forest-100">
+        <h2 className="text-[14px] font-semibold text-forest-900">Buat goal baru</h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <input value={newGoalName} onChange={(e) => setNewGoalName(e.target.value)} placeholder="Nama goal, mis. Dana menikah" className="min-w-0 rounded-xl border border-rose-100 px-3 py-2 text-[12px]" aria-label="Nama goal" />
+          <input type="number" min="0" inputMode="numeric" value={newGoalTarget} onChange={(e) => setNewGoalTarget(e.target.value)} placeholder="Target nominal (Rp)" className="min-w-0 rounded-xl border border-rose-100 px-3 py-2 text-[12px]" aria-label="Target nominal" />
+          <select value={newGoalType} onChange={(e) => setNewGoalType(e.target.value as FinancialPlanType)} className="min-w-0 rounded-xl border border-rose-100 bg-white px-3 py-2 text-[12px]" aria-label="Jenis goal">
+            <option value="cashflow">Cashflow & kebutuhan keluarga</option><option value="home">KPR & rumah</option><option value="education">Dana pendidikan</option><option value="retirement">Dana pensiun</option><option value="hajj">Dana haji</option><option value="investment">Aset & investasi</option><option value="income_protection">Proteksi penghasilan</option><option value="inheritance">Warisan</option>
+          </select>
+        </div>
+        <div className="mt-3 flex justify-end gap-2"><button type="button" onClick={() => setIsAddingGoal(false)} className="rounded-xl border border-rose-100 px-3 py-2 text-[12px]">Batal</button><button type="button" onClick={addGoal} disabled={!newGoalName.trim()} className="rounded-xl bg-forest-700 px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-40">Simpan Goal</button></div>
+      </Card>}
 
       {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.map((plan) => {
         const target = getPlanTarget(plan);
@@ -123,7 +181,8 @@ export function Goals() {
         const allocated = Object.values(planAllocations).reduce((sum, value) => sum + value, 0);
         const progress = target > 0 ? Math.min(100, allocated / target * 100) : 0;
         return (
-          <Card key={plan.id} className="border border-rose-100">
+          <Card key={plan.id} className={"border border-rose-100 " + (draggedGoalId === plan.id ? "opacity-60" : "")}>
+            <div draggable onDragStart={() => setDraggedGoalId(plan.id)} onDragOver={(event) => event.preventDefault()} onDrop={() => reorderGoal(plan.id)} onDragEnd={() => setDraggedGoalId(null)} className="mb-2 flex cursor-grab items-center gap-1 text-[10px] text-charcoal/40 active:cursor-grabbing"><span aria-hidden="true">⠿</span> Geser untuk mengurutkan</div>
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-forest-700"><Target size={20}/></span>
