@@ -333,7 +333,7 @@ export function AddTransactionModal({
             inputMode="numeric"
             value={form.amount}
             onChange={(e) => setForm((f) => ({ ...f, amount: formatAmountInput(e.target.value) }))}
-            className="w-full border border-charcoal/15 rounded-lg px-3 py-2 text-[14px]"
+            className="w-full border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px]"
           />
           {formError && <p className="text-[13px] text-rose-600">{formError}</p>}
           <button
@@ -352,7 +352,7 @@ export function AddTransactionModal({
             placeholder="Tadi beli makan 35 ribu"
             value={aiText}
             onChange={(e) => setAiText(e.target.value)}
-            className="w-full border border-charcoal/15 rounded-lg px-3 py-2 text-[14px]"
+            className="w-full border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px]"
           />
           <div className="rounded-xl border border-dashed border-rose-200 bg-rose-50/40 p-3">
             <div className="flex items-center justify-between gap-2"><div><p className="text-[13px] font-semibold text-rose-700">Foto struk dengan AI</p><p className="text-[11px] text-charcoal/55 mt-0.5">Upload/foto struk, review hasilnya, lalu simpan.</p></div><Camera size={18} className="text-rose-600"/></div>
