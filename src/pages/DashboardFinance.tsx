@@ -1,13 +1,13 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
 const API_BASE = "/api";
-import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StatCard } from "../components/StatCard";
 import { ChartCard, Card } from "../components/Card";
-import { BudgetProgressBar, StatusBadge } from "../components/ProgressBar";
+
 import { DataStatusBanner } from "../components/DataStatusBanner";
 import { formatRupiah, formatCompact, formatPercent } from "../lib/format";
-import { usagePercentage, budgetStatus } from "../data/types";
+
 import { useFinanceData, getStoredToken } from "../lib/useFinanceData";
 import { AddItemForm } from "../components/AddItemForm";
 import { AddTransactionModal } from "../components/AddTransactionModal";
@@ -164,54 +164,18 @@ function EditableAssetItem({
 
 const PIE_COLORS = ["var(--chart-2)", "var(--chart-5)", "var(--chart-1)", "var(--chart-8)", "var(--chart-3)"];
 
-function BudgetRow({
-  category,
-  allocation,
-  realization,
-}: {
-  category: string;
-  allocation: number;
-  realization: number;
-}) {
-  const hasBudget = allocation > 0;
-  const pct = usagePercentage(realization, allocation);
-  const status = budgetStatus(pct);
-  const overBy = pct > 100 ? pct - 100 : 0;
+function BudgetRow({ category, allocation, realization }: { category: string; allocation: number; realization: number }) {
   return (
-    <div className="py-3 border-b border-charcoal/8 last:border-0">
-      <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
-        <p className="text-[14px] font-medium">{category}</p>
-        {hasBudget ? (
-          <StatusBadge status={status} />
-        ) : (
-          <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-charcoal/5 text-charcoal/50">
-            Belum ada budget
-          </span>
-        )}
-      </div>
-      <div className="flex items-center justify-between text-[12px] text-charcoal/55 mb-1.5">
-        <span>
-          {formatRupiah(realization)}
-          {hasBudget ? ` / ${formatRupiah(allocation)}` : ""}
-        </span>
-        {hasBudget && <span className="font-medium">{formatPercent(pct)}</span>}
-      </div>
-      {hasBudget && (
-        <>
-          <BudgetProgressBar usagePct={pct} />
-          {overBy > 0 && (
-            <p className="text-[12px] text-rose-600 mt-1.5 flex items-center gap-1">
-              <AlertTriangle size={12} /> {category} sudah melebihi budget sebesar {formatPercent(Math.round(overBy * 10) / 10)}.
-            </p>
-          )}
-        </>
-      )}
+    <div className="flex items-center justify-between gap-3 border-b border-charcoal/8 py-3 last:border-0">
+      <span className="min-w-0 truncate text-[13px] font-medium">{category}</span>
+      <span className="shrink-0 whitespace-nowrap text-[12px] font-semibold text-forest-900 tabular-nums">{formatRupiah(realization)}</span>
     </div>
   );
 }
 
 export function DashboardFinance() {
-  const { loading, error, isRealData, username, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData();
+  const { loading, error, isRealData, username, byCategory, assets } = useFinanceData();
+  const allYearFinance = useFinanceData(undefined, true);
   const [manualStocks, setManualStocks] = useState<ManualStock[]>(() => loadManualStocks());
   const [transactionModalOpen, setTransactionModalOpen] = useState(false);
   const [transactionMode, setTransactionMode] = useState<"manual" | "ai">("ai");
@@ -239,7 +203,27 @@ export function DashboardFinance() {
   const incomeRows = byCategory("Income");
   const savingRows = byCategory("Saving");
   const expenseRows = byCategory("Expense");
-  const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);
+
+  const currentYear = new Date().getFullYear();
+  const previousYear = currentYear - 1;
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthIndex = (value: string) => monthNames.findIndex((name) => name.toLowerCase() === String(value || "").toLowerCase());
+  const transactionsForYear = (year: number) => allYearFinance.transactions.filter((t) => Number(t.year || String(t.date || "").split("/")[2]) === year);
+  const monthlyComparison = monthNames.map((month, index) => {
+    const current = transactionsForYear(currentYear).filter((t) => monthIndex(t.month) === index);
+    const previous = transactionsForYear(previousYear).filter((t) => monthIndex(t.month) === index);
+    const sum = (items: typeof current, type: string) => items.filter((t) => t.type === type).reduce((total, t) => total + Number(t.amount || 0), 0);
+    return { month: month.slice(0, 3), incomeCurrent: sum(current, "Income"), incomePrevious: sum(previous, "Income"), expenseCurrent: sum(current, "Expense"), expensePrevious: sum(previous, "Expense"), cashflowCurrent: sum(current, "Income") - sum(current, "Expense") - sum(current, "Saving"), cashflowPrevious: sum(previous, "Income") - sum(previous, "Expense") - sum(previous, "Saving") };
+  });
+  const yearToDateTotal = (year: number, type: string) => transactionsForYear(year)
+    .filter((t) => monthIndex(t.month) >= 0 && (year < currentYear || monthIndex(t.month) <= new Date().getMonth()))
+    .filter((t) => t.type === type).reduce((total, t) => total + Number(t.amount || 0), 0);
+  const trendLabel = (current: number, previous: number) => {
+    const change = previous > 0 ? ((current - previous) / previous) * 100 : current > 0 ? 100 : 0;
+    return { label: (change >= 0 ? "+" : "") + change.toFixed(1) + "%", positive: change >= 0 };
+  };
+  const assetCompositionTotal = assetChartData.reduce((sum, item) => sum + item.value, 0);
+
   const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];
   const activeTabIndex = reportTabs.findIndex((tab) => tab.id === activeReportTab);
   const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
@@ -271,13 +255,32 @@ export function DashboardFinance() {
       </div>
 
       {activeReportTab === "income" && <>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <StatCard label="Total Income" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
-          <StatCard label="Total Expense" value={formatRupiah(totalExpense)} icon={TrendingDown} tone="rose" />
-          <StatCard label="Net Result" value={formatRupiah(totalIncome-totalExpense)} icon={Landmark} tone="neutral" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            { label: "Total Income", current: yearToDateTotal(currentYear, "Income"), previous: yearToDateTotal(previousYear, "Income") },
+            { label: "Total Expense", current: yearToDateTotal(currentYear, "Expense"), previous: yearToDateTotal(previousYear, "Expense") },
+          ].map((item) => {
+            const trend = trendLabel(item.current, item.previous);
+            return <Card key={item.label} className="flex min-w-0 items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[12px] text-charcoal/60">{item.label}</p>
+                <p className="mt-1 whitespace-nowrap text-[clamp(13px,2.5vw,22px)] font-semibold leading-tight tracking-tight text-forest-900 tabular-nums">{formatRupiah(item.current)}</p>
+              </div>
+              <span className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold tabular-nums ${trend.positive ? "bg-[#D7FF72] text-[#24502A]" : "bg-[#FFD6E4] text-[#A52D5A]"}`}>{trend.label}</span>
+            </Card>;
+          })}
         </div>
-        <ChartCard title="Income Statement" subtitle="Perbandingan pendapatan, pengeluaran, dan tabungan bulan ini.">
-          <ResponsiveContainer width="100%" height={260}><BarChart data={[{name:"Income",amount:totalIncome},{name:"Expense",amount:totalExpense},{name:"Saving",amount:totalSaving}]} margin={{top:10,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:12}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" fill="var(--chart-2)" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
+        <ChartCard title="Income Statement" subtitle={"Perbandingan bulanan " + currentYear + " vs " + previousYear + "."}>
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart data={monthlyComparison} margin={{top:10,right:12,left:0,bottom:4}}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)"/><XAxis dataKey="month" tick={{fontSize:11}}/>
+              <YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} width={48}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Legend/>
+              <Line type="monotone" dataKey="incomeCurrent" name={"Income " + currentYear} stroke="var(--chart-2)" strokeWidth={2.5} dot={{r:3}} connectNulls/>
+              <Line type="monotone" dataKey="incomePrevious" name={"Income " + previousYear} stroke="var(--chart-2)" strokeDasharray="5 4" strokeWidth={2} dot={{r:2}} connectNulls/>
+              <Line type="monotone" dataKey="expenseCurrent" name={"Expense " + currentYear} stroke="var(--chart-expense)" strokeWidth={2.5} dot={{r:3}} connectNulls/>
+              <Line type="monotone" dataKey="expensePrevious" name={"Expense " + previousYear} stroke="var(--chart-expense)" strokeDasharray="5 4" strokeWidth={2} dot={{r:2}} connectNulls/>
+            </LineChart>
+          </ResponsiveContainer>
         </ChartCard>
         <div className="grid gap-4 lg:grid-cols-3">
           <ChartCard title="Income per Kategori" subtitle="Realisasi pendapatan"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
@@ -320,7 +323,27 @@ export function DashboardFinance() {
               </>
             )}
 
-            {(assets.liquidAssets.length > 0 || isRealData) && (
+          </div>
+
+          <div className="lg:col-span-2 rounded-xl border border-charcoal/8 p-3">
+            <p className="mb-1 text-[13px] font-semibold text-forest-900">Asset Composition</p>
+            <p className="mb-2 text-[11px] text-charcoal/50">Persentase nominal setiap instrumen dari total aset.</p>
+            {assetChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie data={assetChartData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={95} paddingAngle={2} label={({ name, value }) => (String(name).slice(0, 10) + " " + (assetCompositionTotal > 0 ? (Number(value) / assetCompositionTotal * 100).toFixed(1) : "0.0") + "%")} labelLine={false}>
+                    {assetChartData.map((_, i) => (
+                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v: number) => formatRupiah(v)} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-[13px] text-charcoal/50">Belum ada data aset.</p>
+            )}
+          </div>
+          <div className="lg:col-span-2">            {(assets.liquidAssets.length > 0 || isRealData) && (
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Liquid Assets</p>
                 {assets.liquidAssets.map((item) => (
@@ -368,23 +391,7 @@ export function DashboardFinance() {
                 )}
               </div>
             )}
-          </div>
 
-          <div>
-            {assetChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie data={assetChartData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={95} paddingAngle={2}>
-                    {assetChartData.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(v: number) => formatRupiah(v)} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-[13px] text-charcoal/50">Belum ada data aset.</p>
-            )}
           </div>
         </div>
       </ChartCard>
@@ -392,13 +399,15 @@ export function DashboardFinance() {
       </>}
 
       {activeReportTab === "cashflow" && <>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <StatCard label="Cash In" value={formatRupiah(totalIncome)} icon={TrendingUp} tone="forest" />
-          <StatCard label="Cash Out" value={formatRupiah(totalExpense+totalSaving)} icon={TrendingDown} tone="rose" />
-          <StatCard label="Net Cashflow" value={formatRupiah(totalIncome-totalExpense-totalSaving)} icon={Landmark} tone="neutral" />
-        </div>
-        <ChartCard title="Cashflow Tracker" subtitle="Arus kas bersih setelah pengeluaran dan alokasi tabungan.">
-          <ResponsiveContainer width="100%" height={260}><BarChart data={[{name:"Cash In",amount:totalIncome},{name:"Expenses",amount:totalExpense},{name:"Savings",amount:totalSaving},{name:"Net Cashflow",amount:totalIncome-totalExpense-totalSaving}]} margin={{top:10,right:12,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:11}}/><YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:11}}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" fill="var(--chart-2)" radius={[6,6,0,0]}/></BarChart></ResponsiveContainer>
+        <ChartCard title="Cashflow Tracker" subtitle={"Tren arus kas bulanan " + currentYear + " dibanding " + previousYear + "."}>
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart data={monthlyComparison} margin={{top:10,right:12,left:0,bottom:4}}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)"/><XAxis dataKey="month" tick={{fontSize:11}}/>
+              <YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} width={48}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Legend/>
+              <Line type="monotone" dataKey="cashflowCurrent" name={String(currentYear)} stroke="var(--chart-2)" strokeWidth={2.5} dot={{r:3}} connectNulls/>
+              <Line type="monotone" dataKey="cashflowPrevious" name={String(previousYear)} stroke="var(--chart-expense)" strokeWidth={2.5} strokeDasharray="5 4" dot={{r:3}} connectNulls/>
+            </LineChart>
+          </ResponsiveContainer>
         </ChartCard>
         <div className="grid gap-4 lg:grid-cols-3">
           <ChartCard title="Cash In Detail" subtitle="Pemasukan per kategori"><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization}/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
