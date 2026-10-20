@@ -224,7 +224,7 @@ export function DashboardFinance() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="min-w-0 truncate text-[21px] font-bold leading-[1.15] tracking-[-0.03em] text-forest-900">{id ? "Laporan Keuangan" : "Financial Statement"}</h1>
+        <h1 className="min-w-0 truncate text-[21px] font-bold leading-[1.15] tracking-[-0.03em] text-forest-900">Finance Report</h1>
         <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-forest-900 shadow-sm">
           <CalendarDays size={15} className="shrink-0 text-forest-700" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-charcoal/50" />
         </button>
