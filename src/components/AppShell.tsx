@@ -18,6 +18,7 @@ const titles: Record<string, string> = {
   "/protection": "Proteksi Finansial",
   "/settings": "Profile & Settings",
   "/guidance": "Guidance",
+  "/goals": "Goals",
 };
 
 export function AppShell() {
@@ -30,7 +31,7 @@ export function AppShell() {
   const navLabels = language === "id" ? { home: "Beranda", goals: "Target", close: "Tutup", quickAdd: "Tulis transaksi atau unggah foto struk" } : { home: "Home", goals: "Goals", close: "Close", quickAdd: "Enter a transaction or upload a receipt photo" };
   const location = useLocation();
   const navigate = useNavigate();
-  const titleId: Record<string, string> = { "/": "Home", "/finance": "Laporan", "/transactions": "Laporan", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/guidance": "Panduan" };
+  const titleId: Record<string, string> = { "/": "Home", "/finance": "Laporan", "/transactions": "Laporan", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/guidance": "Panduan", "/goals": "Target" };
   const title = language === "en" ? (location.pathname.startsWith("/calculator/") ? "Financial Calculator" : (titles[location.pathname] ?? "Wealthplanner")) : (location.pathname.startsWith("/calculator/") ? "Kalkulator Keuangan" : (titleId[location.pathname] ?? "Wealthplanner"));
 
   return (
@@ -39,27 +40,45 @@ export function AppShell() {
       <MobileSidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
       <div className="flex-1 min-w-0">
         <Topbar title={title} onMenuClick={() => setMobileOpen(true)} />
-        <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:py-8">
+        <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-32 lg:py-8">
           <div className="hidden lg:flex items-center justify-end gap-3 mb-2">
             <DateHeader />
             <ThemeToggle variant="compact" />
           </div>
           <Outlet />
         </main>
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-rose-100 bg-white/95 px-3 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur lg:hidden">
-          <div className="mx-auto grid max-w-md grid-cols-5 items-end gap-1">
-            <button onClick={() => navigate("/")} className={`flex flex-col items-center gap-1 py-1 ${location.pathname === "/" ? "text-forest-700" : "text-charcoal/55"}`}><Wallet size={19}/><span className="text-[10px] font-medium">{navLabels.home}</span></button>
-            <button onClick={() => navigate("/finance")} className={`flex flex-col items-center gap-1 py-1 ${location.pathname === "/finance" ? "text-forest-700" : "text-charcoal/55"}`}><ChartNoAxesCombined size={19}/><span className="text-[10px] font-medium">{language === "id" ? "Laporan" : "Report"}</span></button>
-            <button onClick={() => setQuickAddOpen(true)} aria-label={language === "id" ? "Tambah transaksi" : "Add transaction"} className="-mt-5 mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-forest-700 text-white shadow-lg ring-4 ring-white"><Plus size={24}/></button>
-            <button onClick={() => navigate("/goals")} className={`flex flex-col items-center gap-1 py-1 ${location.pathname === "/goals" ? "text-forest-700" : "text-charcoal/55"}`}><Target size={19}/><span className="text-[10px] font-medium">{navLabels.goals}</span></button>
-            <button onClick={() => navigate("/settings")} className={`flex flex-col items-center gap-1 py-1 ${location.pathname === "/settings" ? "text-forest-700" : "text-charcoal/55"}`}><UserRound size={19}/><span className="text-[10px] font-medium">{language === "id" ? "Profil" : "Profile"}</span></button>
+        <nav aria-label={language === "id" ? "Navigasi utama" : "Main navigation"} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden">
+          <div className="wp-nav pointer-events-auto mx-auto grid max-w-md grid-cols-5 items-center rounded-[30px] px-2 py-2">
+            {([
+              { to: "/", label: navLabels.home, Icon: Wallet },
+              { to: "/finance", label: language === "id" ? "Laporan" : "Report", Icon: ChartNoAxesCombined },
+            ] as const).map(({ to, label, Icon }) => {
+              const active = location.pathname === to;
+              return <button key={to} onClick={() => navigate(to)} aria-current={active ? "page" : undefined} className="flex flex-col items-center gap-0.5 py-0.5">
+                <span className={`flex h-8 w-12 items-center justify-center rounded-full transition-colors ${active ? "bg-[#F59BB8] text-[#123524]" : "text-white/70"}`}><Icon size={19} strokeWidth={active ? 2.4 : 2}/></span>
+                <span className={`text-[10px] font-semibold ${active ? "text-[#F59BB8]" : "text-white/60"}`}>{label}</span>
+              </button>;
+            })}
+            <button onClick={() => setQuickAddOpen(true)} aria-label={language === "id" ? "Tambah transaksi" : "Add transaction"} className="relative -mt-9 mx-auto flex h-[58px] w-[58px] items-center justify-center rounded-full bg-[#F59BB8] text-[#123524] shadow-pop ring-[5px] ring-[rgb(var(--c-cream))]"><Plus size={28} strokeWidth={2.6}/></button>
+            {([
+              { to: "/goals", label: navLabels.goals, Icon: Target },
+              { to: "/settings", label: language === "id" ? "Profil" : "Profile", Icon: UserRound },
+            ] as const).map(({ to, label, Icon }) => {
+              const active = location.pathname === to;
+              return <button key={to} onClick={() => navigate(to)} aria-current={active ? "page" : undefined} className="flex flex-col items-center gap-0.5 py-0.5">
+                <span className={`flex h-8 w-12 items-center justify-center rounded-full transition-colors ${active ? "bg-[#F59BB8] text-[#123524]" : "text-white/70"}`}><Icon size={19} strokeWidth={active ? 2.4 : 2}/></span>
+                <span className={`text-[10px] font-semibold ${active ? "text-[#F59BB8]" : "text-white/60"}`}>{label}</span>
+              </button>;
+            })}
           </div>
-        </div>
-        {quickAddOpen && <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/35 p-4 sm:items-center" onClick={() => setQuickAddOpen(false)}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-4 flex items-center justify-between"><h3 className="text-[16px] font-semibold text-forest-900">{language === "id" ? "Tambah Transaksi" : "Add Transaction"}</h3><button onClick={() => setQuickAddOpen(false)} aria-label={navLabels.close} className="rounded-lg p-1 text-charcoal/50"><X size={18}/></button></div>
-            <button onClick={() => { setTransactionMode("manual"); setTransactionModalOpen(true); setQuickAddOpen(false); }} className="mb-2 flex w-full items-center gap-3 rounded-2xl border border-rose-100 p-3 text-left hover:bg-rose-50/50"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-forest-700"><Plus size={19}/></span><span><span className="block text-[13px] font-semibold text-forest-900">{language === "id" ? "Tambah Transaksi Manual" : "Add Transaction Manually"}</span><span className="block text-[11px] text-charcoal/50">{language === "id" ? "Isi pemasukan, pengeluaran, atau tabungan" : "Enter income, expenses, or savings"}</span></span></button>
-            <button onClick={() => { setTransactionMode("ai"); setTransactionModalOpen(true); setQuickAddOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl border border-rose-100 p-3 text-left hover:bg-rose-50/50"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-forest-700"><Sparkles size={19}/></span><span><span className="block text-[13px] font-semibold text-forest-900">{language === "id" ? "Catat dengan AI" : "Track with AI"}</span><span className="block text-[11px] text-charcoal/50">{navLabels.quickAdd}</span></span></button>
+        </nav>
+        {quickAddOpen && <div className="fixed inset-0 z-[60] flex items-end justify-center p-3 sm:items-center">
+          <div className="wp-backdrop absolute inset-0 bg-[#0F2A20]/45 backdrop-blur-[2px]" onClick={() => setQuickAddOpen(false)} />
+          <div className="wp-sheet relative w-full max-w-sm rounded-[28px] bg-white p-5 pb-[max(20px,env(safe-area-inset-bottom))] shadow-float" onClick={(e) => e.stopPropagation()}>
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-charcoal/15" />
+            <div className="mb-4 flex items-center justify-between"><h3 className="text-[17px] font-bold tracking-[-0.02em] text-forest-900">{language === "id" ? "Tambah Transaksi" : "Add Transaction"}</h3><button onClick={() => setQuickAddOpen(false)} aria-label={navLabels.close} className="flex h-9 w-9 items-center justify-center rounded-full bg-charcoal/[0.06] text-charcoal/60"><X size={18}/></button></div>
+            <button onClick={() => { setTransactionMode("manual"); setTransactionModalOpen(true); setQuickAddOpen(false); }} className="mb-2.5 flex w-full items-center gap-3.5 rounded-2xl bg-[#F59BB8]/25 p-3.5 text-left"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F59BB8] text-[#123524]"><Plus size={21} strokeWidth={2.4}/></span><span><span className="block text-[14px] font-bold text-forest-900">{language === "id" ? "Tambah Transaksi Manual" : "Add Transaction Manually"}</span><span className="mt-0.5 block text-[12px] text-charcoal/55">{language === "id" ? "Isi pemasukan, pengeluaran, atau tabungan" : "Enter income, expenses, or savings"}</span></span></button>
+            <button onClick={() => { setTransactionMode("ai"); setTransactionModalOpen(true); setQuickAddOpen(false); }} className="flex w-full items-center gap-3.5 rounded-2xl bg-[#123524] p-3.5 text-left text-white"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/12 text-[#6EE7A8]"><Sparkles size={20}/></span><span><span className="block text-[14px] font-bold">{language === "id" ? "Catat dengan AI" : "Track with AI"}</span><span className="mt-0.5 block text-[12px] text-white/65">{navLabels.quickAdd}</span></span></button>
           </div>
         </div>}
         <AddTransactionModal open={transactionModalOpen} onClose={() => setTransactionModalOpen(false)} onAdd={() => {}} initialMode={transactionMode}/>
