@@ -89,11 +89,11 @@ export function Home() {
     <div className="flex flex-col gap-4 pb-4">
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/50">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
-        <h1 className="text-[21px] sm:text-[24px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
+        <h1 className="text-[20px] sm:text-[24px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
         <p className="text-[13.5px] text-charcoal/60">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
       </div>
 
-      <Card className="home-asset-summary hero-forest w-full overflow-hidden border-0 !rounded-[20px] bg-[#123524] p-3.5 text-white shadow-float" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
+      <Card className="home-asset-summary hero-forest w-full overflow-hidden border-0 !rounded-[20px] bg-[#123524] p-3 text-white shadow-float" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
         <div className="flex items-center justify-between">
           <p className="flex items-center gap-2 text-[11.5px] font-normal text-[#A9C9B8]"><CircleDollarSign size={17} strokeWidth={1.8}/>{id ? "Total Aset" : "Total Assets"}</p>
           <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#A9C9B8]">
@@ -107,13 +107,13 @@ export function Home() {
           </span>
         </div>
         {assetTrend !== null && Number.isFinite(assetTrend) && (
-          <div className={`mt-2.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold ${assetTrend >= 0 ? "bg-[#6EE7A8]/[0.16] text-[#6EE7A8]" : "bg-[#FFB4A2]/[0.16] text-[#FFB4A2]"}`}>
+          <div className={`mt-2.5 hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold ${assetTrend >= 0 ? "bg-[#6EE7A8]/[0.16] text-[#6EE7A8]" : "bg-[#FFB4A2]/[0.16] text-[#FFB4A2]"}`}>
             {assetTrend >= 0 ? <TrendingUp size={15} strokeWidth={2}/> : <TrendingDown size={15} strokeWidth={2}/>}
             <span>{assetTrend >= 0 ? "+" : ""}{assetTrend.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% bulan ini</span>
           </div>
         )}
         {assets.target > 0 && (
-          <div className="mt-3">
+          <div className="mt-3 hidden sm:block">
             <div className="mb-1.5 flex items-center justify-between gap-3">
               <span className="text-[13px] font-normal text-[#A9C9B8]">{id ? "% dari target" : "% of target"}</span>
               <span className="shrink-0 text-[14px] font-medium text-white tabular-nums">
@@ -135,15 +135,15 @@ export function Home() {
             </div>
           </div>
         )}
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="flex min-w-0 flex-col self-start rounded-xl bg-white/[0.10] p-2.5 backdrop-blur-sm">
+        <div className="mt-2.5 grid grid-cols-2 gap-1.5">
+          <div className="flex min-w-0 flex-col self-start rounded-xl bg-white/[0.10] p-2 backdrop-blur-sm">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><ArrowDownLeft size={17} strokeWidth={2}/></span>
               <span className="truncate text-[11.5px] font-normal text-[#A9C9B8]">{id ? "Pemasukan" : "Income"}</span>
             </div>
             <p className="mt-1.5 break-words text-[clamp(12px,3.6vw,14px)] font-medium leading-tight tracking-[-0.2px] tabular-nums">{formatRupiah(totalIncome)}</p>
           </div>
-          <div className="flex min-w-0 flex-col self-start rounded-xl bg-white/[0.10] p-2.5 backdrop-blur-sm">
+          <div className="flex min-w-0 flex-col self-start rounded-xl bg-white/[0.10] p-2 backdrop-blur-sm">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[#FFB4A2]/[0.18] text-[#FFB4A2]"><ArrowUpRight size={17} strokeWidth={2}/></span>
               <span className="truncate text-[11.5px] font-normal text-[#A9C9B8]">{id ? "Pengeluaran" : "Expense"}</span>
