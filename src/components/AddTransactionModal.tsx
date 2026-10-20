@@ -338,7 +338,7 @@ export function AddTransactionModal({
           {formError && <p className="text-[13px] text-rose-600">{formError}</p>}
           <button
             onClick={handleManualSubmit}
-            className="w-full rounded-xl bg-forest-700 py-3 text-[14px] font-semibold text-white shadow-sm transition hover:bg-forest-800 disabled:opacity-50"
+            className="w-full bg-[#123524] text-white rounded-full py-3.5 text-[14px] font-semibold hover:bg-forest-800"
           >
             Simpan transaksi
           </button>
