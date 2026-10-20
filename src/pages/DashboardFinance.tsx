@@ -176,14 +176,26 @@ function EditableAssetItem({
 const PIE_COLORS = ["var(--chart-2)", "var(--chart-5)", "var(--chart-1)", "var(--chart-8)", "var(--chart-3)"];
 
 function BudgetRow({
-  category, allocation, realization, kind, showBudget = true,
-}: { category: string; allocation: number; realization: number; kind: "income" | "expense" | "saving"; showBudget?: boolean }) {
+  category, allocation, realization, kind, showBudget = true, total = 0, showPercentage = false,
+}: { category: string; allocation: number; realization: number; kind: "income" | "expense" | "saving"; showBudget?: boolean; total?: number; showPercentage?: boolean }) {
   const hasBudget = showBudget && allocation > 0;
   const pct = usagePercentage(realization, allocation);
+  const sharePct = total > 0 ? (realization / total) * 100 : 0;
   const overBy = pct > 100 ? pct - 100 : 0;
   const amountColor = kind === "expense" ? "text-[#F4577A]" : kind === "income" ? "text-[#0B6B47]" : "text-[#FFA24C]";
+  const Icon = kind === "income" ? ArrowDownLeft : kind === "expense" ? ArrowUpRight : PiggyBank;
+  const iconClass = kind === "income" ? "bg-[#DFF3E7] text-[#0B6B47]" : kind === "expense" ? "bg-[#FDE3EA] text-[#C23A5B]" : "bg-[#FFF0D9] text-[#C47A19]";
   return <div className="py-2.5 border-b border-charcoal/8 last:border-0">
-    <div className="flex items-center justify-between gap-3"><p className="min-w-0 flex-1 truncate text-[13px] font-medium text-charcoal/80">{category}</p><p className={`shrink-0 text-[13px] font-semibold tabular-nums ${amountColor}`}>{formatRupiah(realization)}</p></div>
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${iconClass}`}><Icon size={14}/></span>
+        <p className="min-w-0 flex-1 truncate text-[12px] font-medium text-charcoal/80">{category}</p>
+      </div>
+      <div className="shrink-0 text-right">
+        <p className={`text-[12px] font-semibold tabular-nums ${amountColor}`}>{formatRupiah(realization)}</p>
+        {showPercentage && <p className="mt-0.5 text-[10px] text-charcoal/45 tabular-nums">{sharePct.toFixed(1)}%</p>}
+      </div>
+    </div>
     {hasBudget && <div className="mt-1.5"><div className="flex items-center justify-between text-[11px] text-charcoal/50 mb-1"><span>Budget {formatRupiah(allocation)}</span><span className="font-medium">{formatPercent(pct)}</span></div><BudgetProgressBar usagePct={pct} />{overBy > 0 && <p className="text-[11px] text-rose-600 mt-1"><AlertTriangle size={11} className="inline mr-1" />Melebihi budget {formatPercent(Math.round(overBy * 10) / 10)}</p>}</div>}
   </div>;
 }
@@ -206,6 +218,7 @@ export function DashboardFinance() {
   const [assetTargetInput, setAssetTargetInput] = useState("");
   const [savingAssetTarget, setSavingAssetTarget] = useState(false);
   const [showAllAssets, setShowAllAssets] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
   const [activeReportTab, setActiveReportTab] = useState<"income" | "assets" | "cashflow">("income");
 
   useEffect(() => {
@@ -290,9 +303,14 @@ export function DashboardFinance() {
             <div className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-charcoal/65"><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#0B6B47]"/>Income</span><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#F4577A]"/>Expense</span><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#FFA24C]"/>Saving</span></div>
           </div>
         </ChartCard>
+        {(incomeRows.length > 4 || expenseRows.length > 4) && <div className="flex justify-end -mt-2">
+          <button type="button" onClick={() => setShowAllCategories((value) => !value)} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold text-forest-700 hover:bg-forest-50">
+            {showAllCategories ? "Tampilkan lebih sedikit" : "Lihat semua kategori"} <ChevronRight size={14} className={showAllCategories ? "rotate-90" : ""}/>
+          </button>
+        </div>}
         <div className="grid gap-4 lg:grid-cols-3">
-          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0B6B47]/10 text-[#0B6B47]"><Wallet size={15}/></span>{id ? "Pemasukan per Kategori" : "Income by Category"}</span>} subtitle={id ? "Realisasi pemasukan" : "Recorded income"}><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="income" showBudget={false}/>):<p className="text-sm text-charcoal/45">{id ? "Belum ada data pemasukan." : "No income data yet."}</p>}</div></ChartCard>
-          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F4577A]/10 text-[#F4577A]"><CircleDollarSign size={15}/></span>{id ? "Pengeluaran per Kategori" : "Expenses by Category"}</span>} subtitle={id ? "Realisasi pengeluaran" : "Recorded expenses"}><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="expense" showBudget={false}/>):<p className="text-sm text-charcoal/45">{id ? "Belum ada data pengeluaran." : "No expense data yet."}</p>}</div></ChartCard>
+          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0B6B47]/10 text-[#0B6B47]"><Wallet size={15}/></span>{id ? "Pemasukan per Kategori" : "Income by Category"}</span>} subtitle={id ? "Realisasi pemasukan" : "Recorded income"}><div>{incomeRows.length?incomeRows.slice(0, showAllCategories ? incomeRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalIncome} showPercentage kind="income" showBudget={false}/>):<p className="text-sm text-charcoal/45">{id ? "Belum ada data pemasukan." : "No income data yet."}</p>}</div></ChartCard>
+          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F4577A]/10 text-[#F4577A]"><CircleDollarSign size={15}/></span>{id ? "Pengeluaran per Kategori" : "Expenses by Category"}</span>} subtitle={id ? "Realisasi pengeluaran" : "Recorded expenses"}><div>{expenseRows.length?expenseRows.slice(0, showAllCategories ? expenseRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalExpense} showPercentage kind="expense" showBudget={false}/>):<p className="text-sm text-charcoal/45">{id ? "Belum ada data pengeluaran." : "No expense data yet."}</p>}</div></ChartCard>
         </div>
       </>}
 
@@ -468,10 +486,15 @@ export function DashboardFinance() {
         <ChartCard title={id ? "Pelacak Arus Kas" : "Cashflow Tracker"} subtitle={id ? "Arus kas keluar mencakup pengeluaran dan tabungan." : "Cash out includes expenses and savings."}>
           <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Cash In",amount:totalIncome},{name:"Cash Out",amount:totalExpense+totalSaving},{name:"Net Cashflow",amount:totalIncome-totalExpense-totalSaving}]} barCategoryGap="18%" margin={{top:10,right:8,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:10}} interval={0} axisLine={false} tickLine={false}/><YAxis width={44} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" radius={[7,7,0,0]} maxBarSize={68}>{[{color:"#0B6B47"},{color:"#F4577A"},{color:"#FFA24C"}].map((item,index)=><Cell key={index} fill={item.color}/>)}</Bar></BarChart></ResponsiveContainer>
         </ChartCard>
+        {(incomeRows.length > 4 || expenseRows.length > 4 || savingRows.length > 4) && <div className="flex justify-end -mt-2">
+          <button type="button" onClick={() => setShowAllCategories((value) => !value)} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold text-forest-700 hover:bg-forest-50">
+            {showAllCategories ? "Tampilkan lebih sedikit" : "Lihat semua kategori"} <ChevronRight size={14} className={showAllCategories ? "rotate-90" : ""}/>
+          </button>
+        </div>}
         <div className="grid gap-4 lg:grid-cols-3">
-          <ChartCard title={id ? "Rincian Pemasukan" : "Cash In Details"} subtitle={id ? "Pemasukan per kategori" : "Income by category"}><div>{incomeRows.length?incomeRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="income"/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
-          <ChartCard title={id ? "Rincian Pengeluaran" : "Cash Out Details"} subtitle={id ? "Pengeluaran per kategori" : "Expenses by category"}><div>{expenseRows.length?expenseRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="expense"/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
-          <ChartCard title={id ? "Rincian Tabungan" : "Savings Details"} subtitle={id ? "Tabungan per kategori" : "Savings by category"}><div>{savingRows.length?savingRows.map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} kind="saving"/>):<p className="text-sm text-charcoal/45">{id ? "Belum ada data tabungan." : "No savings data yet."}</p>}</div></ChartCard>
+          <ChartCard title={id ? "Rincian Pemasukan" : "Cash In Details"} subtitle={id ? "Pemasukan per kategori" : "Income by category"}><div>{incomeRows.length?incomeRows.slice(0, showAllCategories ? incomeRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalIncome} showPercentage kind="income"/>):<p className="text-sm text-charcoal/45">Belum ada data income.</p>}</div></ChartCard>
+          <ChartCard title={id ? "Rincian Pengeluaran" : "Cash Out Details"} subtitle={id ? "Pengeluaran per kategori" : "Expenses by category"}><div>{expenseRows.length?expenseRows.slice(0, showAllCategories ? expenseRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalExpense} showPercentage kind="expense"/>):<p className="text-sm text-charcoal/45">Belum ada data expense.</p>}</div></ChartCard>
+          <ChartCard title={id ? "Rincian Tabungan" : "Savings Details"} subtitle={id ? "Tabungan per kategori" : "Savings by category"}><div>{savingRows.length?savingRows.slice(0, showAllCategories ? savingRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalSaving} showPercentage kind="saving"/>):<p className="text-sm text-charcoal/45">{id ? "Belum ada data tabungan." : "No savings data yet."}</p>}</div></ChartCard>
         </div>
       </>}
       {/* Stock Net Worth hidden in Phase 1 until live market-price data is available. */}
