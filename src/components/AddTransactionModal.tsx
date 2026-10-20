@@ -276,12 +276,12 @@ export function AddTransactionModal({
   }
 
   return (
-    <Modal open={open} onClose={handleClose} title="Tambah transaksi">
-      <div className="flex gap-1 mb-4 bg-charcoal/5 rounded-lg p-1">
+    <Modal open={open} onClose={handleClose} title="Tambah Transaksi">
+      <div className="mb-5 flex gap-1.5 rounded-xl bg-charcoal/[0.05] p-1.5">
         <button
           onClick={() => setMode("manual")}
-          className={`flex-1 text-[13px] py-1.5 rounded-md transition-colors ${
-            mode === "manual" ? "bg-white shadow-sm font-medium text-forest-800" : "text-charcoal/60"
+          className={`flex-1 text-[13px] py-2 rounded-lg transition-colors ${
+            mode === "manual" ? "bg-white shadow-sm font-semibold text-forest-800" : "text-charcoal/55"
           }`}
         >
           Manual
@@ -289,7 +289,7 @@ export function AddTransactionModal({
         <button
           onClick={() => setMode("ai")}
           className={`flex-1 text-[13px] py-1.5 rounded-md transition-colors flex items-center justify-center gap-1 ${
-            mode === "ai" ? "bg-white shadow-sm font-medium text-rose-700" : "text-charcoal/60"
+            mode === "ai" ? "bg-white shadow-sm font-semibold text-rose-700" : "text-charcoal/55"
           }`}
         >
           <Sparkles size={13} /> Catat dengan AI
@@ -303,9 +303,9 @@ export function AddTransactionModal({
               <button
                 key={t}
                 onClick={() => setForm((f) => ({ ...f, type: t, category: activeCategories[t][0] || f.category }))}
-                className={`flex-1 text-[13px] py-1.5 rounded-lg border ${
+                className={`flex-1 text-[12px] py-2.5 rounded-xl border transition-colors ${
                   form.type === t
-                    ? "border-forest-600 bg-forest-50 text-forest-700 font-medium"
+                    ? "border-forest-600 bg-mint-100 text-forest-800 font-semibold"
                     : "border-charcoal/15 text-charcoal/60"
                 }`}
               >
@@ -316,7 +316,7 @@ export function AddTransactionModal({
           <select
             value={form.category}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-            className="w-full border border-charcoal/15 rounded-lg px-3 py-2 text-[14px] bg-white"
+            className="w-full rounded-xl border border-charcoal/10 bg-white px-3.5 py-3 text-[14px] text-charcoal outline-none transition focus:border-forest-400 focus:ring-2 focus:ring-forest-100"
           >
             {(activeCategories[form.type].length ? activeCategories[form.type] : fallbackCategories).map((c) => (
               <option key={c}>{c}</option>
@@ -326,7 +326,7 @@ export function AddTransactionModal({
             placeholder="Deskripsi (misal: Makan siang)"
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            className="w-full border border-charcoal/15 rounded-lg px-3 py-2 text-[14px]"
+            className="w-full rounded-xl border border-charcoal/10 bg-white px-3.5 py-3 text-[14px] text-charcoal outline-none transition focus:border-forest-400 focus:ring-2 focus:ring-forest-100"
           />
           <input
             placeholder="Jumlah (Rp)"
@@ -338,7 +338,7 @@ export function AddTransactionModal({
           {formError && <p className="text-[13px] text-rose-600">{formError}</p>}
           <button
             onClick={handleManualSubmit}
-            className="w-full bg-forest-600 text-white rounded-lg py-2.5 text-[14px] font-medium hover:bg-forest-700"
+            className="w-full rounded-xl bg-forest-700 py-3 text-[14px] font-semibold text-white shadow-sm transition hover:bg-forest-800 disabled:opacity-50"
           >
             Simpan transaksi
           </button>
@@ -394,7 +394,7 @@ export function AddTransactionModal({
             !receiptFile && (
               <button
                 onClick={handleAiParse}
-                className="w-full bg-rose-600 text-white rounded-lg py-2.5 text-[14px] font-medium hover:bg-rose-700 flex items-center justify-center gap-1.5"
+                className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-rose-500 py-3 text-[14px] font-semibold text-white shadow-sm transition hover:bg-rose-600"
               >
                 <Sparkles size={14} /> Proses teks dengan AI
               </button>
