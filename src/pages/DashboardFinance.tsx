@@ -464,10 +464,10 @@ export function DashboardFinance() {
             ? ((netCashflow - previousNetCashflow) / Math.abs(previousNetCashflow)) * 100
             : null;
           const netDigits = String(Math.round(Math.abs(netCashflow))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-          return <div className="rounded-[22px] bg-[#F6C445] p-4 text-black">
-            <p className="text-[13px] text-[#5A4A12]">Net cashflow</p>
+          return <div className="rounded-[22px] bg-[#EAF2FA] p-4 text-forest-900">
+            <p className="text-[13px] text-[#53697A]">Net cashflow</p>
             <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
-              <span className="shrink-0 text-[15px] text-[#5A4A12]">Rp</span>
+              <span className="shrink-0 text-[15px] text-[#53697A]">Rp</span>
               <span className="min-w-0 text-[clamp(24px,8vw,32px)] font-medium leading-tight tracking-[-0.5px] text-[#123524] tabular-nums">{netCashflow < 0 ? "-" : ""}{netDigits}</span>
             </div>
             {trend !== null && <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#123524]/[0.12] px-2.5 py-1 text-[12px] font-medium text-[#123524]"><span>{trend >= 0 ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</span><span>{trend >= 0 ? "+" : ""}{Math.round(trend)}% dari bulan lalu</span></div>}
@@ -485,6 +485,11 @@ export function DashboardFinance() {
         })()}
         <ChartCard title={id ? "Pelacak Arus Kas" : "Cashflow Tracker"} subtitle={id ? "Arus kas keluar mencakup pengeluaran dan tabungan." : "Cash out includes expenses and savings."}>
           <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Cash In",amount:totalIncome},{name:"Cash Out",amount:totalExpense+totalSaving},{name:"Net Cashflow",amount:totalIncome-totalExpense-totalSaving}]} barCategoryGap="18%" margin={{top:10,right:8,left:0,bottom:4}}><XAxis dataKey="name" tick={{fontSize:10}} interval={0} axisLine={false} tickLine={false}/><YAxis width={44} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="amount" name="Nominal" radius={[7,7,0,0]} maxBarSize={68}>{[{color:"#0B6B47"},{color:"#F4577A"},{color:"#FFA24C"}].map((item,index)=><Cell key={index} fill={item.color}/>)}</Bar></BarChart></ResponsiveContainer>
+          <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-2 text-[11px] text-charcoal/65">
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-[#0B6B47]"/>{id ? "Kas masuk" : "Cash in"}</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-[#F4577A]"/>{id ? "Kas keluar" : "Cash out"}</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-[#FFA24C]"/>{id ? "Arus kas bersih" : "Net cashflow"}</span>
+          </div>
         </ChartCard>
         {(incomeRows.length > 4 || expenseRows.length > 4 || savingRows.length > 4) && <div className="flex justify-end -mt-2">
           <button type="button" onClick={() => setShowAllCategories((value) => !value)} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold text-forest-700 hover:bg-forest-50">
