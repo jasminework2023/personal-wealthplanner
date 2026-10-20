@@ -88,7 +88,7 @@ export function Home() {
   return (
     <div className="flex flex-col gap-6 pb-6">
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/45">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
+        <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/50">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
         <h1 className="text-[27px] sm:text-[30px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
         <p className="text-[13.5px] text-charcoal/60">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
       </div>
@@ -97,7 +97,7 @@ export function Home() {
         <div className="flex items-center justify-between">
           <p className="flex items-center gap-2 text-[14px] font-normal text-[#A9C9B8]"><CircleDollarSign size={17} strokeWidth={1.8}/>{id ? "Total Aset" : "Total Assets"}</p>
           <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[#A9C9B8]">
-            {assetsVisible ? <Eye size={22} strokeWidth={2}/> : <EyeOff size={22} strokeWidth={2}/>}
+            {assetsVisible ? <Eye size={18} strokeWidth={2}/> : <EyeOff size={18} strokeWidth={2}/>}
           </button>
         </div>
         <div className="mt-2 flex min-w-0 items-baseline gap-1.5 whitespace-nowrap">
@@ -129,7 +129,7 @@ export function Home() {
               aria-valuenow={Math.min(100, Math.max(0, Math.round((assets.totalAssets / assets.target) * 100)))}
             >
               <div
-                className="h-full rounded-full bg-[#6EE7A8] transition-[width] duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#F59BB8] transition-[width] duration-500"
                 style={{ width: `${Math.min(100, Math.max(0, (assets.totalAssets / assets.target) * 100))}%` }}
               />
             </div>
@@ -156,7 +156,7 @@ export function Home() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="section-title">{id ? "Menu Utama" : "Main Menu"}</h2>
-          <span className="text-[11px] text-charcoal/40">Pilih fitur</span>
+          <span className="text-[11.5px] text-charcoal/45">Pilih fitur</span>
         </div>
         <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
           {menus.map(({ label, icon: Icon, to, soon, tone }) => (
@@ -200,7 +200,7 @@ export function Home() {
             </div>
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-rose-50"><div className="h-full rounded-full bg-forest-600 transition-all" style={{ width: progress + "%" }}/></div>
           </button>;
-        })}</div> : <div className="rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-5 text-center"><Target size={22} className="mx-auto text-forest-700"/><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-full bg-[#123524] px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm">Buka Calculator</button></div>}
+        })}</div> : <div className="rounded-[22px] border border-dashed border-rose-200 bg-rose-50/50 px-4 py-6 text-center"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FBD3E0] text-[#B83A62]"><Target size={21}/></span><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-full bg-[#123524] px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm">Buka Calculator</button></div>}
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -213,13 +213,13 @@ export function Home() {
       </div>
 
       <Card>
-        <div className="mb-3 flex items-center justify-between"><h2 className="text-[15px] font-semibold text-forest-900">{id ? "Transaksi Terbaru" : "Recent Transactions"}</h2><button onClick={() => navigate("/transaction")} className="inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700">{id ? "Semua transaksi" : "All transactions"} <ChevronRight size={14}/></button></div>
+        <div className="mb-3 flex items-center justify-between"><h2 className="section-title">{id ? "Transaksi Terbaru" : "Recent Transactions"}</h2><button onClick={() => navigate("/transaction")} className="inline-flex items-center gap-0.5 rounded-full bg-forest-50 px-3 py-1.5 text-[12px] font-semibold text-forest-700">{id ? "Semua transaksi" : "All transactions"} <ChevronRight size={14}/></button></div>
         {recent.length ? <div className="flex flex-col divide-y divide-charcoal/8">{recent.map((t, i) => <div key={t.sheetRow ?? `${t.date}-${t.description}-${i}`} className="flex items-center justify-between gap-3 py-3"><div className="flex min-w-0 items-center gap-3"><TransactionBadge type={t.type}/><div className="min-w-0"><p className="truncate text-[13px] font-medium">{t.description}</p><p className="text-[11px] text-charcoal/50">{t.category} · {t.date}</p></div></div><p className={`num shrink-0 text-[13.5px] font-semibold ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>{t.type === "Expense" ? "−" : "+"}{formatRupiah(t.amount)}</p></div>)}</div> : <p className="py-8 text-center text-[12px] text-charcoal/45">{id ? "Belum ada transaksi. Tekan tombol + untuk mulai mencatat." : "No transactions yet. Press + to start recording."}</p>}
       </Card>
 
-      {quickAddOpen && <div className="wp-backdrop fixed inset-0 z-50 flex items-end justify-center bg-black/35 p-4 sm:items-center" onClick={() => setQuickAddOpen(false)}>
-        <div className="wp-sheet relative w-full max-w-sm rounded-[28px] bg-white p-5 pb-[max(20px,env(safe-area-inset-bottom))] shadow-float" onClick={(e) => e.stopPropagation()}>
-          <div className="mb-4 flex items-center justify-between"><h3 className="text-[17px] font-bold tracking-[-0.02em] text-forest-900">Tambah Data</h3><button onClick={() => setQuickAddOpen(false)} aria-label="Tutup" className="rounded-lg p-1 text-charcoal/50"><X size={18}/></button></div>
+      {quickAddOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/35 p-4 sm:items-center" onClick={() => setQuickAddOpen(false)}>
+        <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="mb-4 flex items-center justify-between"><h3 className="text-[16px] font-semibold text-forest-900">Tambah Data</h3><button onClick={() => setQuickAddOpen(false)} aria-label="Tutup" className="rounded-lg p-1 text-charcoal/50"><X size={18}/></button></div>
           <button onClick={() => { setModalMode("manual"); setModalOpen(true); setQuickAddOpen(false); }} className="mb-2 flex w-full items-center gap-3 rounded-2xl border border-rose-100 p-3 text-left hover:bg-rose-50/50"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-forest-700"><Plus size={19}/></span><span><span className="block text-[13px] font-semibold text-forest-900">{id ? "Catat Transaksi" : "Record Transaction"}</span><span className="block text-[11px] text-charcoal/50">{id ? "Isi pemasukan, pengeluaran, atau tabungan" : "Enter income, expenses, or savings"}</span></span></button>
           <button onClick={() => { setModalMode("ai"); setModalOpen(true); setQuickAddOpen(false); }} className="flex w-full items-center gap-3 rounded-2xl border border-rose-100 p-3 text-left hover:bg-rose-50/50"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-forest-700"><Sparkles size={19}/></span><span><span className="block text-[13px] font-semibold text-forest-900">{id ? "Catat dengan AI" : "Track with AI"}</span><span className="block text-[11px] text-charcoal/50">Tulis transaksi atau unggah foto struk</span></span></button>
         </div>
