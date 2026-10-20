@@ -81,7 +81,7 @@
 /* ============================================================
    DARK MODE
    Teks jadi terang, permukaan jadi gelap, aksen dinaikkan
-   kecerahannya supaya tetap terbaca di atas background gelap.
+   kecerahannya supaya tetap terbaca di atas latar gelap.
    ============================================================ */
 html.dark {
   --c-forest-50: 24 45 37;
@@ -156,59 +156,6 @@ html.dark {
 html,
 body {
   font-family: "Inter", system-ui, sans-serif;
-  font-feature-settings: "cv11", "ss03";
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#root,
-#root * {
-  font-family: inherit;
-  font-feature-settings: inherit;
-}
-
-/* Wealthplanner typography scale — mobile first */
-h1 {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-}
-
-h2 {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-}
-
-h3 {
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-p {
-  line-height: 1.5;
-}
-
-/* Financial values remain compact and legible on narrow screens. */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-}
-
-@media (max-width: 767px) {
-  .text-\[19px\],
-  .text-\[20px\],
-  .text-\[21px\],
-  .text-\[22px\],
-  .text-\[24px\] {
-    font-size: clamp(24px, 8vw, 32px);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    white-space: nowrap;
-    max-width: 100%;
-  }
 }
 
 body {
@@ -475,73 +422,3 @@ html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: 
   color: #ffffff !important;
   border-color: transparent !important;
 }
-
-
-/* ============================================================
-   DESIGN LAYER v2 — rapi & eye-catching (mobile first)
-   Hanya tampilan. Tidak menyentuh data, rumus, atau struktur.
-   Bahasa visual mengikuti Cashflow Tracker: Inter medium, angka
-   tabular, kartu radius 22px, hijau hutan + kuning butter + rose.
-   ============================================================ */
-html { -webkit-text-size-adjust: 100%; }
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-tap-highlight-color: transparent;
-  font-feature-settings: "cv11", "ss03";
-}
-h1, h2, h3 { letter-spacing: -0.02em; }
-button { -webkit-tap-highlight-color: transparent; }
-button:not(:disabled):active { transform: scale(0.98); }
-button { transition: transform .12s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease; }
-
-/* Angka uang: gaya Cashflow Tracker */
-.num { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-
-/* Hero hijau: satu-satunya "momen berani" di Home & Anggaran */
-.hero-forest {
-  background:
-    radial-gradient(120% 80% at 100% -10%, rgba(245, 155, 184, 0.30), transparent 55%),
-    radial-gradient(90% 70% at -10% 110%, rgba(110, 231, 168, 0.16), transparent 60%),
-    #123524;
-  color: #fff;
-}
-.hero-butter {
-  background:
-    radial-gradient(100% 80% at 100% 0%, rgba(255, 255, 255, 0.35), transparent 55%),
-    #F6C445;
-  color: #123524;
-}
-.hero-forest, .hero-butter { position: relative; overflow: hidden; }
-
-/* Kartu & judul halaman */
-.page-title { font-size: 26px; line-height: 1.1; font-weight: 700; letter-spacing: -0.03em; color: rgb(var(--c-forest-900)); }
-.page-sub { margin-top: 6px; font-size: 13px; line-height: 1.45; color: rgb(var(--c-charcoal) / 0.6); }
-.section-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: rgb(var(--c-forest-900)); }
-
-/* Bottom sheet (mobile) */
-@keyframes wp-sheet-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes wp-fade { from { opacity: 0; } to { opacity: 1; } }
-.wp-sheet { animation: wp-sheet-up .22s cubic-bezier(.2,.8,.2,1) both; }
-.wp-backdrop { animation: wp-fade .18s ease both; }
-
-/* Navigasi bawah mengambang */
-.wp-nav {
-  background: #123524;
-  box-shadow: 0 18px 40px -12px rgba(15, 42, 32, 0.5), 0 4px 12px rgba(15, 42, 32, 0.2);
-}
-html.dark .wp-nav {
-  background: #1b2822;
-  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-}
-
-/* Fokus keyboard yang terlihat */
-:focus-visible { outline: 2px solid rgb(var(--c-forest-500)); outline-offset: 2px; border-radius: 8px; }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-}
-
-/* Dark: halaman & kartu */
-html.dark .hero-butter { color: #123524; }
-html.dark .page-sub { color: #b8c9c1; }
