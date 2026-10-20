@@ -429,3 +429,29 @@ html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: 
 .home-asset-summary span {
   font-family: "Poppins", sans-serif;
 }
+
+
+/* Numeric values stay on one line and align consistently. */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Calculator content is constrained to the viewport without changing its layout. */
+.wp-calculator {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+  box-sizing: border-box;
+}
+.wp-calculator *,
+.wp-calculator *::before,
+.wp-calculator *::after {
+  box-sizing: border-box;
+}
+.wp-calculator img,
+.wp-calculator svg,
+.wp-calculator canvas {
+  max-width: 100%;
+}
