@@ -250,47 +250,29 @@ export function DashboardFinance() {
           <button type="button" onClick={() => { setSelectedMonth(draftMonth); setSelectedYear(draftYear); setPeriodOpen(false); }} className="mt-5 w-full rounded-xl bg-[#0B4D38] px-4 py-3 text-[14px] font-semibold text-white hover:bg-[#083c2c]">Terapkan</button>
         </div>
       </div>}
-      <section className="bg-transparent">
-        <div className="flex items-center justify-between gap-3">
-          <button type="button" aria-label="Sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm transition-colors hover:bg-forest-50"><ChevronLeft size={18}/></button>
-          <h2 aria-live="polite" className="min-w-0 flex-1 text-center text-[19px] font-bold tracking-[-0.025em] leading-tight text-forest-900">{reportTabs[activeTabIndex].label}</h2>
-          <button type="button" aria-label="Berikutnya" onClick={() => selectReportTab(activeTabIndex + 1)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm transition-colors hover:bg-forest-50"><ChevronRight size={18}/></button>
+      <section aria-label="Report tabs">
+        <div className="flex items-center gap-2">
+          <button type="button" aria-label="Sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm transition-colors hover:bg-forest-50"><ChevronLeft size={18}/></button>
+          <div className="grid min-w-0 flex-1 grid-cols-3 gap-1 rounded-full border border-forest-100/60 bg-white p-1 shadow-sm" aria-label="Pilihan laporan">
+            {reportTabs.map((tab) => <button key={tab.id} type="button" onClick={() => setActiveReportTab(tab.id)} aria-current={activeReportTab === tab.id ? "page" : undefined} className={`min-w-0 rounded-full px-1 py-2.5 text-center text-[clamp(9px,2.6vw,12.5px)] font-semibold leading-tight transition-colors sm:px-2 ${activeReportTab === tab.id ? "bg-[#123524] text-white shadow-sm" : "text-forest-800 hover:bg-forest-50"}`}>{tab.label}</button>)}
+          </div>
+          <button type="button" aria-label="Berikutnya" onClick={() => selectReportTab(activeTabIndex + 1)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm transition-colors hover:bg-forest-50"><ChevronRight size={18}/></button>
         </div>
-        <div className="mt-3 flex items-center justify-center gap-2" aria-label="Pilihan laporan">
-          {reportTabs.map((tab) => <span key={tab.id} className={`h-1.5 rounded-full transition-all duration-150 ${activeReportTab===tab.id?"w-6 bg-[#F59BB8]":"w-1.5 bg-charcoal/20"}`} />)}
+      </section>
+
+      <section className="hero-forest rounded-[26px] p-5 text-white shadow-float">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div><p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/60">Financial Summary</p><p className="mt-1 text-[13px] text-white/75">{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</p></div>
+          <span className="rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-[#F59BB8]">Finance Report</span>
+        </div>
+        <div className="grid grid-cols-3 divide-x divide-white/20">
+          <div className="min-w-0 pr-2 sm:pr-4"><p className="text-[10.5px] leading-tight text-white/70 sm:text-[12px]">Total Income</p><p className="num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight">{formatRupiah(totalIncome)}</p></div>
+          <div className="min-w-0 px-2 sm:px-4"><p className="text-[10.5px] leading-tight text-white/70 sm:text-[12px]">Total Expense</p><p className="num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight">{formatRupiah(totalExpense)}</p></div>
+          <div className="min-w-0 pl-2 sm:pl-4"><p className="text-[10.5px] leading-tight text-white/70 sm:text-[12px]">Net Result</p><p className={`num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight ${totalIncome-totalExpense < 0 ? "text-[#FFB4D2]" : "text-[#6EE7A8]"}`}>{formatRupiah(totalIncome-totalExpense)}</p></div>
         </div>
       </section>
 
       {activeReportTab === "income" && <>
-        {(() => {
-          const monthIndex = monthNames.indexOf(selectedMonth);
-          const previousMonth = monthNames[(monthIndex + 11) % 12];
-          const previousYear = monthIndex === 0 ? selectedYear - 1 : selectedYear;
-          const previousTransactions = historyData.transactions.filter((t) => {
-            const year = Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear));
-            return String(t.month || "").toLowerCase() === previousMonth.toLowerCase() && year === previousYear;
-          });
-          const previousIncome = previousTransactions.filter((t) => t.type === "Income").reduce((sum, t) => sum + t.amount, 0);
-          const previousExpense = previousTransactions.filter((t) => t.type === "Expense").reduce((sum, t) => sum + t.amount, 0);
-          const changePct = (current: number, previous: number) => previous > 0 ? ((current - previous) / previous) * 100 : null;
-          const incomeChange = changePct(totalIncome, previousIncome);
-          const expenseChange = changePct(totalExpense, previousExpense);
-          const ChangeLabel = ({ value }: { value: number | null }) => value === null
-            ? <p className="mt-2 text-[12px] text-white/60">—</p>
-            : <p className={`mt-2 flex items-center gap-1 text-[12px] font-semibold ${value >= 0 ? "text-[#6EE7A8]" : "text-[#FFB4D2]"}`}><span>{value >= 0 ? "↑" : "↓"}</span><span>{value >= 0 ? "+" : ""}{value.toFixed(1).replace(".", ",")}%</span></p>;
-          return <div className="hero-forest grid grid-cols-2 gap-0 rounded-[24px] p-5 text-white shadow-float">
-            <div className="min-w-0 border-r border-white/20 pr-3 sm:pr-5">
-              <p className="text-[12.5px] leading-tight text-white/75 sm:text-sm">Total Income</p>
-              <p className="num mt-2 break-words text-[clamp(15px,4.8vw,20px)] font-semibold leading-tight">{formatRupiah(totalIncome)}</p>
-              <ChangeLabel value={incomeChange}/>
-            </div>
-            <div className="min-w-0 pl-3 sm:pl-5">
-              <p className="text-[12.5px] leading-tight text-white/75 sm:text-sm">Total Expense</p>
-              <p className="num mt-2 break-words text-[clamp(15px,4.8vw,20px)] font-semibold leading-tight">{formatRupiah(totalExpense)}</p>
-              <ChangeLabel value={expenseChange}/>
-            </div>
-          </div>;
-        })()}
         <ChartCard title={id ? "Laporan Laba Rugi" : "Income Statement"} subtitle={id ? "Pemasukan dan pengeluaran aktual pada periode ini." : "Actual income and expenses for this period."}>
           <div className="w-full">
             <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Periode ini",income:totalIncome,expense:totalExpense}]} barCategoryGap="8%" barGap={12} margin={{top:10,right:8,left:0,bottom:0}}><XAxis dataKey="name" hide/><YAxis width={48} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="income" name="Total Income" fill="#0B6B47" radius={[8,8,0,0]} maxBarSize={88}/><Bar dataKey="expense" name="Total Expense" fill="#F4577A" radius={[8,8,0,0]} maxBarSize={88}/></BarChart></ResponsiveContainer>
