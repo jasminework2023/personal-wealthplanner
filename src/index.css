@@ -493,3 +493,49 @@ html.dark .wp-nav {
 /* Dark: halaman & kartu */
 html.dark .hero-butter { color: #123524; }
 html.dark .page-sub { color: #b8c9c1; }
+
+
+/* Wealth Planner: keep numeric values on one line throughout the app. */
+.num,
+.tabular-nums,
+[data-numeric],
+.recharts-label,
+.recharts-cartesian-axis-tick-value {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+
+.num,
+.tabular-nums {
+  min-width: 0;
+  max-width: 100%;
+  font-size: clamp(0.72rem, 2.7vw, 1em);
+}
+
+/* Calculator: preserve mobile layout while allowing desktop content to shrink
+   inside grids instead of clipping or pushing columns beyond their cards. */
+.wp-calculator,
+.wp-calculator .card,
+.wp-calculator [class*="grid"],
+.wp-calculator [class*="flex"] {
+  min-width: 0;
+}
+
+.wp-calculator {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .wp-calculator {
+    overflow-x: clip;
+  }
+
+  .wp-calculator input,
+  .wp-calculator select,
+  .wp-calculator button {
+    max-width: 100%;
+  }
+}
