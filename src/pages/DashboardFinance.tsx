@@ -249,19 +249,13 @@ export function DashboardFinance() {
         </div>
       </div>}
       <section className="bg-transparent">
-        <div className="grid grid-cols-3 gap-1 rounded-2xl bg-charcoal/[0.04] p-1" role="tablist" aria-label={id ? "Pilihan laporan" : "Report tabs"}>
-          {reportTabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={activeReportTab === tab.id}
-              onClick={() => setActiveReportTab(tab.id)}
-              className={`min-w-0 rounded-xl px-2 py-3 text-center text-[11px] font-medium leading-tight transition-colors sm:text-[13px] ${activeReportTab === tab.id ? "bg-white text-forest-800 shadow-sm" : "text-charcoal/60 hover:text-forest-800"}`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="flex items-center justify-between gap-3">
+          <button type="button" aria-label="Sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full border border-charcoal/10 text-forest-700 transition-colors hover:bg-forest-50"><ChevronLeft size={18}/></button>
+          <h2 aria-live="polite" className="min-w-0 flex-1 text-center text-[18px] font-medium leading-tight text-forest-900">{reportTabs[activeTabIndex].label}</h2>
+          <button type="button" aria-label="Berikutnya" onClick={() => selectReportTab(activeTabIndex + 1)} className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full border border-charcoal/10 text-forest-700 transition-colors hover:bg-forest-50"><ChevronRight size={18}/></button>
+        </div>
+        <div className="mt-3 flex items-center justify-center gap-2" aria-label="Pilihan laporan">
+          {reportTabs.map((tab) => <span key={tab.id} className={`h-1.5 rounded-full transition-all duration-150 ${activeReportTab===tab.id?"w-5 bg-forest-700":"w-1.5 bg-charcoal/20"}`} />)}
         </div>
       </section>
 
