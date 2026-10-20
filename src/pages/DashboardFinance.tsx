@@ -285,20 +285,40 @@ export function DashboardFinance() {
       </section>
 
 
-      {activeReportTab === "income" && <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {[
-          { label: id ? "Total Pemasukan" : "Total Income", value: totalIncome, previous: historyData.transactions.filter((t) => t.type === "Income" && String(t.month || "").toLowerCase() === monthNames[(monthNames.indexOf(selectedMonth) + 11) % 12].toLowerCase() && Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear)) === (monthNames.indexOf(selectedMonth) === 0 ? selectedYear - 1 : selectedYear)).reduce((sum, t) => sum + t.amount, 0) },
-          { label: id ? "Total Pengeluaran" : "Total Expense", value: totalExpense, previous: historyData.transactions.filter((t) => t.type === "Expense" && String(t.month || "").toLowerCase() === monthNames[(monthNames.indexOf(selectedMonth) + 11) % 12].toLowerCase() && Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear)) === (monthNames.indexOf(selectedMonth) === 0 ? selectedYear - 1 : selectedYear)).reduce((sum, t) => sum + t.amount, 0) },
-        ].map((item) => {
-          const change = item.previous > 0 ? ((item.value - item.previous) / item.previous) * 100 : null;
-          const positive = change !== null && change >= 0;
-          return <div key={item.label} className="rounded-[22px] border border-forest-100/60 bg-white p-4 shadow-card">
-            <div className="flex items-center justify-between gap-3"><p className="text-[12px] font-semibold text-charcoal/60">{item.label}</p><span className="text-[11px] font-semibold" style={{ color: positive ? "#39FF88" : "#FF72B6" }}>{change === null ? "—" : (change >= 0 ? "+" : "") + change.toFixed(1) + "%"}</span></div>
-            <p className="num mt-2 text-[clamp(15px,3.6vw,23px)] font-bold leading-tight text-forest-900">{formatRupiah(item.value)}</p>
-            <p className="mt-1 text-[10px] text-charcoal/45">{id ? "Perubahan dibanding bulan sebelumnya" : "Change vs previous month"}</p>
-          </div>;
-        })}
-      </section>}
+      {activeReportTab === "income" && (() => {
+        const monthIndex = monthNames.indexOf(selectedMonth);
+        const previousMonth = monthNames[(monthIndex + 11) % 12];
+        const previousYear = monthIndex === 0 ? selectedYear - 1 : selectedYear;
+        const previousTransactions = historyData.transactions.filter((t) => String(t.month || "").toLowerCase() === previousMonth.toLowerCase() && Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear)) === previousYear);
+        const previousIncome = previousTransactions.filter((t) => t.type === "Income").reduce((sum, t) => sum + t.amount, 0);
+        const previousExpense = previousTransactions.filter((t) => t.type === "Expense").reduce((sum, t) => sum + t.amount, 0);
+        const incomeChange = previousIncome > 0 ? ((totalIncome - previousIncome) / previousIncome) * 100 : null;
+        const expenseChange = previousExpense > 0 ? ((totalExpense - previousExpense) / previousExpense) * 100 : null;
+        const surplus = totalIncome - totalExpense;
+        const surplusDigits = String(Math.round(Math.abs(surplus))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        return <section className="rounded-[22px] bg-[#E3F4EA] p-4 text-[#123524]">
+          <p className="text-[13px] font-medium text-[#5E7A6C]">{surplus >= 0 ? "Surplus" : "Defisit"}</p>
+          <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
+            <span className="shrink-0 text-[15px] text-[#5E7A6C]">Rp</span>
+            <span className="min-w-0 text-[clamp(24px,8vw,32px)] font-medium leading-tight tracking-[-0.5px] tabular-nums" style={{color: surplus < 0 ? "#C23A5B" : "#123524"}}>{surplus < 0 ? "-" : ""}{surplusDigits}</span>
+          </div>
+          <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
+            {[
+              { key: "income", label: "Income", value: totalIncome, change: incomeChange, Icon: ArrowDownLeft, iconClass: "bg-[#DFF3E7] text-[#0B6B47]", changeColor: incomeChange === null ? undefined : incomeChange >= 0 ? "#0B6B47" : "#C23A5B" },
+              { key: "expense", label: "Expense", value: totalExpense, change: expenseChange, Icon: ArrowUpRight, iconClass: "bg-[#FDE3EA] text-[#C23A5B]", changeColor: expenseChange === null ? undefined : expenseChange >= 0 ? "#C23A5B" : "#0B6B47" },
+            ].map((item) => <div key={item.key} className="min-w-0 rounded-2xl bg-white p-3">
+              <div className="flex min-w-0 items-center justify-between gap-1.5">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${item.iconClass}`}><item.Icon size={16}/></span>
+                  <span className="truncate text-[12px] text-[#6B7B70]">{item.label}</span>
+                </div>
+                {item.change !== null && <span className="shrink-0 text-[11px] font-semibold tabular-nums" style={{color:item.changeColor}}>{item.change >= 0 ? "+" : ""}{item.change.toFixed(1)}%</span>}
+              </div>
+              <p className="mt-2 whitespace-nowrap text-[clamp(10px,3.2vw,15px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(item.value)}</p>
+            </div>)}
+          </div>
+        </section>;
+      })()}
       {activeReportTab === "income" && <>
         <div className="grid items-start gap-4 lg:grid-cols-2">
           <ChartCard title={id ? "Tren Pemasukan & Pengeluaran" : "Income & Expense Trends"} subtitle={id ? "Perubahan dari bulan ke bulan pada tahun terpilih." : "Month-to-month changes for the selected year."}>
@@ -332,25 +352,25 @@ export function DashboardFinance() {
       
       {activeReportTab === "assets" && <>
       {/* E. Asset Tracker */}
-            <div className="hero-forest mb-4 rounded-[24px] p-5 text-white shadow-float">
+            <div className="mb-4 rounded-[24px] bg-[#FFF1C2] p-5 text-[#123524] shadow-float">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12px] text-white/70">Total aset</p>
-                  <p className="num mt-1.5 break-words text-[clamp(24px,8.4vw,32px)] font-semibold leading-[1.1]">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
-                  <p className="mt-2 text-[12px] text-white/75">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
+                  <p className="text-[12px] text-[#5A4A12]">Total aset</p>
+                  <p className="num mt-1.5 whitespace-nowrap text-[clamp(24px,7vw,32px)] font-medium leading-[1.1] tracking-[-0.5px] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
+                  <p className="mt-2 text-[12px] text-[#5A4A12]/80">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
                 </div>
-                <button type="button" onClick={() => setAssetValuesHidden((hidden) => !hidden)} aria-label={assetValuesHidden ? "Tampilkan nominal aset" : "Sembunyikan nominal aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">{assetValuesHidden ? <Eye size={17}/> : <EyeOff size={17}/>}</button>
+                <button type="button" onClick={() => setAssetValuesHidden((hidden) => !hidden)} aria-label={assetValuesHidden ? "Tampilkan nominal aset" : "Sembunyikan nominal aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#5A4A12]/10 text-[#5A4A12] hover:bg-[#5A4A12]/15">{assetValuesHidden ? <Eye size={17}/> : <EyeOff size={17}/>}</button>
               </div>
-              {assets.target > 0 && <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/20"><div className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#F59BB8]" style={{width:`${Math.min(Math.max(assetProgress,0),100)}%`}} /></div>}
-              <div className="mt-4 rounded-xl bg-white/10 p-3">
+              {assets.target > 0 && <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#5A4A12]/15"><div className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#F59BB8]" style={{width:`${Math.min(Math.max(assetProgress,0),100)}%`}} /></div>}
+              <div className="mt-4 rounded-xl bg-white/55 p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] text-white/75">Target aset</p>
-                  {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="text-[11px] font-semibold text-white underline underline-offset-2">Edit</button>}
+                  <p className="text-[11px] text-[#5A4A12]">Target aset</p>
+                  {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="text-[11px] font-semibold text-[#5A4A12] underline underline-offset-2">Edit</button>}
                 </div>
-                {editingAssetTarget ? <div className="mt-2 flex gap-2"><input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 flex-1 rounded-lg border border-white/20 bg-white px-2.5 py-2 text-[13px] text-charcoal outline-none focus:border-forest-400" placeholder="Target aset" /><button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) throw new Error("Gagal menyimpan target"); setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { console.error(e); } finally { setSavingAssetTarget(false); } }} className="rounded-lg bg-white px-3 py-2 text-[12px] font-semibold text-forest-900 disabled:opacity-50">{savingAssetTarget ? "..." : "Simpan"}</button></div> : <p className="mt-1 text-[16px] font-semibold">{assets.target > 0 ? (assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.target)) : "Belum diatur"}</p>}
+                {editingAssetTarget ? <div className="mt-2 flex gap-2"><input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 flex-1 rounded-lg border border-[#5A4A12]/20 bg-white px-2.5 py-2 text-[13px] text-charcoal outline-none focus:border-forest-400" placeholder="Target aset" /><button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) throw new Error("Gagal menyimpan target"); setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { console.error(e); } finally { setSavingAssetTarget(false); } }} className="rounded-lg bg-[#123524] px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-50">{savingAssetTarget ? "..." : "Simpan"}</button></div> : <p className="mt-1 whitespace-nowrap text-[clamp(24px,6.5vw,28px)] font-medium leading-tight tracking-[-0.4px] text-[#123524] tabular-nums">{assets.target > 0 ? (assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.target)) : "Belum diatur"}</p>}
               </div>
             </div>
-            <ChartCard title={id ? "Pelacak Aset" : "Asset Tracker"} subtitle={id ? "Pantau aset saat ini dan progres menuju target." : "Track your current assets and progress toward your goal."}>
+            <Card>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="order-2 lg:order-2">
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -446,7 +466,7 @@ export function DashboardFinance() {
             )}
           </div>
         </div>
-      </ChartCard>
+      </Card>
 
       </>}
 
