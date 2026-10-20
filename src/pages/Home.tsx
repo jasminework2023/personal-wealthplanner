@@ -89,7 +89,7 @@ export function Home() {
     <div className="flex flex-col gap-5 pb-6">
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/45">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
-        <h1 className="text-[25px] sm:text-[28px] font-semibold tracking-tight text-forest-900">{greetingWord()}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
+        <h1 className="text-[25px] sm:text-[28px] font-semibold tracking-tight text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
         <p className="text-[13px] text-charcoal/55">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
       </div>
 
