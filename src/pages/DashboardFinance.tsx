@@ -227,7 +227,7 @@ export function DashboardFinance() {
       <div className="flex items-center justify-between gap-2 -mt-3">
         <h1 className="text-[19px] font-medium leading-tight text-forest-900">{id ? "Laporan Keuangan" : "Financial Statement"}</h1>
         <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-full border border-charcoal/10 bg-transparent px-2.5 py-1.5 text-[12px] font-medium text-forest-900">
-          <CalendarDays size={15} className="shrink-0 text-forest-700" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-charcoal/50" />
+          <CalendarDays size={15} className="shrink-0 text-forest-700" /><span>{displayMonth(selectedMonth)} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-charcoal/50" />
         </button>
       </div>
       {periodOpen && <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setPeriodOpen(false); }}>
@@ -245,7 +245,7 @@ export function DashboardFinance() {
           <div className="mt-4 grid grid-cols-3 gap-2">
             {monthNames.map((month, index) => {
               const disabled = draftYear > now.getFullYear() || (draftYear === now.getFullYear() && index > now.getMonth());
-              return <button key={month} type="button" disabled={disabled} onClick={() => setDraftMonth(month)} className={`rounded-xl px-2 py-3 text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-25 ${draftMonth === month ? "bg-[#0B4D38] text-white" : "bg-charcoal/[0.04] text-charcoal/75 hover:bg-forest-50"}`}>{month.slice(0,3)}</button>;
+              return <button key={month} type="button" disabled={disabled} onClick={() => setDraftMonth(month)} className={`rounded-xl px-2 py-3 text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-25 ${draftMonth === month ? "bg-[#0B4D38] text-white" : "bg-charcoal/[0.04] text-charcoal/75 hover:bg-forest-50"}`}>{displayMonth(month).slice(0,3)}</button>;
             })}
           </div>
           <button type="button" onClick={() => { setSelectedMonth(draftMonth); setSelectedYear(draftYear); setPeriodOpen(false); }} className="mt-5 w-full rounded-xl bg-[#0B4D38] px-4 py-3 text-[14px] font-semibold text-white hover:bg-[#083c2c]">{id ? "Terapkan" : "Apply"}</button>
