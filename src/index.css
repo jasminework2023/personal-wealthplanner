@@ -455,3 +455,24 @@ html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: 
 .wp-calculator canvas {
   max-width: 100%;
 }
+
+@media (max-width: 767px) {
+  .wp-calculator .wp-calc-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100%;
+    min-width: 0;
+  }
+  .wp-calculator .wp-calc-grid > * {
+    width: 100%;
+    min-width: 0;
+  }
+  .wp-calculator .wp-calc-card {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  .wp-calculator .wp-calc-card [style*="font-size: 78px"],
+  .wp-calculator .wp-calc-card [style*="fontSize: 78px"] {
+    font-size: clamp(34px, 10vw, 64px) !important;
+  }
+}
