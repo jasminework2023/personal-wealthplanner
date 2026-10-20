@@ -126,7 +126,7 @@ export function DashboardWelcome() {
             {active ? <CheckCircle2 size={28} /> : <Clock3 size={28} />}
           </div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-forest-600">Wealthplanner Personal</p>
-          <h1 className="mt-2 text-[30px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900">
+          <h1 className="mt-2 text-3xl font-semibold text-forest-900">
             {active ? `Selamat datang${data?.username ? `, ${data.username}` : ""} 👋` : "Menunggu konfirmasi pembayaran"}
           </h1>
           <p className="mt-2 text-sm text-charcoal/60">
@@ -154,7 +154,7 @@ export function DashboardWelcome() {
               <button
                 onClick={() => checkActivation()}
                 disabled={checking}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#F59BB8] px-4 py-3 text-sm font-bold text-[#123524] shadow-pop disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-forest-600 px-4 py-3 text-sm font-semibold text-white hover:bg-forest-700 disabled:opacity-50"
               >
                 {checking ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
                 {checking ? "Mengecek..." : "Cek status aktivasi"}
