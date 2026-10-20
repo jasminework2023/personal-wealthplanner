@@ -86,17 +86,17 @@ export function Home() {
   }, [assets.totalAssets, isRealData]);
 
   return (
-    <div className="flex flex-col gap-6 pb-6">
+    <div className="flex flex-col gap-4 pb-4">
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/50">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
         <h1 className="text-[21px] sm:text-[24px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
         <p className="text-[13.5px] text-charcoal/60">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
       </div>
 
-      <Card className="home-asset-summary hero-forest w-full overflow-hidden border-0 !rounded-[22px] bg-[#123524] p-4 text-white shadow-float" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
+      <Card className="home-asset-summary hero-forest w-full overflow-hidden border-0 !rounded-[20px] bg-[#123524] p-3.5 text-white shadow-float" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
         <div className="flex items-center justify-between">
           <p className="flex items-center gap-2 text-[11.5px] font-normal text-[#A9C9B8]"><CircleDollarSign size={17} strokeWidth={1.8}/>{id ? "Total Aset" : "Total Assets"}</p>
-          <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[#A9C9B8]">
+          <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#A9C9B8]">
             {assetsVisible ? <Eye size={18} strokeWidth={2}/> : <EyeOff size={18} strokeWidth={2}/>}
           </button>
         </div>
@@ -113,15 +113,15 @@ export function Home() {
           </div>
         )}
         {assets.target > 0 && (
-          <div className="mt-4">
-            <div className="mb-2 flex items-center justify-between gap-3">
+          <div className="mt-3">
+            <div className="mb-1.5 flex items-center justify-between gap-3">
               <span className="text-[13px] font-normal text-[#A9C9B8]">{id ? "% dari target" : "% of target"}</span>
               <span className="shrink-0 text-[14px] font-medium text-white tabular-nums">
                 {Math.round((assets.totalAssets / assets.target) * 100)}%
               </span>
             </div>
             <div
-              className="h-2.5 w-full overflow-hidden rounded-full bg-white/[0.16]"
+              className="h-2 w-full overflow-hidden rounded-full bg-white/[0.16]"
               role="progressbar"
               aria-label="Progress target aset"
               aria-valuemin={0}
@@ -135,17 +135,17 @@ export function Home() {
             </div>
           </div>
         )}
-        <div className="mt-5 grid grid-cols-2 gap-2.5">
-          <div className="flex min-w-0 flex-col self-start rounded-2xl bg-white/[0.10] p-3.5 backdrop-blur-sm">
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="flex min-w-0 flex-col self-start rounded-xl bg-white/[0.10] p-2.5 backdrop-blur-sm">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><ArrowDownLeft size={17} strokeWidth={2}/></span>
+              <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><ArrowDownLeft size={17} strokeWidth={2}/></span>
               <span className="truncate text-[11.5px] font-normal text-[#A9C9B8]">{id ? "Pemasukan" : "Income"}</span>
             </div>
             <p className="mt-1.5 break-words text-[clamp(12px,3.6vw,14px)] font-medium leading-tight tracking-[-0.2px] tabular-nums">{formatRupiah(totalIncome)}</p>
           </div>
-          <div className="flex min-w-0 flex-col self-start rounded-2xl bg-white/[0.10] p-3.5 backdrop-blur-sm">
+          <div className="flex min-w-0 flex-col self-start rounded-xl bg-white/[0.10] p-2.5 backdrop-blur-sm">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#FFB4A2]/[0.18] text-[#FFB4A2]"><ArrowUpRight size={17} strokeWidth={2}/></span>
+              <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[#FFB4A2]/[0.18] text-[#FFB4A2]"><ArrowUpRight size={17} strokeWidth={2}/></span>
               <span className="truncate text-[11.5px] font-normal text-[#A9C9B8]">{id ? "Pengeluaran" : "Expense"}</span>
             </div>
             <p className="mt-1.5 break-words text-[clamp(12px,3.6vw,14px)] font-medium leading-tight tracking-[-0.2px] tabular-nums">{formatRupiah(totalExpense)}</p>
@@ -154,18 +154,18 @@ export function Home() {
       </Card>
 
       <section>
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between">
           <h2 className="section-title">{id ? "Menu Utama" : "Main Menu"}</h2>
           <span className="text-[11.5px] text-charcoal/45">Pilih fitur</span>
         </div>
         <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
           {menus.map(({ label, icon: Icon, to, soon, tone }) => (
             <button key={label} type="button" disabled={Boolean(soon)} onClick={() => to && navigate(to)}
-              className={`relative flex min-h-[104px] flex-col items-center justify-center gap-2.5 rounded-[20px] border border-forest-100/50 bg-white px-1.5 py-3 text-center shadow-card transition sm:min-h-[112px] ${soon ? "cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-float"}`}>
-              <span className={`flex h-11 w-11 items-center justify-center rounded-[15px] ${tone} ${soon ? "opacity-60" : ""}`}>
-                <Icon size={21} strokeWidth={2.1}/>
+              className={`relative flex min-h-[82px] flex-col items-center justify-center gap-1.5 rounded-[16px] border border-forest-100/50 bg-white px-1 py-2 text-center shadow-card transition sm:min-h-[96px] ${soon ? "cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-float"}`}>
+              <span className={`flex h-9 w-9 items-center justify-center rounded-[12px] ${tone} ${soon ? "opacity-60" : ""}`}>
+                <Icon size={19} strokeWidth={2.1}/>
               </span>
-              <span className={`text-[12px] font-semibold leading-tight text-forest-900 ${soon ? "opacity-70" : ""}`}>{label}</span>
+              <span className={`text-[11.5px] font-semibold leading-tight text-forest-900 ${soon ? "opacity-70" : ""}`}>{label}</span>
               {soon && <span className="absolute right-2 top-2 rounded-full bg-[#F59BB8] px-1.5 py-0.5 text-[8.5px] font-bold leading-none text-[#123524]">Soon</span>}
             </button>
           ))}
@@ -180,7 +180,7 @@ export function Home() {
       </div>
 
       <section>
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between">
           <h2 className="section-title">{id ? "Tujuan Keuangan" : "Financial Goals"}</h2>
           <button onClick={() => navigate("/goals")} className="inline-flex items-center gap-0.5 rounded-full bg-forest-50 px-3 py-1.5 text-[12px] font-semibold text-forest-700">Lihat semua <ChevronRight size={14}/></button>
         </div>
@@ -213,7 +213,7 @@ export function Home() {
       </div>
 
       <Card>
-        <div className="mb-3 flex items-center justify-between"><h2 className="section-title">{id ? "Transaksi Terbaru" : "Recent Transactions"}</h2><button onClick={() => navigate("/transaction")} className="inline-flex items-center gap-0.5 rounded-full bg-forest-50 px-3 py-1.5 text-[12px] font-semibold text-forest-700">{id ? "Semua transaksi" : "All transactions"} <ChevronRight size={14}/></button></div>
+        <div className="mb-2 flex items-center justify-between"><h2 className="section-title">{id ? "Transaksi Terbaru" : "Recent Transactions"}</h2><button onClick={() => navigate("/transaction")} className="inline-flex items-center gap-0.5 rounded-full bg-forest-50 px-3 py-1.5 text-[12px] font-semibold text-forest-700">{id ? "Semua transaksi" : "All transactions"} <ChevronRight size={14}/></button></div>
         {recent.length ? <div className="flex flex-col divide-y divide-charcoal/8">{recent.map((t, i) => <div key={t.sheetRow ?? `${t.date}-${t.description}-${i}`} className="flex items-center justify-between gap-3 py-3"><div className="flex min-w-0 items-center gap-3"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${t.type === "Income" ? "bg-[#DFF3E7] text-[#0B6B47]" : t.type === "Expense" ? "bg-[#FDE3EA] text-[#C23A5B]" : "bg-[#E8DDFA] text-[#6F46B0]"}`}>{t.type === "Income" ? <ArrowDownLeft size={19}/> : t.type === "Expense" ? <ArrowUpRight size={19}/> : <PiggyBank size={19}/>}</span><div className="min-w-0"><p className="truncate text-[13.5px] font-semibold text-forest-900">{t.description}</p><p className="mt-0.5 truncate text-[11.5px] text-charcoal/50">{t.category} · {t.date}</p></div></div><p className={`num shrink-0 text-[13.5px] font-semibold ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>{t.type === "Expense" ? "−" : "+"}{formatRupiah(t.amount)}</p></div>)}</div> : <p className="py-8 text-center text-[12px] text-charcoal/45">{id ? "Belum ada transaksi. Tekan tombol + untuk mulai mencatat." : "No transactions yet. Press + to start recording."}</p>}
       </Card>
 
