@@ -90,6 +90,9 @@ function EditableAssetItem({
   sheetRow?: number;
   onDeleted?: () => void;
 }) {
+  const [language, setLanguage] = useState(getAppLanguage());
+  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
+  const id = language === "id";
   const [editing, setEditing] = useState(false);
   const [input, setInput] = useState(String(value));
   const [saving, setSaving] = useState(false);
