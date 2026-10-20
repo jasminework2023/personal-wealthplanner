@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -157,6 +156,59 @@ html.dark {
 html,
 body {
   font-family: "Inter", system-ui, sans-serif;
+  font-feature-settings: "cv11", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root,
+#root * {
+  font-family: inherit;
+  font-feature-settings: inherit;
+}
+
+/* Wealthplanner typography scale — mobile first */
+h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+h3 {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+p {
+  line-height: 1.5;
+}
+
+/* Financial values remain compact and legible on narrow screens. */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 767px) {
+  .text-\[19px\],
+  .text-\[20px\],
+  .text-\[21px\],
+  .text-\[22px\],
+  .text-\[24px\] {
+    font-size: clamp(24px, 8vw, 32px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    max-width: 100%;
+  }
 }
 
 body {
@@ -419,13 +471,7 @@ html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: 
 
 /* Home asset summary must remain dark green in both light and dark themes. */
 .home-asset-summary {
-  font-family: "Poppins", sans-serif;
   background-color: #123524 !important;
   color: #ffffff !important;
   border-color: transparent !important;
-}
-.home-asset-summary > div,
-.home-asset-summary p,
-.home-asset-summary span {
-  font-family: "Poppins", sans-serif;
 }
