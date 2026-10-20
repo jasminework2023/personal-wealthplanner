@@ -11,7 +11,7 @@ import { Wallet, ArrowLeftRight, Target, UserRound, Plus, Sparkles, X, ChartNoAx
 const titles: Record<string, string> = {
   "/": "Home",
   "/finance": "Finance Report",
-  "/transactions": "Report",
+  "/transactions": "Community",
   "/transaction": "Transaction",
   "/budgeting": "Budgeting & Realization",
   "/calculator": "Financial Calculator",
@@ -31,7 +31,7 @@ export function AppShell() {
   const navLabels = language === "id" ? { home: "Beranda", goals: "Target", close: "Tutup", quickAdd: "Tulis transaksi atau unggah foto struk" } : { home: "Home", goals: "Goals", close: "Close", quickAdd: "Enter a transaction or upload a receipt photo" };
   const location = useLocation();
   const navigate = useNavigate();
-  const titleId: Record<string, string> = { "/": "Home", "/finance": "Finance Report", "/transactions": "Laporan", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/guidance": "Panduan", "/goals": "Target" };
+  const titleId: Record<string, string> = { "/": "Home", "/finance": "Finance Report", "/transactions": "Komunitas", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/guidance": "Panduan", "/goals": "Target" };
   const title = language === "en" ? (location.pathname.startsWith("/calculator/") ? "Financial Calculator" : (titles[location.pathname] ?? "Wealthplanner")) : (location.pathname.startsWith("/calculator/") ? "Kalkulator Keuangan" : (titleId[location.pathname] ?? "Wealthplanner"));
 
   return (
@@ -51,7 +51,7 @@ export function AppShell() {
           <div className="wp-nav pointer-events-auto mx-auto grid max-w-md grid-cols-5 items-center rounded-[30px] px-2 py-2">
             {([
               { to: "/", label: navLabels.home, Icon: Wallet },
-              { to: "/finance", label: language === "id" ? "Laporan" : "Report", Icon: ChartNoAxesCombined },
+              { to: "/transaction", label: language === "id" ? "Transaksi" : "Transaction", Icon: ArrowLeftRight },
             ] as const).map(({ to, label, Icon }) => {
               const active = location.pathname === to;
               return <button key={to} onClick={() => navigate(to)} aria-current={active ? "page" : undefined} className="flex flex-col items-center gap-0.5 py-0.5">
