@@ -252,9 +252,9 @@ export function DashboardFinance() {
       </div>}
       <section className="bg-transparent">
         <div className="flex items-center justify-between gap-3">
-          <button type="button" aria-label="Sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full border border-charcoal/10 text-forest-700 transition-colors hover:bg-forest-50"><ChevronLeft size={18}/></button>
+          <button type="button" aria-label="Sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm transition-colors hover:bg-forest-50"><ChevronLeft size={18}/></button>
           <h2 aria-live="polite" className="min-w-0 flex-1 text-center text-[19px] font-bold tracking-[-0.025em] leading-tight text-forest-900">{reportTabs[activeTabIndex].label}</h2>
-          <button type="button" aria-label="Berikutnya" onClick={() => selectReportTab(activeTabIndex + 1)} className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full border border-charcoal/10 text-forest-700 transition-colors hover:bg-forest-50"><ChevronRight size={18}/></button>
+          <button type="button" aria-label="Berikutnya" onClick={() => selectReportTab(activeTabIndex + 1)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm transition-colors hover:bg-forest-50"><ChevronRight size={18}/></button>
         </div>
         <div className="mt-3 flex items-center justify-center gap-2" aria-label="Pilihan laporan">
           {reportTabs.map((tab) => <span key={tab.id} className={`h-1.5 rounded-full transition-all duration-150 ${activeReportTab===tab.id?"w-6 bg-[#F59BB8]":"w-1.5 bg-charcoal/20"}`} />)}
