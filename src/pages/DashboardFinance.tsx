@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 const API_BASE = "/api";
 import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight, CalendarDays, X, Eye, EyeOff, Wallet, CircleDollarSign, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -196,7 +196,7 @@ function BudgetRow({
         {showPercentage && <p className="mt-0.5 text-[10px] text-charcoal/45 tabular-nums">{sharePct.toFixed(1)}%</p>}
       </div>
     </div>
-    {hasBudget && <div className="mt-1.5"><div className="flex items-center justify-between text-[11px] text-charcoal/50 mb-1"><span>Budget {formatRupiah(allocation)}</span><span className="font-medium">{formatPercent(pct)}</span></div><BudgetProgressBar usagePct={pct} />{overBy > 0 && <p className="text-[11px] text-rose-600 mt-1"><AlertTriangle size={11} className="inline mr-1" />Melebihi budget {formatPercent(Math.round(overBy * 10) / 10)}</p>}</div>}
+    {hasBudget && <div className="mt-1.5"><div className="flex items-center justify-between text-[11px] text-charcoal/50 mb-1"><span>Budget {formatRupiah(allocation)}</span><span className="font-medium">{/* Budget realization percentages intentionally hidden in reports. */}</span></div><BudgetProgressBar usagePct={pct} />{overBy > 0 && <p className="text-[11px] text-rose-600 mt-1"><AlertTriangle size={11} className="inline mr-1" />Melebihi budget {formatPercent(Math.round(overBy * 10) / 10)}</p>}</div>}
   </div>;
 }
 export function DashboardFinance() {
@@ -284,24 +284,30 @@ export function DashboardFinance() {
         </div>
       </section>
 
-      <section className="hero-forest rounded-[26px] p-5 text-white shadow-float">
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div><p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/60">Financial Summary</p><p className="mt-1 text-[13px] text-white/75">{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</p></div>
-          <span className="rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-[#F59BB8]">Finance Report</span>
-        </div>
-        <div className="grid grid-cols-3 divide-x divide-white/20">
-          <div className="min-w-0 pr-2 sm:pr-4"><div className="flex items-center gap-1 text-white/70"><ArrowDownLeft size={12} className="shrink-0 text-[#6EE7A8]"/><p className="text-[10.5px] leading-tight sm:text-[12px]">Total Income</p></div><p className="num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight">{formatRupiah(totalIncome)}</p></div>
-          <div className="min-w-0 px-2 sm:px-4"><div className="flex items-center gap-1 text-white/70"><ArrowUpRight size={12} className="shrink-0 text-[#FFB4D2]"/><p className="text-[10.5px] leading-tight sm:text-[12px]">Total Expense</p></div><p className="num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight">{formatRupiah(totalExpense)}</p></div>
-          <div className="min-w-0 pl-2 sm:pl-4"><div className="flex items-center gap-1 text-white/70"><TrendingUp size={12} className="shrink-0 text-[#FFA24C]"/><p className="text-[10.5px] leading-tight sm:text-[12px]">Net Result</p></div><p className={`num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight ${totalIncome-totalExpense < 0 ? "text-[#FFB4D2]" : "text-[#6EE7A8]"}`}>{formatRupiah(totalIncome-totalExpense)}</p></div>
-        </div>
-      </section>
 
+      {activeReportTab === "income" && <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {[
+          { label: id ? "Total Pemasukan" : "Total Income", value: totalIncome, previous: historyData.transactions.filter((t) => t.type === "Income" && String(t.month || "").toLowerCase() === monthNames[(monthNames.indexOf(selectedMonth) + 11) % 12].toLowerCase() && Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear)) === (monthNames.indexOf(selectedMonth) === 0 ? selectedYear - 1 : selectedYear)).reduce((sum, t) => sum + t.amount, 0) },
+          { label: id ? "Total Pengeluaran" : "Total Expense", value: totalExpense, previous: historyData.transactions.filter((t) => t.type === "Expense" && String(t.month || "").toLowerCase() === monthNames[(monthNames.indexOf(selectedMonth) + 11) % 12].toLowerCase() && Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear)) === (monthNames.indexOf(selectedMonth) === 0 ? selectedYear - 1 : selectedYear)).reduce((sum, t) => sum + t.amount, 0) },
+        ].map((item) => {
+          const change = item.previous > 0 ? ((item.value - item.previous) / item.previous) * 100 : null;
+          const positive = change !== null && change >= 0;
+          return <div key={item.label} className="rounded-[22px] border border-forest-100/60 bg-white p-4 shadow-card">
+            <div className="flex items-center justify-between gap-3"><p className="text-[12px] font-semibold text-charcoal/60">{item.label}</p><span className="text-[11px] font-semibold" style={{ color: positive ? "#39FF88" : "#FF72B6" }}>{change === null ? "—" : (change >= 0 ? "+" : "") + change.toFixed(1) + "%"}</span></div>
+            <p className="num mt-2 text-[clamp(15px,3.6vw,23px)] font-bold leading-tight text-forest-900">{formatRupiah(item.value)}</p>
+            <p className="mt-1 text-[10px] text-charcoal/45">{id ? "Perubahan dibanding bulan sebelumnya" : "Change vs previous month"}</p>
+          </div>;
+        })}
+      </section>}
       {activeReportTab === "income" && <>
         <div className="grid items-start gap-4 lg:grid-cols-2">
-          <ChartCard title={id ? "Perbandingan Arus Keuangan" : "Cash Flow Comparison"} subtitle={id ? "Pemasukan, pengeluaran, dan tabungan aktual pada periode ini." : "Actual income, expenses, and savings for this period."}>
+          <ChartCard title={id ? "Tren Pemasukan & Pengeluaran" : "Income & Expense Trends"} subtitle={id ? "Perubahan dari bulan ke bulan pada tahun terpilih." : "Month-to-month changes for the selected year."}>
             <div className="w-full">
-              <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Periode ini",income:totalIncome,expense:totalExpense,saving:totalSaving}]} barCategoryGap="8%" barGap={12} margin={{top:10,right:8,left:0,bottom:0}}><XAxis dataKey="name" hide/><YAxis width={48} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="income" name="Income" fill="#0B6B47" radius={[8,8,0,0]} maxBarSize={72}/><Bar dataKey="expense" name="Expense" fill="#F4577A" radius={[8,8,0,0]} maxBarSize={72}/><Bar dataKey="saving" name="Saving" fill="#FFA24C" radius={[8,8,0,0]} maxBarSize={72}/></BarChart></ResponsiveContainer>
-              <div className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-charcoal/65"><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#0B6B47]"/>Income</span><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#F4577A]"/>Expense</span><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#FFA24C]"/>Saving</span></div>
+              <ResponsiveContainer width="100%" height={250}><LineChart data={monthNames.map((month) => {
+                const rows = historyData.transactions.filter((t) => String(t.month || "").toLowerCase() === month.toLowerCase() && Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear)) === selectedYear);
+                return { month: month.slice(0, 3), income: rows.filter((t) => t.type === "Income").reduce((sum, t) => sum + t.amount, 0), expense: rows.filter((t) => t.type === "Expense").reduce((sum, t) => sum + t.amount, 0) };
+              })} margin={{top:10,right:8,left:0,bottom:0}}><CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)"/><XAxis dataKey="month" tick={{fontSize:10}} axisLine={false} tickLine={false}/><YAxis width={48} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Line type="monotone" dataKey="income" name={id ? "Pemasukan" : "Income"} stroke="#39FF88" strokeWidth={2.5} dot={{r:3}} activeDot={{r:5}}/><Line type="monotone" dataKey="expense" name={id ? "Pengeluaran" : "Expense"} stroke="#FF72B6" strokeWidth={2.5} dot={{r:3}} activeDot={{r:5}}/></LineChart></ResponsiveContainer>
+              <div className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-charcoal/65"><span className="inline-flex items-center gap-2"><span className="h-0.5 w-4 bg-[#39FF88]"/> {id ? "Pemasukan" : "Income"}</span><span className="inline-flex items-center gap-2"><span className="h-0.5 w-4 bg-[#FF72B6]"/> {id ? "Pengeluaran" : "Expense"}</span></div>
             </div>
           </ChartCard>
           <ChartCard title={id ? "Detail per Kategori" : "Category Details"} subtitle={id ? "Rincian pemasukan dan pengeluaran pada periode terpilih." : "Income and expenses for the selected period."}>
