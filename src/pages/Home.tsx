@@ -59,15 +59,20 @@ export function Home() {
     return new Date(y, m - 1, d).getTime();
   };
   const recent = [...allTxs].sort((a, b) => parseRecentDate(b.date, b.month) - parseRecentDate(a.date, a.month)).slice(0, 5);
-  const nextStep = totalExpense > totalIncome && totalIncome > 0
-    ? "Pengeluaranmu bulan ini sudah lebih besar dari pemasukan. Cek kategori pengeluaran terbesar dan review budget."
+  const nextStep = id ? (totalExpense > totalIncome && totalIncome > 0
+    ? "Pengeluaranmu bulan ini sudah lebih besar dari pemasukan. Cek kategori pengeluaran terbesar dan tinjau kembali anggaran."
     : assets.target > 0 && assets.totalAssets < assets.target
-      ? `Target asetmu masih ${formatRupiah(Math.max(0, assets.target - assets.totalAssets))} lagi. Review Asset Tracker dan rencana investasimu.`
-      : totalSaving > 0 ? "Kamu sudah punya saving bulan ini. Lanjutkan konsistensi dan cek apakah target finansialmu sudah punya angka yang jelas."
-      : "Mulai dengan mencatat transaksi dan isi satu target finansial agar dashboard bisa memberi arah langkah berikutnya.";
-  const cashFlowData = [{ name: "Pemasukan", value: totalIncome }, { name: "Pengeluaran", value: totalExpense }, { name: "Tabungan", value: totalSaving }];
+      ? `Target asetmu masih ${formatRupiah(Math.max(0, assets.target - assets.totalAssets))} lagi. Tinjau Asset Tracker dan rencana investasimu.`
+      : totalSaving > 0 ? "Kamu sudah menabung bulan ini. Pertahankan konsistensi dan pastikan target finansialmu punya angka yang jelas."
+      : "Mulai dengan mencatat transaksi dan menetapkan satu target finansial agar dashboard bisa menyarankan langkah berikutnya.") : (totalExpense > totalIncome && totalIncome > 0
+    ? "Your expenses this month are higher than your income. Review your largest expense categories and revisit your budget."
+    : assets.target > 0 && assets.totalAssets < assets.target
+      ? `You are ${formatRupiah(Math.max(0, assets.target - assets.totalAssets))} away from your asset goal. Review your Asset Tracker and investment plan.`
+      : totalSaving > 0 ? "You have saved money this month. Stay consistent and make sure your financial goals have clear targets."
+      : "Start by recording transactions and setting one financial goal to get actionable guidance from your dashboard.");
+  const cashFlowData = [{ name: id ? "Pemasukan" : "Income", value: totalIncome }, { name: id ? "Pengeluaran" : "Expense", value: totalExpense }, { name: id ? "Tabungan" : "Saving", value: totalSaving }];
   const spendingByCategory = byCategory("Expense").filter((c) => c.realization > 0).map((c) => ({ name: c.category, value: c.realization }));
-  const today = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const today = new Date().toLocaleDateString(id ? "id-ID" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   useEffect(() => {
     const now = new Date();
     const key = (date: Date) => "wealthplanner_asset_snapshot_" + date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
@@ -85,7 +90,7 @@ export function Home() {
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/45">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
         <h1 className="text-[25px] sm:text-[28px] font-semibold tracking-tight text-forest-900">{greetingWord()}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
-        <p className="text-[13px] text-charcoal/55">Ringkasan keuanganmu untuk {monthLabel} {currentYear}.</p>
+        <p className="text-[13px] text-charcoal/55">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
       </div>
 
       <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[26px] bg-[#123524] p-[22px] text-white shadow-none" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
@@ -110,7 +115,7 @@ export function Home() {
         {assets.target > 0 && (
           <div className="mt-4">
             <div className="mb-2 flex items-center justify-between gap-3">
-              <span className="text-[13px] font-normal text-[#A9C9B8]">% dari target</span>
+              <span className="text-[13px] font-normal text-[#A9C9B8]">{id ? "% dari target" : "% of target"}</span>
               <span className="shrink-0 text-[14px] font-medium text-white tabular-nums">
                 {Math.round((assets.totalAssets / assets.target) * 100)}%
               </span>
@@ -134,14 +139,14 @@ export function Home() {
           <div className="flex min-w-0 flex-col self-start rounded-2xl bg-white/[0.09] p-3">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><ArrowDownLeft size={17} strokeWidth={2}/></span>
-              <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">Pemasukan</span>
+              <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">{id ? "Pemasukan" : "Income"}</span>
             </div>
             <p className="mt-1 break-words text-[clamp(11px,3.8vw,16px)] font-medium leading-tight tabular-nums">{formatRupiah(totalIncome)}</p>
           </div>
           <div className="flex min-w-0 flex-col self-start rounded-2xl bg-white/[0.09] p-3">
             <div className="flex min-w-0 items-center gap-2">
               <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-[#FFB4A2]/[0.18] text-[#FFB4A2]"><ArrowUpRight size={17} strokeWidth={2}/></span>
-              <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">Pengeluaran</span>
+              <span className="truncate text-[12.5px] font-normal text-[#A9C9B8]">{id ? "Pengeluaran" : "Expense"}</span>
             </div>
             <p className="mt-1 break-words text-[clamp(11px,3.8vw,16px)] font-medium leading-tight tabular-nums">{formatRupiah(totalExpense)}</p>
           </div>
@@ -150,7 +155,7 @@ export function Home() {
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-[16px] font-semibold text-forest-900">Menu Utama</h2>
+          <h2 className="text-[16px] font-semibold text-forest-900">{id ? "Menu Utama" : "Main Menu"}</h2>
           <span className="text-[11px] text-charcoal/40">Pilih fitur</span>
         </div>
         <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
@@ -176,7 +181,7 @@ export function Home() {
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-[16px] font-semibold text-forest-900">Tujuan Keuangan</h2>
+          <h2 className="text-[16px] font-semibold text-forest-900">{id ? "Tujuan Keuangan" : "Financial Goals"}</h2>
           <button onClick={() => navigate("/goals")} className="inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700">Lihat semua <ChevronRight size={14}/></button>
         </div>
         {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.slice(0, 2).map((plan) => {
@@ -191,7 +196,7 @@ export function Home() {
               <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full" style={{ background: "conic-gradient(#1F6B4A " + progress + "%, #FCE7EF " + progress + "%)" }}>
                 <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-white"><span className="text-[15px] font-bold tabular-nums text-forest-800">{Math.round(progress)}%</span></div>
               </div>
-              <div className="min-w-0 flex-1"><p className="text-[13px] font-semibold text-forest-900">{goalName}</p><p className="mt-1 text-[11px] text-charcoal/55">Terkumpul</p><p className="text-[12px] font-semibold text-forest-800">{formatRupiah(allocated)} <span className="font-normal text-charcoal/45">dari {formatRupiah(target)}</span></p></div>
+              <div className="min-w-0 flex-1"><p className="text-[13px] font-semibold text-forest-900">{goalName}</p><p className="mt-1 text-[11px] text-charcoal/55">{id ? "Terkumpul" : "Collected"}</p><p className="text-[12px] font-semibold text-forest-800">{formatRupiah(allocated)} <span className="font-normal text-charcoal/45">{id ? "dari" : "of"} {formatRupiah(target)}</span></p></div>
             </div>
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-rose-50"><div className="h-full rounded-full bg-forest-600 transition-all" style={{ width: progress + "%" }}/></div>
           </button>;
@@ -199,16 +204,16 @@ export function Home() {
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <ChartCard title="Cash Flow" subtitle="Pemasukan, pengeluaran, dan tabungan bulan ini">
+        <ChartCard title={id ? "Arus Kas" : "Cashflow"} subtitle={id ? "Pemasukan, pengeluaran, dan tabungan bulan ini" : "This Month’s Income, Expenses, and Savings"}>
           <ResponsiveContainer width="100%" height={210}><BarChart data={cashFlowData}><XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false}/><YAxis tickFormatter={(v) => formatCompact(v)} tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} width={45}/><Tooltip formatter={(v: number) => formatRupiah(v)}/><Bar dataKey="value" radius={[6, 6, 0, 0]}>{cashFlowData.map((_, i) => <Cell key={i} fill={["var(--chart-income)", "var(--chart-expense)", "var(--chart-saving)"][i]}/>)}</Bar></BarChart></ResponsiveContainer>
         </ChartCard>
-        <ChartCard title="Pengeluaran per Kategori" subtitle="Distribusi pengeluaran yang tercatat">
-          {spendingByCategory.length ? <ResponsiveContainer width="100%" height={210}><PieChart><Pie data={spendingByCategory} dataKey="value" nameKey="name" innerRadius={48} outerRadius={76} paddingAngle={2}>{spendingByCategory.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]}/>)}</Pie><Tooltip formatter={(v: number) => formatRupiah(v)}/><Legend wrapperStyle={{ fontSize: 10 }}/></PieChart></ResponsiveContainer> : <p className="py-16 text-center text-[12px] text-charcoal/45">Belum ada data pengeluaran untuk ditampilkan.</p>}
+        <ChartCard title={id ? "Pengeluaran per Kategori" : "Expenses by Category"} subtitle={id ? "Distribusi pengeluaran yang tercatat" : "Breakdown of recorded expenses"}>
+          {spendingByCategory.length ? <ResponsiveContainer width="100%" height={210}><PieChart><Pie data={spendingByCategory} dataKey="value" nameKey="name" innerRadius={48} outerRadius={76} paddingAngle={2}>{spendingByCategory.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]}/>)}</Pie><Tooltip formatter={(v: number) => formatRupiah(v)}/><Legend wrapperStyle={{ fontSize: 10 }}/></PieChart></ResponsiveContainer> : <p className="py-16 text-center text-[12px] text-charcoal/45">{id ? "Belum ada data pengeluaran untuk ditampilkan." : "No expense data to display yet."}</p>}
         </ChartCard>
       </div>
 
       <Card>
-        <div className="mb-3 flex items-center justify-between"><h2 className="text-[15px] font-semibold text-forest-900">{id ? "Transaksi Terbaru" : "Recent Transactions"}</h2><button onClick={() => navigate("/transaction")} className="inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700">Semua transaksi <ChevronRight size={14}/></button></div>
+        <div className="mb-3 flex items-center justify-between"><h2 className="text-[15px] font-semibold text-forest-900">{id ? "Transaksi Terbaru" : "Recent Transactions"}</h2><button onClick={() => navigate("/transaction")} className="inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700">{id ? "Semua transaksi" : "All transactions"} <ChevronRight size={14}/></button></div>
         {recent.length ? <div className="flex flex-col divide-y divide-charcoal/8">{recent.map((t, i) => <div key={t.sheetRow ?? `${t.date}-${t.description}-${i}`} className="flex items-center justify-between gap-3 py-3"><div className="flex min-w-0 items-center gap-3"><TransactionBadge type={t.type}/><div className="min-w-0"><p className="truncate text-[13px] font-medium">{t.description}</p><p className="text-[11px] text-charcoal/50">{t.category} · {t.date}</p></div></div><p className={`shrink-0 text-[13px] font-semibold ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>{t.type === "Expense" ? "−" : "+"}{formatRupiah(t.amount)}</p></div>)}</div> : <p className="py-8 text-center text-[12px] text-charcoal/45">{id ? "Belum ada transaksi. Tekan tombol + untuk mulai mencatat." : "No transactions yet. Press + to start recording."}</p>}
       </Card>
 
