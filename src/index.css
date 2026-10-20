@@ -476,3 +476,10 @@ html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: 
     font-size: clamp(34px, 10vw, 64px) !important;
   }
 }
+
+
+/* Calculator numeric outputs remain single-line and scale down on narrow screens. */
+.wp-calculator .mono {
+  white-space: nowrap;
+  font-size: clamp(10px, 2.7vw, 1em);
+}
