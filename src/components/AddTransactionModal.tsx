@@ -68,16 +68,16 @@ async function compressReceiptImage(file: File): Promise<string> {
 // "D/M/YYYY" <-> "YYYY-MM-DD" untuk <input type="date">
 function todayIso() {
   const n = new Date();
-  return \`${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}\`;
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
 }
 function toIsoDate(d?: string) {
   const [day, month, year] = String(d || "").split("/").map(Number);
   if (!day || !month || !year || year < 2000) return todayIso();
-  return \`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}\`;
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 function fromIsoDate(iso: string) {
   const [y, m, d] = iso.split("-").map(Number);
-  return \`${d}/${m}/${y}\`;
+  return `${d}/${m}/${y}`;
 }
 
 export function AddTransactionModal({
@@ -174,7 +174,7 @@ export function AddTransactionModal({
     setAiError("");
     try {
       if (token) {
-        const response = await fetch(\`${API_BASE}/add-transaction\`, {
+        const response = await fetch(`${API_BASE}/add-transaction`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token, transaction }),
@@ -280,17 +280,17 @@ export function AddTransactionModal({
       <div className="flex gap-1 mb-4 bg-charcoal/[0.06] rounded-full p-1">
         <button
           onClick={() => setMode("manual")}
-          className={\`flex-1 text-[13px] font-semibold py-2 rounded-full transition-colors ${
+          className={`flex-1 text-[13px] font-semibold py-2 rounded-full transition-colors ${
             mode === "manual" ? "bg-white shadow-sm font-medium text-forest-800" : "text-charcoal/60"
-          }\`}
+          }`}
         >
           Manual
         </button>
         <button
           onClick={() => setMode("ai")}
-          className={\`flex-1 text-[13px] font-semibold py-2 rounded-full transition-colors flex items-center justify-center gap-1 ${
+          className={`flex-1 text-[13px] font-semibold py-2 rounded-full transition-colors flex items-center justify-center gap-1 ${
             mode === "ai" ? "bg-white shadow-sm font-medium text-rose-700" : "text-charcoal/60"
-          }\`}
+          }`}
         >
           <Sparkles size={13} /> Catat dengan AI
         </button>
@@ -303,11 +303,11 @@ export function AddTransactionModal({
               <button
                 key={t}
                 onClick={() => setForm((f) => ({ ...f, type: t, category: activeCategories[t][0] || f.category }))}
-                className={\`flex-1 text-[13px] font-semibold py-2.5 rounded-xl border ${
+                className={`flex-1 text-[13px] font-semibold py-2.5 rounded-xl border ${
                   form.type === t
                     ? "border-forest-600 bg-forest-50 text-forest-700 font-medium"
                     : "border-charcoal/15 text-charcoal/60"
-                }\`}
+                }`}
               >
                 {t}
               </button>
@@ -366,13 +366,13 @@ export function AddTransactionModal({
   setAiError("");
   try{
     const dataUrl=await compressReceiptImage(receiptFile);
-    const r=await fetch(\`${API_BASE}/receipt-ai\`,{
+    const r=await fetch(`${API_BASE}/receipt-ai`,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({image:dataUrl}),
     });
     const j=await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(j.error||\`Gagal membaca struk (HTTP ${r.status})\`);
+    if(!r.ok) throw new Error(j.error||`Gagal membaca struk (HTTP ${r.status})`);
     if(!j.transaction) throw new Error("AI tidak mengembalikan data transaksi. Coba foto ulang.");
     const rt = j.transaction as Partial<Transaction>;
     setAiPreview({
