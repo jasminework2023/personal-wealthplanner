@@ -103,7 +103,7 @@ export function Home() {
         <div className="mt-1 flex min-w-0 items-baseline gap-1.5 whitespace-nowrap">
           <span className="shrink-0 text-[16px] font-normal text-[#A9C9B8]">Rp</span>
           <span className="min-w-0 text-[clamp(19px,7.8vw,31px)] font-medium leading-tight tracking-[-0.5px] tabular-nums">
-            {assetsVisible ? new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(assets.totalAssets) : "••••••••"}
+            {assetsVisible ? new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(assets.totalAssets) : "••••••••"}
           </span>
         </div>
         {assetTrend !== null && Number.isFinite(assetTrend) && (
@@ -175,7 +175,7 @@ export function Home() {
       <Card>
         <div className="flex items-start gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-forest-700">💡</div>
-          <div><p className="text-[11px] font-semibold uppercase tracking-wide text-forest-600">Langkah berikutnya</p><p className="mt-1 text-[13px] leading-5 text-charcoal/70">{nextStep}</p></div>
+          <div><p className="text-[11px] font-semibold uppercase tracking-wide text-forest-600">{id ? "Langkah Berikutnya" : "Next Step"}</p><p className="mt-1 text-[13px] leading-5 text-charcoal/70">{nextStep}</p></div>
         </div>
       </Card>
 
