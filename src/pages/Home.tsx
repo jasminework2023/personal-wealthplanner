@@ -17,15 +17,15 @@ import { loadFinancialPlans } from "../lib/financialPlans";
 
 const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 const menus = [
-  { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction" },
-  { key: "budget", label: "Budget", icon: Wallet, to: "/budgeting" },
-  { key: "report", label: "Report", icon: Landmark, to: "/finance" },
-  { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator" },
-  { key: "goals", label: "Goals", icon: Target, to: "/goals" },
-  { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection" },
-  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true },
-  { key: "ai", label: "AI Assistant", icon: Bot, soon: true },
-  { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance" },
+  { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction", tone: "bg-[#F59BB8] text-[#123524]" },
+  { key: "budget", label: "Budget", icon: Wallet, to: "/budgeting", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
+  { key: "report", label: "Report", icon: Landmark, to: "/finance", tone: "bg-[#FBD3E0] text-[#B83A62]" },
+  { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator", tone: "bg-[#E4D5FA] text-[#6F46B0]" },
+  { key: "goals", label: "Goals", icon: Target, to: "/goals", tone: "bg-[#FFD9BF] text-[#B4561A]" },
+  { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
+  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true, tone: "bg-[#E4D5FA] text-[#6F46B0]" },
+  { key: "ai", label: "AI Assistant", icon: Bot, soon: true, tone: "bg-[#FBD3E0] text-[#B83A62]" },
+  { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#DCEBFF] text-[#2F6BB5]" },
 ];
 
 export function Home() {
@@ -159,30 +159,30 @@ export function Home() {
           <span className="text-[11px] text-charcoal/40">Pilih fitur</span>
         </div>
         <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-          {menus.map(({ label, icon: Icon, to, soon }) => (
+          {menus.map(({ label, icon: Icon, to, soon, tone }) => (
             <button key={label} type="button" disabled={Boolean(soon)} onClick={() => to && navigate(to)}
-              className={`relative flex min-h-[88px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-rose-100/80 bg-white px-1.5 py-2.5 text-center shadow-sm transition sm:min-h-[98px] sm:gap-2 sm:px-2 sm:py-3 ${soon ? "cursor-not-allowed opacity-80" : "hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md"}`}>
-              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-rose-50 text-forest-700 sm:h-10 sm:w-10">
-                <Icon size={19} strokeWidth={1.9}/>
+              className={`relative flex min-h-[104px] flex-col items-center justify-center gap-2.5 rounded-[20px] border border-forest-100/50 bg-white px-1.5 py-3 text-center shadow-card transition sm:min-h-[112px] ${soon ? "cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-float"}`}>
+              <span className={`flex h-11 w-11 items-center justify-center rounded-[15px] ${tone} ${soon ? "opacity-60" : ""}`}>
+                <Icon size={21} strokeWidth={2.1}/>
               </span>
-              <span className="text-[11px] sm:text-[12px] font-semibold leading-tight text-forest-900">{label}</span>
-              {soon && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[9px] font-semibold text-rose-700">Coming soon</span>}
+              <span className={`text-[12px] font-semibold leading-tight text-forest-900 ${soon ? "opacity-70" : ""}`}>{label}</span>
+              {soon && <span className="absolute right-2 top-2 rounded-full bg-[#F59BB8] px-1.5 py-0.5 text-[8.5px] font-bold leading-none text-[#123524]">Soon</span>}
             </button>
           ))}
         </div>
       </section>
 
-      <Card>
-        <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-forest-700">💡</div>
-          <div><p className="text-[11px] font-semibold uppercase tracking-wide text-forest-600">{id ? "Langkah Berikutnya" : "Next Step"}</p><p className="mt-1 text-[13px] leading-5 text-charcoal/70">{nextStep}</p></div>
+      <div className="rounded-[22px] border border-rose-100 bg-rose-50 p-4">
+        <div className="flex items-start gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F59BB8] text-[20px]">💡</div>
+          <div className="min-w-0"><p className="text-[14px] font-bold tracking-[-0.01em] text-forest-900">{id ? "Langkah Berikutnya" : "Next Step"}</p><p className="mt-1 text-[13px] leading-[1.55] text-charcoal/70">{nextStep}</p></div>
         </div>
-      </Card>
+      </div>
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-[16px] font-semibold text-forest-900">{id ? "Tujuan Keuangan" : "Financial Goals"}</h2>
-          <button onClick={() => navigate("/goals")} className="inline-flex items-center gap-1 text-[12px] font-semibold text-forest-700">Lihat semua <ChevronRight size={14}/></button>
+          <h2 className="section-title">{id ? "Tujuan Keuangan" : "Financial Goals"}</h2>
+          <button onClick={() => navigate("/goals")} className="inline-flex items-center gap-0.5 rounded-full bg-forest-50 px-3 py-1.5 text-[12px] font-semibold text-forest-700">Lihat semua <ChevronRight size={14}/></button>
         </div>
         {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.slice(0, 2).map((plan) => {
           let goalSettings: { names?: Record<string, string>; allocations?: Record<string, Record<string, number>> } = {};
@@ -191,7 +191,7 @@ export function Home() {
           const allocated = Object.values(goalSettings.allocations?.[plan.id] || {}).reduce((sum, value) => sum + Number(value || 0), 0);
           const progress = target > 0 ? Math.min(100, Math.max(0, allocated / target * 100)) : 0;
           const goalName = goalSettings.names?.[plan.id] || plan.name;
-          return <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-2xl border border-rose-100 bg-white p-4 text-left shadow-sm transition hover:border-rose-200 hover:shadow-md">
+          return <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-[22px] border border-forest-100/50 bg-white p-4 text-left shadow-card transition hover:shadow-float">
             <div className="flex items-center gap-3">
               <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full" style={{ background: "conic-gradient(#1F6B4A " + progress + "%, #FCE7EF " + progress + "%)" }}>
                 <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-white"><span className="text-[15px] font-bold tabular-nums text-forest-800">{Math.round(progress)}%</span></div>
@@ -200,7 +200,7 @@ export function Home() {
             </div>
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-rose-50"><div className="h-full rounded-full bg-forest-600 transition-all" style={{ width: progress + "%" }}/></div>
           </button>;
-        })}</div> : <div className="rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-5 text-center"><Target size={22} className="mx-auto text-forest-700"/><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-3 rounded-xl bg-forest-700 px-4 py-2 text-[12px] font-semibold text-white">Buka Calculator</button></div>}
+        })}</div> : <div className="rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-5 text-center"><Target size={22} className="mx-auto text-forest-700"/><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-full bg-[#123524] px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm">Buka Calculator</button></div>}
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
