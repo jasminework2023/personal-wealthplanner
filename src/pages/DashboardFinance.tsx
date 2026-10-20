@@ -331,17 +331,6 @@ export function DashboardFinance() {
       
       {activeReportTab === "assets" && <>
       {/* E. Asset Tracker */}
-      <ChartCard title={id ? "Pelacak Aset" : "Asset Tracker"} subtitle={id ? "Pantau aset saat ini dan progres menuju target." : "Track your current assets and progress toward your goal."}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="order-2 lg:order-2">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-[13px] font-semibold text-forest-900">Detail Aset</p>
-              {((assets.liquidAssets.length > 2 || assets.investmentAssets.length > 2)) && (
-                <button type="button" onClick={() => setShowAllAssets((value) => !value)} className="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-semibold text-forest-700 hover:text-forest-900">
-                  {showAllAssets ? "Sembunyikan" : "Lihat semua"} <ChevronRight size={14} className={showAllAssets ? "rotate-90" : ""}/>
-                </button>
-              )}
-            </div>
             <div className="hero-forest mb-4 rounded-[24px] p-5 text-white shadow-float">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -360,18 +349,17 @@ export function DashboardFinance() {
                 {editingAssetTarget ? <div className="mt-2 flex gap-2"><input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 flex-1 rounded-lg border border-white/20 bg-white px-2.5 py-2 text-[13px] text-charcoal outline-none focus:border-forest-400" placeholder="Target aset" /><button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) throw new Error("Gagal menyimpan target"); setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { console.error(e); } finally { setSavingAssetTarget(false); } }} className="rounded-lg bg-white px-3 py-2 text-[12px] font-semibold text-forest-900 disabled:opacity-50">{savingAssetTarget ? "..." : "Simpan"}</button></div> : <p className="mt-1 text-[16px] font-semibold">{assets.target > 0 ? (assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.target)) : "Belum diatur"}</p>}
               </div>
             </div>
-            {assets.target > 0 && (
-              <>
-                <div className="flex items-center justify-between text-[12px] text-charcoal/55 mb-1.5">
-                  <span>Progress ke target</span>
-                  <span className="font-medium text-forest-700">{formatPercent(assetProgress)}</span>
-                </div>
-                <div className="w-full h-2.5 rounded-full bg-charcoal/8 overflow-hidden mb-5">
-                  <div className="h-full bg-forest-600 rounded-full" style={{ width: `${Math.min(assetProgress, 100)}%` }} />
-                </div>
-              </>
-            )}
-
+            <ChartCard title={id ? "Pelacak Aset" : "Asset Tracker"} subtitle={id ? "Pantau aset saat ini dan progres menuju target." : "Track your current assets and progress toward your goal."}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="order-2 lg:order-2">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[13px] font-semibold text-forest-900">Detail Aset</p>
+              {((assets.liquidAssets.length > 2 || assets.investmentAssets.length > 2)) && (
+                <button type="button" onClick={() => setShowAllAssets((value) => !value)} className="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-semibold text-forest-700 hover:text-forest-900">
+                  {showAllAssets ? "Sembunyikan" : "Lihat semua"} <ChevronRight size={14} className={showAllAssets ? "rotate-90" : ""}/>
+                </button>
+              )}
+            </div>
             {(assets.liquidAssets.length > 0 || isRealData) && (
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Liquid Assets</p>
