@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Calculator, Target, Trash2, Pencil, Check, X, Wallet, Plus, ChevronDown } from "lucide-react";
 import { Card } from "../components/Card";
 import { getAppLanguage } from "../lib/format";
-import { getPlanTypeLabel, loadFinancialPlans, removeFinancialPlan } from "../lib/financialPlans";
+import { getPlanTypeLabel, loadFinancialPlans, removeFinancialPlan, saveFinancialPlan, type FinancialPlanType } from "../lib/financialPlans";
 import { formatRupiah } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
 
@@ -37,13 +37,32 @@ export function Goals() {
   const id = language === "id";
   const navigate = useNavigate();
   const { assets } = useFinanceData();
-  const [plans, setPlans] = useState(() => loadFinancialPlans());
+  const [plans, setPlans] = useState(() => {
+    const loaded = loadFinancialPlans();
+    let order: string[] = [];
+    try { order = JSON.parse(localStorage.getItem("wealthplanner_goal_order_v1") || "[]"); } catch {}
+    return [...loaded].sort((a, b) => {
+      const ai = order.indexOf(a.id), bi = order.indexOf(b.id);
+      if (ai < 0 && bi < 0) return b.createdAt - a.createdAt;
+      if (ai < 0) return 1;
+      if (bi < 0) return -1;
+      return ai - bi;
+    });
+  });
   const [settings, setSettings] = useState<GoalSettings>(() => loadGoalSettings());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
   const [allocatingId, setAllocatingId] = useState<string | null>(null);
   const [selectedAsset, setSelectedAsset] = useState("");
   const [amount, setAmount] = useState("");
+  const [showManualGoal, setShowManualGoal] = useState(false);
+  const [manualGoalName, setManualGoalName] = useState("");
+  const [manualGoalTarget, setManualGoalTarget] = useState("");
+  const [manualGoalType, setManualGoalType] = useState<FinancialPlanType>("investment");
+  const [draggedPlanId, setDraggedPlanId] = useState<string | null>(null);
+  const [planOrder, setPlanOrder] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("wealthplanner_goal_order_v1") || "[]"); } catch { return []; }
+  });
 
   const assetOptions = useMemo(() => [
     ...assets.liquidAssets.map((a) => ({ id: "liquid:" + a.name, name: a.name, value: a.value })),
@@ -63,6 +82,42 @@ export function Goals() {
   function updateSettings(next: GoalSettings) {
     setSettings(next);
     saveGoalSettings(next);
+  }
+
+  function addManualGoal() {
+    const name = manualGoalName.trim();
+    const target = Number(manualGoalTarget);
+    if (!name || !Number.isFinite(target) || target <= 0) return;
+    const created = saveFinancialPlan({
+      calculatorId: "manual-goal-" + Date.now(),
+      type: manualGoalType,
+      name,
+      targetAmount: target,
+    });
+    const next = [created, ...plans];
+    setPlans(next);
+    const order = next.map((plan) => plan.id);
+    setPlanOrder(order);
+    localStorage.setItem("wealthplanner_goal_order_v1", JSON.stringify(order));
+    setManualGoalName("");
+    setManualGoalTarget("");
+    setManualGoalType("investment");
+    setShowManualGoal(false);
+  }
+
+  function reorderPlan(targetId: string) {
+    if (!draggedPlanId || draggedPlanId === targetId) return;
+    const next = [...plans];
+    const from = next.findIndex((plan) => plan.id === draggedPlanId);
+    const to = next.findIndex((plan) => plan.id === targetId);
+    if (from < 0 || to < 0) return;
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setPlans(next);
+    const order = next.map((plan) => plan.id);
+    setPlanOrder(order);
+    localStorage.setItem("wealthplanner_goal_order_v1", JSON.stringify(order));
+    setDraggedPlanId(null);
   }
 
   function deletePlan(id: string) {
@@ -121,13 +176,27 @@ export function Goals() {
         <div className="min-w-0"><h1 className="page-title !text-[24px]">{id ? "Goals & Rencana Keuangan" : "Goals & Financial Plans"}</h1><p className="page-sub">{id ? "Hubungkan tujuan keuangan dengan aset yang memang kamu siapkan untuk mencapainya." : "Connect financial goals with the assets you set aside to achieve them."}</p></div>
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[13px] font-semibold text-forest-900">{id ? "Daftar target" : "Your goals"}</p>
+        <button type="button" onClick={() => setShowManualGoal((open) => !open)} className="inline-flex items-center gap-2 rounded-full bg-[#123524] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-sm"><Plus size={15}/>{id ? "Tambah target" : "Add goal"}</button>
+      </div>
+      {showManualGoal && <Card>
+        <div className="manual-goal-form flex flex-col gap-3">
+          <h2 className="text-[14px] font-semibold text-forest-900">{id ? "Tambah target tanpa kalkulator" : "Add a goal without using the calculator"}</h2>
+          <label className="flex flex-col gap-1 text-[12px] text-charcoal/70">{id ? "Nama target" : "Goal name"}<input value={manualGoalName} onChange={(e) => setManualGoalName(e.target.value)} placeholder={id ? "Contoh: Dana darurat" : "e.g. Emergency fund"} className="w-full rounded-xl border border-forest-100 px-3 py-2.5 text-[13px] text-forest-900"/></label>
+          <label className="flex flex-col gap-1 text-[12px] text-charcoal/70">{id ? "Kategori" : "Category"}<select value={manualGoalType} onChange={(e) => setManualGoalType(e.target.value as FinancialPlanType)} className="w-full rounded-xl border border-forest-100 px-3 py-2.5 text-[13px] text-forest-900">{(["cashflow","home","education","retirement","hajj","investment","income_protection","inheritance"] as FinancialPlanType[]).map((type) => <option key={type} value={type}>{getPlanTypeLabel(type)}</option>)}</select></label>
+          <label className="flex flex-col gap-1 text-[12px] text-charcoal/70">{id ? "Nominal target (Rp)" : "Target amount (IDR)"}<input type="number" min="1" inputMode="numeric" value={manualGoalTarget} onChange={(e) => setManualGoalTarget(e.target.value)} placeholder="50000000" className="w-full rounded-xl border border-forest-100 px-3 py-2.5 text-[13px] text-forest-900"/></label>
+          <div className="flex gap-2"><button type="button" onClick={addManualGoal} disabled={!manualGoalName.trim() || Number(manualGoalTarget) <= 0} className="inline-flex items-center gap-1.5 rounded-full bg-[#123524] px-4 py-2.5 text-[12.5px] font-semibold text-white disabled:opacity-40"><Check size={14}/>{id ? "Simpan target" : "Save goal"}</button><button type="button" onClick={() => setShowManualGoal(false)} className="rounded-full border border-forest-100 px-4 py-2.5 text-[12.5px] text-charcoal/70">{id ? "Batal" : "Cancel"}</button></div>
+        </div>
+      </Card>}
       {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.map((plan) => {
         const target = getPlanTarget(plan);
         const planAllocations = settings.allocations[plan.id] || {};
         const allocated = Object.values(planAllocations).reduce((sum, value) => sum + value, 0);
         const progress = target > 0 ? Math.min(100, allocated / target * 100) : 0;
         return (
-          <Card key={plan.id}>
+          <div key={plan.id} draggable onDragStart={() => setDraggedPlanId(plan.id)} onDragOver={(event) => event.preventDefault()} onDrop={() => reorderPlan(plan.id)} onDragEnd={() => setDraggedPlanId(null)} className={draggedPlanId === plan.id ? "cursor-grabbing opacity-50" : "cursor-grab"}>
+          <Card>
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FFD9BF] text-[#B4561A]"><Target size={21}/></span>
@@ -162,6 +231,7 @@ export function Goals() {
             </div>
             <button onClick={() => navigate(`/calculator/${plan.calculatorId}`)} className="mt-3 ml-2 inline-flex items-center gap-1.5 rounded-full border border-forest-100 bg-forest-50 px-4 py-2.5 text-[12.5px] font-semibold text-forest-700"><Calculator size={14}/> Buka simulasi</button>
           </Card>
+          </div>
         );
       })}</div> : <Card className="border border-dashed border-rose-200 bg-rose-50/40 py-10 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-[20px] bg-[#FBD3E0] text-[#B83A62]"><Target size={26}/></span><h2 className="mt-4 text-[16px] font-bold tracking-[-0.02em] text-forest-900">Belum ada goal tersimpan</h2><p className="mx-auto mt-1 max-w-sm text-[12px] leading-5 text-charcoal/55">Mulai dari Calculator, pilih simulasi yang kamu butuhkan, lalu simpan hasilnya sebagai rencana keuangan.</p><button onClick={() => navigate("/calculator")} className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#123524] px-5 py-3 text-[12.5px] font-semibold text-white shadow-sm"><Calculator size={15}/> Buka Calculator</button></Card>}
     </div>
