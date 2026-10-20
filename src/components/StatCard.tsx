@@ -15,22 +15,22 @@ export function StatCard({
   trend?: string;
 }) {
   const toneClasses = {
-    forest: "bg-forest-50 text-forest-700",
-    rose: "bg-rose-50 text-rose-700",
+    forest: "bg-mint-100 text-[#0B6B47]",
+    rose: "bg-rose-50 text-rose-600",
     neutral: "bg-charcoal/5 text-charcoal/70",
     lilac: "bg-lilac-50 text-lilac-700",
   }[tone];
 
   return (
-    <Card className="flex items-start justify-between">
+    <Card className="flex items-start justify-between gap-3">
       <div className="min-w-0">
-        <p className="text-[13px] text-charcoal/60 mb-1">{label}</p>
-        <p className="text-2xl font-semibold text-forest-900 tracking-tight break-words">{value}</p>
-        {trend && <p className="text-[12px] text-charcoal/50 mt-1">{trend}</p>}
+        <p className="text-[12.5px] text-charcoal/55 mb-1.5">{label}</p>
+        <p className="num text-[clamp(20px,6vw,26px)] font-semibold leading-tight text-forest-900 break-words">{value}</p>
+        {trend && <p className="text-[12px] text-charcoal/50 mt-1.5">{trend}</p>}
       </div>
       {Icon && (
-        <div className={`rounded-full p-2.5 ${toneClasses}`}>
-          <Icon size={18} strokeWidth={2} />
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${toneClasses}`}>
+          <Icon size={17} strokeWidth={2.2} />
         </div>
       )}
     </Card>
