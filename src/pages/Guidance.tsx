@@ -133,7 +133,7 @@ export function Guidance() {
         <div className="inline-flex items-center gap-2 rounded-full bg-forest-50 px-3 py-1.5 text-[11px] font-semibold text-forest-700">
           <BookOpen size={14} /> Guidance
         </div>
-        <h1 className="mt-3 text-[26px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900 sm:text-3xl">{id ? "Mulai Perjalanan Finansialmu Bersama Wealthplanner" : "Start Your Financial Journey with Wealthplanner"}</h1>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-forest-900 sm:text-3xl">{id ? "Mulai Perjalanan Finansialmu Bersama Wealthplanner" : "Start Your Financial Journey with Wealthplanner"}</h1>
         <p className="mt-2 max-w-3xl text-[14px] leading-6 text-charcoal/60">
           Ikuti alur berikut untuk membangun data keuangan, memahami kondisi saat ini, menyusun tujuan, dan mempersiapkan perlindungan secara lebih terstruktur.
         </p>
@@ -216,20 +216,20 @@ export function Guidance() {
           <Card className="p-4 sm:p-5">
             <div className="flex items-start gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-500"><ArrowRight size={17} /></div>
-              <div className="min-w-0"><h3 className="text-[15px] font-semibold text-forest-900">07 — Konsultasikan Rencanamu</h3><StepCopy>Setelah mengetahui kondisi keuangan, tujuan, dan kebutuhan proteksimu, lanjutkan ke <strong className="text-forest-800">Konsultasi dengan Life Planner</strong> untuk mendapatkan proposal yang sesuai dengan kebutuhan perencanaanmu.</StepCopy><div className="mt-3"><a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-[#F59BB8] px-4 py-2.5 text-[12.5px] font-bold text-[#123524] shadow-pop">Konsultasi dengan Life Planner <ExternalLink size={13} /></a></div></div>
+              <div className="min-w-0"><h3 className="text-[15px] font-semibold text-forest-900">07 — Konsultasikan Rencanamu</h3><StepCopy>Setelah mengetahui kondisi keuangan, tujuan, dan kebutuhan proteksimu, lanjutkan ke <strong className="text-forest-800">Konsultasi dengan Life Planner</strong> untuk mendapatkan proposal yang sesuai dengan kebutuhan perencanaanmu.</StepCopy><div className="mt-3"><a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-forest-600 px-3 py-2 text-[12px] font-semibold text-white hover:bg-forest-700">Konsultasi dengan Life Planner <ExternalLink size={13} /></a></div></div>
             </div>
           </Card>
         </div>
       </div>
 
       <Card>
-        <h2 className="section-title">Your Financial Journey</h2>
+        <h2 className="text-[17px] font-semibold text-forest-900">Your Financial Journey</h2>
         <p className="mt-2 text-[13px] leading-5 text-charcoal/60"><strong className="text-forest-800">Catat → Rencanakan → Lindungi</strong></p>
         <p className="mt-1 text-[12px] leading-5 text-charcoal/50">Mulai dari memahami kondisi keuanganmu, menyusun tujuan, hingga mempersiapkan perlindungan untuk apa yang sudah kamu bangun.</p>
       </Card>
 
       <Card>
-        <h2 className="section-title">Term and Condition</h2>
+        <h2 className="text-[17px] font-semibold text-forest-900">Term and Condition</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {[
             ["Data pengguna", "Akurasi hasil bergantung pada data yang kamu masukkan dan perbarui."],
@@ -241,7 +241,7 @@ export function Guidance() {
       </Card>
 
       <Card>
-        <h2 className="section-title">Butuh Bantuan?</h2>
+        <h2 className="text-[17px] font-semibold text-forest-900">Butuh Bantuan?</h2>
         <p className="mt-1 text-[13px] text-charcoal/55">Terdapat kendala saat menggunakan Wealthplanner?</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <a href="https://www.wealthplanner.id" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg border border-forest-100 bg-forest-50 px-3 py-2 text-[12px] font-semibold text-forest-700 hover:bg-forest-100">Website <ExternalLink size={13} /></a>
