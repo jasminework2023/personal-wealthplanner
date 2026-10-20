@@ -92,7 +92,7 @@ export function Transaction() {
         </div>
       </div>
 
-      <Card>
+      <Card className="!p-0">
         <div className="flex flex-col gap-4 p-4 sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="section-title">{txText.list}</h2>
