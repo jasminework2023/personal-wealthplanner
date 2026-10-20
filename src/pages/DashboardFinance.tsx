@@ -2,7 +2,6 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 const API_BASE = "/api";
 import { Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
-import { StatCard } from "../components/StatCard";
 import { ChartCard, Card } from "../components/Card";
 
 import { DataStatusBanner } from "../components/DataStatusBanner";
@@ -216,7 +215,7 @@ export function DashboardFinance() {
     return { month: month.slice(0, 3), incomeCurrent: sum(current, "Income"), incomePrevious: sum(previous, "Income"), expenseCurrent: sum(current, "Expense"), expensePrevious: sum(previous, "Expense"), cashflowCurrent: sum(current, "Income") - sum(current, "Expense") - sum(current, "Saving"), cashflowPrevious: sum(previous, "Income") - sum(previous, "Expense") - sum(previous, "Saving") };
   });
   const yearToDateTotal = (year: number, type: string) => transactionsForYear(year)
-    .filter((t) => monthIndex(t.month) >= 0 && (year < currentYear || monthIndex(t.month) <= new Date().getMonth()))
+    .filter((t) => monthIndex(t.month) >= 0 && monthIndex(t.month) <= new Date().getMonth())
     .filter((t) => t.type === type).reduce((total, t) => total + Number(t.amount || 0), 0);
   const trendLabel = (current: number, previous: number) => {
     const change = previous > 0 ? ((current - previous) / previous) * 100 : current > 0 ? 100 : 0;
@@ -294,7 +293,7 @@ export function DashboardFinance() {
       <ChartCard title="Asset Tracker" subtitle="Pantau aset saat ini dan progres menuju target.">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
               <div className="rounded-xl bg-forest-50/70 p-3">
                 <p className="text-[11px] text-charcoal/55">Aset Saat Ini</p>
                 <p className="mt-1 text-[17px] font-semibold text-forest-900">{formatRupiah(assets.totalAssets)}</p>
@@ -305,10 +304,6 @@ export function DashboardFinance() {
                   {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="text-[11px] font-semibold text-forest-700 hover:underline">Edit</button>}
                 </div>
                 {editingAssetTarget ? <div className="mt-2 flex gap-2"><input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 flex-1 rounded-lg border border-charcoal/15 px-2.5 py-2 text-[13px] outline-none focus:border-forest-400" placeholder="Target aset" /><button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) throw new Error("Gagal menyimpan target"); setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { console.error(e); } finally { setSavingAssetTarget(false); } }} className="rounded-lg bg-forest-600 px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-50">{savingAssetTarget ? "..." : "Save"}</button></div> : <p className="mt-1 text-[17px] font-semibold text-forest-900">{assets.target > 0 ? formatRupiah(assets.target) : "Belum diatur"}</p>}
-              </div>
-              <div className="rounded-xl bg-white border border-charcoal/8 p-3">
-                <p className="text-[11px] text-charcoal/55">Progress ke Target</p>
-                <p className="mt-1 text-[17px] font-semibold text-forest-700">{assets.target > 0 ? formatPercent(assetProgress) : "—"}</p>
               </div>
             </div>
             {assets.target > 0 && (
