@@ -83,6 +83,7 @@ function EditableAssetItem({
   isRealData,
   sheetRow,
   onDeleted,
+  percentage = 0,
 }: {
   name: string;
   value: number;
@@ -90,6 +91,7 @@ function EditableAssetItem({
   isRealData: boolean;
   sheetRow?: number;
   onDeleted?: () => void;
+  percentage?: number;
 }) {
   const id = getAppLanguage() === "id";
   const [editing, setEditing] = useState(false);
@@ -143,10 +145,18 @@ function EditableAssetItem({
   }
 
   return (
-    <div className="flex items-center justify-between text-[13px] py-1 group">
-      <span className="text-charcoal/70">{name}</span>
-      <span className="flex items-center gap-2">
-        <span className="font-medium">{formatRupiah(saved)}</span>
+    <div className="flex items-center justify-between gap-2 text-[12px] py-1.5 group">
+      <span className="flex min-w-0 items-center gap-2 text-charcoal/70">
+        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${section === "liquid" ? "bg-[#DFF3E7] text-[#0B6B47]" : "bg-[#FCE7EF] text-[#C23A5B]"}`}>
+          {section === "liquid" ? <Wallet size={14}/> : <TrendingUp size={14}/>}
+        </span>
+        <span className="truncate">{name}</span>
+      </span>
+      <span className="flex shrink-0 items-center gap-2">
+        <span className="text-right">
+          <span className="block font-semibold tabular-nums text-forest-900">{formatRupiah(saved)}</span>
+          <span className="block text-right text-[10px] text-charcoal/45 tabular-nums">{percentage.toFixed(1)}%</span>
+        </span>
         {isRealData && (
           <>
             <button onClick={() => { setInput(String(saved)); setEditing(true); }} className="opacity-0 group-hover:opacity-100 text-charcoal/40 hover:text-forest-700" title={id ? "Ubah" : "Edit"}>
@@ -195,6 +205,7 @@ export function DashboardFinance() {
   const [editingAssetTarget, setEditingAssetTarget] = useState(false);
   const [assetTargetInput, setAssetTargetInput] = useState("");
   const [savingAssetTarget, setSavingAssetTarget] = useState(false);
+  const [showAllAssets, setShowAllAssets] = useState(false);
   const [activeReportTab, setActiveReportTab] = useState<"income" | "assets" | "cashflow">("income");
 
   useEffect(() => {
@@ -289,7 +300,15 @@ export function DashboardFinance() {
       {/* E. Asset Tracker */}
       <ChartCard title={id ? "Pelacak Aset" : "Asset Tracker"} subtitle={id ? "Pantau aset saat ini dan progres menuju target." : "Track your current assets and progress toward your goal."}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
+          <div className="order-2 lg:order-2">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[13px] font-semibold text-forest-900">Detail Aset</p>
+              {(assets.liquidAssets.length + assets.investmentAssets.length > 4) && (
+                <button type="button" onClick={() => setShowAllAssets((value) => !value)} className="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-semibold text-forest-700 hover:text-forest-900">
+                  {showAllAssets ? "Sembunyikan" : "Lihat semua"} <ChevronRight size={14} className={showAllAssets ? "rotate-90" : ""}/>
+                </button>
+              )}
+            </div>
             <div className="hero-forest mb-4 rounded-[24px] p-5 text-white shadow-float">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -323,8 +342,8 @@ export function DashboardFinance() {
             {(assets.liquidAssets.length > 0 || isRealData) && (
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Liquid Assets</p>
-                {assets.liquidAssets.map((item) => (
-                  <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} section="liquid" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
+                {assets.liquidAssets.slice(0, showAllAssets ? undefined : 2).map((item) => (
+                  <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assets.totalAssets > 0 ? item.value / assets.totalAssets * 100 : 0} section="liquid" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
                 ))}
                 {isRealData && (
                   <AddItemForm
@@ -347,8 +366,8 @@ export function DashboardFinance() {
             {(assets.investmentAssets.length > 0 || isRealData) && (
               <div className="mb-3">
                 <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Investment Assets</p>
-                {assets.investmentAssets.map((item) => (
-                  <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
+                {assets.investmentAssets.slice(0, showAllAssets ? undefined : 2).map((item) => (
+                  <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assets.totalAssets > 0 ? item.value / assets.totalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
                 ))}
                 {isRealData && (
                   <AddItemForm
@@ -370,20 +389,38 @@ export function DashboardFinance() {
             )}
           </div>
 
-          <div>
+          <div className="order-1 lg:order-1 rounded-2xl bg-[#FFF4F6] p-4 sm:p-5">
+            <p className="text-[13px] font-semibold text-forest-900">Komposisi Aset</p>
             {assetChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie data={assetChartData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={95} paddingAngle={2}>
-                    {assetChartData.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(v: number) => formatRupiah(v)} />
-                </PieChart>
-              </ResponsiveContainer>
+              <>
+                <div className="relative mt-1">
+                  <ResponsiveContainer width="100%" height={240}>
+                    <PieChart>
+                      <Pie data={assetChartData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={2}>
+                        {assetChartData.map((_, i) => (
+                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(v: number) => formatRupiah(v)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <span className="text-[10px] font-medium text-charcoal/50">Total Aset</span>
+                    <span className="mt-1 max-w-[80%] break-words text-[clamp(10px,2.8vw,13px)] font-semibold leading-tight tracking-[-0.3px] text-forest-900 tabular-nums">{formatRupiah(assets.totalAssets)}</span>
+                  </div>
+                </div>
+                <div className="mt-1 space-y-2">
+                  {assetChartData.map((item, i) => (
+                    <div key={item.name} className="flex items-center gap-2 text-[12px]">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}/>
+                      <span className="min-w-0 flex-1 truncate text-charcoal/70">{item.name}</span>
+                      <span className="shrink-0 font-medium tabular-nums text-forest-900">{assets.totalAssets > 0 ? ((item.value / assets.totalAssets) * 100).toFixed(1) : "0.0"}%</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
-              <p className="text-[13px] text-charcoal/50">Belum ada data aset.</p>
+              <p className="py-8 text-center text-[13px] text-charcoal/50">Belum ada data aset.</p>
             )}
           </div>
         </div>
