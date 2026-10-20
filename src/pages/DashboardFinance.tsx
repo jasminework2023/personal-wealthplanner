@@ -205,21 +205,51 @@ export function DashboardFinance() {
   const expenseRows = byCategory("Expense");
 
   const currentYear = new Date().getFullYear();
-  const previousYear = currentYear - 1;
+  const currentMonthIndex = new Date().getMonth();
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const monthIndex = (value: string) => monthNames.findIndex((name) => name.toLowerCase() === String(value || "").toLowerCase());
-  const transactionsForYear = (year: number) => allYearFinance.transactions.filter((t) => Number(t.year || String(t.date || "").split("/")[2]) === year);
+  const monthIndex = (value: string) => {
+    const normalized = String(value || "").trim().toLowerCase();
+    return monthNames.findIndex((name) => name.toLowerCase() === normalized || name.slice(0, 3).toLowerCase() === normalized);
+  };
+  const transactionYear = (t: (typeof allYearFinance.transactions)[number]) => {
+    const rawYear = Number(t.year);
+    if (rawYear > 0) return rawYear;
+    const date = String(t.date || "");
+    const parts = date.split(/[/-]/);
+    const parsed = Number(parts[2]);
+    return parsed > 0 ? parsed : currentYear;
+  };
+  const transactionMonth = (t: (typeof allYearFinance.transactions)[number]) => {
+    const fromName = monthIndex(String(t.month || ""));
+    if (fromName >= 0) return fromName;
+    const date = String(t.date || "");
+    const parts = date.split(/[/-]/);
+    if (parts.length >= 3) {
+      const first = Number(parts[0]);
+      const second = Number(parts[1]);
+      if (first >= 1 && first <= 12 && parts[0].length <= 2) return first - 1;
+      if (second >= 1 && second <= 12) return second - 1;
+    }
+    return -1;
+  };
+  const allTransactions = allYearFinance.transactions;
+  const transactionsForMonth = (year: number, month: number) => allTransactions.filter((t) => transactionYear(t) === year && transactionMonth(t) === month);
   const monthlyComparison = monthNames.map((month, index) => {
-    const current = transactionsForYear(currentYear).filter((t) => monthIndex(t.month) === index);
-    const previous = transactionsForYear(previousYear).filter((t) => monthIndex(t.month) === index);
-    const sum = (items: typeof current, type: string) => items.filter((t) => t.type === type).reduce((total, t) => total + Number(t.amount || 0), 0);
-    return { month: month.slice(0, 3), incomeCurrent: sum(current, "Income"), incomePrevious: sum(previous, "Income"), expenseCurrent: sum(current, "Expense"), expensePrevious: sum(previous, "Expense"), cashflowCurrent: sum(current, "Income") - sum(current, "Expense") - sum(current, "Saving"), cashflowPrevious: sum(previous, "Income") - sum(previous, "Expense") - sum(previous, "Saving") };
+    const items = transactionsForMonth(currentYear, index);
+    const sum = (type: string) => items.filter((t) => t.type === type).reduce((total, t) => total + Number(t.amount || 0), 0);
+    return { month: month.slice(0, 3), income: sum("Income"), expense: sum("Expense"), cashflow: sum("Income") - sum("Expense") - sum("Saving") };
   });
-  const yearToDateTotal = (year: number, type: string) => transactionsForYear(year)
-    .filter((t) => monthIndex(t.month) >= 0 && monthIndex(t.month) <= new Date().getMonth())
+  const monthTotal = (year: number, month: number, type: string) => transactionsForMonth(year, month)
     .filter((t) => t.type === type).reduce((total, t) => total + Number(t.amount || 0), 0);
+  const monthCashflow = (year: number, month: number) => {
+    const items = transactionsForMonth(year, month);
+    return items.reduce((total, t) => total + (t.type === "Income" ? Number(t.amount || 0) : t.type === "Expense" || t.type === "Saving" ? -Number(t.amount || 0) : 0), 0);
+  };
+  const previousMonthYear = currentMonthIndex === 0 ? currentYear - 1 : currentYear;
+  const previousMonthIndex = (currentMonthIndex + 11) % 12;
   const trendLabel = (current: number, previous: number) => {
-    const change = previous > 0 ? ((current - previous) / previous) * 100 : current > 0 ? 100 : 0;
+    if (previous === 0) return { label: current === 0 ? "0.0%" : "—", positive: current >= 0 };
+    const change = ((current - previous) / Math.abs(previous)) * 100;
     return { label: (change >= 0 ? "+" : "") + change.toFixed(1) + "%", positive: change >= 0 };
   };
   const assetCompositionTotal = assetChartData.reduce((sum, item) => sum + item.value, 0);
@@ -257,20 +287,20 @@ export function DashboardFinance() {
       {activeReportTab === "income" && <>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
-            { label: "Total Income", current: yearToDateTotal(currentYear, "Income"), previous: yearToDateTotal(previousYear, "Income") },
-            { label: "Total Expense", current: yearToDateTotal(currentYear, "Expense"), previous: yearToDateTotal(previousYear, "Expense") },
+            { label: "Total Income", current: monthTotal(currentYear, currentMonthIndex, "Income"), previous: monthTotal(previousMonthYear, previousMonthIndex, "Income") },
+            { label: "Total Expense", current: monthTotal(currentYear, currentMonthIndex, "Expense"), previous: monthTotal(previousMonthYear, previousMonthIndex, "Expense") },
           ].map((item) => {
             const trend = trendLabel(item.current, item.previous);
             return <Card key={item.label} className="flex min-w-0 items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[12px] text-charcoal/60">{item.label}</p>
+                <p className="text-[12px] text-charcoal/60">{item.label}</p><p className="text-[10px] text-charcoal/45">vs bulan sebelumnya</p>
                 <p className="mt-1 whitespace-nowrap text-[clamp(13px,2.5vw,22px)] font-semibold leading-tight tracking-tight text-forest-900 tabular-nums">{formatRupiah(item.current)}</p>
               </div>
               <span className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold tabular-nums ${trend.positive ? "bg-[#D7FF72] text-[#24502A]" : "bg-[#FFD6E4] text-[#A52D5A]"}`}>{trend.label}</span>
             </Card>;
           })}
         </div>
-        <ChartCard title="Income Statement" subtitle={"Perbandingan bulanan " + currentYear + " vs " + previousYear + "."}>
+        <ChartCard title="Income Statement" subtitle={"Tren income dan expense bulanan " + currentYear + "."}>
           <div className="mb-3 flex gap-2">
             <button type="button" onClick={() => setIncomeTrendMetric("income")} className={"rounded-lg px-3 py-1.5 text-[11px] font-semibold " + (incomeTrendMetric === "income" ? "bg-forest-700 text-white" : "bg-forest-50 text-forest-700")}>Income</button>
             <button type="button" onClick={() => setIncomeTrendMetric("expense")} className={"rounded-lg px-3 py-1.5 text-[11px] font-semibold " + (incomeTrendMetric === "expense" ? "bg-forest-700 text-white" : "bg-forest-50 text-forest-700")}>Expense</button>
@@ -278,9 +308,8 @@ export function DashboardFinance() {
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={monthlyComparison} margin={{top:10,right:12,left:0,bottom:4}}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)"/><XAxis dataKey="month" tick={{fontSize:11}}/>
-              <YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} width={48}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Legend/>
-              <Line type="monotone" dataKey={incomeTrendMetric + "Current"} name={(incomeTrendMetric === "income" ? "Income " : "Expense ") + currentYear} stroke="var(--chart-2)" strokeWidth={2.5} dot={{r:3}} connectNulls/>
-              <Line type="monotone" dataKey={incomeTrendMetric + "Previous"} name={(incomeTrendMetric === "income" ? "Income " : "Expense ") + previousYear} stroke="var(--chart-expense)" strokeWidth={2.5} strokeDasharray="5 4" dot={{r:3}} connectNulls/>
+              <YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} width={48}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/>
+              <Line type="monotone" dataKey={incomeTrendMetric} name={incomeTrendMetric === "income" ? "Income" : "Expense"} stroke={incomeTrendMetric === "income" ? "var(--chart-2)" : "var(--chart-expense)"} strokeWidth={2.5} dot={{r:3}} connectNulls/>
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -397,13 +426,12 @@ export function DashboardFinance() {
       </>}
 
       {activeReportTab === "cashflow" && <>
-        <ChartCard title="Cashflow Tracker" subtitle={"Tren arus kas bulanan " + currentYear + " dibanding " + previousYear + "."}>
+        <ChartCard title="Cashflow Tracker" subtitle={"Tren arus kas month-to-month sepanjang " + currentYear + "."}>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={monthlyComparison} margin={{top:10,right:12,left:0,bottom:4}}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)"/><XAxis dataKey="month" tick={{fontSize:11}}/>
               <YAxis tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} width={48}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Legend/>
-              <Line type="monotone" dataKey="cashflowCurrent" name={String(currentYear)} stroke="var(--chart-2)" strokeWidth={2.5} dot={{r:3}} connectNulls/>
-              <Line type="monotone" dataKey="cashflowPrevious" name={String(previousYear)} stroke="var(--chart-expense)" strokeWidth={2.5} strokeDasharray="5 4" dot={{r:3}} connectNulls/>
+              <Line type="monotone" dataKey="cashflow" name="Cashflow" stroke="var(--chart-2)" strokeWidth={2.5} dot={{r:3}} connectNulls/>
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
