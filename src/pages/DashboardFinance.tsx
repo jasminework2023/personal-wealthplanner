@@ -214,17 +214,23 @@ export function DashboardFinance() {
   const transactionYear = (t: (typeof allYearFinance.transactions)[number]) => {
     const rawYear = Number(t.year);
     if (rawYear > 0) return rawYear;
-    const date = String(t.date || "");
+    const date = String(t.date || "").trim();
+    const isoMatch = date.match(/^(\d{4})[-/]/);
+    if (isoMatch) return Number(isoMatch[1]);
     const parts = date.split(/[/-]/);
-    const parsed = Number(parts[2]);
+    const parsed = Number(parts[parts.length - 1]);
     return parsed > 0 ? parsed : currentYear;
   };
   const transactionMonth = (t: (typeof allYearFinance.transactions)[number]) => {
     const fromName = monthIndex(String(t.month || ""));
     if (fromName >= 0) return fromName;
-    const date = String(t.date || "");
+    const date = String(t.date || "").trim();
     const parts = date.split(/[/-]/);
     if (parts.length >= 3) {
+      if (/^\d{4}[-/]/.test(date)) {
+        const month = Number(parts[1]);
+        if (month >= 1 && month <= 12) return month - 1;
+      }
       const first = Number(parts[0]);
       const second = Number(parts[1]);
       if (first >= 1 && first <= 12 && parts[0].length <= 2) return first - 1;
@@ -237,14 +243,10 @@ export function DashboardFinance() {
   const monthlyComparison = monthNames.map((month, index) => {
     const items = transactionsForMonth(currentYear, index);
     const sum = (type: string) => items.filter((t) => t.type === type).reduce((total, t) => total + Number(t.amount || 0), 0);
-    return { month: month.slice(0, 3), income: sum("Income"), expense: sum("Expense"), cashflow: sum("Income") - sum("Expense") - sum("Saving") };
+    return { month: month.slice(0, 3), income: index <= currentMonthIndex ? sum("Income") : null, expense: index <= currentMonthIndex ? sum("Expense") : null, cashflow: index <= currentMonthIndex ? sum("Income") - sum("Expense") - sum("Saving") : null };
   });
   const monthTotal = (year: number, month: number, type: string) => transactionsForMonth(year, month)
     .filter((t) => t.type === type).reduce((total, t) => total + Number(t.amount || 0), 0);
-  const monthCashflow = (year: number, month: number) => {
-    const items = transactionsForMonth(year, month);
-    return items.reduce((total, t) => total + (t.type === "Income" ? Number(t.amount || 0) : t.type === "Expense" || t.type === "Saving" ? -Number(t.amount || 0) : 0), 0);
-  };
   const previousMonthYear = currentMonthIndex === 0 ? currentYear - 1 : currentYear;
   const previousMonthIndex = (currentMonthIndex + 11) % 12;
   const trendLabel = (current: number, previous: number) => {
