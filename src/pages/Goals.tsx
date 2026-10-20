@@ -118,7 +118,7 @@ export function Goals() {
     <div className="flex flex-col gap-5 pb-6">
       <div className="flex items-start gap-3">
         <button onClick={() => navigate("/")} aria-label="Kembali ke Home" className="mt-1 rounded-xl border border-rose-100 bg-white p-2 text-forest-700"><ArrowLeft size={17}/></button>
-        <div><h1 className="text-2xl font-semibold tracking-tight text-forest-900">{id ? "Goals & Rencana Keuangan" : "Goals & Financial Plans"}</h1><p className="mt-1 text-[13px] leading-5 text-charcoal/55">{id ? "Hubungkan tujuan keuangan dengan aset yang memang kamu siapkan untuk mencapainya." : "Connect financial goals with the assets you set aside to achieve them."}</p></div>
+        <div><h1 className="page-title !text-[24px]">{id ? "Goals & Rencana Keuangan" : "Goals & Financial Plans"}</h1><p className="page-sub">{id ? "Hubungkan tujuan keuangan dengan aset yang memang kamu siapkan untuk mencapainya." : "Connect financial goals with the assets you set aside to achieve them."}</p></div>
       </div>
 
       {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.map((plan) => {
@@ -127,10 +127,10 @@ export function Goals() {
         const allocated = Object.values(planAllocations).reduce((sum, value) => sum + value, 0);
         const progress = target > 0 ? Math.min(100, allocated / target * 100) : 0;
         return (
-          <Card key={plan.id} className="border border-rose-100">
+          <Card key={plan.id} className="rounded-[22px] border border-forest-100/50">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-forest-700"><Target size={20}/></span>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FBD3E0] text-[#B83A62]"><Target size={20}/></span>
                 <div className="min-w-0 flex-1">
                   {editingId === plan.id ? <div className="flex items-center gap-1"><input autoFocus value={draftName} onChange={(e) => setDraftName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") saveName(plan.id); if (e.key === "Escape") setEditingId(null); }} className="w-full min-w-0 rounded-lg border border-forest-200 px-2 py-1 text-[13px] text-forest-900 outline-none focus:ring-2 focus:ring-forest-100" aria-label="Nama goal baru"/><button onClick={() => saveName(plan.id)} aria-label="Simpan nama" className="rounded p-1 text-forest-700"><Check size={16}/></button><button onClick={() => setEditingId(null)} aria-label="Batal edit nama" className="rounded p-1 text-charcoal/50"><X size={16}/></button></div> : <div className="flex items-center gap-1"><h2 className="text-[14px] font-semibold text-forest-900">{settings.names[plan.id] || plan.name}</h2><button onClick={() => startRename(plan.id, plan.name)} aria-label="Ubah nama goal" title="Ubah nama goal" className="rounded p-1 text-charcoal/40 hover:text-forest-700"><Pencil size={13}/></button></div>}
                   <p className="mt-1 text-[11px] text-charcoal/50">{getPlanTypeLabel(plan.type)}</p>
@@ -139,18 +139,18 @@ export function Goals() {
               <button onClick={() => deletePlan(plan.id)} aria-label={`Hapus ${plan.name}`} className="rounded-lg p-1.5 text-charcoal/35 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={15}/></button>
             </div>
 
-            <div className="mt-4 rounded-xl bg-rose-50/60 p-3">
-              <p className="text-[11px] text-charcoal/55">Target rencana</p>
-              <p className="mt-1 text-[18px] font-semibold text-forest-900">{formatRupiah(target)}</p>
-              <div className="mt-3 flex items-center justify-between gap-2"><span className="text-[11px] text-charcoal/55">Aset dialokasikan</span><span className="text-[12px] font-semibold text-forest-800">{formatRupiah(allocated)}{target > 0 ? ` · ${Math.round(progress)}%` : ""}</span></div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-forest-600 transition-all" style={{ width: progress + "%" }}/></div>
+            <div className="hero-forest mt-4 rounded-[20px] p-4 text-white">
+              <p className="text-[12px] text-white/70">Target rencana</p>
+              <p className="num mt-1 text-[clamp(20px,6.4vw,26px)] font-semibold leading-tight">{formatRupiah(target)}</p>
+              <div className="mt-3 flex items-center justify-between gap-2"><span className="text-[12px] text-white/70">Aset dialokasikan</span><span className="num text-[12.5px] font-semibold text-white">{formatRupiah(allocated)}{target > 0 ? ` · ${Math.round(progress)}%` : ""}</span></div>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/20"><div className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#F59BB8] transition-all" style={{ width: progress + "%" }}/></div>
             </div>
 
             <div className="mt-3">
               <p className="mb-2 flex items-center gap-1.5 text-[12px] font-semibold text-forest-900"><Wallet size={14}/> Aset untuk tujuan ini</p>
               {Object.entries(planAllocations).length ? <div className="flex flex-col gap-2">{Object.entries(planAllocations).map(([assetId, value]) => {
                 const asset = assetOptions.find((item) => item.id === assetId);
-                return <div key={assetId} className="flex items-center justify-between gap-2 rounded-xl border border-rose-100 px-3 py-2"><div className="min-w-0"><p className="truncate text-[12px] font-medium text-forest-900">{asset?.name || assetId.split(":").slice(1).join(":")}</p><p className="text-[11px] text-charcoal/55">{formatRupiah(value)}</p></div><button onClick={() => removeAllocation(plan.id, assetId)} className="rounded-lg p-1.5 text-charcoal/40 hover:bg-rose-50 hover:text-rose-600" aria-label="Hapus alokasi aset"><X size={14}/></button></div>;
+                return <div key={assetId} className="flex items-center justify-between gap-2 rounded-2xl bg-charcoal/[0.04] px-3.5 py-2.5"><div className="min-w-0"><p className="truncate text-[12px] font-medium text-forest-900">{asset?.name || assetId.split(":").slice(1).join(":")}</p><p className="num text-[11.5px] text-charcoal/55">{formatRupiah(value)}</p></div><button onClick={() => removeAllocation(plan.id, assetId)} className="rounded-lg p-1.5 text-charcoal/40 hover:bg-rose-50 hover:text-rose-600" aria-label="Hapus alokasi aset"><X size={14}/></button></div>;
               })}</div> : <p className="text-[11px] text-charcoal/50">Belum ada aset yang dialokasikan.</p>}
               {allocatingId === plan.id ? <div className="mt-3 flex flex-col gap-2 rounded-xl border border-forest-100 p-3">
                 <label className="text-[11px] font-medium text-charcoal/65">{id ? "Pilih aset" : "Select asset"}</label>
