@@ -276,20 +276,20 @@ export function AddTransactionModal({
   }
 
   return (
-    <Modal open={open} onClose={handleClose} title="Tambah Transaksi">
-      <div className="mb-5 flex gap-1.5 rounded-xl bg-charcoal/[0.05] p-1.5">
+    <Modal open={open} onClose={handleClose} title="Tambah transaksi">
+      <div className="flex gap-1 mb-4 bg-charcoal/[0.06] rounded-full p-1">
         <button
           onClick={() => setMode("manual")}
-          className={`flex-1 text-[13px] py-2 rounded-lg transition-colors ${
-            mode === "manual" ? "bg-white shadow-sm font-semibold text-forest-800" : "text-charcoal/55"
+          className={`flex-1 text-[13px] font-semibold py-2 rounded-full transition-colors ${
+            mode === "manual" ? "bg-white shadow-sm font-medium text-forest-800" : "text-charcoal/60"
           }`}
         >
           Manual
         </button>
         <button
           onClick={() => setMode("ai")}
-          className={`flex-1 text-[13px] py-1.5 rounded-md transition-colors flex items-center justify-center gap-1 ${
-            mode === "ai" ? "bg-white shadow-sm font-semibold text-rose-700" : "text-charcoal/55"
+          className={`flex-1 text-[13px] font-semibold py-2 rounded-full transition-colors flex items-center justify-center gap-1 ${
+            mode === "ai" ? "bg-white shadow-sm font-medium text-rose-700" : "text-charcoal/60"
           }`}
         >
           <Sparkles size={13} /> Catat dengan AI
@@ -303,9 +303,9 @@ export function AddTransactionModal({
               <button
                 key={t}
                 onClick={() => setForm((f) => ({ ...f, type: t, category: activeCategories[t][0] || f.category }))}
-                className={`flex-1 text-[12px] py-2.5 rounded-xl border transition-colors ${
+                className={`flex-1 text-[13px] font-semibold py-2.5 rounded-xl border ${
                   form.type === t
-                    ? "border-forest-600 bg-mint-100 text-forest-800 font-semibold"
+                    ? "border-forest-600 bg-forest-50 text-forest-700 font-medium"
                     : "border-charcoal/15 text-charcoal/60"
                 }`}
               >
@@ -394,7 +394,7 @@ export function AddTransactionModal({
             !receiptFile && (
               <button
                 onClick={handleAiParse}
-                className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-rose-500 py-3 text-[14px] font-semibold text-white shadow-sm transition hover:bg-rose-600"
+                className="w-full bg-rose-600 text-white rounded-lg py-2.5 text-[14px] font-medium hover:bg-rose-700 flex items-center justify-center gap-1.5"
               >
                 <Sparkles size={14} /> Proses teks dengan AI
               </button>
