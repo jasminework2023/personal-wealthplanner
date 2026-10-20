@@ -126,7 +126,7 @@ export function DashboardWelcome() {
             {active ? <CheckCircle2 size={28} /> : <Clock3 size={28} />}
           </div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-forest-600">Wealthplanner Personal</p>
-          <h1 className="mt-2 text-3xl font-semibold text-forest-900">
+          <h1 className="mt-2 text-[30px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900">
             {active ? `Selamat datang${data?.username ? `, ${data.username}` : ""} 👋` : "Menunggu konfirmasi pembayaran"}
           </h1>
           <p className="mt-2 text-sm text-charcoal/60">
