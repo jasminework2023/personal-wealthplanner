@@ -290,30 +290,39 @@ export function DashboardFinance() {
           <span className="rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-[#F59BB8]">Finance Report</span>
         </div>
         <div className="grid grid-cols-3 divide-x divide-white/20">
-          <div className="min-w-0 pr-2 sm:pr-4"><p className="text-[10.5px] leading-tight text-white/70 sm:text-[12px]">Total Income</p><p className="num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight">{formatRupiah(totalIncome)}</p></div>
-          <div className="min-w-0 px-2 sm:px-4"><p className="text-[10.5px] leading-tight text-white/70 sm:text-[12px]">Total Expense</p><p className="num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight">{formatRupiah(totalExpense)}</p></div>
-          <div className="min-w-0 pl-2 sm:pl-4"><p className="text-[10.5px] leading-tight text-white/70 sm:text-[12px]">Net Result</p><p className={`num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight ${totalIncome-totalExpense < 0 ? "text-[#FFB4D2]" : "text-[#6EE7A8]"}`}>{formatRupiah(totalIncome-totalExpense)}</p></div>
+          <div className="min-w-0 pr-2 sm:pr-4"><div className="flex items-center gap-1 text-white/70"><ArrowDownLeft size={12} className="shrink-0 text-[#6EE7A8]"/><p className="text-[10.5px] leading-tight sm:text-[12px]">Total Income</p></div><p className="num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight">{formatRupiah(totalIncome)}</p></div>
+          <div className="min-w-0 px-2 sm:px-4"><div className="flex items-center gap-1 text-white/70"><ArrowUpRight size={12} className="shrink-0 text-[#FFB4D2]"/><p className="text-[10.5px] leading-tight sm:text-[12px]">Total Expense</p></div><p className="num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight">{formatRupiah(totalExpense)}</p></div>
+          <div className="min-w-0 pl-2 sm:pl-4"><div className="flex items-center gap-1 text-white/70"><TrendingUp size={12} className="shrink-0 text-[#FFA24C]"/><p className="text-[10.5px] leading-tight sm:text-[12px]">Net Result</p></div><p className={`num mt-2 break-words text-[clamp(12px,3.5vw,19px)] font-semibold leading-tight ${totalIncome-totalExpense < 0 ? "text-[#FFB4D2]" : "text-[#6EE7A8]"}`}>{formatRupiah(totalIncome-totalExpense)}</p></div>
         </div>
       </section>
 
       {activeReportTab === "income" && <>
-        <ChartCard title={id ? "Perbandingan Arus Keuangan" : "Cash Flow Comparison"} subtitle={id ? "Pemasukan, pengeluaran, dan tabungan aktual pada periode ini." : "Actual income, expenses, and savings for this period."}>
-          <div className="w-full">
-            <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Periode ini",income:totalIncome,expense:totalExpense,saving:totalSaving}]} barCategoryGap="8%" barGap={12} margin={{top:10,right:8,left:0,bottom:0}}><XAxis dataKey="name" hide/><YAxis width={48} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="income" name="Income" fill="#0B6B47" radius={[8,8,0,0]} maxBarSize={72}/><Bar dataKey="expense" name="Expense" fill="#F4577A" radius={[8,8,0,0]} maxBarSize={72}/><Bar dataKey="saving" name="Saving" fill="#FFA24C" radius={[8,8,0,0]} maxBarSize={72}/></BarChart></ResponsiveContainer>
-            <div className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-charcoal/65"><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#0B6B47]"/>Income</span><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#F4577A]"/>Expense</span><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#FFA24C]"/>Saving</span></div>
-          </div>
-        </ChartCard>
-        {(incomeRows.length > 4 || expenseRows.length > 4) && <div className="flex justify-end -mt-2">
-          <button type="button" onClick={() => setShowAllCategories((value) => !value)} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold text-forest-700 hover:bg-forest-50">
-            {showAllCategories ? "Tampilkan lebih sedikit" : "Lihat semua kategori"} <ChevronRight size={14} className={showAllCategories ? "rotate-90" : ""}/>
-          </button>
-        </div>}
-        <div className="grid gap-4 lg:grid-cols-3">
-          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0B6B47]/10 text-[#0B6B47]"><Wallet size={15}/></span>{id ? "Pemasukan per Kategori" : "Income by Category"}</span>} subtitle={id ? "Realisasi pemasukan" : "Recorded income"}><div>{incomeRows.length?incomeRows.slice(0, showAllCategories ? incomeRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalIncome} showPercentage kind="income" showBudget={false}/>):<p className="text-sm text-charcoal/45">{id ? "Belum ada data pemasukan." : "No income data yet."}</p>}</div></ChartCard>
-          <ChartCard title={<span className="inline-flex items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#F4577A]/10 text-[#F4577A]"><CircleDollarSign size={15}/></span>{id ? "Pengeluaran per Kategori" : "Expenses by Category"}</span>} subtitle={id ? "Realisasi pengeluaran" : "Recorded expenses"}><div>{expenseRows.length?expenseRows.slice(0, showAllCategories ? expenseRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalExpense} showPercentage kind="expense" showBudget={false}/>):<p className="text-sm text-charcoal/45">{id ? "Belum ada data pengeluaran." : "No expense data yet."}</p>}</div></ChartCard>
+        <div className="grid items-start gap-4 lg:grid-cols-2">
+          <ChartCard title={id ? "Perbandingan Arus Keuangan" : "Cash Flow Comparison"} subtitle={id ? "Pemasukan, pengeluaran, dan tabungan aktual pada periode ini." : "Actual income, expenses, and savings for this period."}>
+            <div className="w-full">
+              <ResponsiveContainer width="100%" height={230}><BarChart data={[{name:"Periode ini",income:totalIncome,expense:totalExpense,saving:totalSaving}]} barCategoryGap="8%" barGap={12} margin={{top:10,right:8,left:0,bottom:0}}><XAxis dataKey="name" hide/><YAxis width={48} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Bar dataKey="income" name="Income" fill="#0B6B47" radius={[8,8,0,0]} maxBarSize={72}/><Bar dataKey="expense" name="Expense" fill="#F4577A" radius={[8,8,0,0]} maxBarSize={72}/><Bar dataKey="saving" name="Saving" fill="#FFA24C" radius={[8,8,0,0]} maxBarSize={72}/></BarChart></ResponsiveContainer>
+              <div className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-charcoal/65"><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#0B6B47]"/>Income</span><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#F4577A]"/>Expense</span><span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-[#FFA24C]"/>Saving</span></div>
+            </div>
+          </ChartCard>
+          <ChartCard title={id ? "Detail per Kategori" : "Category Details"} subtitle={id ? "Rincian pemasukan dan pengeluaran pada periode terpilih." : "Income and expenses for the selected period."}>
+            <div className="mb-4">
+              <p className="mb-1.5 inline-flex items-center gap-2 text-[12px] font-semibold text-forest-800"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#DFF3E7] text-[#0B6B47]"><Wallet size={13}/></span>{id ? "Pemasukan" : "Income"}</p>
+              {incomeRows.length ? incomeRows.slice(0, showAllCategories ? incomeRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalIncome} showPercentage kind="income" showBudget={false}/>) : <p className="py-2 text-[12px] text-charcoal/45">{id ? "Belum ada data pemasukan." : "No income data yet."}</p>}
+            </div>
+            <div className="my-3 h-px bg-charcoal/10"/>
+            <div>
+              <p className="mb-1.5 inline-flex items-center gap-2 text-[12px] font-semibold text-forest-800"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#FDE3EA] text-[#C23A5B]"><CircleDollarSign size={13}/></span>{id ? "Pengeluaran" : "Expense"}</p>
+              {expenseRows.length ? expenseRows.slice(0, showAllCategories ? expenseRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalExpense} showPercentage kind="expense" showBudget={false}/>) : <p className="py-2 text-[12px] text-charcoal/45">{id ? "Belum ada data pengeluaran." : "No expense data yet."}</p>}
+            </div>
+            {(incomeRows.length > 4 || expenseRows.length > 4) && <div className="mt-3 flex justify-end">
+              <button type="button" onClick={() => setShowAllCategories((value) => !value)} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold text-forest-700 hover:bg-forest-50">
+                {showAllCategories ? (id ? "Tampilkan lebih sedikit" : "Show less") : (id ? "Lihat semua kategori" : "View all categories")} <ChevronRight size={14} className={showAllCategories ? "rotate-90" : ""}/>
+              </button>
+            </div>}
+          </ChartCard>
         </div>
       </>}
-
+      
       {activeReportTab === "assets" && <>
       {/* E. Asset Tracker */}
       <ChartCard title={id ? "Pelacak Aset" : "Asset Tracker"} subtitle={id ? "Pantau aset saat ini dan progres menuju target." : "Track your current assets and progress toward your goal."}>
