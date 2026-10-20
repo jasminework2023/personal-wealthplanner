@@ -217,15 +217,15 @@ export function DashboardFinance() {
   const savingRows = byCategory("Saving");
   const expenseRows = byCategory("Expense");
   const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);
-  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "cashflow" as const, label: "Cashflow Tracker" }, { id: "assets" as const, label: "Asset Tracker" }];
+  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];
   const activeTabIndex = reportTabs.findIndex((tab) => tab.id === activeReportTab);
   const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between gap-2 -mt-3">
-        <h1 className="text-[19px] font-medium leading-tight text-forest-900">{id ? "Laporan Keuangan" : "Financial Statement"}</h1>
-        <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-full border border-charcoal/10 bg-transparent px-2.5 py-1.5 text-[12px] font-medium text-forest-900">
+        <h1 className="min-w-0 truncate text-[21px] font-bold leading-[1.15] tracking-[-0.03em] text-forest-900">{id ? "Laporan Keuangan" : "Financial Statement"}</h1>
+        <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-forest-900 shadow-sm">
           <CalendarDays size={15} className="shrink-0 text-forest-700" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-charcoal/50" />
         </button>
       </div>
@@ -253,11 +253,11 @@ export function DashboardFinance() {
       <section className="bg-transparent">
         <div className="flex items-center justify-between gap-3">
           <button type="button" aria-label="Sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full border border-charcoal/10 text-forest-700 transition-colors hover:bg-forest-50"><ChevronLeft size={18}/></button>
-          <h2 aria-live="polite" className="min-w-0 flex-1 text-center text-[18px] font-medium leading-tight text-forest-900">{reportTabs[activeTabIndex].label}</h2>
+          <h2 aria-live="polite" className="min-w-0 flex-1 text-center text-[19px] font-bold tracking-[-0.025em] leading-tight text-forest-900">{reportTabs[activeTabIndex].label}</h2>
           <button type="button" aria-label="Berikutnya" onClick={() => selectReportTab(activeTabIndex + 1)} className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full border border-charcoal/10 text-forest-700 transition-colors hover:bg-forest-50"><ChevronRight size={18}/></button>
         </div>
         <div className="mt-3 flex items-center justify-center gap-2" aria-label="Pilihan laporan">
-          {reportTabs.map((tab) => <span key={tab.id} className={`h-1.5 rounded-full transition-all duration-150 ${activeReportTab===tab.id?"w-5 bg-forest-700":"w-1.5 bg-charcoal/20"}`} />)}
+          {reportTabs.map((tab) => <span key={tab.id} className={`h-1.5 rounded-full transition-all duration-150 ${activeReportTab===tab.id?"w-6 bg-[#F59BB8]":"w-1.5 bg-charcoal/20"}`} />)}
         </div>
       </section>
 
@@ -278,15 +278,15 @@ export function DashboardFinance() {
           const ChangeLabel = ({ value }: { value: number | null }) => value === null
             ? <p className="mt-2 text-[12px] text-white/60">—</p>
             : <p className={`mt-2 flex items-center gap-1 text-[12px] font-semibold ${value >= 0 ? "text-[#6EE7A8]" : "text-[#FFB4D2]"}`}><span>{value >= 0 ? "↑" : "↓"}</span><span>{value >= 0 ? "+" : ""}{value.toFixed(1).replace(".", ",")}%</span></p>;
-          return <div className="grid grid-cols-2 gap-0 rounded-2xl bg-[#0B4D38] p-4 text-white sm:p-5">
+          return <div className="hero-forest grid grid-cols-2 gap-0 rounded-[24px] p-5 text-white shadow-float">
             <div className="min-w-0 border-r border-white/20 pr-3 sm:pr-5">
-              <p className="text-[12px] leading-tight text-white/75 sm:text-sm">Total Income</p>
-              <p className="mt-2 break-words text-[17px] font-semibold leading-tight sm:text-xl">{formatRupiah(totalIncome)}</p>
+              <p className="text-[12.5px] leading-tight text-white/75 sm:text-sm">Total Income</p>
+              <p className="num mt-2 break-words text-[clamp(15px,4.8vw,20px)] font-semibold leading-tight">{formatRupiah(totalIncome)}</p>
               <ChangeLabel value={incomeChange}/>
             </div>
             <div className="min-w-0 pl-3 sm:pl-5">
-              <p className="text-[12px] leading-tight text-white/75 sm:text-sm">Total Expense</p>
-              <p className="mt-2 break-words text-[17px] font-semibold leading-tight sm:text-xl">{formatRupiah(totalExpense)}</p>
+              <p className="text-[12.5px] leading-tight text-white/75 sm:text-sm">Total Expense</p>
+              <p className="num mt-2 break-words text-[clamp(15px,4.8vw,20px)] font-semibold leading-tight">{formatRupiah(totalExpense)}</p>
               <ChangeLabel value={expenseChange}/>
             </div>
           </div>;
@@ -308,16 +308,16 @@ export function DashboardFinance() {
       <ChartCard title={id ? "Pelacak Aset" : "Asset Tracker"} subtitle={id ? "Pantau aset saat ini dan progres menuju target." : "Track your current assets and progress toward your goal."}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
-            <div className="mb-4 rounded-2xl bg-[#0B4D38] p-4 text-white sm:p-5">
+            <div className="hero-forest mb-4 rounded-[24px] p-5 text-white shadow-float">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-[12px] text-white/70">Total aset</p>
-                  <p className="mt-1 break-words text-2xl font-semibold leading-tight">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
+                  <p className="num mt-1.5 break-words text-[clamp(24px,8.4vw,32px)] font-semibold leading-[1.1]">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
                   <p className="mt-2 text-[12px] text-white/75">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
                 </div>
                 <button type="button" onClick={() => setAssetValuesHidden((hidden) => !hidden)} aria-label={assetValuesHidden ? "Tampilkan nominal aset" : "Sembunyikan nominal aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">{assetValuesHidden ? <Eye size={17}/> : <EyeOff size={17}/>}</button>
               </div>
-              {assets.target > 0 && <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/20"><div className="h-full rounded-full bg-[#6EE7A8]" style={{width:`${Math.min(Math.max(assetProgress,0),100)}%`}} /></div>}
+              {assets.target > 0 && <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/20"><div className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#F59BB8]" style={{width:`${Math.min(Math.max(assetProgress,0),100)}%`}} /></div>}
               <div className="mt-4 rounded-xl bg-white/10 p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] text-white/75">Target aset</p>
