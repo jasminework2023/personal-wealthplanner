@@ -35,6 +35,9 @@ function loadManualStocks(): ManualStock[] {
 }
 
 function ManualStockForm({ onSaved }: { onSaved: (stock: ManualStock) => void }) {
+  const [language, setLanguage] = useState(getAppLanguage());
+  useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
+  const id = language === "id";
   const [ticker, setTicker] = useState("");
   const [market, setMarket] = useState<"ID" | "US">("ID");
   const [shares, setShares] = useState("");
