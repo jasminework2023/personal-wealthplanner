@@ -419,7 +419,7 @@ html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: 
 /* Keep the Home Total Aset nominal visibly large; the global .tabular-nums rule
    intentionally scales other numbers down, so this hero value needs an explicit override. */
 .home-asset-summary .asset-total-value {
-  font-size: clamp(31px, 8.8vw, 40px) !important;
+  font-size: clamp(32px, 9vw, 44px) !important;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
