@@ -18,11 +18,11 @@ function transactionParts(value: string): { day: number; month: number; year: nu
   if (iso) {
     year = Number(iso[1]); month = Number(iso[2]); day = Number(iso[3]);
   } else {
-    const yearFirst = raw.match(/^(\\d{4})[\\/. -](\\d{1,2})[\\/. -](\\d{1,2})$/);
+    const yearFirst = raw.match(/^(\d{4})[\/. -](\d{1,2})[\/. -](\d{1,2})$/);
     if (yearFirst) {
       year = Number(yearFirst[1]); month = Number(yearFirst[2]); day = Number(yearFirst[3]);
     } else {
-      const parts = raw.split(/[\\/. -]/).filter(Boolean).map(Number);
+      const parts = raw.split(/[\/. -]/).filter(Boolean).map(Number);
       if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return { day: 0, month: 0, year: 0 };
       [day, month, year] = parts;
       // Source data uses DD/MM/YYYY; infer MM/DD/YYYY only when the second part exceeds 12.
