@@ -236,6 +236,7 @@ export function DashboardFinance() {
     ...assets.liquidAssets.map((i) => ({ name: i.name, value: i.value })),
     ...assets.investmentAssets.map((i) => ({ name: i.name, value: i.value })),
   ];
+  const assetCompositionTotal = assetChartData.reduce((sum, item) => sum + Math.max(0, Number(item.value) || 0), 0);
 
   const incomeRows = byCategory("Income");
   const savingRows = byCategory("Saving");
@@ -297,10 +298,10 @@ export function DashboardFinance() {
         const surplus = totalIncome - totalExpense;
         const surplusDigits = String(Math.round(Math.abs(surplus))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         return <section className="rounded-[22px] bg-[#E3F4EA] p-4 text-[#123524]">
-          <p className="text-[13px] font-medium text-[#5E7A6C]">{surplus >= 0 ? "Surplus" : "Defisit"}</p>
+          <p className="text-[14px] font-semibold text-[#5E7A6C]">{surplus >= 0 ? "Total Surplus" : "Total Defisit"}</p>
           <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
             <span className="shrink-0 text-[15px] text-[#5E7A6C]">Rp</span>
-            <span className="min-w-0 text-[clamp(24px,8vw,32px)] font-medium leading-tight tracking-[-0.5px] tabular-nums" style={{color: surplus < 0 ? "#C23A5B" : "#123524"}}>{surplus < 0 ? "-" : ""}{surplusDigits}</span>
+            <span className="min-w-0 text-[clamp(27px,8.5vw,36px)] font-medium leading-tight tracking-[-0.6px] tabular-nums" style={{color: surplus < 0 ? "#C23A5B" : "#123524"}}>{surplus < 0 ? "-" : ""}{surplusDigits}</span>
           </div>
           <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
             {[
@@ -310,11 +311,11 @@ export function DashboardFinance() {
               <div className="flex min-w-0 items-center justify-between gap-1.5">
                 <div className="flex min-w-0 items-center gap-2">
                   <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${item.iconClass}`}><item.Icon size={16}/></span>
-                  <span className="truncate text-[12px] text-[#6B7B70]">{item.label}</span>
+                  <span className="truncate text-[13px] text-[#6B7B70]">{item.label}</span>
                 </div>
                 {item.change !== null && <span className="shrink-0 text-[11px] font-semibold tabular-nums" style={{color:item.changeColor}}>{item.change >= 0 ? "+" : ""}{item.change.toFixed(1)}%</span>}
               </div>
-              <p className="mt-2 whitespace-nowrap text-[clamp(10px,3.2vw,15px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(item.value)}</p>
+              <p className="mt-2 whitespace-nowrap text-[clamp(12px,3.6vw,16px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(item.value)}</p>
             </div>)}
           </div>
         </section>;
@@ -352,29 +353,29 @@ export function DashboardFinance() {
       
       {activeReportTab === "assets" && <>
       {/* E. Asset Tracker */}
-            <div className="mb-4 rounded-[24px] bg-[#FFF1C2] p-5 text-[#123524] shadow-float">
+            <div className="mb-4 rounded-[24px] bg-[#E3F4EA] p-5 text-[#123524] shadow-float">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12px] text-[#5A4A12]">Total aset</p>
-                  <p className="num mt-1.5 whitespace-nowrap text-[clamp(24px,7vw,32px)] font-medium leading-[1.1] tracking-[-0.5px] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
-                  <p className="mt-2 text-[12px] text-[#5A4A12]/80">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
+                  <p className="text-[13px] font-medium text-[#5E7A6C]">Total aset</p>
+                  <p className="num mt-1.5 whitespace-nowrap text-[clamp(26px,7.4vw,34px)] font-medium leading-[1.1] tracking-[-0.5px] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
+                  <p className="mt-2 text-[12px] text-[#5E7A6C]">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
                 </div>
-                <button type="button" onClick={() => setAssetValuesHidden((hidden) => !hidden)} aria-label={assetValuesHidden ? "Tampilkan nominal aset" : "Sembunyikan nominal aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#5A4A12]/10 text-[#5A4A12] hover:bg-[#5A4A12]/15">{assetValuesHidden ? <Eye size={17}/> : <EyeOff size={17}/>}</button>
+                <button type="button" onClick={() => setAssetValuesHidden((hidden) => !hidden)} aria-label={assetValuesHidden ? "Tampilkan nominal aset" : "Sembunyikan nominal aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#123524]/[0.07] text-[#123524] hover:bg-[#123524]/[0.12]">{assetValuesHidden ? <Eye size={17}/> : <EyeOff size={17}/>}</button>
               </div>
-              {assets.target > 0 && <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#5A4A12]/15"><div className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#F59BB8]" style={{width:`${Math.min(Math.max(assetProgress,0),100)}%`}} /></div>}
-              <div className="mt-4 rounded-xl bg-white/55 p-3">
+              {assets.target > 0 && <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#5E7A6C]/15"><div className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#F59BB8]" style={{width:`${Math.min(Math.max(assetProgress,0),100)}%`}} /></div>}
+              <div className="mt-4 rounded-xl bg-white/70 p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] text-[#5A4A12]">Target aset</p>
-                  {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="text-[11px] font-semibold text-[#5A4A12] underline underline-offset-2">Edit</button>}
+                  <p className="text-[12px] text-[#5E7A6C]">Target aset</p>
+                  {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="text-[12px] font-semibold text-[#123524] underline underline-offset-2">Edit</button>}
                 </div>
-                {editingAssetTarget ? <div className="mt-2 flex gap-2"><input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 flex-1 rounded-lg border border-[#5A4A12]/20 bg-white px-2.5 py-2 text-[13px] text-charcoal outline-none focus:border-forest-400" placeholder="Target aset" /><button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) throw new Error("Gagal menyimpan target"); setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { console.error(e); } finally { setSavingAssetTarget(false); } }} className="rounded-lg bg-[#123524] px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-50">{savingAssetTarget ? "..." : "Simpan"}</button></div> : <p className="mt-1 whitespace-nowrap text-[clamp(24px,6.5vw,28px)] font-medium leading-tight tracking-[-0.4px] text-[#123524] tabular-nums">{assets.target > 0 ? (assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.target)) : "Belum diatur"}</p>}
+                {editingAssetTarget ? <div className="mt-2 flex gap-2"><input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 flex-1 rounded-lg border border-[#5E7A6C]/20 bg-white px-2.5 py-2 text-[13px] text-charcoal outline-none focus:border-forest-400" placeholder="Target aset" /><button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) throw new Error("Gagal menyimpan target"); setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { console.error(e); } finally { setSavingAssetTarget(false); } }} className="rounded-lg bg-[#123524] px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-50">{savingAssetTarget ? "..." : "Simpan"}</button></div> : <p className="mt-1 whitespace-nowrap text-[clamp(24px,6.5vw,28px)] font-medium leading-tight tracking-[-0.4px] text-[#123524] tabular-nums">{assets.target > 0 ? (assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.target)) : "Belum diatur"}</p>}
               </div>
             </div>
             <Card>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="order-2 lg:order-2">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-[13px] font-semibold text-forest-900">Detail Aset</p>
+              <p className="text-[14px] font-semibold text-forest-900">Detail Aset</p>
               {((assets.liquidAssets.length > 2 || assets.investmentAssets.length > 2)) && (
                 <button type="button" onClick={() => setShowAllAssets((value) => !value)} className="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-semibold text-forest-700 hover:text-forest-900">
                   {showAllAssets ? "Sembunyikan" : "Lihat semua"} <ChevronRight size={14} className={showAllAssets ? "rotate-90" : ""}/>
@@ -383,9 +384,9 @@ export function DashboardFinance() {
             </div>
             {(assets.liquidAssets.length > 0 || isRealData) && (
               <div className="mb-3">
-                <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Liquid Assets</p>
+                <p className="text-[13px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Liquid Assets</p>
                 {assets.liquidAssets.slice(0, showAllAssets ? assets.liquidAssets.length : 2).map((item) => (
-                  <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assets.totalAssets > 0 ? item.value / assets.totalAssets * 100 : 0} section="liquid" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
+                  <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assetCompositionTotal > 0 ? item.value / assetCompositionTotal * 100 : 0} section="liquid" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
                 ))}
                 {isRealData && (
                   <AddItemForm
@@ -407,7 +408,7 @@ export function DashboardFinance() {
             )}
             {(assets.investmentAssets.length > 0 || isRealData) && (
               <div className="mb-3">
-                <p className="text-[12px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Investment Assets</p>
+                <p className="text-[13px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Investment Assets</p>
                 {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => (
                   <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assets.totalAssets > 0 ? item.value / assets.totalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
                 ))}
@@ -432,7 +433,7 @@ export function DashboardFinance() {
           </div>
 
           <div className="order-1 lg:order-1 rounded-2xl bg-[#FFF4F6] p-4 sm:p-5">
-            <p className="text-[13px] font-semibold text-forest-900">Komposisi Aset</p>
+            <p className="text-[14px] font-semibold text-forest-900">Komposisi Aset</p>
             {assetChartData.length > 0 ? (
               <>
                 <div className="relative mt-1">
@@ -456,7 +457,7 @@ export function DashboardFinance() {
                     <div key={item.name} className="flex items-center gap-2 text-[12px]">
                       <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}/>
                       <span className="min-w-0 flex-1 truncate text-charcoal/70">{item.name}</span>
-                      <span className="shrink-0 font-medium tabular-nums text-forest-900">{assets.totalAssets > 0 ? ((item.value / assets.totalAssets) * 100).toFixed(1) : "0.0"}%</span>
+                      <span className="shrink-0 font-medium tabular-nums text-forest-900">{assetCompositionTotal > 0 ? ((item.value / assetCompositionTotal) * 100).toFixed(1) : "0.0"}%</span>
                     </div>
                   ))}
                 </div>
@@ -497,11 +498,11 @@ export function DashboardFinance() {
             {trend !== null && <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#123524]/[0.12] px-2.5 py-1 text-[12px] font-medium text-[#123524]"><span>{trend >= 0 ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</span><span>{trend >= 0 ? "+" : ""}{Math.round(trend)}% dari bulan lalu</span></div>}
             <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
               <div className="min-w-0 rounded-2xl bg-white p-3">
-                <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#DFF3E7] text-[#0B6B47]"><ArrowDownLeft size={16}/></span><span className="text-[12px] text-[#6B7B70]">Cash in</span></div>
-                <p className="mt-2 whitespace-nowrap text-[clamp(12px,3.8vw,15px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalIncome)}</p>
+                <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#DFF3E7] text-[#0B6B47]"><ArrowDownLeft size={16}/></span><span className="text-[13px] text-[#6B7B70]">Cash in</span></div>
+                <p className="mt-2 whitespace-nowrap text-[clamp(13px,4vw,16px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalIncome)}</p>
               </div>
               <div className="min-w-0 rounded-2xl bg-white p-3">
-                <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FDE3EA] text-[#C23A5B]"><ArrowUpRight size={16}/></span><span className="text-[12px] text-[#6B7B70]">Cash out</span></div>
+                <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FDE3EA] text-[#C23A5B]"><ArrowUpRight size={16}/></span><span className="text-[13px] text-[#6B7B70]">Cash out</span></div>
                 <p className="mt-2 whitespace-nowrap text-[clamp(12px,3.8vw,15px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalExpense+totalSaving)}</p>
               </div>
             </div>
