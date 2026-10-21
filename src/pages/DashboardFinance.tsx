@@ -490,10 +490,10 @@ export function DashboardFinance() {
             : null;
           const netDigits = String(Math.round(Math.abs(netCashflow))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
           return <div className="rounded-[22px] bg-[#EAF2FA] p-4 text-forest-900">
-            <p className="text-[13px] text-[#53697A]">Net cashflow</p>
+            <p className="text-[14px] font-semibold text-[#53697A]">Net cashflow</p>
             <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
               <span className="shrink-0 text-[15px] text-[#53697A]">Rp</span>
-              <span className="min-w-0 text-[clamp(24px,8vw,32px)] font-medium leading-tight tracking-[-0.5px] text-[#123524] tabular-nums">{netCashflow < 0 ? "-" : ""}{netDigits}</span>
+              <span className="min-w-0 text-[clamp(27px,8.5vw,36px)] font-medium leading-tight tracking-[-0.6px] text-[#123524] tabular-nums">{netCashflow < 0 ? "-" : ""}{netDigits}</span>
             </div>
             {trend !== null && <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#123524]/[0.12] px-2.5 py-1 text-[12px] font-medium text-[#123524]"><span>{trend >= 0 ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</span><span>{trend >= 0 ? "+" : ""}{Math.round(trend)}% dari bulan lalu</span></div>}
             <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
@@ -503,7 +503,7 @@ export function DashboardFinance() {
               </div>
               <div className="min-w-0 rounded-2xl bg-white p-3">
                 <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FDE3EA] text-[#C23A5B]"><ArrowUpRight size={16}/></span><span className="text-[13px] text-[#6B7B70]">Cash out</span></div>
-                <p className="mt-2 whitespace-nowrap text-[clamp(12px,3.8vw,15px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalExpense+totalSaving)}</p>
+                <p className="mt-2 whitespace-nowrap text-[clamp(13px,4vw,16px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalExpense+totalSaving)}</p>
               </div>
             </div>
           </div>;
