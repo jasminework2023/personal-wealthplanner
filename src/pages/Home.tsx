@@ -112,7 +112,7 @@ export function Home() {
         </div>
         <div className="mt-2 flex min-w-0 items-baseline gap-1.5 whitespace-nowrap">
           <span className="shrink-0 text-[16px] font-medium text-[#A9C9B8]">Rp</span>
-          <span className="asset-total-value min-w-0 font-medium leading-tight tracking-[-0.6px] tabular-nums">
+          <span style={{ fontSize: "clamp(32px, 9vw, 44px)" }} className="asset-total-value min-w-0 font-medium leading-tight tracking-[-0.6px] tabular-nums">
             {assetsVisible ? new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(assets.totalAssets) : "••••••••"}
           </span>
         </div>
