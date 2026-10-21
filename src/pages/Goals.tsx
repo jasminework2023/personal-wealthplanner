@@ -31,6 +31,20 @@ function getPlanTarget(plan: ReturnType<typeof loadFinancialPlans>[number]) {
   return plan.targetAmount ?? plan.obligationAmount ?? plan.homePrice ?? plan.loanAmount ?? 0;
 }
 
+function getCalculatorRouteId(plan: ReturnType<typeof loadFinancialPlans>[number]) {
+  const calculatorByType: Record<FinancialPlanType, string> = {
+    cashflow: "checkup",
+    home: "rumah",
+    education: "edu",
+    retirement: "pension",
+    hajj: "haji",
+    investment: "invest",
+    income_protection: "insurance",
+    inheritance: "warisan",
+  };
+  return calculatorByType[plan.type] || plan.calculatorId || "checkup";
+}
+
 export function Goals() {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
@@ -229,7 +243,7 @@ export function Goals() {
                 <div className="flex gap-2"><button onClick={() => saveAllocation(plan.id)} className="flex-1 rounded-full bg-[#123524] px-3 py-2.5 text-[12.5px] font-semibold text-white">Simpan alokasi</button><button onClick={() => { setAllocatingId(null); setAmount(""); setSelectedAsset(""); }} className="rounded-xl border border-rose-100 px-3 py-2 text-[12px] text-charcoal/65">{id ? "Batal" : "Cancel"}</button></div>
               </div> : <button onClick={() => { setAllocatingId(plan.id); setSelectedAsset(""); setAmount(""); }} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#F59BB8] px-4 py-2.5 text-[12.5px] font-bold text-[#123524]"><Plus size={14}/> Alokasikan dana</button>}
             </div>
-            <button onClick={() => navigate(`/calculator/${plan.calculatorId}`)} className="mt-3 ml-2 inline-flex items-center gap-1.5 rounded-full border border-forest-100 bg-forest-50 px-4 py-2.5 text-[12.5px] font-semibold text-forest-700"><Calculator size={14}/> Buka simulasi</button>
+            <button onClick={() => navigate(`/calculator/${getCalculatorRouteId(plan)}`)} className="mt-3 ml-2 inline-flex items-center gap-1.5 rounded-full border border-forest-100 bg-forest-50 px-4 py-2.5 text-[12.5px] font-semibold text-forest-700"><Calculator size={14}/> Buka simulasi</button>
           </Card>
           </div>
         );
