@@ -449,7 +449,7 @@ export function DashboardFinance() {
                   </ResponsiveContainer>
                   <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
                     <span className="text-[10px] font-medium text-charcoal/50">Total Aset</span>
-                    <span className="mt-1 max-w-[80%] break-words text-[clamp(10px,2.8vw,13px)] font-semibold leading-tight tracking-[-0.3px] text-forest-900 tabular-nums">{formatRupiah(assets.totalAssets)}</span>
+                    <span className="mt-1 max-w-[80%] break-words text-[clamp(10px,2.8vw,13px)] font-semibold leading-tight tracking-[-0.3px] text-forest-900 tabular-nums">{formatRupiah(assetCompositionTotal)}</span>
                   </div>
                 </div>
                 <div className="mt-1 space-y-2">
