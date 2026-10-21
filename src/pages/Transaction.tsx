@@ -18,11 +18,16 @@ function transactionParts(value: string): { day: number; month: number; year: nu
   if (iso) {
     year = Number(iso[1]); month = Number(iso[2]); day = Number(iso[3]);
   } else {
-    const parts = raw.split(/[\/. -]/).filter(Boolean).map(Number);
-    if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return { day: 0, month: 0, year: 0 };
-    [day, month, year] = parts;
-    // Normalize US-style MM/DD/YYYY only when the first number cannot be a day.
-    if (day <= 12 && month > 12) [day, month] = [month, day];
+    const yearFirst = raw.match(/^(\\d{4})[\\/. -](\\d{1,2})[\\/. -](\\d{1,2})$/);
+    if (yearFirst) {
+      year = Number(yearFirst[1]); month = Number(yearFirst[2]); day = Number(yearFirst[3]);
+    } else {
+      const parts = raw.split(/[\\/. -]/).filter(Boolean).map(Number);
+      if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return { day: 0, month: 0, year: 0 };
+      [day, month, year] = parts;
+      // Source data uses DD/MM/YYYY; infer MM/DD/YYYY only when the second part exceeds 12.
+      if (day <= 12 && month > 12) [day, month] = [month, day];
+    }
   }
   if (year < 100) year += year < 50 ? 2000 : 1900;
   return { day, month, year };
@@ -73,7 +78,7 @@ export function Transaction() {
       const q = search.trim().toLowerCase();
       return !q || [t.description, t.category, t.type, t.date].some((v) => String(v || "").toLowerCase().includes(q));
     })
-    .sort((a, b) => sortOrder === "newest" ? transactionDateValue(b.date) - transactionDateValue(a.date) : transactionDateValue(a.date) - transactionDateValue(b.date)), [transactions, filter, search, selectedMonth, selectedYear, sortOrder]);
+    .sort((a, b) => { const difference = sortOrder === "newest" ? transactionDateValue(b.date) - transactionDateValue(a.date) : transactionDateValue(a.date) - transactionDateValue(b.date); return difference || (sortOrder === "newest" ? Number(b.sheetRow || 0) - Number(a.sheetRow || 0) : Number(a.sheetRow || 0) - Number(b.sheetRow || 0)); }), [transactions, filter, search, selectedMonth, selectedYear, sortOrder]);
 
   const filters: Filter[] = ["All", "Income", "Expense", "Saving"];
   const iconFor = (type: TransactionType) => type === "Income" ? ArrowDownLeft : type === "Expense" ? ArrowUpRight : PiggyBank;
