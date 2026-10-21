@@ -47,18 +47,28 @@ export function Home() {
   const monthLabel = monthInIndonesian.charAt(0).toUpperCase() + monthInIndonesian.slice(1);
   const plans = loadFinancialPlans();
   const allTxs = [...transactions, ...extraTxs];
-  const parseRecentDate = (value: string, monthLabel?: string) => {
-    const p = value.split("/").map(Number);
-    if (p.length < 3 || p.some(Number.isNaN)) return 0;
-    let [a, b, y] = p;
-    const months = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
-    const idx = months.indexOf((monthLabel || "").toLowerCase());
-    let m = b, d = a;
-    if (idx >= 0) { m = idx + 1; if (a === m && b !== m) d = b; else d = a; }
-    else if (a > 12) { d = a; m = b; } else if (b > 12) { d = b; m = a; }
-    return new Date(y, m - 1, d).getTime();
+  const parseRecentDate = (value: string) => {
+    const raw = String(value || "").trim();
+    let day = 0, month = 0, year = 0;
+    const yearFirst = raw.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:$|T|\s)/);
+    if (yearFirst) {
+      year = Number(yearFirst[1]); month = Number(yearFirst[2]); day = Number(yearFirst[3]);
+    } else {
+      const parts = raw.split(/[/. -]/).filter(Boolean).map(Number);
+      if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return 0;
+      [day, month, year] = parts;
+      // Source data is DD/MM/YYYY. Only flip when the second part proves MM/DD/YYYY.
+      if (day <= 12 && month > 12) [day, month] = [month, day];
+    }
+    if (year < 100) year += year < 50 ? 2000 : 1900;
+    const parsed = new Date(year, month - 1, day);
+    if (month < 1 || month > 12 || day < 1 || day > 31 || parsed.getFullYear() !== year || parsed.getMonth() !== month - 1 || parsed.getDate() !== day) return 0;
+    return parsed.getTime();
   };
-  const recent = [...allTxs].sort((a, b) => parseRecentDate(b.date, b.month) - parseRecentDate(a.date, a.month)).slice(0, 5);
+  const recent = [...allTxs].sort((a, b) => {
+    const difference = parseRecentDate(b.date) - parseRecentDate(a.date);
+    return difference || Number(b.sheetRow || 0) - Number(a.sheetRow || 0);
+  }).slice(0, 5);
   const nextStep = id ? (totalExpense > totalIncome && totalIncome > 0
     ? "Pengeluaranmu bulan ini sudah lebih besar dari pemasukan. Cek kategori pengeluaran terbesar dan tinjau kembali anggaran."
     : assets.target > 0 && assets.totalAssets < assets.target
@@ -95,14 +105,14 @@ export function Home() {
 
       <Card className="home-asset-summary hero-forest w-full overflow-hidden border-0 !rounded-[20px] bg-[#123524] p-3 text-white shadow-float" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
         <div className="flex items-center justify-between">
-          <p className="flex items-center gap-2 text-[11.5px] font-normal text-[#A9C9B8]"><CircleDollarSign size={17} strokeWidth={1.8}/>{id ? "Total Aset" : "Total Assets"}</p>
+          <p className="flex items-center gap-2 text-[12.5px] font-medium text-[#A9C9B8]"><CircleDollarSign size={18} strokeWidth={1.8}/>{id ? "Total Aset" : "Total Assets"}</p>
           <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#A9C9B8]">
             {assetsVisible ? <Eye size={18} strokeWidth={2}/> : <EyeOff size={18} strokeWidth={2}/>}
           </button>
         </div>
         <div className="mt-2 flex min-w-0 items-baseline gap-1.5 whitespace-nowrap">
-          <span className="shrink-0 text-[14px] font-normal text-[#A9C9B8]">Rp</span>
-          <span className="min-w-0 text-[clamp(22px,7.2vw,30px)] font-medium leading-tight tracking-[-0.5px] tabular-nums">
+          <span className="shrink-0 text-[16px] font-medium text-[#A9C9B8]">Rp</span>
+          <span className="min-w-0 text-[clamp(27px,8.2vw,36px)] font-medium leading-tight tracking-[-0.6px] tabular-nums">
             {assetsVisible ? new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(assets.totalAssets) : "••••••••"}
           </span>
         </div>
