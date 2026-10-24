@@ -355,7 +355,7 @@ export function DashboardFinance() {
         {/* Asset Tracker: two reference cards only */}
         <div className="mb-4 rounded-[28px] bg-[linear-gradient(145deg,#29FBA3_0%,#09C679_45%,#009D5E_100%)] p-4 text-[#03140C] shadow-[0_12px_32px_rgba(12,203,125,0.30)] dark:shadow-[0_0_38px_rgba(12,203,125,0.28),0_12px_32px_rgba(12,203,125,0.32)]">
           <p className="text-[13px] font-bold text-[#03140C]/90">Total aset</p>
-          <p className="num mt-1 whitespace-nowrap text-[40px] font-extrabold leading-[1.1] tracking-[-0.02em] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
+          <p className="asset-tracker-total-value mt-1 whitespace-nowrap font-extrabold leading-[1.1] tracking-[-0.02em] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
           <p className="mt-1 text-[13px] font-normal text-[#03140C]/75">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
           <div className="mt-2 h-[6px] w-full overflow-hidden rounded-full bg-[#03140C]/15">
             <div className="h-full rounded-full bg-[#03140C]" style={{ width: `${Math.min(Math.max(assetProgress, 0), 100)}%` }} />
