@@ -49,6 +49,7 @@ export function Goals() {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const id = language === "id";
+  const formatGoalCurrency = (value: number) => `Rp${new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(value)}`;
   const navigate = useNavigate();
   const { assets } = useFinanceData();
   const [plans, setPlans] = useState(() => {
@@ -161,7 +162,7 @@ export function Goals() {
     const allocatedToOtherGoals = (totalAllocatedByAsset[asset.id] || 0) - alreadyForThisGoal;
     const available = Math.max(0, asset.value - allocatedToOtherGoals);
     if (value > available) {
-      window.alert("Nominal melebihi sisa aset yang belum dialokasikan (" + formatRupiah(available) + ").");
+      window.alert("Nominal melebihi sisa aset yang belum dialokasikan (" + formatGoalCurrency(available) + ").");
       return;
     }
     const next = {
@@ -224,8 +225,8 @@ export function Goals() {
 
             <div className={`goal-plan-box goal-plan-${planIndex % 2 === 0 ? "a" : "b"} mt-3 rounded-[20px] px-[14px] py-3`}>
               <p className="text-[13px] font-normal opacity-75">{id ? "Target rencana" : "Planned target"}</p>
-              <p className="goal-target-amount num mt-0.5 text-[20px] font-extrabold leading-tight">{formatRupiah(target)}</p>
-              <div className="mt-2 flex items-center justify-between gap-2"><span className="text-[13px] font-normal opacity-75">{id ? "Aset dialokasikan" : "Allocated assets"}</span><span className="num text-right text-[13px] font-bold">{formatRupiah(allocated)}{target > 0 ? ` · ${Math.round(progress)}%` : ""}</span></div>
+              <p className="goal-target-amount num mt-0.5 text-[20px] font-extrabold leading-tight">{formatGoalCurrency(target)}</p>
+              <div className="mt-2 flex items-center justify-between gap-2"><span className="text-[13px] font-normal opacity-75">{id ? "Aset dialokasikan" : "Allocated assets"}</span><span className="num text-right text-[13px] font-bold">{formatGoalCurrency(allocated)}{target > 0 ? ` · ${Math.round(progress)}%` : ""}</span></div>
               <div className="goal-progress-track mt-2 h-[6px] overflow-hidden rounded-full"><div className="goal-progress-fill h-full rounded-full transition-all" style={{ width: progress + "%" }}/></div>
             </div>
 
@@ -233,13 +234,13 @@ export function Goals() {
               <p className="mb-1.5 flex items-center gap-1.5 text-[12px] font-medium text-[#6B7280] dark:text-[#9A9AA5]"><Wallet size={14}/> {id ? "Aset untuk tujuan ini" : "Assets for this goal"}</p>
               {Object.entries(planAllocations).length ? <div className="flex flex-col gap-2">{Object.entries(planAllocations).map(([assetId, value]) => {
                 const asset = assetOptions.find((item) => item.id === assetId);
-                return <div key={assetId} className="goal-asset-row flex h-11 items-center justify-between gap-2 rounded-[16px] border border-[#D9F3EA] bg-white px-[14px] dark:border-[#17302B] dark:bg-[#131316]"><p className="min-w-0 flex-1 truncate text-[15px] font-normal text-[#111815] dark:text-white">{asset?.name || assetId.split(":").slice(1).join(":")}</p><span className="num shrink-0 text-[15px] font-bold text-[#111815] dark:text-white">{formatRupiah(value)}</span><button onClick={() => removeAllocation(plan.id, assetId)} className="shrink-0 rounded-lg p-1 text-[#9CA3AF] hover:text-[#6B7280]" aria-label="Hapus alokasi aset"><X size={16}/></button></div>;
+                return <div key={assetId} className="goal-asset-row flex h-11 items-center justify-between gap-2 rounded-[16px] border border-[#D9F3EA] bg-white px-[14px] dark:border-[#17302B] dark:bg-[#131316]"><p className="min-w-0 flex-1 truncate text-[15px] font-normal text-[#111815] dark:text-white">{asset?.name || assetId.split(":").slice(1).join(":")}</p><span className="num shrink-0 text-[15px] font-bold text-[#111815] dark:text-white">{formatGoalCurrency(value)}</span><button onClick={() => removeAllocation(plan.id, assetId)} className="shrink-0 rounded-lg p-1 text-[#9CA3AF] hover:text-[#6B7280]" aria-label="Hapus alokasi aset"><X size={16}/></button></div>;
               })}</div> : <p className="text-[11px] text-[#6B7280] dark:text-[#9A9AA5]">{id ? "Belum ada aset yang dialokasikan." : "No assets allocated yet."}</p>}
               {allocatingId === plan.id ? <div className="mt-3 flex flex-col gap-2 rounded-xl border border-forest-100 p-3">
                 <label className="text-[11px] font-medium text-charcoal/65">{id ? "Pilih aset" : "Select asset"}</label>
-                <div className="relative"><select value={selectedAsset} onChange={(e) => setSelectedAsset(e.target.value)} className="w-full appearance-none rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-[12px] text-forest-900"><option value="">Pilih aset...</option>{assetOptions.map((asset) => { const already = planAllocations[asset.id] || 0; const available = Math.max(0, asset.value - ((totalAllocatedByAsset[asset.id] || 0) - already)); return <option key={asset.id} value={asset.id}>{asset.name} · tersedia {formatRupiah(available)}</option>; })}</select><ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/40"/></div>
-                <label className="text-[11px] font-medium text-charcoal/65">Nominal yang dialokasikan (Rp)</label>
-                <input inputMode="numeric" type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Contoh: 5000000" className="w-full rounded-xl border border-rose-100 px-3 py-2 text-[12px] text-forest-900 outline-none focus:ring-2 focus:ring-forest-100"/>
+                <div className="relative"><select value={selectedAsset} onChange={(e) => setSelectedAsset(e.target.value)} className="w-full appearance-none rounded-xl border border-rose-100 bg-white px-3 py-2 pr-8 text-[12px] text-forest-900"><option value="">{id ? "Pilih aset..." : "Select an asset..."}</option>{assetOptions.map((asset) => { const already = planAllocations[asset.id] || 0; const available = Math.max(0, asset.value - ((totalAllocatedByAsset[asset.id] || 0) - already)); return <option key={asset.id} value={asset.id}>{asset.name} · {id ? "tersedia" : "available"} {formatGoalCurrency(available)}</option>; })}</select><ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-charcoal/40"/></div>
+                <label className="text-[11px] font-medium text-charcoal/65">{id ? "Nominal yang dialokasikan (Rp)" : "Amount to allocate (IDR)"}</label>
+                <input inputMode="numeric" type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={id ? "Contoh: 5000000" : "e.g. 5000000"} className="w-full rounded-xl border border-rose-100 px-3 py-2 text-[12px] text-forest-900 outline-none focus:ring-2 focus:ring-forest-100"/>
                 <div className="flex gap-2"><button onClick={() => saveAllocation(plan.id)} className="flex-1 rounded-full bg-[#123524] px-3 py-2.5 text-[12.5px] font-semibold text-white">Simpan alokasi</button><button onClick={() => { setAllocatingId(null); setAmount(""); setSelectedAsset(""); }} className="rounded-xl border border-rose-100 px-3 py-2 text-[12px] text-charcoal/65">{id ? "Batal" : "Cancel"}</button></div>
               </div> : <div className="goal-actions-row"><button onClick={() => { setAllocatingId(plan.id); setSelectedAsset(""); setAmount(""); }} className="inline-flex h-11 items-center justify-center gap-1.5 rounded-[16px] bg-[#00B86E] px-4 text-[15px] font-bold text-[#03140C] dark:bg-[#00E08A]"><Plus size={16}/> {id ? "Alokasikan dana" : "Allocate funds"}</button><button onClick={() => navigate(`/calculator/${getCalculatorRouteId(plan)}`)} className="goal-sim-button inline-flex h-11 items-center justify-center gap-1.5 rounded-[16px] border border-[#E4E6E8] bg-white px-4 text-[15px] font-bold text-[#111815] dark:border-[#2A2A31] dark:bg-[#131316] dark:text-white"><Calculator size={16}/> {id ? "Buka simulasi" : "Open simulation"}</button></div>}
             </div>
