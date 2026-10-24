@@ -187,7 +187,7 @@ export function Goals() {
     <div className="goals-page flex flex-col gap-4 pb-6">
       <div className="flex items-start gap-3.5">
         <button onClick={() => navigate("/")} aria-label="Kembali ke Home" className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm"><ArrowLeft size={18}/></button>
-        <div className="min-w-0"><h1 className="page-title !text-[24px]">{id ? "Goals & Rencana Keuangan" : "Goals & Financial Plans"}</h1><p className="page-sub">{id ? "Hubungkan tujuan keuangan dengan aset yang memang kamu siapkan untuk mencapainya." : "Connect financial goals with the assets you set aside to achieve them."}</p></div>
+        <div className="min-w-0"><h1 className="page-title !text-[26px] !font-extrabold !tracking-[-0.02em]">{id ? "Goals & Rencana Keuangan" : "Goals & Financial Plans"}</h1><p className="page-sub !text-[14px] !font-normal text-[#6B7280] dark:text-[#9A9AA5]">{id ? "Hubungkan tujuan keuangan dengan aset yang kamu siapkan." : "Connect financial goals with the assets you set aside to achieve them."}</p></div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
