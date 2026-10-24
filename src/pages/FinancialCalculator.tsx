@@ -27,7 +27,7 @@ const HUB_SECTIONS = [
     { id: "insurance", icon: Shield, text: { id: { title: "Asuransi", desc: "Uang pertanggungan ideal dari income" }, en: { title: "Insurance", desc: "Ideal coverage amount based on income" } } },
   ] },
   { key: "life-plans", title: { id: "RENCANA HIDUP", en: "LIFE PLANS" }, items: [
-    { id: "rumah", icon: Home, text: { id: { title: "Rumah", desc: "KPR atau sewa, konvensional maupun syariah" }, en: { title: "Home", desc: "Mortgage or rent, conventional or sharia" } } },
+    { id: "rumah", icon: Home, text: { id: { title: "Rumah", desc: "KPR atau sewa, konvensional maupun syariah" }, en: { title: "Home", desc: "Mortgage or rent, conventional or Sharia-compliant" } } },
     { id: "edu", icon: GraduationCap, text: { id: { title: "Dana Pendidikan", desc: "Biaya sampai anak lulus" }, en: { title: "Education Fund", desc: "Costs until your child graduates" } } },
     { id: "pension", icon: Clock, text: { id: { title: "Dana Pensiun", desc: "Kebutuhan pensiun & tabungan bulanan" }, en: { title: "Retirement Fund", desc: "Retirement needs & monthly savings" } } },
     { id: "haji", icon: CreditCard, text: { id: { title: "Haji", desc: "Target biaya & budget pelunasan" }, en: { title: "Hajj", desc: "Target cost & payoff budget" } } },
