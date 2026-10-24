@@ -108,7 +108,7 @@ export function Home() {
           <p className="text-[14px] sm:text-[16px] font-medium text-[#075B40]/85">{id ? "Total Aset" : "Total Assets"}</p>
         </div>
         <div className="mt-1 flex min-w-0 items-center gap-2">
-          <span className="shrink-0 text-[clamp(22px,5.8vw,30px)] font-semibold leading-none tracking-[-0.6px]">Rp</span>
+          <span className="shrink-0 text-[clamp(22px,5.8vw,30px)] font-semibold leading-none tracking-[-0.6px] text-black" style={{ color: "#000000" }}>Rp</span>
           <span style={{ fontSize: "clamp(28px, 8.1vw, 42px)", color: "#000000" }} className="asset-total-value min-w-0 flex-1 font-bold leading-tight tracking-[-1px] tabular-nums text-black">
             {assetsVisible ? new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(assets.totalAssets) : "••••••••"}
           </span>
@@ -130,11 +130,11 @@ export function Home() {
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className="flex min-w-0 flex-col rounded-[18px] bg-[#007E51]/35 px-3.5 py-3">
             <span className="text-[12px] sm:text-[14px] font-medium text-[#064A34]/80">{id ? "Pemasukan" : "Income"}</span>
-            <p className="mt-0.5 break-words text-[clamp(13px,3.8vw,17px)] font-bold leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalIncome)}</p>
+            <p className="mt-0.5 break-words text-[clamp(15px,4.1vw,19px)] font-bold leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalIncome)}</p>
           </div>
           <div className="flex min-w-0 flex-col rounded-[18px] bg-[#007E51]/35 px-3.5 py-3">
             <span className="text-[12px] sm:text-[14px] font-medium text-[#064A34]/80">{id ? "Pengeluaran" : "Expense"}</span>
-            <p className="mt-0.5 break-words text-[clamp(13px,3.8vw,17px)] font-bold leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalExpense)}</p>
+            <p className="mt-0.5 break-words text-[clamp(15px,4.1vw,19px)] font-bold leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalExpense)}</p>
           </div>
         </div>
       </Card>
