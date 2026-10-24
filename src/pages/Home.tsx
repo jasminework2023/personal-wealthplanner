@@ -17,15 +17,15 @@ import { loadFinancialPlans } from "../lib/financialPlans";
 
 const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 const menus = [
-  { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction", tone: "bg-[#F59BB8] text-[#123524]" },
+  { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
   { key: "budget", label: "Budget", icon: Wallet, to: "/budgeting", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
-  { key: "report", label: "Report", icon: Landmark, to: "/finance", tone: "bg-[#FBD3E0] text-[#B83A62]" },
-  { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator", tone: "bg-[#E4D5FA] text-[#6F46B0]" },
-  { key: "goals", label: "Goals", icon: Target, to: "/goals", tone: "bg-[#FFD9BF] text-[#B4561A]" },
+  { key: "report", label: "Report", icon: Landmark, to: "/finance", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
+  { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
+  { key: "goals", label: "Goals", icon: Target, to: "/goals", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
   { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
-  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true, tone: "bg-[#E4D5FA] text-[#6F46B0]" },
-  { key: "ai", label: "AI Assistant", icon: Bot, soon: true, tone: "bg-[#FBD3E0] text-[#B83A62]" },
-  { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#DCEBFF] text-[#2F6BB5]" },
+  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true, tone: "bg-[#DDF7E8] text-[#0B6B47]" },
+  { key: "ai", label: "AI Assistant", icon: Bot, soon: true, tone: "bg-[#DDF7E8] text-[#0B6B47]" },
+  { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
 ];
 
 export function Home() {
@@ -139,7 +139,7 @@ export function Home() {
               aria-valuenow={Math.min(100, Math.max(0, Math.round((assets.totalAssets / assets.target) * 100)))}
             >
               <div
-                className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#F59BB8] transition-[width] duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#0B6B47] transition-[width] duration-500"
                 style={{ width: `${Math.min(100, Math.max(0, (assets.totalAssets / assets.target) * 100))}%` }}
               />
             </div>
@@ -176,15 +176,15 @@ export function Home() {
                 <Icon size={19} strokeWidth={2.1}/>
               </span>
               <span className={`text-[11.5px] font-semibold leading-tight text-forest-900 ${soon ? "opacity-70" : ""}`}>{label}</span>
-              {soon && <span className="absolute right-2 top-2 rounded-full bg-[#F59BB8] px-1.5 py-0.5 text-[8.5px] font-bold leading-none text-[#123524]">Soon</span>}
+              {soon && <span className="absolute right-2 top-2 rounded-full bg-[#DDF7E8] px-1.5 py-0.5 text-[8.5px] font-bold leading-none text-[#0B6B47]">Soon</span>}
             </button>
           ))}
         </div>
       </section>
 
-      <div className="rounded-[22px] border border-rose-100 bg-rose-50 p-4">
+      <div className="rounded-[22px] border border-forest-100 bg-forest-50 p-4">
         <div className="flex items-start gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F59BB8] text-[20px]">💡</div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-[20px]">💡</div>
           <div className="min-w-0"><p className="text-[14px] font-bold tracking-[-0.01em] text-forest-900">{id ? "Langkah Berikutnya" : "Next Step"}</p><p className="mt-1 text-[13px] leading-[1.55] text-charcoal/70">{nextStep}</p></div>
         </div>
       </div>
@@ -203,14 +203,14 @@ export function Home() {
           const goalName = goalSettings.names?.[plan.id] || plan.name;
           return <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-[22px] border border-forest-100/50 bg-white p-4 text-left shadow-card transition hover:shadow-float">
             <div className="flex items-center gap-3">
-              <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full" style={{ background: "conic-gradient(#1F6B4A " + progress + "%, #FCE7EF " + progress + "%)" }}>
-                <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-white"><span className="text-[15px] font-bold tabular-nums text-forest-800">{Math.round(progress)}%</span></div>
+              <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full" style={{ background: "conic-gradient(#0B6B47 " + progress + "%, #DDF7E8 " + progress + "%)" }}>
+                <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-white dark:bg-[#13271D]"><span className="text-[15px] font-bold tabular-nums text-forest-800">{Math.round(progress)}%</span></div>
               </div>
               <div className="min-w-0 flex-1"><p className="text-[13px] font-semibold text-forest-900">{goalName}</p><p className="mt-1 text-[11px] text-charcoal/55">{id ? "Terkumpul" : "Collected"}</p><p className="text-[12px] font-semibold text-forest-800">{formatRupiah(allocated)} <span className="font-normal text-charcoal/45">{id ? "dari" : "of"} {formatRupiah(target)}</span></p></div>
             </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-rose-50"><div className="h-full rounded-full bg-forest-600 transition-all" style={{ width: progress + "%" }}/></div>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-forest-100"><div className="h-full rounded-full bg-forest-600 transition-all" style={{ width: progress + "%" }}/></div>
           </button>;
-        })}</div> : <div className="rounded-[22px] border border-dashed border-rose-200 bg-rose-50/50 px-4 py-6 text-center"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FBD3E0] text-[#B83A62]"><Target size={21}/></span><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-full bg-[#123524] px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm">Buka Calculator</button></div>}
+        })}</div> : <div className="rounded-[22px] border border-dashed border-forest-200 bg-forest-50/50 px-4 py-6 text-center"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47]"><Target size={21}/></span><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-full bg-[#123524] px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm">Buka Calculator</button></div>}
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
