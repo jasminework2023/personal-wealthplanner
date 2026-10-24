@@ -224,7 +224,7 @@ export function Goals() {
 
             <div className={`goal-plan-box goal-plan-${planIndex % 2 === 0 ? "a" : "b"} mt-3 rounded-[20px] px-[14px] py-3`}>
               <p className="text-[13px] font-normal opacity-75">{id ? "Target rencana" : "Planned target"}</p>
-              <p className="goal-target-amount num mt-0.5 text-[20px] font-extrabold leading-tight">{formatGoalCurrency(target)}</p>
+              <p className="goal-target-amount num mt-0.5 text-[25px] font-extrabold leading-[1.1]">{formatGoalCurrency(target)}</p>
               <div className="mt-2 flex items-center justify-between gap-2"><span className="text-[13px] font-normal opacity-75">{id ? "Aset dialokasikan" : "Allocated assets"}</span><span className="num text-right text-[13px] font-bold">{formatGoalCurrency(allocated)}{target > 0 ? ` · ${Math.round(progress)}%` : ""}</span></div>
               <div className="goal-progress-track mt-2 h-[6px] overflow-hidden rounded-full"><div className="goal-progress-fill h-full rounded-full transition-all" style={{ width: progress + "%" }}/></div>
             </div>
@@ -233,7 +233,7 @@ export function Goals() {
               <p className="mb-1.5 flex items-center gap-1.5 text-[12px] font-medium text-[#6B7280] dark:text-[#9A9AA5]"><Wallet size={14}/> {id ? "Aset untuk tujuan ini" : "Assets for this goal"}</p>
               {Object.entries(planAllocations).length ? <div className="flex flex-col gap-2">{Object.entries(planAllocations).map(([assetId, value]) => {
                 const asset = assetOptions.find((item) => item.id === assetId);
-                return <div key={assetId} className="goal-asset-row flex h-11 items-center justify-between gap-2 rounded-[16px] border border-[#D9F3EA] bg-white px-[14px] dark:border-[#17302B] dark:bg-[#131316]"><p className="min-w-0 flex-1 truncate text-[15px] font-normal text-[#111815] dark:text-white">{asset?.name || assetId.split(":").slice(1).join(":")}</p><span className="num shrink-0 text-[17px] font-bold leading-normal text-[#111815] dark:text-white">{formatGoalCurrency(value)}</span><button onClick={() => removeAllocation(plan.id, assetId)} className="shrink-0 rounded-lg p-1 text-[#9CA3AF] hover:text-[#6B7280]" aria-label="Hapus alokasi aset"><X size={16}/></button></div>;
+                return <div key={assetId} className="goal-asset-row flex h-11 items-center justify-between gap-2 rounded-[16px] border border-[#D9F3EA] bg-white px-[14px] dark:border-[#17302B] dark:bg-[#131316]"><p className="min-w-0 flex-1 truncate text-[17px] font-normal text-[#111815] dark:text-white">{asset?.name || assetId.split(":").slice(1).join(":")}</p><span className="num shrink-0 text-[18px] font-bold leading-normal text-[#111815] dark:text-white">{formatGoalCurrency(value)}</span><button onClick={() => removeAllocation(plan.id, assetId)} className="shrink-0 rounded-lg p-1 text-[#9CA3AF] hover:text-[#6B7280]" aria-label="Hapus alokasi aset"><X size={16}/></button></div>;
               })}</div> : <p className="text-[11px] text-[#6B7280] dark:text-[#9A9AA5]">{id ? "Belum ada aset yang dialokasikan." : "No assets allocated yet."}</p>}
               {allocatingId === plan.id ? <div className="mt-3 flex flex-col gap-2 rounded-xl border border-forest-100 p-3">
                 <label className="text-[11px] font-medium text-charcoal/65">{id ? "Pilih aset" : "Select asset"}</label>
