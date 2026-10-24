@@ -103,62 +103,38 @@ export function Home() {
         <p className="text-[13.5px] text-charcoal/60">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
       </div>
 
-      <Card className="home-asset-summary hero-forest w-full overflow-hidden border-0 !rounded-[20px] bg-[#123524] p-3 text-white shadow-float" style={{ backgroundColor: "#123524", color: "#FFFFFF" }}>
+      <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[28px] p-4 sm:p-5 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)]" style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)", color: "#062D20" }}>
         <div className="flex items-center justify-between">
-          <p className="flex items-center gap-2 text-[12.5px] font-medium text-[#A9C9B8]"><CircleDollarSign size={18} strokeWidth={1.8}/>{id ? "Total Aset" : "Total Assets"}</p>
-          <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#A9C9B8]">
-            {assetsVisible ? <Eye size={18} strokeWidth={2}/> : <EyeOff size={18} strokeWidth={2}/>}
-          </button>
+          <p className="text-[14px] sm:text-[16px] font-medium text-[#075B40]/85">{id ? "Total Aset" : "Total Assets"}</p>
         </div>
-        <div className="mt-2 flex min-w-0 items-baseline gap-1.5 whitespace-nowrap">
-          <span className="shrink-0 text-[16px] font-medium text-[#A9C9B8]">Rp</span>
-          <span style={{ fontSize: "clamp(29px, 7.8vw, 38px)" }} className="asset-total-value min-w-0 font-medium leading-tight tracking-[-0.6px] tabular-nums">
+        <div className="mt-1 flex min-w-0 items-center gap-2">
+          <span className="shrink-0 text-[clamp(22px,5.8vw,30px)] font-semibold leading-none tracking-[-0.6px]">Rp</span>
+          <span style={{ fontSize: "clamp(28px, 8.1vw, 42px)" }} className="asset-total-value min-w-0 flex-1 font-bold leading-tight tracking-[-1px] tabular-nums">
             {assetsVisible ? new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(assets.totalAssets) : "••••••••"}
           </span>
+          <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#006B48]/15 text-[#064A34] transition hover:bg-[#006B48]/25">
+            {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
+          </button>
         </div>
-        {assetTrend !== null && Number.isFinite(assetTrend) && (
-          <div className={`mt-2.5 hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold ${assetTrend >= 0 ? "bg-[#6EE7A8]/[0.16] text-[#6EE7A8]" : "bg-[#FFB4A2]/[0.16] text-[#FFB4A2]"}`}>
-            {assetTrend >= 0 ? <TrendingUp size={15} strokeWidth={2}/> : <TrendingDown size={15} strokeWidth={2}/>}
-            <span>{assetTrend >= 0 ? "+" : ""}{assetTrend.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% bulan ini</span>
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[12px] sm:text-[13px] font-bold text-[#042F21]">
+            <TrendingUp size={15} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (assets.totalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
+          </span>
+          {assets.target > 0 && <span className="text-right text-[12px] sm:text-[14px] font-medium text-[#075B40]/90">Target {formatRupiah(assets.target)}</span>}
+        </div>
+        <div className="mt-3 h-[54px] sm:h-[62px] w-full" aria-label={id ? "Grafik tren aset" : "Asset trend chart"} role="img">
+          <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
+            <polyline points="8,48 46,41 84,45 122,27 160,33 198,14 246,18 312,0" fill="none" stroke="#063D2A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+          </svg>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="flex min-w-0 flex-col rounded-[18px] bg-[#007E51]/35 px-3.5 py-3">
+            <span className="text-[12px] sm:text-[14px] font-medium text-[#064A34]/80">{id ? "Pemasukan" : "Income"}</span>
+            <p className="mt-0.5 break-words text-[clamp(13px,3.8vw,17px)] font-bold leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalIncome)}</p>
           </div>
-        )}
-        {assets.target > 0 && (
-          <div className="mt-3 block">
-            <div className="mb-1.5 flex items-center justify-between gap-3">
-              <span className="text-[13px] font-normal text-[#A9C9B8]">{id ? "% dari target" : "% of target"}</span>
-              <span className="shrink-0 text-[14px] font-medium text-white tabular-nums">
-                {Math.round((assets.totalAssets / assets.target) * 100)}%
-              </span>
-            </div>
-            <div
-              className="h-2 w-full overflow-hidden rounded-full bg-white/[0.16]"
-              role="progressbar"
-              aria-label="Progress target aset"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.min(100, Math.max(0, Math.round((assets.totalAssets / assets.target) * 100)))}
-            >
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#0B6B47] transition-[width] duration-500"
-                style={{ width: `${Math.min(100, Math.max(0, (assets.totalAssets / assets.target) * 100))}%` }}
-              />
-            </div>
-          </div>
-        )}
-        <div className="mt-2.5 grid grid-cols-2 gap-1.5">
-          <div className="flex min-w-0 flex-col self-start rounded-xl bg-white/[0.10] p-2 backdrop-blur-sm">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/[0.18] text-[#6EE7A8]"><ArrowDownLeft size={17} strokeWidth={2}/></span>
-              <span className="truncate text-[11.5px] font-normal text-[#A9C9B8]">{id ? "Pemasukan" : "Income"}</span>
-            </div>
-            <p className="mt-1.5 break-words text-[clamp(12px,3.6vw,14px)] font-medium leading-tight tracking-[-0.2px] tabular-nums">{formatRupiah(totalIncome)}</p>
-          </div>
-          <div className="flex min-w-0 flex-col self-start rounded-xl bg-white/[0.10] p-2 backdrop-blur-sm">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[#FFB4A2]/[0.18] text-[#FFB4A2]"><ArrowUpRight size={17} strokeWidth={2}/></span>
-              <span className="truncate text-[11.5px] font-normal text-[#A9C9B8]">{id ? "Pengeluaran" : "Expense"}</span>
-            </div>
-            <p className="mt-1.5 break-words text-[clamp(12px,3.6vw,14px)] font-medium leading-tight tracking-[-0.2px] tabular-nums">{formatRupiah(totalExpense)}</p>
+          <div className="flex min-w-0 flex-col rounded-[18px] bg-[#007E51]/35 px-3.5 py-3">
+            <span className="text-[12px] sm:text-[14px] font-medium text-[#064A34]/80">{id ? "Pengeluaran" : "Expense"}</span>
+            <p className="mt-0.5 break-words text-[clamp(13px,3.8vw,17px)] font-bold leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalExpense)}</p>
           </div>
         </div>
       </Card>
