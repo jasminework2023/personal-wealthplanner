@@ -184,56 +184,57 @@ export function Goals() {
   }
 
   return (
-    <div className="flex flex-col gap-5 pb-6">
+    <div className="goals-page flex flex-col gap-4 pb-6">
       <div className="flex items-start gap-3.5">
         <button onClick={() => navigate("/")} aria-label="Kembali ke Home" className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm"><ArrowLeft size={18}/></button>
         <div className="min-w-0"><h1 className="page-title !text-[24px]">{id ? "Goals & Rencana Keuangan" : "Goals & Financial Plans"}</h1><p className="page-sub">{id ? "Hubungkan tujuan keuangan dengan aset yang memang kamu siapkan untuk mencapainya." : "Connect financial goals with the assets you set aside to achieve them."}</p></div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[13px] font-semibold text-forest-900">{id ? "Daftar target" : "Your goals"}</p>
-        <button type="button" onClick={() => setShowManualGoal((open) => !open)} className="inline-flex items-center gap-2 rounded-full bg-[#123524] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-sm"><Plus size={15}/>{id ? "Tambah target" : "Add goal"}</button>
+        <p className="text-[16px] font-bold text-[#111815] dark:text-white">{id ? "Daftar target" : "Your goals"}</p>
+        <button type="button" onClick={() => setShowManualGoal((open) => !open)} className="inline-flex items-center gap-2 rounded-[16px] bg-[#00B86E] px-4 py-2.5 text-[15px] font-bold text-[#03140C] shadow-sm dark:bg-[#00E08A]"><Plus size={15}/>{id ? "Tambah target" : "Add goal"}</button>
       </div>
       {showManualGoal && <Card>
         <div className="manual-goal-form flex flex-col gap-3">
-          <h2 className="text-[14px] font-semibold text-forest-900">{id ? "Tambah target tanpa kalkulator" : "Add a goal without using the calculator"}</h2>
+          <h2 className="text-[17px] font-bold text-[#111815] dark:text-white">{id ? "Tambah target tanpa kalkulator" : "Add a goal without using the calculator"}</h2>
           <label className="flex flex-col gap-1 text-[12px] text-charcoal/70">{id ? "Nama target" : "Goal name"}<input value={manualGoalName} onChange={(e) => setManualGoalName(e.target.value)} placeholder={id ? "Contoh: Dana darurat" : "e.g. Emergency fund"} className="w-full rounded-xl border border-forest-100 px-3 py-2.5 text-[13px] text-forest-900"/></label>
           <label className="flex flex-col gap-1 text-[12px] text-charcoal/70">{id ? "Kategori" : "Category"}<select value={manualGoalType} onChange={(e) => setManualGoalType(e.target.value as FinancialPlanType)} className="w-full rounded-xl border border-forest-100 px-3 py-2.5 text-[13px] text-forest-900">{(["cashflow","home","education","retirement","hajj","investment","income_protection","inheritance"] as FinancialPlanType[]).map((type) => <option key={type} value={type}>{getPlanTypeLabel(type)}</option>)}</select></label>
           <label className="flex flex-col gap-1 text-[12px] text-charcoal/70">{id ? "Nominal target (Rp)" : "Target amount (IDR)"}<input type="number" min="1" inputMode="numeric" value={manualGoalTarget} onChange={(e) => setManualGoalTarget(e.target.value)} placeholder="50000000" className="w-full rounded-xl border border-forest-100 px-3 py-2.5 text-[13px] text-forest-900"/></label>
           <div className="flex gap-2"><button type="button" onClick={addManualGoal} disabled={!manualGoalName.trim() || Number(manualGoalTarget) <= 0} className="inline-flex items-center gap-1.5 rounded-full bg-[#123524] px-4 py-2.5 text-[12.5px] font-semibold text-white disabled:opacity-40"><Check size={14}/>{id ? "Simpan target" : "Save goal"}</button><button type="button" onClick={() => setShowManualGoal(false)} className="rounded-full border border-forest-100 px-4 py-2.5 text-[12.5px] text-charcoal/70">{id ? "Batal" : "Cancel"}</button></div>
         </div>
       </Card>}
-      {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.map((plan) => {
+      {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.map((plan, planIndex) => {
         const target = getPlanTarget(plan);
         const planAllocations = settings.allocations[plan.id] || {};
         const allocated = Object.values(planAllocations).reduce((sum, value) => sum + value, 0);
         const progress = target > 0 ? Math.min(100, allocated / target * 100) : 0;
         return (
-          <div key={plan.id} draggable onDragStart={() => setDraggedPlanId(plan.id)} onDragOver={(event) => event.preventDefault()} onDrop={() => reorderPlan(plan.id)} onDragEnd={() => setDraggedPlanId(null)} className={draggedPlanId === plan.id ? "cursor-grabbing opacity-50" : "cursor-grab"}>
+          <div key={plan.id} draggable onDragStart={() => setDraggedPlanId(plan.id)} onDragOver={(event) => event.preventDefault()} onDrop={() => reorderPlan(plan.id)} onDragEnd={() => setDraggedPlanId(null)} className={`goal-card-wrap ${draggedPlanId === plan.id ? "cursor-grabbing opacity-50" : "cursor-grab"}`}>
           <Card>
+            <div className={`goal-card goal-card-${planIndex % 2 === 0 ? "a" : "b"} rounded-[24px] border border-[#D3E6E1] bg-white p-[14px] shadow-sm dark:border-[#223333] dark:bg-[#131316] dark:shadow-[0_8px_28px_rgba(0,224,138,0.06)]`}>
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FFD9BF] text-[#B4561A]"><Target size={21}/></span>
+                <span className="goal-icon-tile flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D6F4E8] text-[#00794A] dark:bg-[#103428] dark:text-[#4DF0A8]"><Target size={21}/></span>
                 <div className="min-w-0 flex-1">
-                  {editingId === plan.id ? <div className="flex items-center gap-1"><input autoFocus value={draftName} onChange={(e) => setDraftName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") saveName(plan.id); if (e.key === "Escape") setEditingId(null); }} className="w-full min-w-0 rounded-lg border border-forest-200 px-2 py-1 text-[13px] text-forest-900 outline-none focus:ring-2 focus:ring-forest-100" aria-label="Nama goal baru"/><button onClick={() => saveName(plan.id)} aria-label="Simpan nama" className="rounded p-1 text-forest-700"><Check size={16}/></button><button onClick={() => setEditingId(null)} aria-label="Batal edit nama" className="rounded p-1 text-charcoal/50"><X size={16}/></button></div> : <div className="flex items-center gap-1"><h2 className="text-[14px] font-semibold text-forest-900">{settings.names[plan.id] || plan.name}</h2><button onClick={() => startRename(plan.id, plan.name)} aria-label="Ubah nama goal" title="Ubah nama goal" className="rounded p-1 text-charcoal/40 hover:text-forest-700"><Pencil size={13}/></button></div>}
-                  <p className="mt-1 text-[11px] text-charcoal/50">{getPlanTypeLabel(plan.type)}</p>
+                  {editingId === plan.id ? <div className="flex items-center gap-1"><input autoFocus value={draftName} onChange={(e) => setDraftName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") saveName(plan.id); if (e.key === "Escape") setEditingId(null); }} className="w-full min-w-0 rounded-lg border border-forest-200 px-2 py-1 text-[13px] text-forest-900 outline-none focus:ring-2 focus:ring-forest-100" aria-label="Nama goal baru"/><button onClick={() => saveName(plan.id)} aria-label="Simpan nama" className="rounded p-1 text-forest-700"><Check size={16}/></button><button onClick={() => setEditingId(null)} aria-label="Batal edit nama" className="rounded p-1 text-charcoal/50"><X size={16}/></button></div> : <div className="flex items-center gap-1"><h2 className="text-[14px] font-semibold text-forest-900">{settings.names[plan.id] || plan.name}</h2><button onClick={() => startRename(plan.id, plan.name)} aria-label="Ubah nama goal" title="Ubah nama goal" className="rounded p-1 text-[#9CA3AF] hover:text-[#6B7280]"><Pencil size={18}/></button></div>}
+                  <p className="mt-0.5 text-[13px] font-normal text-[#6B7280] dark:text-[#9A9AA5]">{getPlanTypeLabel(plan.type)}</p>
                 </div>
               </div>
-              <button onClick={() => deletePlan(plan.id)} aria-label={`Hapus ${plan.name}`} className="rounded-lg p-1.5 text-charcoal/35 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={15}/></button>
+              <button onClick={() => deletePlan(plan.id)} aria-label={`Hapus ${plan.name}`} className="rounded-lg p-1.5 text-[#9CA3AF] hover:bg-black/5 hover:text-[#6B7280]"><Trash2 size={18}/></button>
             </div>
 
-            <div className="hero-forest mt-4 rounded-[20px] p-4 text-white">
-              <p className="text-[12px] text-white/70">Target rencana</p>
-              <p className="num mt-1 text-[clamp(20px,6.4vw,26px)] font-semibold leading-tight">{formatRupiah(target)}</p>
-              <div className="mt-3 flex items-center justify-between gap-2"><span className="text-[12px] text-white/70">Aset dialokasikan</span><span className="num text-[12.5px] font-semibold text-white">{formatRupiah(allocated)}{target > 0 ? ` · ${Math.round(progress)}%` : ""}</span></div>
-              <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-white/15"><div className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#F59BB8] transition-all" style={{ width: progress + "%" }}/></div>
+            <div className={`goal-plan-box goal-plan-${planIndex % 2 === 0 ? "a" : "b"} mt-3 rounded-[20px] px-[14px] py-3`}>
+              <p className="text-[13px] font-normal opacity-75">Target rencana</p>
+              <p className="goal-target-amount num mt-0.5 text-[20px] font-extrabold leading-tight">{formatRupiah(target)}</p>
+              <div className="mt-2 flex items-center justify-between gap-2"><span className="text-[13px] font-normal opacity-75">Aset dialokasikan</span><span className="num text-right text-[13px] font-bold">{formatRupiah(allocated)}{target > 0 ? ` · ${Math.round(progress)}%` : ""}</span></div>
+              <div className="goal-progress-track mt-2 h-[6px] overflow-hidden rounded-full"><div className="goal-progress-fill h-full rounded-full transition-all" style={{ width: progress + "%" }}/></div>
             </div>
 
-            <div className="mt-3">
-              <p className="mb-2 flex items-center gap-1.5 text-[12px] font-semibold text-forest-900"><Wallet size={14}/> Aset untuk tujuan ini</p>
+            <div className="mt-[10px]">
+              <p className="mb-2 flex items-center gap-1.5 text-[12px] font-medium text-[#6B7280] dark:text-[#9A9AA5]"><Wallet size={14}/> Aset untuk tujuan ini</p>
               {Object.entries(planAllocations).length ? <div className="flex flex-col gap-2">{Object.entries(planAllocations).map(([assetId, value]) => {
                 const asset = assetOptions.find((item) => item.id === assetId);
-                return <div key={assetId} className="flex items-center justify-between gap-2 rounded-2xl bg-charcoal/[0.04] px-3.5 py-2.5"><div className="min-w-0"><p className="truncate text-[12.5px] font-semibold text-forest-900">{asset?.name || assetId.split(":").slice(1).join(":")}</p><p className="num text-[11.5px] text-charcoal/55">{formatRupiah(value)}</p></div><button onClick={() => removeAllocation(plan.id, assetId)} className="rounded-lg p-1.5 text-charcoal/40 hover:bg-rose-50 hover:text-rose-600" aria-label="Hapus alokasi aset"><X size={14}/></button></div>;
+                return <div key={assetId} className="goal-asset-row flex h-11 items-center justify-between gap-2 rounded-[16px] border border-[#D9F3EA] bg-white px-[14px] dark:border-[#17302B] dark:bg-[#131316]"><p className="min-w-0 flex-1 truncate text-[15px] font-normal text-[#111815] dark:text-white">{asset?.name || assetId.split(":").slice(1).join(":")}</p><span className="num shrink-0 text-[15px] font-bold text-[#111815] dark:text-white">{formatRupiah(value)}</span><button onClick={() => removeAllocation(plan.id, assetId)} className="shrink-0 rounded-lg p-1 text-[#9CA3AF] hover:text-[#6B7280]" aria-label="Hapus alokasi aset"><X size={16}/></button></div>;
               })}</div> : <p className="text-[11px] text-charcoal/50">Belum ada aset yang dialokasikan.</p>}
               {allocatingId === plan.id ? <div className="mt-3 flex flex-col gap-2 rounded-xl border border-forest-100 p-3">
                 <label className="text-[11px] font-medium text-charcoal/65">{id ? "Pilih aset" : "Select asset"}</label>
@@ -241,9 +242,10 @@ export function Goals() {
                 <label className="text-[11px] font-medium text-charcoal/65">Nominal yang dialokasikan (Rp)</label>
                 <input inputMode="numeric" type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Contoh: 5000000" className="w-full rounded-xl border border-rose-100 px-3 py-2 text-[12px] text-forest-900 outline-none focus:ring-2 focus:ring-forest-100"/>
                 <div className="flex gap-2"><button onClick={() => saveAllocation(plan.id)} className="flex-1 rounded-full bg-[#123524] px-3 py-2.5 text-[12.5px] font-semibold text-white">Simpan alokasi</button><button onClick={() => { setAllocatingId(null); setAmount(""); setSelectedAsset(""); }} className="rounded-xl border border-rose-100 px-3 py-2 text-[12px] text-charcoal/65">{id ? "Batal" : "Cancel"}</button></div>
-              </div> : <button onClick={() => { setAllocatingId(plan.id); setSelectedAsset(""); setAmount(""); }} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#F59BB8] px-4 py-2.5 text-[12.5px] font-bold text-[#123524]"><Plus size={14}/> Alokasikan dana</button>}
+              </div> : <button onClick={() => { setAllocatingId(plan.id); setSelectedAsset(""); setAmount(""); }} className="inline-flex h-11 items-center justify-center gap-1.5 rounded-[16px] bg-[#00B86E] px-4 text-[15px] font-bold text-[#03140C] dark:bg-[#00E08A]"><Plus size={16}/> Alokasikan dana</button>}
             </div>
-            <button onClick={() => navigate(`/calculator/${getCalculatorRouteId(plan)}`)} className="mt-3 ml-2 inline-flex items-center gap-1.5 rounded-full border border-forest-100 bg-forest-50 px-4 py-2.5 text-[12.5px] font-semibold text-forest-700"><Calculator size={14}/> Buka simulasi</button>
+            <button onClick={() => navigate(`/calculator/${getCalculatorRouteId(plan)}`)} className="inline-flex h-11 items-center justify-center gap-1.5 rounded-[16px] border border-[#E4E6E8] bg-white px-4 text-[15px] font-bold text-[#111815] dark:border-[#2A2A31] dark:bg-[#131316] dark:text-white"><Calculator size={16}/> Buka simulasi</button>
+          </div>
           </Card>
           </div>
         );
