@@ -203,14 +203,14 @@ export function Goals() {
           <div className="flex gap-2"><button type="button" onClick={addManualGoal} disabled={!manualGoalName.trim() || Number(manualGoalTarget) <= 0} className="inline-flex items-center gap-1.5 rounded-full bg-[#123524] px-4 py-2.5 text-[12.5px] font-semibold text-white disabled:opacity-40"><Check size={14}/>{id ? "Simpan target" : "Save goal"}</button><button type="button" onClick={() => setShowManualGoal(false)} className="rounded-full border border-forest-100 px-4 py-2.5 text-[12.5px] text-charcoal/70">{id ? "Batal" : "Cancel"}</button></div>
         </div>
       </Card>}
-      {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.map((plan, planIndex) => {
+      {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.map((plan) => {
         const target = getPlanTarget(plan);
         const planAllocations = settings.allocations[plan.id] || {};
         const allocated = Object.values(planAllocations).reduce((sum, value) => sum + value, 0);
         const progress = target > 0 ? Math.min(100, allocated / target * 100) : 0;
         return (
           <div key={plan.id} draggable onDragStart={() => setDraggedPlanId(plan.id)} onDragOver={(event) => event.preventDefault()} onDrop={() => reorderPlan(plan.id)} onDragEnd={() => setDraggedPlanId(null)} className={`goal-card-wrap ${draggedPlanId === plan.id ? "cursor-grabbing opacity-50" : "cursor-grab"}`}>
-          <div className={`goal-card goal-card-${planIndex % 2 === 0 ? "a" : "b"} rounded-[24px] border border-[#D3E6E1] bg-white p-[14px] dark:border-[#223333] dark:bg-[#131316] dark:shadow-[0_8px_28px_rgba(0,224,138,0.06)]`}>
+          <div className="goal-card rounded-[24px] border border-[#D3E6E1] bg-white p-[14px] dark:border-[#223333] dark:bg-[#131316] dark:shadow-[0_8px_28px_rgba(0,224,138,0.06)]">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
                 <span className="goal-icon-tile flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D6F4E8] text-[#00794A] dark:bg-[#103428] dark:text-[#4DF0A8]"><Target size={21}/></span>
@@ -222,9 +222,9 @@ export function Goals() {
               <button onClick={() => deletePlan(plan.id)} aria-label={`Hapus ${plan.name}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-transparent p-0 text-[#9CA3AF] hover:bg-transparent hover:text-[#6B7280]"><Trash2 size={20}/></button>
             </div>
 
-            <div className={`goal-plan-box goal-plan-${planIndex % 2 === 0 ? "a" : "b"} mt-3 rounded-[20px] px-[14px] py-3`}>
+            <div className="goal-plan-box mt-3 rounded-[20px] px-4 py-[14px]">
               <p className="text-[14px] font-normal opacity-75">{id ? "Target rencana" : "Planned target"}</p>
-              <p className="goal-target-amount num mt-0.5 text-[30px] font-extrabold leading-[1.1] tracking-[-0.02em] text-[#03140C] !important">{formatGoalCurrency(target)}</p>
+              <p className="goal-target-amount num mt-0.5 text-[30px] font-extrabold leading-[1.1] tracking-[-0.02em] text-[#03140C]">{formatGoalCurrency(target)}</p>
               <div className="mt-2 flex items-center justify-between gap-2"><span className="text-[14px] font-normal opacity-75">{id ? "Aset dialokasikan" : "Allocated assets"}</span><span className="num text-right text-[15px] font-bold">{formatGoalCurrency(allocated)}{target > 0 ? ` · ${Math.round(progress)}%` : ""}</span></div>
               <div className="goal-progress-track mt-[10px] h-[8px] overflow-hidden rounded-full"><div className="goal-progress-fill h-full rounded-full transition-all" style={{ width: progress + "%" }}/></div>
             </div>
