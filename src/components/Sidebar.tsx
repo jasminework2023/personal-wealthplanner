@@ -37,18 +37,18 @@ function NavItem({ to, label, icon: Icon, onNavigate }: { to: string; label: str
       className={({ isActive }) =>
         `group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] transition-all ${
           isActive
-            ? "bg-rose-500/15 text-rose-200 font-semibold"
+            ? "bg-[#0B6B47]/35 text-[#B8F5D8] font-semibold"
             : "text-white hover:bg-white/10 hover:text-white"
         }`
       }
     >
       {({ isActive }) => (
         <>
-          {isActive && <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-rose-400" />}
+          {isActive && <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#6EE7A8]" />}
           <Icon
             size={18}
             strokeWidth={2}
-            className={isActive ? "text-rose-300" : "text-white/75 group-hover:text-rose-300"}
+            className={isActive ? "text-[#6EE7A8]" : "text-white/75 group-hover:text-[#6EE7A8]"}
           />
           {label}
         </>
@@ -91,7 +91,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <nav className="flex flex-col gap-0.5">
           {toolLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/calculator" ? labels.calculator : labels.protection} onNavigate={onNavigate} />)}
           <a href="https://www.wealthplanner.id" target="_blank" rel="noreferrer" onClick={onNavigate} className="group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] text-white hover:bg-white/10 hover:text-white transition-all">
-            <ExternalLink size={18} strokeWidth={2} className="text-white/75 group-hover:text-rose-300" />
+            <ExternalLink size={18} strokeWidth={2} className="text-white/75 group-hover:text-[#6EE7A8]" />
             {labels.website}
           </a>
         </nav>
