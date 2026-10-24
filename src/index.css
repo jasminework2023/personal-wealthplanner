@@ -738,3 +738,25 @@ html.dark .home-asset-summary {
 .goals-page .goal-card .goal-actions-row > button:first-child { flex: 1 1 0 !important; }
 .goals-page .goal-card .goal-actions-row > button.goal-sim-button { flex: 1 1 0 !important; }
 .goals-page > div > p.text-\[20px\] { font-size: 20px !important; font-weight: 700 !important; }
+
+
+/* Goals compact typography overrides: explicit pixel sizes. */
+.goals-page .page-title { font-size: 24px !important; font-weight: 800 !important; }
+.goals-page .page-sub { font-size: 13px !important; font-weight: 400 !important; }
+.goals-page .goal-card h2 { font-size: 16px !important; font-weight: 700 !important; line-height: 1.2 !important; }
+.goals-page .goal-card > div > div > p,
+.goals-page .goal-card .goal-plan-box > p:first-child { font-size: 12px !important; font-weight: 400 !important; }
+.goals-page .goal-card .goal-plan-box .goal-target-amount {
+  font-size: 22px !important; font-weight: 800 !important;
+  letter-spacing: -0.02em !important; line-height: 1.1 !important;
+}
+.goals-page .goal-card .goal-plan-box > div > span:first-child { font-size: 12px !important; font-weight: 400 !important; }
+.goals-page .goal-card .goal-plan-box > div > span:last-child { font-size: 12px !important; font-weight: 700 !important; }
+.goals-page .goal-card .goal-progress-track { height: 6px !important; }
+.goals-page .goal-card .goal-asset-row p { font-size: 14px !important; font-weight: 400 !important; }
+.goals-page .goal-card .goal-asset-row > span { font-size: 14px !important; font-weight: 700 !important; }
+.goals-page .goal-card .goal-actions-row > button { height: 42px !important; font-size: 14px !important; font-weight: 700 !important; }
+.goals-page .goal-card .goal-asset-row + p { font-size: 12px !important; font-weight: 400 !important; }
+.goals-page .goal-card .goal-plan-box { padding: 12px 14px !important; }
+.goals-page .goal-list-heading { font-size: 16px !important; font-weight: 700 !important; }
+.goals-page .goal-add-button { height: 36px !important; font-size: 14px !important; font-weight: 700 !important; }
