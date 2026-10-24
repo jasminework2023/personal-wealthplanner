@@ -334,11 +334,11 @@ html.dark .text-charcoal {
 }
 
 html.dark [class*="text-rose-700"] {
-  color: #f09ab4 !important;
+  color: #FF5C7A !important;
 }
 
 html.dark [class*="text-rose-600"] {
-  color: #f2789b !important;
+  color: #FF5C7A !important;
 }
 
 /* Borders / subtle surfaces */
