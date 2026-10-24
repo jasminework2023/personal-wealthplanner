@@ -191,8 +191,8 @@ export function Goals() {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[16px] font-bold text-[#111815] dark:text-white">{id ? "Daftar target" : "Your goals"}</p>
-        <button type="button" onClick={() => setShowManualGoal((open) => !open)} className="inline-flex h-[36px] items-center gap-2 rounded-[14px] bg-[#00B86E] px-4 text-[14px] font-bold text-[#03140C] shadow-sm dark:bg-[#00E08A]"><Plus size={15}/>{id ? "Tambah target" : "Add goal"}</button>
+        <p className="goal-list-heading text-[16px] font-bold text-[#111815] dark:text-white">{id ? "Daftar target" : "Your goals"}</p>
+        <button type="button" onClick={() => setShowManualGoal((open) => !open)} className="goal-add-button inline-flex h-[36px] items-center gap-2 rounded-[14px] bg-[#00B86E] px-4 text-[14px] font-bold text-[#03140C] shadow-sm dark:bg-[#00E08A]"><Plus size={15}/>{id ? "Tambah target" : "Add goal"}</button>
       </div>
       {showManualGoal && <Card>
         <div className="manual-goal-form flex flex-col gap-3">
