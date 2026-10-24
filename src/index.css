@@ -591,3 +591,10 @@ html.dark .home-asset-summary {
   background-color: #123524 !important;
   color: #ffffff !important;
 }
+
+
+/* Asset Tracker total should visually match the Komposisi Aset section heading. */
+.asset-tracker-total-value {
+  font-size: clamp(28px, 7.5vw, 34px) !important;
+  white-space: nowrap;
+}
