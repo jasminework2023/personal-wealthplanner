@@ -598,3 +598,10 @@ html.dark .home-asset-summary {
   font-size: clamp(28px, 7.5vw, 34px) !important;
   white-space: nowrap;
 }
+
+
+/* Keep the three main report headline amounts large despite global numeric sizing. */
+.report-headline-amount {
+  font-size: clamp(43px, 10.5vw, 53px) !important;
+  white-space: nowrap;
+}
