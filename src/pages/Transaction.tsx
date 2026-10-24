@@ -93,7 +93,7 @@ export function Transaction() {
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => setCalendarOpen(true)} className="inline-flex items-center gap-2 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-xs font-semibold text-forest-900 shadow-sm"><CalendarDays size={16}/><span>{selectedMonth === "all" && selectedYear === "all" ? txText.all : `${selectedMonth === "all" ? txText.allMonths : ["","Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][Number(selectedMonth)]} ${selectedYear === "all" ? "" : selectedYear}`.trim()}</span></button>
-          <button type="button" onClick={() => setModalOpen(true)} className="inline-flex items-center gap-1.5 rounded-full bg-[#F59BB8] px-4 py-2.5 text-xs font-bold text-[#123524] shadow-pop sm:text-sm"><Plus size={16} /> {txText.add}</button>
+          <button type="button" onClick={() => setModalOpen(true)} className="inline-flex items-center gap-1.5 rounded-full bg-[#DDF7E8] px-4 py-2.5 text-xs font-bold text-[#0B6B47] shadow-pop sm:text-sm"><Plus size={16} /> {txText.add}</button>
         </div>
       </div>
 
