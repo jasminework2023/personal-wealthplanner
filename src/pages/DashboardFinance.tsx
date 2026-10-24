@@ -301,7 +301,7 @@ export function DashboardFinance() {
           <p className="text-[14px] font-semibold text-white/75">{surplus >= 0 ? "Total Surplus" : "Total Defisit"}</p>
           <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
             <span className="shrink-0 text-[15px] text-white/75">Rp</span>
-            <span className="min-w-0 text-[clamp(32px,9.5vw,42px)] font-extrabold leading-tight tracking-[-0.6px] tabular-nums" style={{color: surplus < 0 ? "#FF5C7A" : "#FFFFFF"}}>{surplus < 0 ? "-" : ""}{surplusDigits}</span>
+            <span className="min-w-0 text-[clamp(38px,10.5vw,48px)] font-extrabold leading-tight tracking-[-0.6px] tabular-nums" style={{color: surplus < 0 ? "#FF5C7A" : "#FFFFFF"}}>{surplus < 0 ? "-" : ""}{surplusDigits}</span>
           </div>
           <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
             {[
@@ -315,7 +315,7 @@ export function DashboardFinance() {
                 </div>
                 {item.change !== null && <span className="shrink-0 text-[11px] font-semibold tabular-nums" style={{color:item.changeColor}}>{item.change >= 0 ? "+" : ""}{item.change.toFixed(1)}%</span>}
               </div>
-              <p className="mt-2 whitespace-nowrap text-[clamp(14px,4.1vw,18px)] font-bold leading-tight tracking-[-0.2px] text-white tabular-nums">{formatRupiah(item.value)}</p>
+              <p className="mt-2 whitespace-nowrap text-[clamp(16px,4.6vw,21px)] font-bold leading-tight tracking-[-0.2px] text-white tabular-nums">{formatRupiah(item.value)}</p>
             </div>)}
           </div>
         </section>;
@@ -355,7 +355,7 @@ export function DashboardFinance() {
         {/* Asset Tracker: two reference cards only */}
         <div className="mb-4 rounded-[28px] bg-[linear-gradient(145deg,#29FBA3_0%,#09C679_45%,#009D5E_100%)] p-4 text-[#03140C] shadow-[0_12px_32px_rgba(12,203,125,0.30)] dark:shadow-[0_0_38px_rgba(12,203,125,0.28),0_12px_32px_rgba(12,203,125,0.32)]">
           <p className="text-[13px] font-bold text-[#03140C]/90">Total aset</p>
-          <p className="num mt-1 whitespace-nowrap text-[34px] font-extrabold leading-[1.1] tracking-[-0.02em] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
+          <p className="num mt-1 whitespace-nowrap text-[40px] font-extrabold leading-[1.1] tracking-[-0.02em] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
           <p className="mt-1 text-[13px] font-normal text-[#03140C]/75">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
           <div className="mt-2 h-[6px] w-full overflow-hidden rounded-full bg-[#03140C]/15">
             <div className="h-full rounded-full bg-[#03140C]" style={{ width: `${Math.min(Math.max(assetProgress, 0), 100)}%` }} />
@@ -450,17 +450,17 @@ export function DashboardFinance() {
             <p className="text-[14px] font-semibold text-[#53697A]">Net cashflow</p>
             <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
               <span className="shrink-0 text-[15px] text-[#53697A]">Rp</span>
-              <span className="min-w-0 text-[clamp(32px,9.5vw,42px)] font-extrabold leading-tight tracking-[-0.6px] text-[#123524] tabular-nums">{netCashflow < 0 ? "-" : ""}{netDigits}</span>
+              <span className="min-w-0 text-[clamp(38px,10.5vw,48px)] font-extrabold leading-tight tracking-[-0.6px] text-[#123524] tabular-nums">{netCashflow < 0 ? "-" : ""}{netDigits}</span>
             </div>
             {trend !== null && <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#123524]/[0.12] px-2.5 py-1 text-[12px] font-medium text-[#123524]"><span>{trend >= 0 ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</span><span>{trend >= 0 ? "+" : ""}{Math.round(trend)}% dari bulan lalu</span></div>}
             <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
               <div className="min-w-0 rounded-2xl bg-black/[0.08] p-3 dark:bg-black/10">
                 <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#DFF3E7] text-[#0B6B47]"><ArrowDownLeft size={16}/></span><span className="text-[13px] text-[#6B7B70]">Cash in</span></div>
-                <p className="mt-2 whitespace-nowrap text-[clamp(15px,4.3vw,18px)] font-bold leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalIncome)}</p>
+                <p className="mt-2 whitespace-nowrap text-[clamp(17px,4.7vw,21px)] font-bold leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalIncome)}</p>
               </div>
               <div className="min-w-0 rounded-2xl bg-black/[0.08] p-3 dark:bg-black/10">
                 <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FDE3EA] text-[#C23A5B]"><ArrowUpRight size={16}/></span><span className="text-[13px] text-[#6B7B70]">Cash out</span></div>
-                <p className="mt-2 whitespace-nowrap text-[clamp(13px,4vw,16px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalExpense+totalSaving)}</p>
+                <p className="mt-2 whitespace-nowrap text-[clamp(16px,4.4vw,20px)] font-bold leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalExpense+totalSaving)}</p>
               </div>
             </div>
           </div>;
