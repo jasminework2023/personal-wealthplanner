@@ -47,7 +47,7 @@ export function AppShell() {
           </div>
           <Outlet />
         </main>
-        <nav aria-label={language === "id" ? "Navigasi utama" : "Main navigation"} className="pointer-events-none fixed inset-x-0 bottom-[max(20px,env(safe-area-inset-bottom))] z-40 px-4 pb-0 lg:hidden">
+        <nav aria-label={language === "id" ? "Navigasi utama" : "Main navigation"} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[env(safe-area-inset-bottom)] lg:hidden">
           <div className="wp-nav pointer-events-auto mx-auto grid h-16 max-w-md grid-cols-5 items-center rounded-[22px] px-2">
             {([
               { to: "/", label: navLabels.home, Icon: Wallet },
