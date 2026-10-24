@@ -8,149 +8,168 @@
    bisa menambahkan opacity sendiri: text-charcoal/60, bg-forest-50/40, dst.
    ============================================================ */
 :root {
-  --c-forest-50: 234 242 239;
-  --c-forest-100: 207 226 218;
-  --c-forest-200: 183 212 200;
-  --c-forest-300: 124 173 154;
-  --c-forest-400: 76 133 112;
-  --c-forest-500: 52 112 90;
-  --c-forest-600: 40 92 73;
-  --c-forest-700: 30 71 55;
-  --c-forest-800: 22 56 44;
-  --c-forest-900: 15 42 32;
+  /* Theme tokens — Light */
+  --c-forest-50: 240 253 247;
+  --c-forest-100: 220 252 231;
+  --c-forest-200: 187 247 208;
+  --c-forest-300: 134 239 172;
+  --c-forest-400: 74 222 128;
+  --c-forest-500: 34 197 94;
+  --c-forest-600: 0 184 110;
+  --c-forest-700: 0 122 74;
+  --c-forest-800: 6 95 70;
+  --c-forest-900: 15 26 20;
 
-  --c-rose-50: 251 234 240;
-  --c-rose-100: 245 203 218;
-  --c-rose-200: 240 176 197;
-  --c-rose-300: 233 151 178;
-  --c-rose-400: 225 126 155;
-  --c-rose-500: 219 96 134;
-  --c-rose-600: 212 79 118;
-  --c-rose-700: 169 58 92;
+  /* Legacy rose utilities now resolve to semantic red (down/expense), never pink. */
+  --c-rose-50: 255 241 242;
+  --c-rose-100: 255 228 230;
+  --c-rose-200: 254 205 211;
+  --c-rose-300: 253 164 175;
+  --c-rose-400: 251 113 133;
+  --c-rose-500: 214 51 79;
+  --c-rose-600: 201 45 70;
+  --c-rose-700: 169 30 54;
 
-  --c-lilac-50: 245 238 255;
-  --c-lilac-100: 232 215 255;
-  --c-lilac-400: 185 138 232;
-  --c-lilac-600: 142 92 199;
-  --c-lilac-700: 116 71 166;
+  /* Legacy lilac utilities are mapped to green tints for compatibility. */
+  --c-lilac-50: 240 253 247;
+  --c-lilac-100: 220 252 231;
+  --c-lilac-400: 110 231 183;
+  --c-lilac-600: 0 122 74;
+  --c-lilac-700: 0 95 58;
 
-  --c-yellow-50: 255 248 225;
-  --c-yellow-100: 255 232 163;
-  --c-yellow-500: 255 184 0;
+  --c-yellow-50: 255 247 214;
+  --c-yellow-100: 255 236 176;
+  --c-yellow-500: 242 169 0;
+  --c-yellow-700: 90 74 18;
 
-  --c-orange-50: 255 241 233;
-  --c-orange-100: 255 214 194;
-  --c-orange-500: 255 154 107;
+  /* Legacy orange utilities become neutral/warning tones. */
+  --c-orange-50: 244 245 246;
+  --c-orange-100: 228 230 232;
+  --c-orange-500: 242 169 0;
 
-  --c-cream: 251 248 243;
-  --c-charcoal: 35 35 35;
+  --c-cream: 244 245 246;
   --c-surface: 255 255 255;
-  --c-shadow: 15 42 32;
+  --c-border: 228 230 232;
+  --c-charcoal: 15 26 20;
+  --c-muted: 107 114 128;
+  --c-shadow: 15 26 20;
+  --c-accent: 0 184 110;
+  --c-accent-ink: 4 19 12;
+  --c-accent-text: 0 122 74;
+  --c-up: 0 122 74;
+  --c-down: 214 51 79;
+  --c-warn: 242 169 0;
+  --shadow-pop: 0 4px 16px rgba(0, 184, 110, 0.45);
+  --shadow-nav: 0 6px 24px rgba(0, 0, 0, 0.08);
 
-  /* Dipakai chart & kalkulator (inline style) */
-  --chart-axis: #6b6b6b;
-  --chart-grid: rgba(20, 50, 40, 0.12);
+  /* Chart and calculator tokens used by existing UI. */
+  --chart-axis: #6B7280;
+  --chart-grid: rgba(15, 26, 20, 0.10);
+  --chart-1: #0F9D6B;
+  --chart-2: #FFC815;
+  --chart-3: #6EE7B7;
+  --chart-4: #9CA3AF;
+  --chart-5: #4B5563;
+  --chart-6: #007A4A;
+  --chart-7: #D6334F;
+  --chart-8: #00B86E;
+  --chart-income: #00C27A;
+  --chart-expense: #D6334F;
+  --chart-saving: #F2A900;
 
-  /* Warna seri chart (pie/bar). Di dark mode dinaikkan kecerahannya. */
-  --chart-1: #D44F76;
-  --chart-2: #285C49;
-  --chart-3: #D8A928;
-  --chart-4: #7A5FA8;
-  --chart-5: #4C8A7A;
-  --chart-6: #C96B2C;
-  --chart-7: #6B7A8F;
-  --chart-8: #B83A62;
-  --chart-income: #285C49;
-  --chart-expense: #D44F76;
-  --chart-saving: #B58900;
-
-  --calc-ink: #173b32;
-  --calc-ink-2: #55766a;
-  --calc-muted: #71827b;
-  --calc-accent: #0f5d46;
-  --calc-accent-ink: #ffffff;
-  --calc-surface: #ffffff;
-  --calc-surface-2: #f6f7f4;
-  --calc-surface-3: #f8f8f5;
-  --calc-tint: #eef8f3;
-  --calc-tint-border: #d7ebe1;
-  --calc-border: rgba(20, 50, 40, 0.12);
-  --calc-card-fade: #ffffff;
+  --calc-ink: #0F1A14;
+  --calc-ink-2: #365348;
+  --calc-muted: #6B7280;
+  --calc-accent: #007A4A;
+  --calc-accent-ink: #04130C;
+  --calc-surface: #FFFFFF;
+  --calc-surface-2: #F4F5F6;
+  --calc-surface-3: #F4F5F6;
+  --calc-tint: #F0FDF7;
+  --calc-tint-border: #DCECE3;
+  --calc-border: rgba(15, 26, 20, 0.12);
+  --calc-card-fade: #FFFFFF;
 }
 
-/* ============================================================
-   DARK MODE
-   Teks jadi terang, permukaan jadi gelap, aksen dinaikkan
-   kecerahannya supaya tetap terbaca di atas background gelap.
-   ============================================================ */
+/* Theme tokens — Dark */
 html.dark {
-  --c-forest-50: 24 45 37;
-  --c-forest-100: 32 58 48;
-  --c-forest-200: 42 74 61;
-  --c-forest-300: 78 126 105;
-  --c-forest-400: 122 184 158;
-  --c-forest-500: 108 173 146;
-  --c-forest-600: 52 124 98;
-  --c-forest-700: 148 205 180;
-  --c-forest-800: 186 224 207;
-  --c-forest-900: 221 238 230;
+  --c-forest-50: 10 33 23;
+  --c-forest-100: 11 54 37;
+  --c-forest-200: 12 85 58;
+  --c-forest-300: 0 154 92;
+  --c-forest-400: 0 194 122;
+  --c-forest-500: 0 224 138;
+  --c-forest-600: 0 224 138;
+  --c-forest-700: 92 240 176;
+  --c-forest-800: 184 245 216;
+  --c-forest-900: 242 242 244;
 
-  --c-rose-50: 58 30 41;
-  --c-rose-100: 74 38 52;
-  --c-rose-200: 240 176 197;
-  --c-rose-300: 233 151 178;
-  --c-rose-300: 240 160 186;
-  --c-rose-400: 232 143 172;
-  --c-rose-500: 222 106 143;
-  --c-rose-600: 226 116 150;
-  --c-rose-700: 236 158 183;
+  /* Semantic red remains red in Dark mode. */
+  --c-rose-50: 53 23 29;
+  --c-rose-100: 75 28 38;
+  --c-rose-200: 122 36 52;
+  --c-rose-300: 255 92 122;
+  --c-rose-400: 255 92 122;
+  --c-rose-500: 255 92 122;
+  --c-rose-600: 255 92 122;
+  --c-rose-700: 255 92 122;
 
-  --c-lilac-50: 45 33 62;
-  --c-lilac-100: 60 44 82;
-  --c-lilac-400: 198 165 240;
-  --c-lilac-600: 191 154 238;
-  --c-lilac-700: 205 176 242;
+  --c-lilac-50: 16 39 29;
+  --c-lilac-100: 23 61 44;
+  --c-lilac-400: 110 231 183;
+  --c-lilac-600: 92 240 176;
+  --c-lilac-700: 184 245 216;
 
-  --c-yellow-50: 58 45 16;
-  --c-yellow-100: 78 61 22;
-  --c-yellow-500: 255 202 74;
+  --c-yellow-50: 61 49 9;
+  --c-yellow-100: 87 67 11;
+  --c-yellow-500: 255 200 21;
+  --c-yellow-700: 255 200 21;
 
-  --c-orange-50: 60 38 27;
-  --c-orange-100: 80 51 36;
-  --c-orange-500: 255 173 132;
+  --c-orange-50: 19 19 22;
+  --c-orange-100: 37 37 44;
+  --c-orange-500: 255 200 21;
 
-  --c-cream: 13 20 17;
-  --c-charcoal: 233 239 236;
-  --c-surface: 31 41 36;
+  --c-cream: 10 10 12;
+  --c-surface: 19 19 22;
+  --c-border: 37 37 44;
+  --c-charcoal: 242 242 244;
+  --c-muted: 154 154 165;
   --c-shadow: 0 0 0;
+  --c-accent: 0 224 138;
+  --c-accent-ink: 4 19 12;
+  --c-accent-text: 92 240 176;
+  --c-up: 0 224 138;
+  --c-down: 255 92 122;
+  --c-warn: 255 200 21;
+  --shadow-pop: 0 0 24px rgba(0, 224, 138, 0.7);
+  --shadow-nav: 0 12px 32px rgba(0, 0, 0, 0.45);
 
-  --chart-axis: #9aa8a2;
+  --chart-axis: #9A9AA5;
   --chart-grid: rgba(255, 255, 255, 0.12);
+  --chart-1: #0F9D6B;
+  --chart-2: #FFC815;
+  --chart-3: #6EE7B7;
+  --chart-4: #9CA3AF;
+  --chart-5: #4B5563;
+  --chart-6: #5CF0B0;
+  --chart-7: #FF5C7A;
+  --chart-8: #00E08A;
+  --chart-income: #00C27A;
+  --chart-expense: #FF5C7A;
+  --chart-saving: #F2A900;
 
-  --chart-1: #F2789B;
-  --chart-2: #5FBF95;
-  --chart-3: #F2C744;
-  --chart-4: #B79BE8;
-  --chart-5: #7FD4BC;
-  --chart-6: #F0925A;
-  --chart-7: #A3B4C6;
-  --chart-8: #F06A96;
-  --chart-income: #5FBF95;
-  --chart-expense: #F2789B;
-  --chart-saving: #F2C744;
-
-  --calc-ink: #e8edea;
-  --calc-ink-2: #b9c7c1;
-  --calc-muted: #93a29b;
-  --calc-accent: #5fb997;
-  --calc-accent-ink: #0f2a20;
-  --calc-surface: #1a211e;
-  --calc-surface-2: #212a26;
-  --calc-surface-3: #1e2723;
-  --calc-tint: #17322a;
-  --calc-tint-border: #24453a;
+  --calc-ink: #F2F2F4;
+  --calc-ink-2: #B7C7BF;
+  --calc-muted: #9A9AA5;
+  --calc-accent: #00E08A;
+  --calc-accent-ink: #04130C;
+  --calc-surface: #131316;
+  --calc-surface-2: #1B1B20;
+  --calc-surface-3: #1B1B20;
+  --calc-tint: #10271D;
+  --calc-tint-border: #24453A;
   --calc-border: rgba(255, 255, 255, 0.14);
-  --calc-card-fade: #1a211e;
+  --calc-card-fade: #131316;
 }
 
 html,
@@ -451,24 +470,36 @@ button { -webkit-tap-highlight-color: transparent; }
 button:not(:disabled):active { transform: scale(0.98); }
 button { transition: transform .12s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease; }
 
-/* Angka uang: gaya Cashflow Tracker */
+/* Shared hero surfaces — colors and contrast follow DESIGN.md. */
 .num { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
 
-/* Hero hijau: satu-satunya "momen berani" di Home & Anggaran */
+.hero-neon {
+  background: linear-gradient(150deg, #2BFFA6, #00B86E 60%, #009A5C);
+  color: #03140C;
+  box-shadow: 0 10px 40px rgba(0, 224, 138, 0.22);
+}
+.hero-emerald,
+.hero-butter {
+  background: linear-gradient(150deg, #0A8A5B, #066847 55%, #033B28);
+  color: #FFFFFF;
+  box-shadow: 0 10px 40px rgba(0, 100, 70, 0.25);
+}
 .hero-forest {
   background:
-    radial-gradient(120% 80% at 100% -10%, rgba(245, 155, 184, 0.30), transparent 55%),
-    radial-gradient(90% 70% at -10% 110%, rgba(110, 231, 168, 0.16), transparent 60%),
-    #123524;
-  color: #fff;
+    radial-gradient(circle at 92% 0%, rgba(0, 224, 138, 0.42), transparent 55%),
+    linear-gradient(150deg, #0F3B2B, #0A2A20 55%, #06180F);
+  color: #FFFFFF;
+  box-shadow: inset 0 0 0 1px rgba(0, 224, 138, 0.4), 0 10px 40px rgba(0, 0, 0, 0.18);
 }
-.hero-butter {
-  background:
-    radial-gradient(100% 80% at 100% 0%, rgba(255, 255, 255, 0.35), transparent 55%),
-    #F6C445;
-  color: #123524;
+.hero-mint {
+  background: linear-gradient(150deg, #D2FCE7, #8EF0C2 60%, #5FE3A5);
+  color: #03140C;
+  box-shadow: 0 10px 40px rgba(0, 184, 110, 0.18);
 }
-.hero-forest, .hero-butter { position: relative; overflow: hidden; }
+.hero-neon, .hero-emerald, .hero-forest, .hero-mint, .hero-butter {
+  position: relative;
+  overflow: hidden;
+}
 
 /* Kartu & judul halaman */
 .page-title { font-size: 26px; line-height: 1.1; font-weight: 700; letter-spacing: -0.03em; color: rgb(var(--c-forest-900)); }
@@ -481,14 +512,11 @@ button { transition: transform .12s ease, background-color .15s ease, border-col
 .wp-sheet { animation: wp-sheet-up .22s cubic-bezier(.2,.8,.2,1) both; }
 .wp-backdrop { animation: wp-fade .18s ease both; }
 
-/* Navigasi bawah mengambang */
+/* Bottom navigation uses the active theme surface and a soft floating shadow. */
 .wp-nav {
-  background: #123524;
-  box-shadow: 0 18px 40px -12px rgba(15, 42, 32, 0.5), 0 4px 12px rgba(15, 42, 32, 0.2);
-}
-html.dark .wp-nav {
-  background: #1b2822;
-  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-border));
+  box-shadow: var(--shadow-nav);
 }
 
 /* Fokus keyboard yang terlihat */
@@ -499,7 +527,7 @@ html.dark .wp-nav {
 }
 
 /* Dark: halaman & kartu */
-html.dark .hero-butter { color: #123524; }
+html.dark .hero-butter { color: #FFFFFF; }
 html.dark .page-sub { color: #b8c9c1; }
 
 
