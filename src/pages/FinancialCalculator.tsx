@@ -317,12 +317,12 @@ function InsuranceCalc({ onSaveResult, onNavigate }) {
 
 function BreakdownRow({ label, value, sub, highlight, muted }) {
   return (
-    <div className="row-between" style={{ padding: "10px 0", color: muted ? "var(--muted)" : "var(--ink)" }}>
-      <div>
-        <div style={{ fontSize: 14, fontWeight: highlight ? 700 : 500 }}>{label}</div>
-        {sub && <div className="muted" style={{ fontSize: 12 }}>{sub}</div>}
+    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, padding: "9px 0", borderBottom: "1px solid rgb(var(--c-border))", color: muted ? "rgb(var(--c-muted))" : "rgb(var(--c-charcoal))", minWidth: 0 }}>
+      <div style={{ minWidth: 0, flex: "1 1 50%" }}>
+        <div style={{ fontSize: 12, fontWeight: highlight ? 700 : 500, lineHeight: 1.4, overflowWrap: "anywhere" }}>{label}</div>
+        {sub && <div style={{ fontSize: 10, lineHeight: 1.45, color: "rgb(var(--c-muted))", marginTop: 3 }}>{sub}</div>}
       </div>
-      <div className="mono" style={{ fontSize: highlight ? 18 : 15, fontWeight: highlight ? 700 : 500, color: highlight ? "var(--accent)" : "inherit" }}>{value}</div>
+      <div style={{ minWidth: 0, maxWidth: "60%", textAlign: "right", fontSize: highlight ? 14 : 12, fontWeight: highlight ? 800 : 600, color: highlight ? "rgb(var(--c-accent-text))" : "rgb(var(--c-charcoal))", fontVariantNumeric: "tabular-nums", overflowWrap: "anywhere" }}>{value}</div>
     </div>
   );
 }
