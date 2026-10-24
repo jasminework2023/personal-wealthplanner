@@ -352,123 +352,60 @@ export function DashboardFinance() {
       </>}
       
       {activeReportTab === "assets" && <>
-      {/* E. Asset Tracker */}
-            <div className="report-summary-card mb-4 rounded-[24px] bg-gradient-to-br from-[#00E08A] to-[#009B61] p-5 text-[#071B12] shadow-float dark:from-[#00E08A] dark:to-[#009B61]">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[13px] font-medium text-[#5E7A6C]">Total aset</p>
-                  <p className="num mt-1.5 whitespace-nowrap text-[clamp(26px,7.4vw,34px)] font-medium leading-[1.1] tracking-[-0.5px] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
-                  <p className="mt-2 text-[12px] text-[#5E7A6C]">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
+        {/* Asset Tracker: two reference cards only */}
+        <div className="mb-4 rounded-[28px] bg-[linear-gradient(145deg,#29FBA3_0%,#09C679_45%,#009D5E_100%)] p-4 text-[#03140C] shadow-[0_12px_32px_rgba(12,203,125,0.30)] dark:shadow-[0_0_38px_rgba(12,203,125,0.28),0_12px_32px_rgba(12,203,125,0.32)]">
+          <p className="text-[13px] font-normal text-[#03140C]/75">Total aset</p>
+          <p className="num mt-1 whitespace-nowrap text-[30px] font-extrabold leading-[1.1] tracking-[-0.02em] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
+          <p className="mt-1 text-[13px] font-normal text-[#03140C]/75">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
+          <div className="mt-2 h-[6px] w-full overflow-hidden rounded-full bg-[#03140C]/15">
+            <div className="h-full rounded-full bg-[#03140C]" style={{ width: `${Math.min(Math.max(assetProgress, 0), 100)}%` }} />
+          </div>
+          <div className="mt-3 flex min-h-[56px] items-center justify-between gap-3 rounded-[20px] bg-[linear-gradient(90deg,#10BC76_0%,#008E55_100%)] px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-[13px] font-normal text-[#03140C]/75">Target aset</p>
+              {editingAssetTarget ? (
+                <div className="mt-1 flex gap-2">
+                  <input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 w-full rounded-lg border border-[#03140C]/20 bg-white/80 px-2 py-1 text-[14px] text-[#03140C] outline-none" placeholder="Target aset" />
+                  <button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) throw new Error("Gagal menyimpan target"); setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { console.error(e); } finally { setSavingAssetTarget(false); } }} className="shrink-0 rounded-lg bg-[#03140C] px-2 py-1 text-[12px] font-bold text-white disabled:opacity-50">{savingAssetTarget ? "..." : "Simpan"}</button>
                 </div>
-                <button type="button" onClick={() => setAssetValuesHidden((hidden) => !hidden)} aria-label={assetValuesHidden ? "Tampilkan nominal aset" : "Sembunyikan nominal aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#123524]/[0.07] text-[#123524] hover:bg-[#123524]/[0.12]">{assetValuesHidden ? <Eye size={17}/> : <EyeOff size={17}/>}</button>
-              </div>
-              {assets.target > 0 && <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#5E7A6C]/15"><div className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#F59BB8]" style={{width:`${Math.min(Math.max(assetProgress,0),100)}%`}} /></div>}
-              <div className="mt-4 rounded-xl bg-black/[0.08] p-3 dark:bg-black/15">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[12px] text-[#5E7A6C]">Target aset</p>
-                  {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="text-[12px] font-semibold text-[#123524] underline underline-offset-2">Edit</button>}
-                </div>
-                {editingAssetTarget ? <div className="mt-2 flex gap-2"><input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 flex-1 rounded-lg border border-[#5E7A6C]/20 bg-white px-2.5 py-2 text-[13px] text-charcoal outline-none focus:border-forest-400" placeholder="Target aset" /><button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) throw new Error("Gagal menyimpan target"); setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { console.error(e); } finally { setSavingAssetTarget(false); } }} className="rounded-lg bg-[#123524] px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-50">{savingAssetTarget ? "..." : "Simpan"}</button></div> : <p className="mt-1 whitespace-nowrap text-[clamp(24px,6.5vw,28px)] font-medium leading-tight tracking-[-0.4px] text-[#123524] tabular-nums">{assets.target > 0 ? (assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.target)) : "Belum diatur"}</p>}
-              </div>
-            </div>
-            <Card>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="order-2 lg:order-2">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-[14px] font-semibold text-forest-900">Detail Aset</p>
-              {((assets.liquidAssets.length > 2 || assets.investmentAssets.length > 2)) && (
-                <button type="button" onClick={() => setShowAllAssets((value) => !value)} className="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-semibold text-forest-700 hover:text-forest-900">
-                  {showAllAssets ? "Sembunyikan" : "Lihat semua"} <ChevronRight size={14} className={showAllAssets ? "rotate-90" : ""}/>
-                </button>
+              ) : (
+                <p className="mt-0.5 whitespace-nowrap text-[17px] font-bold leading-tight tabular-nums">{assets.target > 0 ? (assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.target)) : "Belum diatur"}</p>
               )}
             </div>
-            {(assets.liquidAssets.length > 0 || isRealData) && (
-              <div className="mb-3">
-                <p className="text-[13px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Liquid Assets</p>
-                {assets.liquidAssets.slice(0, showAllAssets ? assets.liquidAssets.length : 2).map((item) => (
-                  <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assetCompositionTotal > 0 ? item.value / assetCompositionTotal * 100 : 0} section="liquid" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
-                ))}
-                {isRealData && (
-                  <AddItemForm
-                    placeholder="Tambah liquid asset baru"
-                    onSubmit={async (name, amount) => {
-                      const token = getStoredToken();
-                      const res = await fetch(`${API_BASE}/add-asset-item`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ token, section: "liquid", name, value: amount }),
-                      });
-                      const data = await res.json();
-                      if (!res.ok) throw new Error(data.error || "Gagal menambah item");
-                      window.location.reload();
-                    }}
-                  />
-                )}
-              </div>
-            )}
-            {(assets.investmentAssets.length > 0 || isRealData) && (
-              <div className="mb-3">
-                <p className="text-[13px] font-medium text-charcoal/60 uppercase tracking-wide mb-1.5">Investment Assets</p>
-                {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => (
-                  <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assets.totalAssets > 0 ? item.value / assets.totalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={()=>window.location.reload()} />
-                ))}
-                {isRealData && (
-                  <AddItemForm
-                    placeholder="Tambah investment asset baru"
-                    onSubmit={async (name, amount) => {
-                      const token = getStoredToken();
-                      const res = await fetch(`${API_BASE}/add-asset-item`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ token, section: "investment", name, value: amount }),
-                      });
-                      const data = await res.json();
-                      if (!res.ok) throw new Error(data.error || "Gagal menambah item");
-                      window.location.reload();
-                    }}
-                  />
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="order-1 lg:order-1 rounded-2xl bg-white p-4 sm:p-5 dark:bg-[#131316]">
-            <p className="text-[14px] font-semibold text-forest-900">Komposisi Aset</p>
-            {assetChartData.length > 0 ? (
-              <>
-                <div className="relative mt-1">
-                  <ResponsiveContainer width="100%" height={240}>
-                    <PieChart>
-                      <Pie data={assetChartData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={2}>
-                        {assetChartData.map((_, i) => (
-                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(v: number) => formatRupiah(v)} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span className="text-[10px] font-medium text-charcoal/50">Total Aset</span>
-                    <span className="mt-1 max-w-[80%] break-words text-[clamp(10px,2.8vw,13px)] font-semibold leading-tight tracking-[-0.3px] text-forest-900 tabular-nums">{formatRupiah(assetCompositionTotal)}</span>
-                  </div>
-                </div>
-                <div className="mt-1 space-y-2">
-                  {assetChartData.map((item, i) => (
-                    <div key={item.name} className="flex items-center gap-2 text-[12px]">
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}/>
-                      <span className="min-w-0 flex-1 truncate text-charcoal/70">{item.name}</span>
-                      <span className="shrink-0 font-medium tabular-nums text-forest-900">{assetCompositionTotal > 0 ? ((item.value / assetCompositionTotal) * 100).toFixed(1) : "0.0"}%</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="py-8 text-center text-[13px] text-charcoal/50">Belum ada data aset.</p>
-            )}
+            {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="shrink-0 self-center text-[15px] font-bold underline underline-offset-2">Edit</button>}
           </div>
         </div>
-      </Card>
 
+        <div className="rounded-[28px] border border-[#E4E6E8] bg-white p-4 text-[#111815] shadow-[0_2px_8px_rgba(17,24,21,0.025)] dark:border-[#25252C] dark:bg-[#131316] dark:text-white dark:shadow-none">
+          <p className="text-[17px] font-bold leading-tight">Komposisi Aset</p>
+          {assetChartData.length > 0 ? (
+            <div className="mt-4 flex items-center gap-4">
+              <div className="h-[124px] w-[124px] shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={assetChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={41} outerRadius={59} paddingAngle={1.5} stroke="none" cornerRadius={5}>
+                      {assetChartData.map((_, i) => (
+                        <Cell key={i} fill={["#0F9D6B","#FFC815","#6EE7B7","#9CA3AF","#4B5563"][i % 5]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(v: number) => formatRupiah(v)} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="min-w-0 flex-1 space-y-[14px]">
+                {assetChartData.map((item, i) => (
+                  <div key={item.name} className="flex min-h-[22px] items-center gap-2">
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: ["#0F9D6B","#FFC815","#6EE7B7","#9CA3AF","#4B5563"][i % 5] }} />
+                    <span className="min-w-0 flex-1 truncate text-[15px] font-normal leading-[22px]">{item.name}</span>
+                    <span className="shrink-0 text-[15px] font-bold leading-[22px] tabular-nums">{assetCompositionTotal > 0 ? ((item.value / assetCompositionTotal) * 100).toFixed(1).replace(".", ",") : "0,0"}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="py-8 text-center text-[13px] text-charcoal/50">Belum ada data aset.</p>
+          )}
+        </div>
       </>}
 
       {activeReportTab === "cashflow" && <>
