@@ -109,7 +109,7 @@ export function Home() {
         </div>
         <div className="mt-1 flex min-w-0 items-center gap-2">
           <span className="shrink-0 text-[clamp(22px,5.8vw,30px)] font-semibold leading-none tracking-[-0.6px]">Rp</span>
-          <span style={{ fontSize: "clamp(28px, 8.1vw, 42px)" }} className="asset-total-value min-w-0 flex-1 font-bold leading-tight tracking-[-1px] tabular-nums">
+          <span style={{ fontSize: "clamp(28px, 8.1vw, 42px)", color: "#000000" }} className="asset-total-value min-w-0 flex-1 font-bold leading-tight tracking-[-1px] tabular-nums text-black">
             {assetsVisible ? new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(assets.totalAssets) : "••••••••"}
           </span>
           <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#006B48]/15 text-[#064A34] transition hover:bg-[#006B48]/25">
