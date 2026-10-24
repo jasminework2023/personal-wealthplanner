@@ -689,3 +689,52 @@ html.dark .home-asset-summary {
 @media (max-width: 359px) {
   .goals-page .goal-actions-row > button { flex-basis: 50% !important; padding-left: 8px !important; padding-right: 8px !important; font-size: 13px !important; }
 }
+
+
+/* Goals: requested bright plan box and explicit typography overrides. */
+.goals-page .goal-card .goal-plan-box,
+.dark .goals-page .goal-card .goal-plan-box {
+  background: linear-gradient(145deg, #29FBA3 0%, #08C578 45%, #009D5D 100%) !important;
+  color: #03140C !important;
+  border-radius: 20px !important;
+  padding: 14px 16px !important;
+  box-shadow: 0 10px 22px rgba(0,184,110,.18) !important;
+}
+.goals-page .goal-card .goal-plan-box .goal-target-amount {
+  color: #03140C !important;
+  font-size: 30px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.1 !important;
+  margin-top: 2px !important;
+}
+.goals-page .goal-card .goal-plan-box > p:first-child,
+.goals-page .goal-card .goal-plan-box > div > span:first-child {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+.goals-page .goal-card .goal-plan-box > div > span:last-child {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+.goals-page .goal-card .goal-progress-track {
+  height: 8px !important;
+  margin-top: 10px !important;
+  background: #009E5F !important;
+  border-radius: 9999px !important;
+}
+.goals-page .goal-card .goal-progress-fill {
+  background: #03140C !important;
+  min-width: 0 !important;
+}
+.goals-page .goal-card h2 { font-size: 20px !important; font-weight: 700 !important; }
+.goals-page .goal-card .goal-icon-tile { width: 40px !important; height: 40px !important; }
+.goals-page .goal-card .goal-asset-row { height: 44px !important; }
+.goals-page .goal-card .goal-asset-row p { font-size: 16px !important; font-weight: 400 !important; }
+.goals-page .goal-card .goal-asset-row > span { font-size: 16px !important; font-weight: 700 !important; }
+.goals-page .goal-card .goal-asset-row > button { background: transparent !important; }
+.goals-page .goal-card .goal-actions-row { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; gap: 10px !important; margin-top: 12px !important; }
+.goals-page .goal-card .goal-actions-row > button { height: 46px !important; font-size: 16px !important; font-weight: 700 !important; margin: 0 !important; }
+.goals-page .goal-card .goal-actions-row > button:first-child { flex: 1 1 0 !important; }
+.goals-page .goal-card .goal-actions-row > button.goal-sim-button { flex: 1 1 0 !important; }
+.goals-page > div > p.text-\[20px\] { font-size: 20px !important; font-weight: 700 !important; }
