@@ -408,6 +408,26 @@ export function DashboardFinance() {
         </div>
       </>}
 
+      {activeReportTab === "assets" && <>
+        <div className="mt-4">
+          <Card>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[14px] font-semibold text-forest-900">Detail Aset</p>
+              {(assets.liquidAssets.length > 2 || assets.investmentAssets.length > 2) && <button type="button" onClick={() => setShowAllAssets((v) => !v)} className="text-[12px] font-semibold text-forest-700">{showAllAssets ? "Sembunyikan" : "Lihat semua"} <ChevronRight size={14} className={showAllAssets ? "rotate-90 inline" : "inline"}/></button>}
+            </div>
+            {(assets.liquidAssets.length > 0 || isRealData) && <div className="mb-3">
+              <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Liquid Assets</p>
+              {assets.liquidAssets.slice(0, showAllAssets ? assets.liquidAssets.length : 2).map((item) => <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assetCompositionTotal > 0 ? item.value / assetCompositionTotal * 100 : 0} section="liquid" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={() => window.location.reload()} />)}
+              {isRealData && <AddItemForm placeholder="Tambah liquid asset baru" onSubmit={async (name, amount) => { const token = getStoredToken(); const res = await fetch(`${API_BASE}/add-asset-item`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, section: "liquid", name, value: amount }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || "Gagal menambah item"); window.location.reload(); }} />}
+            </div>}
+            {(assets.investmentAssets.length > 0 || isRealData) && <div>
+              <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Investment Assets</p>
+              {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assets.totalAssets > 0 ? item.value / assets.totalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={() => window.location.reload()} />)}
+              {isRealData && <AddItemForm placeholder="Tambah investment asset baru" onSubmit={async (name, amount) => { const token = getStoredToken(); const res = await fetch(`${API_BASE}/add-asset-item`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, section: "investment", name, value: amount }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || "Gagal menambah item"); window.location.reload(); }} />}
+            </div>}
+          </Card>
+        </div>
+      </>}
       {activeReportTab === "cashflow" && <>
         {(() => {
           const monthIndex = monthNames.indexOf(selectedMonth);
