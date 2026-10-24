@@ -18,6 +18,16 @@ export default {
           800: "rgb(var(--c-forest-800) / <alpha-value>)",
           900: "rgb(var(--c-forest-900) / <alpha-value>)",
         },
+        surface: "rgb(var(--c-surface) / <alpha-value>)",
+        line: "rgb(var(--c-border) / <alpha-value>)",
+        ink: "rgb(var(--c-charcoal) / <alpha-value>)",
+        muted: "rgb(var(--c-muted) / <alpha-value>)",
+        accent: "rgb(var(--c-accent) / <alpha-value>)",
+        "accent-ink": "rgb(var(--c-accent-ink) / <alpha-value>)",
+        "accent-text": "rgb(var(--c-accent-text) / <alpha-value>)",
+        up: "rgb(var(--c-up) / <alpha-value>)",
+        down: "rgb(var(--c-down) / <alpha-value>)",
+        warn: "rgb(var(--c-warn) / <alpha-value>)",
         rose: {
           DEFAULT: "rgb(var(--c-rose-500) / <alpha-value>)",
           50: "rgb(var(--c-rose-50) / <alpha-value>)",
@@ -30,16 +40,17 @@ export default {
           700: "rgb(var(--c-rose-700) / <alpha-value>)",
         },
         cream: "rgb(var(--c-cream) / <alpha-value>)",
+        /* Legacy butter classes remain yellow for small status indicators only. */
         butter: {
-          DEFAULT: "#F6C445",
-          100: "#FCEBB5",
-          50: "#FFF7DC",
-          700: "#5A4A12",
+          DEFAULT: "rgb(var(--c-yellow-500) / <alpha-value>)",
+          100: "rgb(var(--c-yellow-100) / <alpha-value>)",
+          50: "rgb(var(--c-yellow-50) / <alpha-value>)",
+          700: "rgb(var(--c-yellow-700) / <alpha-value>)",
         },
         mint: {
-          DEFAULT: "#6EE7A8",
-          50: "#E6F8EE",
-          100: "#DFF3E7",
+          DEFAULT: "rgb(var(--c-forest-400) / <alpha-value>)",
+          50: "rgb(var(--c-forest-50) / <alpha-value>)",
+          100: "rgb(var(--c-forest-100) / <alpha-value>)",
         },
         charcoal: "rgb(var(--c-charcoal) / <alpha-value>)",
         lilac: {
@@ -66,7 +77,7 @@ export default {
       boxShadow: {
         card: "0 1px 2px rgba(15, 42, 32, 0.05), 0 6px 20px -8px rgba(15, 42, 32, 0.10)",
         float: "0 18px 40px -12px rgba(15, 42, 32, 0.45), 0 4px 12px rgba(15, 42, 32, 0.18)",
-        pop: "0 10px 24px -8px rgba(245, 155, 184, 0.60)",
+        pop: "var(--shadow-pop)",
       },
       borderRadius: {
         xl2: "1.375rem",
