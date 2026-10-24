@@ -301,7 +301,7 @@ export function DashboardFinance() {
           <p className="text-[14px] font-semibold text-white/75">{surplus >= 0 ? "Total Surplus" : "Total Defisit"}</p>
           <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
             <span className="shrink-0 text-[14px] font-semibold leading-tight text-white/75">Rp</span>
-            <span className="min-w-0 text-[clamp(38px,10.5vw,48px)] font-extrabold leading-tight tracking-[-0.6px] tabular-nums" style={{color: surplus < 0 ? "#FF5C7A" : "#FFFFFF"}}>{surplus < 0 ? "-" : ""}{surplusDigits}</span>
+            <span className="min-w-0 text-[clamp(43px,10.5vw,53px)] font-extrabold leading-tight tracking-[-0.6px] tabular-nums" style={{color: surplus < 0 ? "#FF5C7A" : "#FFFFFF"}}>{surplus < 0 ? "-" : ""}{surplusDigits}</span>
           </div>
           <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
             {[
@@ -450,7 +450,7 @@ export function DashboardFinance() {
             <p className="text-[14px] font-semibold text-[#53697A]">Net cashflow</p>
             <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
               <span className="shrink-0 text-[14px] font-semibold leading-tight text-[#53697A]">Rp</span>
-              <span className="min-w-0 text-[clamp(38px,10.5vw,48px)] font-extrabold leading-tight tracking-[-0.6px] text-[#123524] tabular-nums">{netCashflow < 0 ? "-" : ""}{netDigits}</span>
+              <span className="min-w-0 text-[clamp(43px,10.5vw,53px)] font-extrabold leading-tight tracking-[-0.6px] text-[#123524] tabular-nums">{netCashflow < 0 ? "-" : ""}{netDigits}</span>
             </div>
             {trend !== null && <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#123524]/[0.12] px-2.5 py-1 text-[12px] font-medium text-[#123524]"><span>{trend >= 0 ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</span><span>{trend >= 0 ? "+" : ""}{Math.round(trend)}% dari bulan lalu</span></div>}
             <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
