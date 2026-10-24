@@ -58,7 +58,7 @@ export function ThemeToggle({ variant = "bar" }: { variant?: "bar" | "compact" }
         onClick={toggle}
         aria-label={label}
         title={label}
-        className="flex h-10 min-w-10 items-center justify-center gap-2 rounded-full border border-forest-100/70 bg-white px-0 text-[12.5px] font-medium text-forest-800 shadow-sm transition-colors hover:border-forest-200 sm:w-auto sm:px-3.5"
+        className="flex h-10 min-w-10 items-center justify-center gap-2 rounded-full border border-line bg-surface px-0 text-[12.5px] font-medium text-forest-800 shadow-sm transition-colors hover:border-forest-300 sm:w-auto sm:px-3.5"
       >
         {isDark ? <Sun size={17} /> : <Moon size={17} />}
         <span className="hidden sm:inline">{isDark ? "Terang" : "Gelap"}</span>

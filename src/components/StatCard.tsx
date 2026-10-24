@@ -16,7 +16,7 @@ export function StatCard({
 }) {
   const toneClasses = {
     forest: "bg-mint-100 text-[#0B6B47]",
-    rose: "bg-rose-50 text-rose-600",
+    rose: "bg-down/10 text-down",
     neutral: "bg-charcoal/5 text-charcoal/70",
     lilac: "bg-lilac-50 text-lilac-700",
   }[tone];
