@@ -379,11 +379,11 @@ export function DashboardFinance() {
         <div className="rounded-[28px] border border-[#E4E6E8] bg-white p-4 text-[#111815] shadow-[0_2px_8px_rgba(17,24,21,0.025)] dark:border-[#25252C] dark:bg-[#131316] dark:text-white dark:shadow-none">
           <p className="text-[17px] font-bold leading-tight">Komposisi Aset</p>
           {assetChartData.length > 0 ? (
-            <div className="mt-4 flex items-center gap-4">
-              <div className="h-[124px] w-[124px] shrink-0">
+            <div className="mt-3 flex flex-col items-center">
+              <div className="h-[88px] w-[88px] shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={assetChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={41} outerRadius={59} paddingAngle={1.5} stroke="none" cornerRadius={5}>
+                    <Pie data={assetChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={27} outerRadius={41} paddingAngle={1.5} stroke="none" cornerRadius={4}>
                       {assetChartData.map((_, i) => (
                         <Cell key={i} fill={["#0F9D6B","#FFC815","#6EE7B7","#9CA3AF","#4B5563"][i % 5]} />
                       ))}
@@ -392,12 +392,12 @@ export function DashboardFinance() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="min-w-0 flex-1 space-y-[14px]">
+              <div className="mt-3 w-full space-y-2 border-t border-[#E4E6E8] pt-3 dark:border-[#25252C]">
                 {assetChartData.map((item, i) => (
                   <div key={item.name} className="flex min-h-[22px] items-center gap-2">
                     <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: ["#0F9D6B","#FFC815","#6EE7B7","#9CA3AF","#4B5563"][i % 5] }} />
-                    <span className="min-w-0 flex-1 truncate text-[15px] font-normal leading-[22px]">{item.name}</span>
-                    <span className="shrink-0 text-[15px] font-bold leading-[22px] tabular-nums">{assetCompositionTotal > 0 ? ((item.value / assetCompositionTotal) * 100).toFixed(1).replace(".", ",") : "0,0"}%</span>
+                    <span className="min-w-0 flex-1 text-[13px] font-normal leading-[20px]">{item.name}</span>
+                    <span className="shrink-0 text-[13px] font-bold leading-[20px] tabular-nums">{assetCompositionTotal > 0 ? ((item.value / assetCompositionTotal) * 100).toFixed(1).replace(".", ",") : "0,0"}%</span>
                   </div>
                 ))}
               </div>
