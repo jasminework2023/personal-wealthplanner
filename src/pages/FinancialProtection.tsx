@@ -124,7 +124,7 @@ export function FinancialProtection() {
     navigate(`/calculator/${encodeURIComponent(p.calculatorId)}${query}`);
   }
 
-  return <div className="flex flex-col gap-5">
+  return <div className="financial-protection-page flex flex-col gap-5">
     <div><h1 className="page-title">{id ? "Proteksi Finansial" : "Financial Protection"}</h1><p className="page-sub">{id ? "Lihat rencana yang ingin kamu jaga dan bagian yang masih perlu dipersiapkan." : "Review the plans you want to protect and what still needs to be prepared."}</p></div>
 
     <Card className="hero-forest overflow-hidden !border-0 !bg-[#123524] !p-6 shadow-float">
