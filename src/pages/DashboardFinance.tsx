@@ -380,10 +380,10 @@ export function DashboardFinance() {
           <p className="text-[17px] font-bold leading-tight">Komposisi Aset</p>
           {assetChartData.length > 0 ? (
             <div className="mt-3 flex flex-col items-center">
-              <div className="h-[88px] w-[88px] shrink-0">
+              <div className="h-[108px] w-[108px] shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={assetChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={27} outerRadius={41} paddingAngle={1.5} stroke="none" cornerRadius={4}>
+                    <Pie data={assetChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={33} outerRadius={50} paddingAngle={1.5} stroke="none" cornerRadius={4}>
                       {assetChartData.map((_, i) => (
                         <Cell key={i} fill={["#0F9D6B","#FFC815","#6EE7B7","#9CA3AF","#4B5563"][i % 5]} />
                       ))}
