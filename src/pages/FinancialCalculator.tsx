@@ -1,7 +1,7 @@
 /* Real calculator engine ported from wealthplanner.id public calculator. */
 // @ts-nocheck
 import React from "react";
-import { ArrowRight, Check, Plus } from "lucide-react";
+import { ArrowRight, Check, Plus, Activity, TrendingUp, Shield, Home, GraduationCap, Clock, CreditCard, CircleArrowUp, Scale, ChevronRight } from "lucide-react";
 import { useFinanceData } from "../lib/useFinanceData";
 import { loadFinancialPlans } from "../lib/financialPlans";
 import { getAppLanguage } from "../lib/format";
@@ -19,6 +19,23 @@ export const CALCULATOR_META = [
 ];
 
 const COLORS = ["#7C9CFF", "#C6F24E", "#FFB800", "#E5A4FF", "#5EE5B0", "#FF9A6B"];
+
+const HUB_SECTIONS = [
+  { key: "tools", title: { id: "TOOLS", en: "TOOLS" }, items: [
+    { id: "checkup", icon: Activity, text: { id: { title: "Financial Checkup", desc: "Cek cashflow, utang, dana darurat, dan likuiditas" }, en: { title: "Financial Checkup", desc: "Check cash flow, debt, emergency fund, and liquidity" } } },
+    { id: "invest", icon: TrendingUp, text: { id: { title: "Investasi", desc: "Setoran rutin untuk capai target" }, en: { title: "Investing", desc: "Regular contributions to reach your goal" } } },
+    { id: "insurance", icon: Shield, text: { id: { title: "Asuransi", desc: "Uang pertanggungan ideal dari income" }, en: { title: "Insurance", desc: "Ideal coverage amount based on income" } } },
+  ] },
+  { key: "life-plans", title: { id: "RENCANA HIDUP", en: "LIFE PLANS" }, items: [
+    { id: "rumah", icon: Home, text: { id: { title: "Rumah", desc: "KPR atau sewa, konvensional maupun syariah" }, en: { title: "Home", desc: "Mortgage or rent, conventional or sharia" } } },
+    { id: "edu", icon: GraduationCap, text: { id: { title: "Dana Pendidikan", desc: "Biaya sampai anak lulus" }, en: { title: "Education Fund", desc: "Costs until your child graduates" } } },
+    { id: "pension", icon: Clock, text: { id: { title: "Dana Pensiun", desc: "Kebutuhan pensiun & tabungan bulanan" }, en: { title: "Retirement Fund", desc: "Retirement needs & monthly savings" } } },
+    { id: "haji", icon: CreditCard, text: { id: { title: "Haji", desc: "Target biaya & budget pelunasan" }, en: { title: "Hajj", desc: "Target cost & payoff budget" } } },
+    { id: "zakat", icon: CircleArrowUp, text: { id: { title: "Zakat dan Wakaf", desc: "Zakat maal, penghasilan, dan wakaf" }, en: { title: "Zakat & Waqf", desc: "Zakat on wealth, income, and waqf" } } },
+    { id: "warisan", icon: Scale, text: { id: { title: "Warisan", desc: "Pembagian aset ke ahli waris" }, en: { title: "Inheritance", desc: "Dividing assets among heirs" } } },
+  ] },
+] as const;
+
 
 function formatIDR(n) {
   return Number(n || 0).toLocaleString("id-ID");
@@ -1130,16 +1147,57 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
 
 export function FinancialCalculator({ onOpen }: { onOpen: (id: string) => void }) {
   const [language, setLanguage] = React.useState(getAppLanguage());
-  React.useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
-  const id = language === "id";
-  const metaItems = id ? CALCULATOR_META : CALCULATOR_META.map((c) => ({ ...c, title: ({ "Financial Check-Up": "Financial Check-Up", "KPR": "Mortgage", "Dana Pendidikan": "Education Fund", "Dana Pensiun": "Retirement Fund", "Perencanaan Warisan": "Inheritance Planning", "Haji & Umroh": "Hajj & Umrah", "Zakat": "Zakat", "Investasi": "Investing", "Kebutuhan Asuransi": "Insurance Needs" } as Record<string,string>)[c.title] || c.title, desc: ({ "Cek kesehatan cashflow, utang, dana darurat, dan likuiditas.": "Review your cash flow, debt, emergency fund, and liquidity.", "Simulasikan KPR konvensional atau syariah dengan skenario cicilan.": "Simulate conventional or sharia mortgage installment scenarios.", "Hitung kebutuhan biaya pendidikan sampai anak lulus.": "Estimate education costs until graduation.", "Proyeksikan kebutuhan pensiun dan tabungan bulanan.": "Project retirement needs and monthly savings.", "Simulasikan pembagian aset berdasarkan input ahli waris.": "Simulate asset distribution based on heirs entered.", "Rencanakan target biaya dan budget pelunasan.": "Plan your target cost and settlement budget.", "Simulasikan zakat maal dan zakat penghasilan.": "Estimate zakat on wealth and income.", "Hitung kebutuhan investasi rutin untuk mencapai target.": "Calculate regular investments needed to reach your goal.", "Estimasi kebutuhan uang pertanggungan berdasarkan income.": "Estimate required life coverage based on income." } as Record<string,string>)[c.desc] || c.desc }));
-  return <div className="wp-calculator" style={{display:"grid",gap:20}}>
-    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgb(var(--c-muted))"}}>WEALTHPLANNER</div><h1 style={{fontSize:28,lineHeight:1.15,color:"rgb(var(--c-charcoal))",margin:"7px 0 6px"}}>{id ? "Financial Calculator" : "Financial Calculator"}</h1><p style={{margin:0,fontSize:13,color:"rgb(var(--c-forest-800))"}}>{id ? "Hitung, simulasikan, lalu simpan rencana ke Proteksi Finansial tanpa membuka tab baru." : "Calculate, simulate, and save plans to Financial Protection without opening a new tab."}</p></div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(230px,1fr))",gap:12}}>
-      {metaItems.map((c, index)=><button key={c.id} type="button" onClick={()=>onOpen(c.id)} style={{textAlign:"left",padding:20,border:`1px solid ${COLORS[index % COLORS.length]}55`,background:`linear-gradient(145deg, ${COLORS[index % COLORS.length]}20, rgb(var(--c-surface)) 72%)`,borderRadius:18,cursor:"pointer",boxShadow:"0 4px 16px rgb(var(--c-shadow) / .05)",transition:"transform .15s ease, box-shadow .15s ease"}}><div style={{display:"inline-flex",alignItems:"center",borderRadius:999,padding:"5px 9px",background:`${COLORS[index % COLORS.length]}30`,color:"rgb(var(--c-forest-800))",fontSize:10,fontWeight:700,marginBottom:12}}>WEALTH PLANNER</div><div style={{fontSize:15,fontWeight:700,color:"rgb(var(--c-charcoal))"}}>{c.title}</div><div style={{fontSize:12,lineHeight:1.55,color:"rgb(var(--c-muted))",marginTop:7}}>{c.desc}</div><div style={{fontSize:12,fontWeight:700,color:"rgb(var(--c-accent-text))",marginTop:14}}>{id ? "Buka kalkulator →" : "Open calculator →"}</div></button>)}
+  React.useEffect(() => {
+    const update = () => setLanguage(getAppLanguage());
+    window.addEventListener("wealthplanner:language-changed", update);
+    return () => window.removeEventListener("wealthplanner:language-changed", update);
+  }, []);
+
+  const isId = language === "id";
+  const copy = isId
+    ? { label: "FINANCIAL CALCULATOR", title: "Kalkulator Finansial", subtitle: "Pilih simulasi yang kamu butuhkan. Hasilnya bisa disimpan jadi rencana." }
+    : { label: "FINANCIAL CALCULATOR", title: "Financial Calculator", subtitle: "Pick the simulation you need. Results can be saved as a plan." };
+
+  return (
+    <div className="wp-calculator wp-calculator-hub" style={{ width: "100%", maxWidth: 560, margin: "0 auto", display: "grid", gap: 22, boxSizing: "border-box", paddingBottom: 16 }}>
+      <style>{`
+        .wp-calculator-hub button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
+        .wp-calculator-hub .hub-calculator-row:focus-visible { outline: 3px solid rgb(var(--c-accent-text)); outline-offset: -3px; position: relative; z-index: 1; }
+        .wp-calculator-hub .hub-calculator-row:hover { background: rgb(var(--c-cream)) !important; }
+        .wp-calculator-hub .hub-calculator-row:active { opacity: .82; }
+        @media (prefers-reduced-motion: reduce) { .wp-calculator-hub .hub-calculator-row { transition: none !important; } }
+      `}</style>
+      <header>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "rgb(var(--c-muted))" }}>{copy.label}</div>
+        <h1 style={{ fontSize: "clamp(25px, 5vw, 28px)", lineHeight: 1.15, fontWeight: 800, color: "rgb(var(--c-charcoal))", letterSpacing: "-.035em", margin: "6px 0 5px" }}>{copy.title}</h1>
+        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.4, color: "rgb(var(--c-muted))", maxWidth: 460 }}>{copy.subtitle}</p>
+      </header>
+      {HUB_SECTIONS.map((section) => (
+        <section key={section.key} style={{ minWidth: 0 }}>
+          <h2 style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".09em", color: "rgb(var(--c-muted))", margin: "0 0 9px" }}>{section.title[isId ? "id" : "en"]}</h2>
+          <div style={{ background: "rgb(var(--c-surface))", border: "1px solid rgb(var(--c-border))", borderRadius: 20, padding: "4px 15px", overflow: "hidden", boxSizing: "border-box" }}>
+            {section.items.map((item, index) => {
+              const Icon = item.icon;
+              const itemCopy = item.text[isId ? "id" : "en"];
+              const isLast = index === section.items.length - 1;
+              return (
+                <button key={item.id} type="button" className="hub-calculator-row" onClick={() => onOpen(item.id)} aria-label={`${itemCopy.title}: ${itemCopy.desc}`} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", minWidth: 0, minHeight: 64, padding: "9px 0", textAlign: "left", border: 0, borderBottom: isLast ? "none" : "1px solid rgb(var(--c-border))", borderRadius: 0, background: "transparent", color: "rgb(var(--c-charcoal))", cursor: "pointer", transition: "background .15s ease, opacity .15s ease" }}>
+                  <span aria-hidden="true" style={{ display: "flex", alignItems: "center", justifyContent: "center", flex: "0 0 40px", width: 40, height: 40, borderRadius: 12, background: "rgb(var(--c-forest-50))", color: "rgb(var(--c-accent-text))" }}><Icon size={21} strokeWidth={1.9} /></span>
+                  <span style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: "1 1 auto", minWidth: 0, gap: 2 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25, color: "rgb(var(--c-charcoal))", overflowWrap: "anywhere" }}>{itemCopy.title}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 400, lineHeight: 1.35, color: "rgb(var(--c-muted))", overflowWrap: "anywhere" }}>{itemCopy.desc}</span>
+                  </span>
+                  <ChevronRight aria-hidden="true" size={19} strokeWidth={1.8} style={{ flex: "0 0 19px", color: "rgb(var(--c-muted))" }} />
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      ))}
     </div>
-  </div>;
+  );
 }
+
 export function CalculatorDetail({ id, onBack, onSaveResult, onNavigate }) {
   const [language, setLanguage] = React.useState(getAppLanguage());
   React.useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
