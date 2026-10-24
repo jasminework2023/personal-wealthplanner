@@ -297,25 +297,25 @@ export function DashboardFinance() {
         const expenseChange = previousExpense > 0 ? ((totalExpense - previousExpense) / previousExpense) * 100 : null;
         const surplus = totalIncome - totalExpense;
         const surplusDigits = String(Math.round(Math.abs(surplus))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        return <section className="rounded-[22px] bg-[#E3F4EA] p-4 text-[#123524]">
-          <p className="text-[14px] font-semibold text-[#5E7A6C]">{surplus >= 0 ? "Total Surplus" : "Total Defisit"}</p>
+        return <section className="report-summary-card rounded-[22px] bg-gradient-to-br from-[#0B4D38] to-[#063526] p-4 text-white shadow-float dark:from-[#0B4D38] dark:to-[#063526]">
+          <p className="text-[14px] font-semibold text-white/75">{surplus >= 0 ? "Total Surplus" : "Total Defisit"}</p>
           <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
-            <span className="shrink-0 text-[15px] text-[#5E7A6C]">Rp</span>
-            <span className="min-w-0 text-[clamp(27px,8.5vw,36px)] font-medium leading-tight tracking-[-0.6px] tabular-nums" style={{color: surplus < 0 ? "#C23A5B" : "#123524"}}>{surplus < 0 ? "-" : ""}{surplusDigits}</span>
+            <span className="shrink-0 text-[15px] text-white/75">Rp</span>
+            <span className="min-w-0 text-[clamp(27px,8.5vw,36px)] font-medium leading-tight tracking-[-0.6px] tabular-nums" style={{color: surplus < 0 ? "#FF5C7A" : "#FFFFFF"}}>{surplus < 0 ? "-" : ""}{surplusDigits}</span>
           </div>
           <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
             {[
               { key: "income", label: "Income", value: totalIncome, change: incomeChange, Icon: ArrowDownLeft, iconClass: "bg-[#DFF3E7] text-[#0B6B47]", changeColor: incomeChange === null ? undefined : incomeChange >= 0 ? "#0B6B47" : "#C23A5B" },
               { key: "expense", label: "Expense", value: totalExpense, change: expenseChange, Icon: ArrowUpRight, iconClass: "bg-[#FDE3EA] text-[#C23A5B]", changeColor: expenseChange === null ? undefined : expenseChange >= 0 ? "#C23A5B" : "#0B6B47" },
-            ].map((item) => <div key={item.key} className="min-w-0 rounded-2xl bg-white p-3">
+            ].map((item) => <div key={item.key} className="min-w-0 rounded-2xl bg-white/10 p-3 dark:bg-white/10">
               <div className="flex min-w-0 items-center justify-between gap-1.5">
                 <div className="flex min-w-0 items-center gap-2">
                   <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${item.iconClass}`}><item.Icon size={16}/></span>
-                  <span className="truncate text-[13px] text-[#6B7B70]">{item.label}</span>
+                  <span className="truncate text-[13px] text-white/70">{item.label}</span>
                 </div>
                 {item.change !== null && <span className="shrink-0 text-[11px] font-semibold tabular-nums" style={{color:item.changeColor}}>{item.change >= 0 ? "+" : ""}{item.change.toFixed(1)}%</span>}
               </div>
-              <p className="mt-2 whitespace-nowrap text-[clamp(12px,3.6vw,16px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(item.value)}</p>
+              <p className="mt-2 whitespace-nowrap text-[clamp(12px,3.6vw,16px)] font-medium leading-tight tracking-[-0.2px] text-white tabular-nums">{formatRupiah(item.value)}</p>
             </div>)}
           </div>
         </section>;
@@ -353,7 +353,7 @@ export function DashboardFinance() {
       
       {activeReportTab === "assets" && <>
       {/* E. Asset Tracker */}
-            <div className="mb-4 rounded-[24px] bg-[#E3F4EA] p-5 text-[#123524] shadow-float">
+            <div className="report-summary-card mb-4 rounded-[24px] bg-gradient-to-br from-[#00E08A] to-[#009B61] p-5 text-[#071B12] shadow-float dark:from-[#00E08A] dark:to-[#009B61]">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-medium text-[#5E7A6C]">Total aset</p>
@@ -363,7 +363,7 @@ export function DashboardFinance() {
                 <button type="button" onClick={() => setAssetValuesHidden((hidden) => !hidden)} aria-label={assetValuesHidden ? "Tampilkan nominal aset" : "Sembunyikan nominal aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#123524]/[0.07] text-[#123524] hover:bg-[#123524]/[0.12]">{assetValuesHidden ? <Eye size={17}/> : <EyeOff size={17}/>}</button>
               </div>
               {assets.target > 0 && <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#5E7A6C]/15"><div className="h-full rounded-full bg-gradient-to-r from-[#6EE7A8] to-[#F59BB8]" style={{width:`${Math.min(Math.max(assetProgress,0),100)}%`}} /></div>}
-              <div className="mt-4 rounded-xl bg-white/70 p-3">
+              <div className="mt-4 rounded-xl bg-black/[0.08] p-3 dark:bg-black/15">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[12px] text-[#5E7A6C]">Target aset</p>
                   {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="text-[12px] font-semibold text-[#123524] underline underline-offset-2">Edit</button>}
@@ -432,7 +432,7 @@ export function DashboardFinance() {
             )}
           </div>
 
-          <div className="order-1 lg:order-1 rounded-2xl bg-[#FFF4F6] p-4 sm:p-5">
+          <div className="order-1 lg:order-1 rounded-2xl bg-white p-4 sm:p-5 dark:bg-[#131316]">
             <p className="text-[14px] font-semibold text-forest-900">Komposisi Aset</p>
             {assetChartData.length > 0 ? (
               <>
@@ -489,7 +489,7 @@ export function DashboardFinance() {
             ? ((netCashflow - previousNetCashflow) / Math.abs(previousNetCashflow)) * 100
             : null;
           const netDigits = String(Math.round(Math.abs(netCashflow))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-          return <div className="rounded-[22px] bg-[#EAF2FA] p-4 text-forest-900">
+          return <div className="report-summary-card rounded-[22px] bg-gradient-to-br from-[#BDF7DF] to-[#61E5AC] p-4 text-[#071B12] dark:from-[#BDF7DF] dark:to-[#61E5AC]">
             <p className="text-[14px] font-semibold text-[#53697A]">Net cashflow</p>
             <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
               <span className="shrink-0 text-[15px] text-[#53697A]">Rp</span>
@@ -497,11 +497,11 @@ export function DashboardFinance() {
             </div>
             {trend !== null && <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#123524]/[0.12] px-2.5 py-1 text-[12px] font-medium text-[#123524]"><span>{trend >= 0 ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</span><span>{trend >= 0 ? "+" : ""}{Math.round(trend)}% dari bulan lalu</span></div>}
             <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
-              <div className="min-w-0 rounded-2xl bg-white p-3">
+              <div className="min-w-0 rounded-2xl bg-black/[0.08] p-3 dark:bg-black/10">
                 <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#DFF3E7] text-[#0B6B47]"><ArrowDownLeft size={16}/></span><span className="text-[13px] text-[#6B7B70]">Cash in</span></div>
                 <p className="mt-2 whitespace-nowrap text-[clamp(13px,4vw,16px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalIncome)}</p>
               </div>
-              <div className="min-w-0 rounded-2xl bg-white p-3">
+              <div className="min-w-0 rounded-2xl bg-black/[0.08] p-3 dark:bg-black/10">
                 <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FDE3EA] text-[#C23A5B]"><ArrowUpRight size={16}/></span><span className="text-[13px] text-[#6B7B70]">Cash out</span></div>
                 <p className="mt-2 whitespace-nowrap text-[clamp(13px,4vw,16px)] font-medium leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalExpense+totalSaving)}</p>
               </div>
