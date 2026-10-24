@@ -799,10 +799,13 @@ html.dark .home-asset-summary {
 .financial-protection-page .protection-plan-card .protection-plan-name { font-size: 18px !important; font-weight: 700 !important; }
 .financial-protection-page .protection-plan-card .protection-plan-subtitle { font-size: 14px !important; font-weight: 400 !important; color: #6B7280 !important; }
 .dark .financial-protection-page .protection-plan-card .protection-plan-subtitle { color: #9A9AA5 !important; }
-.financial-protection-page .protection-plan-card .protection-plan-metrics { margin-top: 14px !important; display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; column-gap: 12px !important; row-gap: 12px !important; }
-.financial-protection-page .protection-plan-card .protection-plan-metrics p:first-child { font-size: 14px !important; font-weight: 400 !important; color: #6B7280 !important; }
-.dark .financial-protection-page .protection-plan-card .protection-plan-metrics p:first-child { color: #9A9AA5 !important; }
-.financial-protection-page .protection-plan-card .protection-plan-metrics p:last-child { font-size: 16px !important; font-weight: 700 !important; color: #111815 !important; }
-.dark .financial-protection-page .protection-plan-card .protection-plan-metrics p:last-child { color: #FFFFFF !important; }
-.financial-protection-page .protection-plan-card .protection-plan-metrics > div:last-child p:last-child { color: #D6334F !important; }
-.dark .financial-protection-page .protection-plan-card .protection-plan-metrics > div:last-child p:last-child { color: #FF5C7A !important; }
+.financial-protection-page .protection-plan-card .protection-plan-metrics { margin-top: 14px !important; display: flex !important; flex-direction: column !important; width: 100% !important; min-width: 0 !important; }
+.financial-protection-page .protection-plan-card .protection-plan-metrics > div { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 12px !important; width: 100% !important; min-width: 0 !important; padding: 12px 0 !important; }
+.financial-protection-page .protection-plan-card .protection-plan-metrics > div > p:first-child,
+.financial-protection-page .protection-plan-card .protection-plan-metrics > div > div > p:first-child { flex: 1 1 auto !important; min-width: 0 !important; font-size: 12px !important; font-weight: 400 !important; line-height: 1.4 !important; color: #6B7280 !important; }
+.dark .financial-protection-page .protection-plan-card .protection-plan-metrics > div > p:first-child,
+.dark .financial-protection-page .protection-plan-card .protection-plan-metrics > div > div > p:first-child { color: #9A9AA5 !important; }
+.financial-protection-page .protection-plan-card .protection-plan-metrics > div > p:last-child { flex: 0 0 auto !important; min-width: 0 !important; max-width: 65% !important; overflow-wrap: anywhere !important; text-align: right !important; font-size: 13px !important; font-weight: 700 !important; line-height: 1.35 !important; color: #111815 !important; }
+.dark .financial-protection-page .protection-plan-card .protection-plan-metrics > div > p:last-child { color: #FFFFFF !important; }
+.financial-protection-page .protection-plan-card .protection-plan-metrics > div:last-child > p:last-child { color: #D6334F !important; }
+.dark .financial-protection-page .protection-plan-card .protection-plan-metrics > div:last-child > p:last-child { color: #FF5C7A !important; }
