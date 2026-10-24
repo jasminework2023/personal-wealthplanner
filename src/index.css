@@ -605,3 +605,14 @@ html.dark .home-asset-summary {
   font-size: clamp(28px, 7.5vw, 34px) !important;
   white-space: nowrap;
 }
+
+
+/* Goals actions stay compact and aligned on a single row. */
+.goals-page .goal-actions-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }
+.goals-page .goal-actions-row > button { margin: 0; }
+.goals-page .goal-actions-row > button:first-child { flex: 0 1 auto; }
+.goals-page .goal-sim-button { margin: 0 !important; }
+.goals-page .goal-card h2 { line-height: 1.2; }
+.goals-page .goal-card { border-radius: 24px; }
+.goals-page .goal-plan-box { min-height: 88px; }
+.goals-page .goal-plan-box .goal-progress-track > div[style*="width: 0%"] { display: none; }
