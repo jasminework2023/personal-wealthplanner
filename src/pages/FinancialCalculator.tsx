@@ -112,7 +112,10 @@ function CheckupCalc({ onSaveResult, onNavigate }) {
 // ============================================================
 // 2. SIMULASI RUMAH (KPR vs Sewa Comparison)
 // ============================================================
-function RumahCalc({ onSaveResult, onNavigate }) {\n  const [language, setLanguage] = React.useState(getAppLanguage());\n  React.useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);\n  const isId = language === "id";
+function RumahCalc({ onSaveResult, onNavigate }) {
+  const [language, setLanguage] = React.useState(getAppLanguage());
+  React.useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
+  const isId = language === "id";
   const initialKprMode = new URLSearchParams(window.location.search).get("mode") === "existing" ? "existing" : "new";
   const [kprMode,setKprMode]=React.useState(initialKprMode);
   const [homePrice,setHomePrice]=React.useState(1000000000); const [downPayment,setDownPayment]=React.useState(200000000); const [loanAmount,setLoanAmount]=React.useState(800000000);
