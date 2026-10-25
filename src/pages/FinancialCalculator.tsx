@@ -793,6 +793,7 @@ function HajiCalc({ onSaveResult, onNavigate }) {
 // ============================================================
 // 8. WARISAN CALCULATOR (REBUILT — CLEAN, SIMPLE, PIE CHART)
 // ============================================================
+// Redeploy trigger: refresh WarisanCalc production build.
 function WarisanCalc({ onSaveResult, onNavigate }) {
   // INPUT STATE
   const [totalAset, setTotalAset] = React.useState(1000000000);
