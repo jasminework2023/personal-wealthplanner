@@ -408,7 +408,7 @@ function EduCalc({ onSaveResult, onNavigate }) {
   const annualReturn = Math.max(0, Number(returnRate) || 0) / 100;
   const paymentCount = (frequency) => frequencyOptions.find((x) => x.value === frequency)?.payments ?? 1;
   const frequencyLabel = (frequency) => frequencyOptions.find((x) => x.value === frequency)?.label ?? frequency;
-  const rupiah = (amount) => \`Rp \${formatIDR(Math.round(Number.isFinite(Number(amount)) ? Number(amount) : 0))}\`;
+  const rupiah = (amount) => `Rp ${formatIDR(Math.round(Number.isFinite(Number(amount)) ? Number(amount) : 0))}`;
 
   const calculateStage = ({ level, year, years, inflationPct, returnPct, items }) => {
     const safeYear = Math.floor(Number(year) || currentYear);
@@ -447,7 +447,7 @@ function EduCalc({ onSaveResult, onNavigate }) {
     }
 
     return {
-      id: \`\${level}-\${Date.now()}-\${Math.random().toString(36).slice(2, 7)}\`,
+      id: `${level}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       level,
       startYear: safeYear,
       duration: safeYears,
@@ -478,11 +478,11 @@ function EduCalc({ onSaveResult, onNavigate }) {
     setDuration(levelDurations[level] ?? 4);
   };
   const updateCostItem = (id, patch) => setCostItems((prev) => prev.map((item) => item.id === id ? { ...item, ...patch } : item));
-  const addCostItem = () => setCostItems((prev) => [...prev, { id: \`cost-\${Date.now()}\`, name: "Biaya Lainnya", amount: 0, frequency: "annual" }]);
+  const addCostItem = () => setCostItems((prev) => [...prev, { id: `cost-${Date.now()}`, name: "Biaya Lainnya", amount: 0, frequency: "annual" }]);
   const removeCostItem = (id) => setCostItems((prev) => prev.length <= 1 ? prev : prev.filter((item) => item.id !== id));
 
   const addEducationPlan = () => {
-    setEducationPlans((prev) => [...prev, { ...currentStage, id: \`\${educationLevel}-\${Date.now()}\` }]);
+    setEducationPlans((prev) => [...prev, { ...currentStage, id: `${educationLevel}-${Date.now()}` }]);
     const nextLevel = levelOrder[levelOrder.indexOf(educationLevel) + 1];
     if (nextLevel) {
       setEducationLevel(nextLevel);
@@ -512,7 +512,7 @@ function EduCalc({ onSaveResult, onNavigate }) {
       <div style={{ padding: "2px 0 12px", fontSize: 12, minWidth: 0 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "rgb(var(--c-muted))", textTransform: "uppercase", letterSpacing: ".04em", margin: "2px 0 4px" }}>Detail simulasi</div>
         {item.costItems.map((cost, i) => (
-          <div key={\`\${cost.id}-\${i}\`} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", borderBottom: "1px dashed rgb(var(--c-border))" }}>
+          <div key={`${cost.id}-${i}`} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", borderBottom: "1px dashed rgb(var(--c-border))" }}>
             <span style={{ color: "rgb(var(--c-muted))", minWidth: 0, overflowWrap: "anywhere" }}>{cost.name || "Biaya"} ({frequencyLabel(cost.frequency).toLowerCase()})</span>
             <strong style={{ fontWeight: 600, textAlign: "right", flex: "0 0 auto" }}>{rupiah(cost.amount)}</strong>
           </div>
@@ -567,10 +567,10 @@ function EduCalc({ onSaveResult, onNavigate }) {
           {levelOrder.map((level) => <button key={level} type="button" onClick={() => applyLevel(level)} style={{ minWidth: 0, padding: "9px 6px", borderRadius: 9, border: educationLevel === level ? "2px solid rgb(var(--c-accent-text))" : "1px solid rgb(var(--c-border))", background: educationLevel === level ? "rgb(var(--c-forest-50))" : "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{level}</button>)}
         </div>
       </div>
-      <NumberInput label="Tahun mulai pendidikan" value={startYear} onChange={setStartYear} min={currentYear} step={1} hint={yearsUntilStart === 0 ? "Pendidikan dimulai tahun ini." : \`Sekitar \${yearsUntilStart} tahun lagi.\`} />
-      <Slider label="Inflasi / kenaikan biaya pendidikan" value={inflation} onChange={setInflation} min={0} max={15} step={0.5} format={(v) => \`\${v}%/tahun\`} />
-      <Slider label="Estimasi return investasi" value={returnRate} onChange={setReturnRate} min={0} max={15} step={0.5} format={(v) => \`\${v}%/tahun\`} />
-      <Slider label="Durasi pendidikan" value={duration} onChange={setDuration} min={1} max={12} step={1} format={(v) => \`\${v} tahun\`} />
+      <NumberInput label="Tahun mulai pendidikan" value={startYear} onChange={setStartYear} min={currentYear} step={1} hint={yearsUntilStart === 0 ? "Pendidikan dimulai tahun ini." : `Sekitar ${yearsUntilStart} tahun lagi.`} />
+      <Slider label="Inflasi / kenaikan biaya pendidikan" value={inflation} onChange={setInflation} min={0} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
+      <Slider label="Estimasi return investasi" value={returnRate} onChange={setReturnRate} min={0} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
+      <Slider label="Durasi pendidikan" value={duration} onChange={setDuration} min={1} max={12} step={1} format={(v) => `${v} tahun`} />
       <div className="card" style={{ background: "rgb(var(--c-cream))", padding: 14 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "rgb(var(--c-charcoal))", marginBottom: 10 }}>Komponen biaya</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -585,7 +585,7 @@ function EduCalc({ onSaveResult, onNavigate }) {
               </select>
               {costItems.length > 1 && <button type="button" onClick={() => removeCostItem(item.id)} style={{ border: 0, background: "transparent", color: "rgb(var(--c-down))", fontSize: 11, cursor: "pointer" }}>Hapus</button>}
             </div>
-            <div style={{ fontSize: 10, color: "rgb(var(--c-muted))", marginTop: 5 }}>{item.frequency === "once" ? "Dibayar satu kali pada awal jenjang." : \`\${paymentCount(item.frequency)}x per tahun selama \${safeDuration} tahun.\`}</div>
+            <div style={{ fontSize: 10, color: "rgb(var(--c-muted))", marginTop: 5 }}>{item.frequency === "once" ? "Dibayar satu kali pada awal jenjang." : `${paymentCount(item.frequency)}x per tahun selama ${safeDuration} tahun.`}</div>
           </div>)}
         </div>
         <button type="button" onClick={addCostItem} style={{ marginTop: 10, border: "1px dashed rgb(var(--c-border))", background: "transparent", color: "rgb(var(--c-accent-text))", borderRadius: 9, padding: "8px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>+ Tambah komponen biaya</button>
@@ -598,7 +598,7 @@ function EduCalc({ onSaveResult, onNavigate }) {
       <Button onClick={addEducationPlan} icon={<Plus size={15} />} iconRight={<ArrowRight size={14} />}>Tambahkan {educationLevel}</Button>
     </>}
     results={<>
-      <ResultTile label="TOTAL KEBUTUHAN PENDIDIKAN (GABUNGAN)" value={rupiah(totalEducationNeed)} sub={\`\${educationPlans.length} jenjang tersimpan + simulasi \${educationLevel} saat ini\`} />
+      <ResultTile label="TOTAL KEBUTUHAN PENDIDIKAN (GABUNGAN)" value={rupiah(totalEducationNeed)} sub={`${educationPlans.length} jenjang tersimpan + simulasi ${educationLevel} saat ini`} />
       <div className="card" style={{ marginTop: 16, padding: 14, minWidth: 0 }}>
         <h4 style={{ margin: "0 0 4px", fontSize: 14 }}>Rencana pendidikan</h4>
         {educationPlans.map((item) => renderStage(item))}
