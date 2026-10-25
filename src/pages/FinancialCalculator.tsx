@@ -805,6 +805,8 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
   const [jumlahAnakPerempuan, setJumlahAnakPerempuan] = React.useState(1);
   const [ayahHidup, setAyahHidup] = React.useState(true);
   const [ibuHidup, setIbuHidup] = React.useState(true);
+  const [modeWarisan, setModeWarisan] = React.useState("syariah");
+  const [targetWarisan, setTargetWarisan] = React.useState(1000000000);
 
   // CALCULATIONS
   const hartaBersih = Math.max(0, totalAset - hutang - biayaPemakaman);
@@ -974,6 +976,11 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
     }
   }
 
+  // Koreksi 'aul: normalisasi bagian saat total furudh melebihi harta.
+  const totalFraksiSebelumAul = ahliWaris.reduce((sum, aw) => sum + aw.fraksi, 0);
+  const adaAul = totalFraksiSebelumAul > 1 + 1e-9;
+  if (adaAul) ahliWaris.forEach((aw) => { aw.fraksi /= totalFraksiSebelumAul; aw.fraksiText = "Bagian disesuaikan ('aul)"; });
+
   // Tambahkan nominal
   ahliWaris.forEach((aw) => { aw.nominal = hartaBersih * aw.fraksi; });
 
@@ -1008,6 +1015,8 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
           {/* INPUT SECTION */}
           <div className="card" style={{ position: "sticky", top: 88, padding: 24 }}>
             <h3 style={{ fontSize: 18, marginBottom: 20 }}>Input Data Warisan</h3>
+            <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>{[{ value: "umum", label: "Umum" }, { value: "syariah", label: "Syariah / Faraidh" }].map((opt) => <button key={opt.value} type="button" onClick={() => setModeWarisan(opt.value)} style={{ flex: 1, padding: "10px 12px", borderRadius: 10, border: modeWarisan === opt.value ? "1px solid var(--accent)" : "1px solid var(--border)", background: modeWarisan === opt.value ? "var(--accent)" : "var(--chip)", color: modeWarisan === opt.value ? "var(--accent-ink)" : "var(--ink-2)", font: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{opt.label}</button>)}</div>
+            {modeWarisan === "umum" && <div style={{ fontSize: 12, color: "var(--ink-2)", lineHeight: 1.5, marginBottom: 14 }}>Mode umum menampilkan estimasi harta bersih dan target warisan. Pembagian faraidh tersedia pada mode Syariah.</div>}
             <div className="stack" style={{ gap: 16 }}>
               <div>
                 <label className="label-sm">Total Aset</label>
@@ -1027,8 +1036,11 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
               <div className="divider" style={{ margin: "12px 0" }} />
 
               <div>
-                <label className="label-sm">Ahli Waris</label>
+                <label className="label-sm">Target Warisan</label>
+                <NumberInput label="" prefix="Rp" value={targetWarisan} onChange={setTargetWarisan} step={50000000} />
+                <div style={{ fontSize: 11, marginTop: 6, color: "var(--muted)" }}>Target digunakan untuk melihat kecukupan harta bersih.</div>
               </div>
+              {modeWarisan === "syariah" && <div><label className="label-sm">Ahli Waris</label></div>}
 
               <div>
                 <label className="label-sm">Jenis Kelamin Pewaris</label>
@@ -1062,6 +1074,7 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
                 </div>
               </div>
 
+              {modeWarisan === "syariah" && <>
               {genderPewaris === "laki" ? (
                 <div>
                   <label className="label-sm">Jumlah Istri</label>
@@ -1095,6 +1108,7 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
                   <span style={{ fontSize: 14, fontWeight: 500 }}>Ibu masih hidup</span>
                 </label>
               </div>
+              </>}
             </div>
           </div>
 
@@ -1114,7 +1128,7 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
             </div>
 
             {/* DISTRIBUTION TABLE */}
-            <div className="card" style={{ marginBottom: 20, padding: 20, overflow: "auto" }}>
+            {modeWarisan === "syariah" && <div className="card" style={{ marginBottom: 20, padding: 20, overflow: "auto" }}>
               <h4 style={{ marginBottom: 16 }}>Pembagian Warisan</h4>
               {ahliWaris.length > 0 ? (
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
@@ -1151,10 +1165,10 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
               ) : (
                 <div className="muted" style={{ fontSize: 13 }}>Tidak ada ahli waris berdasarkan input.</div>
               )}
-            </div>
+            </div>}
 
             {/* PIE CHART */}
-            {ahliWaris.length > 0 && (
+            {modeWarisan === "syariah" && ahliWaris.length > 0 && (
               <div className="card" style={{ marginBottom: 20, padding: 20 }}>
                 <h4 style={{ marginBottom: 16 }}>Visualisasi Pembagian</h4>
                 <SimplePieChart data={pieData} colors={COLORS} />
