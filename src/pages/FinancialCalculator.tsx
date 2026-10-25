@@ -8,7 +8,7 @@ import { getAppLanguage } from "../lib/format";
 
 export const CALCULATOR_META = [
   { id: "checkup", title: "Financial Check-Up", desc: "Cek kesehatan cashflow, utang, dana darurat, dan likuiditas." },
-  { id: "rumah", title: "KPR", desc: "Simulasikan KPR konvensional atau syariah dengan skenario cicilan." },
+  { id: "rumah", title: "KPR", desc: "Simulasikan KPR konvensional atau syariah dengan skenario cicilan.", titleEn: "Mortgage", descEn: "Simulate conventional or Sharia-compliant mortgages and compare monthly payments." },
   { id: "edu", title: "Dana Pendidikan", desc: "Hitung kebutuhan biaya pendidikan sampai anak lulus." },
   { id: "pension", title: "Dana Pensiun", desc: "Proyeksikan kebutuhan pensiun dan tabungan bulanan." },
   { id: "warisan", title: "Perencanaan Warisan", desc: "Simulasikan pembagian aset berdasarkan input ahli waris." },
@@ -1266,7 +1266,7 @@ export function CalculatorDetail({ id, onBack, onSaveResult, onNavigate }) {
       }
     `}</style>
     <button type="button" onClick={onBack} style={{width:"fit-content",border:0,background:"transparent",color:"rgb(var(--c-forest-800))",fontSize:13,cursor:"pointer",padding:0}}>{isId ? "← Semua kalkulator" : "← All calculators"}</button>
-    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgb(var(--c-muted))"}}>FINANCIAL CALCULATOR</div><h1 style={{fontSize:28,lineHeight:1.15,color:"rgb(var(--c-charcoal))",margin:"7px 0 6px"}}>{meta.title}</h1><p style={{margin:0,fontSize:13,color:"rgb(var(--c-forest-800))"}}>{meta.desc}</p></div>
+    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgb(var(--c-muted))"}}>FINANCIAL CALCULATOR</div><h1 style={{fontSize:28,lineHeight:1.15,color:"rgb(var(--c-charcoal))",margin:"7px 0 6px"}}>{!isId && meta.titleEn ? meta.titleEn : meta.title}</h1><p style={{margin:0,fontSize:13,color:"rgb(var(--c-forest-800))"}}>{!isId && meta.descEn ? meta.descEn : meta.desc}</p></div>
     <CalculatorBody id={id} onSaveResult={onSaveResult} onNavigate={onNavigate}/>
   </div>;
 }
