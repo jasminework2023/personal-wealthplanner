@@ -3,6 +3,7 @@ import { Loader2, Sparkles, Camera, Upload } from "lucide-react";
 import { Modal } from "./Modal";
 import type { Transaction, TransactionType } from "../data/types";
 import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
+import { useWallets } from "../lib/useWallets";
 import { parseTransactionText } from "../lib/transactionParser";
 import { formatAmountInput, parseAmountInput } from "../lib/format";
 
@@ -104,6 +105,9 @@ export function AddTransactionModal({
   const [receiptLoading, setReceiptLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const { setup } = useFinanceData();
+  const { wallets } = useWallets();
+  const [wallet, setWallet] = useState("");
+  const [toWallet, setToWallet] = useState("");
 
   useEffect(() => {
     return () => {
@@ -159,6 +163,7 @@ export function AddTransactionModal({
     setReceiptPreview("");
     setReceiptLoading(false);
     setFormError("");
+    setWallet(""); setToWallet("");
     setForm({ type: "Expense", category: activeCategories.Expense[0] || fallbackCategories[9], description: "", amount: "" });
   }
 
@@ -200,6 +205,8 @@ export function AddTransactionModal({
       setFormError("Masukkan jumlah yang valid.");
       return;
     }
+    if (form.type === "Transfer" && (!wallet || !toWallet || wallet.trim().toLowerCase() === toWallet.trim().toLowerCase())) { setFormError("Pilih wallet asal dan tujuan yang berbeda untuk transfer."); return; }
+    if (form.type === "Saving" && toWallet && (!wallet || wallet.trim().toLowerCase() === toWallet.trim().toLowerCase())) { setFormError("Pilih wallet asal dan tujuan yang berbeda."); return; }
     if (!form.description.trim()) {
       setFormError("Isi deskripsi transaksi dulu.");
       return;
@@ -213,6 +220,8 @@ export function AddTransactionModal({
       category: form.category,
       description: form.description.trim(),
       amount: parseAmountInput(form.amount),
+      ...(wallet ? { wallet } : {}),
+      ...(form.type === "Transfer" || (form.type === "Saving" && toWallet) ? { toWallet } : {}),
     });
   }
 
@@ -299,7 +308,7 @@ export function AddTransactionModal({
       {mode === "manual" ? (
         <div className="flex flex-col gap-3">
           <div className="flex gap-2">
-            {(["Income", "Expense", "Saving"] as TransactionType[]).map((t) => (
+            {(["Income", "Expense", "Saving", "Transfer"] as TransactionType[]).map((t) => (
               <button
                 key={t}
                 onClick={() => setForm((f) => ({ ...f, type: t, category: activeCategories[t][0] || f.category }))}
@@ -313,6 +322,7 @@ export function AddTransactionModal({
               </button>
             ))}
           </div>
+          {wallets.length > 0 && <div className="grid gap-2 sm:grid-cols-2"><label className="text-xs">Dari wallet<select value={wallet} onChange={e=>setWallet(e.target.value)} className="mt-1 w-full rounded-xl border bg-white px-3 py-3 text-sm"><option value="">Tidak ditentukan</option>{wallets.map(w=><option key={w.id} value={w.name}>{w.name}</option>)}</select></label>{(form.type==="Transfer" || form.type==="Saving") && <label className="text-xs">Ke wallet<select value={toWallet} onChange={e=>setToWallet(e.target.value)} className="mt-1 w-full rounded-xl border bg-white px-3 py-3 text-sm"><option value="">Tidak ditentukan</option>{wallets.map(w=><option key={w.id} value={w.name}>{w.name}</option>)}</select></label>}</div>}
           <select
             value={form.category}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
