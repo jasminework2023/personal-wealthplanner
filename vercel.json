@@ -1,7 +1,8 @@
 {
   "functions": {
     "api/[...route].ts": {
-      "includeFiles": "server/{api,lib}/**"
+      "includeFiles": "server/{api,lib}/**",
+      "maxDuration": 30
     },
     "api/telegram-webhook.ts": {
       "includeFiles": "server/{api,lib}/**"
