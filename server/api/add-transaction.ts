@@ -22,7 +22,7 @@ async function activeWallets(sheets: ReturnType<typeof sheetsClient>, spreadshee
   if (header < 0) throw new Error("Header bank Category tidak ditemukan pada Setup kolom K:L");
   const map = new Map<string,string>();
   for (const row of rows.slice(header+1)) {
-    const name=display(row?.[0]); if(!name || norm(name)==="total") break;
+    const name=display(row?.[0]); if(!name) continue; if(norm(name)==="total") break;
     if(["true","yes","1","active","aktif","checked","✓"].includes(norm(row?.[1]))) map.set(norm(name),name);
   }
   return map;
