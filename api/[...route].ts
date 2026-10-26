@@ -65,7 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Normalize route values from different Vercel runtimes. Some deployments
   // expose the catch-all parameter as "dashboard", while others may include
   // the "/api/" prefix. The handler map keys are always the first API segment.
-  route = route.replace(/^\\/?api\\/?/i, "").replace(/^\\/+|\\/+$/g, "");
+  route = route.replace(/^\/?api\/?/i, "").replace(/^\/+|\/+$/g, "");
 
   const name = route.split("/").filter(Boolean)[0] || "";
   const target = handlers[name];
