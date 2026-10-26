@@ -715,6 +715,7 @@ function EduCalc({ onSaveResult, onNavigate }) {
   const annualReturn = Math.max(0, Number(returnRate) || 0) / 100;
   const paymentCount = (frequency) => frequencyOptions.find((x) => x.value === frequency)?.payments ?? 1;
   const frequencyLabel = (frequency) => frequencyOptions.find((x) => x.value === frequency)?.label ?? frequency;
+  const costNameLabel = (name) => isId ? name : ({ "Uang Pangkal": "Entrance Fee", "SPP": "Tuition Fee", "Lainnya": "Other Costs", "Biaya Lainnya": "Other Costs" }[name] || name);
   const rupiah = (amount) => `Rp ${formatIDR(Math.round(Number.isFinite(Number(amount)) ? Number(amount) : 0))}`;
 
   const calculateStage = ({ level, year, years, inflationPct, returnPct, items }) => {
@@ -825,7 +826,7 @@ function EduCalc({ onSaveResult, onNavigate }) {
           </div>
         ))}
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", borderBottom: "1px dashed rgb(var(--c-border))" }}>
-          <span style={{ color: "rgb(var(--c-muted))" }}>{isId ? "{isId ? "Mulai pendidikan" : "Education starts"}" : "Education starts"}</span><strong>{item.startYear}</strong>
+          <span style={{ color: "rgb(var(--c-muted))" }}>{isId ? "Mulai pendidikan" : "Education starts"}</span><strong>{item.startYear}</strong>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", borderBottom: "1px dashed rgb(var(--c-border))" }}>
           <span style={{ color: "rgb(var(--c-muted))" }}>{isId ? "Durasi pendidikan" : "Education duration"}</span><strong>{item.duration} {isId ? "tahun" : "years"}</strong>
@@ -866,24 +867,24 @@ function EduCalc({ onSaveResult, onNavigate }) {
     inputs={<>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
         <div><div style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--c-charcoal))" }}>{isId ? "Tambah jenjang pendidikan" : "Add education stage"}</div><div style={{ fontSize: 11, color: "rgb(var(--c-muted))", marginTop: 3 }}>{isId ? "Atur komponen biaya dan frekuensi pembayaran sesuai kondisi sekolah/kampus." : "Set cost items and payment frequency based on your school or university."}</div></div>
-        {educationPlans.length > 0 && <Tag variant="accent">{educationPlans.length} jenjang ditambahkan</Tag>}
+        {educationPlans.length > 0 && <Tag variant="accent">{educationPlans.length} {isId ? "jenjang ditambahkan" : "stages added"}</Tag>}
       </div>
       <div>
         <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "rgb(var(--c-forest-800))", marginBottom: 7 }}>{isId ? "Jenjang pendidikan" : "Education stage"}</label>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6 }}>
-          {levelOrder.map((level) => <button key={level} type="button" onClick={() => applyLevel(level)} style={{ minWidth: 0, padding: "9px 6px", borderRadius: 9, border: educationLevel === level ? "2px solid rgb(var(--c-accent-text))" : "1px solid rgb(var(--c-border))", background: educationLevel === level ? "rgb(var(--c-forest-50))" : "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{level}</button>)}
+          {levelOrder.map((level) => <button key={level} type="button" onClick={() => applyLevel(level)} style={{ minWidth: 0, padding: "9px 6px", borderRadius: 9, border: educationLevel === level ? "2px solid rgb(var(--c-accent-text))" : "1px solid rgb(var(--c-border))", background: educationLevel === level ? "rgb(var(--c-forest-50))" : "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{levelLabel(level)}</button>)}
         </div>
       </div>
       <NumberInput label={isId ? "Tahun mulai pendidikan" : "Education start year"} value={startYear} onChange={setStartYear} min={currentYear} step={1} hint={yearsUntilStart === 0 ? (isId ? "Pendidikan dimulai tahun ini." : "Education starts this year.") : (isId ? `Sekitar ${yearsUntilStart} tahun lagi.` : `In about ${yearsUntilStart} years.`)} />
-      <Slider label={isId ? "Inflasi / kenaikan biaya pendidikan" : "Education cost inflation"} value={inflation} onChange={setInflation} min={0} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
+      <Slider label={isId ? "Inflasi / kenaikan biaya pendidikan" : "Education cost inflation"} value={inflation} onChange={setInflation} min={0} max={15} step={0.5} format={(v) => `${v}%/${isId ? "tahun" : "year"}`} />
       <Slider label={isId ? "Estimasi return investasi" : "Estimated investment return"} value={returnRate} onChange={setReturnRate} min={0} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
-      <Slider label={isId ? "Durasi pendidikan" : "Education duration"} value={duration} onChange={setDuration} min={1} max={12} step={1} format={(v) => `${v} tahun`} />
+      <Slider label={isId ? "Durasi pendidikan" : "Education duration"} value={duration} onChange={setDuration} min={1} max={12} step={1} format={(v) => `${v} ${isId ? "tahun" : "years"}`} />
       <div className="card" style={{ background: "rgb(var(--c-cream))", padding: 14 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "rgb(var(--c-charcoal))", marginBottom: 10 }}>{isId ? "Komponen biaya" : "Cost items"}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {costItems.map((item) => <div key={item.id} style={{ border: "1px solid rgb(var(--c-border))", borderRadius: 10, padding: 8, minWidth: 0, boxSizing: "border-box" }}>
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, .9fr)", gap: 6, alignItems: "center" }}>
-              <input value={item.name} onChange={(e) => updateCostItem(item.id, { name: e.target.value })} placeholder={isId ? "Nama biaya" : "Cost name"} style={{ width: "100%", minWidth: 0, boxSizing: "border-box", borderRadius: 8, padding: "8px 9px", border: "1px solid rgb(var(--c-border))", background: "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", fontSize: 12, fontWeight: 500 }} />
+              <input value={costNameLabel(item.name)} onChange={(e) => updateCostItem(item.id, { name: e.target.value })} placeholder={isId ? "Nama biaya" : "Cost name"} style={{ width: "100%", minWidth: 0, boxSizing: "border-box", borderRadius: 8, padding: "8px 9px", border: "1px solid rgb(var(--c-border))", background: "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", fontSize: 12, fontWeight: 500 }} />
               <div style={{ minWidth: 0 }}><NumberInput label="" prefix="Rp" value={item.amount} onChange={(v) => updateCostItem(item.id, { amount: v })} step={100000} /></div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
@@ -892,7 +893,7 @@ function EduCalc({ onSaveResult, onNavigate }) {
               </select>
               {costItems.length > 1 && <button type="button" onClick={() => removeCostItem(item.id)} style={{ border: 0, background: "transparent", color: "rgb(var(--c-down))", fontSize: 11, cursor: "pointer" }}>{isId ? "Hapus" : "Remove"}</button>}
             </div>
-            <div style={{ fontSize: 10, color: "rgb(var(--c-muted))", marginTop: 5 }}>{item.frequency === "once" ? isId ? (item.frequency === "once" ? "Dibayar satu kali pada awal jenjang." : `${paymentCount(item.frequency)}x per tahun selama ${safeDuration} tahun.`) : (item.frequency === "once" ? "Paid once at the start of the stage." : `${paymentCount(item.frequency)}x per year for ${safeDuration} years.`)}</div>
+            <div style={{ fontSize: 10, color: "rgb(var(--c-muted))", marginTop: 5 }}>{item.frequency === "once" ? (isId ? "Dibayar satu kali pada awal jenjang." : "Paid once at the start of the stage.") : (isId ? `${paymentCount(item.frequency)}x per tahun selama ${safeDuration} tahun.` : `${paymentCount(item.frequency)}x per year for ${safeDuration} years.`)}</div>
           </div>)}
         </div>
         <button type="button" onClick={addCostItem} style={{ marginTop: 10, border: "1px dashed rgb(var(--c-border))", background: "transparent", color: "rgb(var(--c-accent-text))", borderRadius: 9, padding: "8px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{isId ? "+ Tambah komponen biaya" : "+ Add cost item"}</button>
