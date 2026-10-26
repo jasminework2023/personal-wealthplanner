@@ -126,7 +126,7 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
                 top: index * 48,
                 zIndex: index + 1,
                 height: isFront ? 176 : 112,
-                backgroundColor: walletColor,
+                "--wallet-stack-color": walletColor,
                 boxShadow: "0 -4px 12px rgb(0 0 0 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.18)",
               }}
             >
