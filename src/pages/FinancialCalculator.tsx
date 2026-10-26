@@ -610,7 +610,7 @@ function InsuranceCalc({ onSaveResult, onNavigate }) {
   });
   const status = (ratio) => ratio >= 1 ? { text: isId ? "Cukup" : "Adequate", kind: "ok" } : ratio >= .5 ? { text: isId ? "Kurang" : "Short", kind: "warn" } : { text: isId ? "Rendah" : "Low", kind: "bad" };
   const healthStatus = !hasHealth ? { text: isId ? "Belum ada" : "None", kind: "bad" } : nLimit >= 500000000 ? { text: isId ? "Cukup" : "Adequate", kind: "ok" } : { text: isId ? "Kurang" : "Short", kind: "warn" };
-  const premiumStatus = premiumPct <= 15 ? { text: isId ? "Sehat" : "Healthy", kind: "ok" } : premiumPct <= 20 ? { text: isId ? "Waspada" : "Caution", kind: "warn" } : { text: isId ? "Tinggi" : "High", kind: "bad" };
+  const premiumStatus = premiumPct <= 10 ? { text: isId ? "Sehat" : "Healthy", kind: "ok" } : premiumPct <= 15 ? { text: isId ? "Waspada" : "Caution", kind: "warn" } : { text: isId ? "Tinggi" : "High", kind: "bad" };
   const small = { fontSize: 11, color: "rgb(var(--c-muted))", lineHeight: 1.5 };
   const cardStyle = { padding: 14, border: "1px solid rgb(var(--c-border))", borderRadius: 14, background: "rgb(var(--c-surface))", display: "grid", gap: 10, minWidth: 0 };
   const rowStyle = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap", minWidth: 0 };
@@ -650,7 +650,7 @@ function InsuranceCalc({ onSaveResult, onNavigate }) {
       <Card padding={14}><div style={{ fontWeight: 700, fontSize: 14 }}>{isId ? "Beban premi" : "Premium burden"}</div>
         <div style={{ height: 8, borderRadius: 99, background: "rgb(var(--c-border))", overflow: "hidden" }}><div style={{ height: "100%", width: Math.min(100, premiumPct / 20 * 100) + "%", background: premiumStatus.kind === "ok" ? "rgb(var(--c-accent-text))" : premiumStatus.kind === "warn" ? "rgb(var(--c-warn))" : "rgb(var(--c-down))" }}/></div>
         {line((fmtShort(nPremium) + (isId ? "/bln dari penghasilan" : "/month of income")), nIncome > 0 ? premiumPct.toLocaleString(isId ? "id-ID" : "en-US", { maximumFractionDigits: 1 }) + "%" : "-", chip(premiumStatus))}
-        <div style={small}>{isId ? "Patokan umum ±10–15% penghasilan." : "General benchmark: about 10–15% of income."}</div>
+        <div style={small}>{isId ? "Patokan umum 7–10% dari penghasilan." : "General benchmark: 7–10% of income."}</div>
       </Card>
       <div style={small}>{isId ? "Patokan umum untuk edukasi, bukan rekomendasi produk." : "General benchmarks for education, not a product recommendation."}</div>
       <div style={{ background: "rgb(var(--c-forest-50))", borderRadius: 12, padding: 12, fontSize: 12, lineHeight: 1.55, color: "rgb(var(--c-forest-800))", overflowWrap: "anywhere" }}>{isId ? "Tahukah kamu? Besar proteksi ideal bukan sekadar mengikuti nominal polis orang lain. Hitung kebutuhan santunan berdasarkan penghasilan, tanggungan, utang, dan tujuan keluarga agar perlindungannya sesuai kebutuhan." : "Did you know? The ideal amount of protection is not about copying someone else's policy. Calculate the benefit you need based on income, dependents, debts, and family goals so your coverage fits your needs."}</div>
