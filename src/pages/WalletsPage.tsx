@@ -53,7 +53,8 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
   const { wallets, unassigned, totalBalance, loading, error, refresh } = useWallets();
   const finance = useFinanceData(undefined, true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [walletStackSpacing, setWalletStackSpacing] = useState(0);\n  const [isId, setIsId] = useState(() => appLanguage() === "id");
+  const [walletStackSpacing, setWalletStackSpacing] = useState(0);
+  const [isId, setIsId] = useState(() => appLanguage() === "id");
   const [editing, setEditing] = useState<Wallet | null>(null);
   const [mode, setMode] = useState<"auto"|"custom">("auto");
   const [color, setColor] = useState("#0B4D38");
