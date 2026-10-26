@@ -69,7 +69,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== "GET") return res.status(405).json({ error: "Method Not Allowed" });
 
     const sheets = sheetsClient();
-    const batch = await sheets.spreadsheets.values.batchGet({ spreadsheetId: user.spreadsheet_id, ranges: ["Setup!K:L", "Transaction!B10:I"] });
+    // Resolve Setup by its actual title, matching setup.ts behavior.
+    const meta = await sheets.spreadsheets.get({ spreadsheetId: user.spreadsheet_id, fields: "sheets.properties(sheetId,title)" });
+    const setupTitle = (meta.data.sheets || []).map((s) => String(s.properties?.title || "")).find((title) => title.trim().toLowerCase().replace(/\s+/g, "") === "setup");
+    if (!setupTitle) throw new Error("Tab Setup tidak ditemukan di spreadsheet");
+    const quotedSetupTitle = "'" + setupTitle.replace(/'/g, "''") + "'";
+    const batch = await sheets.spreadsheets.values.batchGet({ spreadsheetId: user.spreadsheet_id, ranges: [quotedSetupTitle + "!K:L", "Transaction!B10:I"] });
     const setupRows = batch.data.valueRanges?.[0]?.values || [];
     const txRows = batch.data.valueRanges?.[1]?.values || [];
     let header = -1;
