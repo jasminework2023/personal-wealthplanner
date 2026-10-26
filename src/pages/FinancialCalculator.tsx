@@ -256,49 +256,207 @@ function RumahCalc({ onSaveResult, onNavigate }) {
 // ============================================================
 // 3. INVESTMENT PLANNER
 // ============================================================
-function InvestCalc({ onSaveResult, onNavigate }) {
-  const [target, setTarget] = React.useState(500000000);
-  const [years, setYears] = React.useState(10);
-  const [returnPct, setReturnPct] = React.useState(9);
-  const [starting, setStarting] = React.useState(10000000);
+// Illustrative potential returns only; adjust these assumptions to your product research.
+const DEFAULT_INSTRUMENTS = [
+  { id: "money-market", nameKey: "moneyMarket", name: "", returnPct: 4.5, weight: 20 },
+  { id: "sukuk", nameKey: "fixedIncome", name: "", returnPct: 6.5, weight: 25 },
+  { id: "equity", nameKey: "equity", name: "", returnPct: 10, weight: 35 },
+  { id: "gold", nameKey: "gold", name: "", returnPct: 6, weight: 15 },
+  { id: "other", nameKey: "other", name: "", returnPct: 7, weight: 5 },
+];
 
-  const months = years * 12;
-  const monthlyReturn = Math.pow(1 + returnPct / 100, 1 / 12) - 1;
-  const monthlyPayment = (target - starting * Math.pow(1 + monthlyReturn, months)) / (Math.pow(1 + monthlyReturn, months) - 1) / (1 + monthlyReturn);
-  const totalContributed = starting + monthlyPayment * months;
-  const totalReturn = target - totalContributed;
-  const finalValue = starting * Math.pow(1 + monthlyReturn, months) + monthlyPayment * (Math.pow(1 + monthlyReturn, months) - 1) / monthlyReturn;
+function InvestCalc({ onSaveResult, onNavigate }) {
+  const [language, setLanguage] = React.useState(getAppLanguage());
+  React.useEffect(() => {
+    const update = () => setLanguage(getAppLanguage());
+    window.addEventListener("wealthplanner:language-changed", update);
+    return () => window.removeEventListener("wealthplanner:language-changed", update);
+  }, []);
+  const isId = language === "id";
+  const [starting, setStarting] = React.useState(120000000);
+  const [monthly, setMonthly] = React.useState(2000000);
+  const [years, setYears] = React.useState(10);
+  const [instruments, setInstruments] = React.useState(() => DEFAULT_INSTRUMENTS.map((item) => ({ ...item })));
+  const [returnHelpOpen, setReturnHelpOpen] = React.useState(false);
+  const [allocationHelpOpen, setAllocationHelpOpen] = React.useState(false);
+  const [nextId, setNextId] = React.useState(1);
+
+  const instrumentNames = {
+    moneyMarket: isId ? "Pasar Uang" : "Money Market",
+    fixedIncome: isId ? "Sukuk / pendapatan tetap" : "Sukuk / fixed income",
+    equity: isId ? "Saham / reksa dana saham" : "Stocks / equity funds",
+    gold: isId ? "Emas" : "Gold",
+    other: isId ? "Lainnya (properti, dll.)" : "Others (property, etc.)",
+    new: isId ? "Instrumen baru" : "New instrument",
+  };
+  const nameFor = (item) => item.name !== "" ? item.name : (instrumentNames[item.nameKey] || instrumentNames.new);
+  const totalWeight = instruments.reduce((sum, item) => sum + (Number(item.weight) || 0), 0);
+  const weightedReturn = totalWeight > 0
+    ? instruments.reduce((sum, item) => sum + (Number(item.returnPct) || 0) * (Number(item.weight) || 0), 0) / totalWeight
+    : 0;
+  const safeStarting = Math.max(0, Number(starting) || 0);
+  const safeMonthly = Math.max(0, Number(monthly) || 0);
+  const safeYears = Math.max(1, Math.min(30, Number(years) || 1));
+  const annualRate = Math.max(0, Number(weightedReturn) || 0) / 100;
+  const monthlyRate = Math.pow(1 + annualRate, 1 / 12) - 1;
+  const months = safeYears * 12;
+  const fvContributions = (periods) => monthlyRate === 0
+    ? safeMonthly * periods
+    : safeMonthly * ((Math.pow(1 + monthlyRate, periods) - 1) / monthlyRate);
+  const finalValue = Math.max(0, safeStarting * Math.pow(1 + annualRate, safeYears) + fvContributions(months));
+  const totalContributed = safeStarting + safeMonthly * months;
+  const investmentReturn = finalValue - totalContributed;
+  const series = Array.from({ length: safeYears + 1 }, (_, year) => ({
+    year,
+    value: Math.max(0, safeStarting * Math.pow(1 + annualRate, year) + fvContributions(year * 12)),
+    contributed: safeStarting + safeMonthly * 12 * year,
+  }));
+  const chartMax = Math.max(1, ...series.map((point) => Math.max(point.value, point.contributed)));
+  const chartX = (year) => 12 + (year / safeYears) * 316;
+  const chartY = (value) => 104 - (Math.max(0, value) / chartMax) * 88;
+  const valuePoints = series.map((point) => chartX(point.year) + "," + chartY(point.value)).join(" ");
+  const contributedPoints = series.map((point) => chartX(point.year) + "," + chartY(point.contributed)).join(" ");
+  const formatPercent = (value, digits = 2) => {
+    const formatted = (Number.isFinite(value) ? value : 0).toFixed(digits);
+    return formatted.replace(".", isId ? "," : ".") + "%";
+  };
+  const updateInstrument = (id, field, value) => {
+    setInstruments((current) => current.map((item) => item.id === id ? { ...item, [field]: value } : item));
+  };
+  const addInstrument = () => {
+    if (instruments.length >= 10) return;
+    setInstruments((current) => [...current, { id: "custom-" + nextId, nameKey: "new", name: "", returnPct: 5, weight: 0 }]);
+    setNextId((id) => id + 1);
+  };
+  const normalizeWeights = () => {
+    if (totalWeight <= 0) return;
+    const exact = instruments.map((item) => (Number(item.weight) || 0) * 100 / totalWeight);
+    const rounded = exact.map((weight) => Math.round(weight));
+    const largestIndex = instruments.reduce((largest, item, index) =>
+      (Number(item.weight) || 0) > (Number(instruments[largest].weight) || 0) ? index : largest, 0);
+    rounded[largestIndex] += 100 - rounded.reduce((sum, weight) => sum + weight, 0);
+    setInstruments((current) => current.map((item, index) => ({ ...item, weight: Math.max(0, rounded[index]) })));
+  };
+
+  const fieldStyle = {
+    width: "100%", minWidth: 0, boxSizing: "border-box", border: "1px solid rgb(var(--c-border))",
+    borderRadius: 8, background: "rgb(var(--c-cream))", color: "rgb(var(--c-charcoal))",
+    padding: "6px 7px", fontSize: 12, lineHeight: 1.35,
+  };
+  const smallLabelStyle = { fontSize: 11, lineHeight: 1.25, color: "rgb(var(--c-muted))", minWidth: 0, overflowWrap: "anywhere" };
+  const helpButtonStyle = {
+    display: "inline-flex", alignItems: "center", justifyContent: "center", width: 18, height: 18,
+    flex: "0 0 18px", borderRadius: 999, border: "1px solid rgb(var(--c-border))",
+    background: "rgb(var(--c-forest-50))", color: "rgb(var(--c-forest-800))",
+    fontSize: 11, fontWeight: 800, cursor: "pointer", padding: 0,
+  };
+  const rowStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "8px 0", borderBottom: "1px solid rgb(var(--c-border))", minWidth: 0 };
 
   return (
     <CalcLayout
       inputs={
         <>
-          <NumberInput label="Target investasi" prefix="Rp" value={target} onChange={setTarget} step={25000000} />
-          <Slider label="Timeframe" value={years} onChange={setYears} min={1} max={30} format={(v) => `${v} tahun`} />
-          <Slider label="Return ekspektasi" value={returnPct} onChange={setReturnPct} min={2} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
-          <NumberInput label="Dana investasi awal" prefix="Rp" value={starting} onChange={setStarting} step={5000000} />
+          <NumberInput label={isId ? "Total investasi saat ini" : "Current investment"} prefix="Rp" value={starting} onChange={setStarting} step={5000000} />
+          <NumberInput label={isId ? "Setoran bulanan" : "Monthly contribution"} prefix="Rp" value={monthly} onChange={setMonthly} step={250000} />
+          <Slider label={isId ? "Jangka waktu" : "Time horizon"} value={safeYears} onChange={setYears} min={1} max={30} step={1} format={(v) => isId ? v + " tahun" : v + " years"} />
+          <div style={{ display: "grid", gap: 6 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "rgb(var(--c-forest-800))" }}>{isId ? "Return (rata-rata tertimbang)" : "Return (weighted average)"}</span>
+              <button type="button" aria-expanded={returnHelpOpen} onClick={() => setReturnHelpOpen((open) => !open)} style={helpButtonStyle} aria-label={isId ? "Penjelasan return" : "Return explanation"}>!</button>
+            </div>
+            {returnHelpOpen && <div style={{ padding: "9px 10px", border: "1px solid rgb(var(--c-border))", borderRadius: 10, background: "rgb(var(--c-cream))", color: "rgb(var(--c-forest-800))", fontSize: 12, lineHeight: 1.5 }}>{isId ? "Rata-rata tertimbang dari tabel potensi return dan bobot di bawah. Ubah bobot, return ikut berubah." : "Weighted average of the potential returns and weights in the table below. Change the weights and the return will update."}</div>}
+            <div aria-readonly="true" style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid rgb(var(--c-border))", borderRadius: 10, padding: "10px 12px", background: "rgb(var(--c-cream))" }}>
+              <div style={{ height: 6, flex: 1, minWidth: 0, borderRadius: 99, background: "rgb(var(--c-border))", overflow: "hidden" }}><div style={{ width: Math.max(0, Math.min(100, weightedReturn / 30 * 100)) + "%", height: "100%", borderRadius: 99, background: "rgb(var(--c-accent-text))" }} /></div>
+              <strong style={{ whiteSpace: "nowrap", fontSize: 13, color: "rgb(var(--c-charcoal))" }}>{formatPercent(weightedReturn)}/{isId ? "tahun" : "year"}</strong>
+            </div>
+          </div>
         </>
       }
       results={
         <>
           <ResultTile
-            label="KONTRIBUSI BULANAN"
-            value={formatIDR(Math.max(0, Math.round(monthlyPayment)))}
-            sub={`Investasi rutin untuk capai target ${formatIDR(target)} dalam ${years} tahun`}
+            label={(isId ? "Proyeksi nilai investasi" : "Projected investment value") + " (" + safeYears + " " + (isId ? "tahun" : "years") + ")"}
+            value={formatIDR(Math.round(finalValue))}
+            sub={(isId ? "Modal disetor" : "Capital contributed") + " " + formatIDR(Math.round(totalContributed)) + " · " + (isId ? "asumsi, bukan jaminan" : "assumption, not a guarantee")}
           />
-          <div className="card" style={{ marginTop: 16 }}>
-            <h4 style={{ marginBottom: 16 }}>Proyeksi Pertumbuhan</h4>
-            <div className="stack" style={{ gap: 12 }}>
-              <BreakdownRow label="Dana awal" value={formatIDR(Math.round(starting))} />
-              <BreakdownRow label="Kontribusi total" value={formatIDR(Math.round(monthlyPayment * months))} sub={`${months} bulan × ${formatIDR(Math.round(monthlyPayment))}`} />
-              <BreakdownRow label="Return dari investasi" value={formatIDR(Math.round(totalReturn))} sub={`Compound return ${returnPct}%/tahun`} highlight />
-              <div className="divider" style={{ margin: "8px 0" }} />
-              <BreakdownRow label="Total akhir" value={formatIDR(Math.round(finalValue))} highlight />
+          <Card style={{ marginTop: 10, padding: 14, minWidth: 0, overflow: "hidden" }}>
+            <h4 style={{ margin: "0 0 4px", fontSize: 14, color: "rgb(var(--c-charcoal))" }}>{isId ? "Grafik proyeksi" : "Projection chart"}</h4>
+            <svg viewBox="0 0 340 125" width="100%" height="auto" role="img" aria-label={isId ? "Grafik nilai investasi dan modal disetor per tahun" : "Chart of investment value and capital contributed by year"} style={{ display: "block", maxWidth: "100%", overflow: "hidden" }}>
+              <line x1="12" y1="104" x2="328" y2="104" stroke="rgb(var(--c-border))" strokeWidth="1" />
+              <polyline points={contributedPoints} fill="none" stroke="rgb(var(--c-muted))" strokeWidth="2" strokeDasharray="5 4" strokeLinejoin="round" />
+              <polyline points={valuePoints} fill="none" stroke="rgb(var(--c-accent-text))" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+              <text x="12" y="121" fontSize="10" fill="rgb(var(--c-muted))">{isId ? "Tahun 0" : "Year 0"}</text>
+              <text x="328" y="121" textAnchor="end" fontSize="10" fill="rgb(var(--c-muted))">{isId ? "Tahun " + safeYears : "Year " + safeYears}</text>
+            </svg>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", alignItems: "center", fontSize: 11, color: "rgb(var(--c-forest-800))", marginTop: 4 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 99, background: "rgb(var(--c-accent-text))" }} />{isId ? "Nilai investasi" : "Investment value"}</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 99, background: "rgb(var(--c-muted))" }} />{isId ? "Modal disetor" : "Capital contributed"}</span>
             </div>
+          </Card>
+          <Card style={{ marginTop: 10, padding: 14, minWidth: 0 }}>
+            <h4 style={{ margin: "0 0 10px", fontSize: 14, color: "rgb(var(--c-charcoal))" }}>{isId ? "Ringkasan investasi" : "Investment summary"}</h4>
+            <div className="stack" style={{ gap: 0 }}>
+              <BreakdownRow label={isId ? "Dana awal" : "Starting amount"} value={formatIDR(Math.round(safeStarting))} />
+              <BreakdownRow label={isId ? "Total setoran" : "Total contributions"} value={formatIDR(Math.round(safeMonthly * months))} sub={months + " " + (isId ? "bulan" : "months") + " × " + formatIDR(Math.round(safeMonthly))} />
+              <BreakdownRow label={isId ? "Return dari investasi" : "Investment return"} value={formatIDR(Math.round(investmentReturn))} sub={formatPercent(weightedReturn) + " / " + (isId ? "tahun" : "year")} highlight />
+              <div className="divider" style={{ margin: "8px 0" }} />
+              <BreakdownRow label={isId ? "Total akhir" : "Final total"} value={formatIDR(Math.round(finalValue))} highlight />
+            </div>
+          </Card>
+          <p style={{ margin: "8px 0 0", fontSize: 10.5, lineHeight: 1.5, color: "rgb(var(--c-muted))" }}>{isId ? "Potensi return adalah asumsi ilustratif, bukan jaminan. Simulasi edukatif, bukan rekomendasi produk investasi." : "Potential returns are illustrative assumptions, not guarantees. This is an educational simulation, not an investment product recommendation."}</p>
+          <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 12, background: "rgb(var(--c-forest-50))", color: "rgb(var(--c-forest-800))", fontSize: 12, lineHeight: 1.55 }}>
+            {isId ? "Tahukah kamu? Investasi yang bagus bukan sekadar menghasilkan return tinggi. Susun target nominal dan waktunya, lalu sesuaikan strategi investasi dengan profil risiko serta kebutuhan likuiditasmu." : "Did you know? A good investment is not just about high returns. Set a target amount and timeline, then match your investment strategy to your risk profile and liquidity needs."}
           </div>
+          <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener" style={{ display: "block", width: "100%", boxSizing: "border-box", marginTop: 10, textAlign: "center", textDecoration: "none", borderRadius: 12, padding: "12px 14px", fontSize: 13, fontWeight: 700, background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))" }}>{isId ? "Konsultasikan Rencana" : "Consult Your Plan"}</a>
+          <Card style={{ marginTop: 10, padding: 14, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+              <h4 style={{ margin: 0, fontSize: 14, color: "rgb(var(--c-charcoal))" }}>{isId ? "Alokasi aset" : "Asset allocation"}</h4>
+              <button type="button" aria-expanded={allocationHelpOpen} onClick={() => setAllocationHelpOpen((open) => !open)} style={helpButtonStyle} aria-label={isId ? "Penjelasan alokasi aset" : "Asset allocation explanation"}>!</button>
+            </div>
+            {allocationHelpOpen && <div style={{ marginBottom: 10, padding: "9px 10px", border: "1px solid rgb(var(--c-border))", borderRadius: 10, background: "rgb(var(--c-cream))", color: "rgb(var(--c-forest-800))", fontSize: 12, lineHeight: 1.5 }}>{isId ? "Ubah nama instrumen, potensi return, dan bobot sesuai rencanamu. Total bobot harus 100%. Return rata-rata dihitung otomatis dari bobot dan ikut mengubah proyeksi di atas." : "Edit instrument names, potential returns, and weights to fit your plan. Total weight must be 100%. The weighted average return is calculated automatically and updates the projection above."}</div>}
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1.5fr) minmax(0,.9fr) minmax(0,.8fr) 28px", gap: 6, alignItems: "center", minWidth: 0, marginBottom: 4 }}>
+              <span style={smallLabelStyle}>{isId ? "Instrumen" : "Instrument"}</span>
+              <span style={smallLabelStyle}>{isId ? "Potensi return" : "Potential return"}</span>
+              <span style={{ ...smallLabelStyle, textAlign: "right" }}>{isId ? "Bobot" : "Weight"}</span><span />
+            </div>
+            <div style={{ display: "grid", gap: 3, minWidth: 0 }}>
+              {instruments.map((item) => (
+                <div key={item.id} style={{ display: "grid", gridTemplateColumns: "minmax(0,1.5fr) minmax(0,.9fr) minmax(0,.8fr) 28px", gap: 6, alignItems: "center", minWidth: 0 }}>
+                  <input aria-label={isId ? "Nama instrumen" : "Instrument name"} value={nameFor(item)} onChange={(event) => updateInstrument(item.id, "name", event.target.value)} style={{ ...fieldStyle, textAlign: "left" }} />
+                  <div style={{ position: "relative", minWidth: 0 }}>
+                    <input aria-label={isId ? "Potensi return (%)" : "Potential return (%)"} type="number" min={0} max={30} step={0.5} value={item.returnPct} onChange={(event) => updateInstrument(item.id, "returnPct", event.target.value === "" ? 0 : Math.max(0, Math.min(30, Number(event.target.value) || 0)))} style={{ ...fieldStyle, paddingRight: 21, textAlign: "right" }} />
+                    <span aria-hidden="true" style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", fontSize: 11, color: "rgb(var(--c-muted))" }}>%</span>
+                  </div>
+                  <div style={{ position: "relative", minWidth: 0 }}>
+                    <input aria-label={isId ? "Bobot (%)" : "Weight (%)"} type="number" min={0} max={100} step={5} value={item.weight} onChange={(event) => updateInstrument(item.id, "weight", event.target.value === "" ? 0 : Math.max(0, Math.min(100, Number(event.target.value) || 0)))} style={{ ...fieldStyle, paddingRight: 21, textAlign: "right" }} />
+                    <span aria-hidden="true" style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", fontSize: 11, color: "rgb(var(--c-muted))" }}>%</span>
+                  </div>
+                  <button type="button" aria-label={isId ? "Hapus instrumen" : "Remove instrument"} title={isId ? "Hapus instrumen" : "Remove instrument"} disabled={instruments.length <= 1} onClick={() => setInstruments((current) => current.length > 1 ? current.filter((entry) => entry.id !== item.id) : current)} style={{ width: 28, height: 30, border: "1px solid rgb(var(--c-border))", borderRadius: 8, background: "rgb(var(--c-cream))", color: "rgb(var(--c-charcoal))", cursor: instruments.length <= 1 ? "not-allowed" : "pointer", opacity: instruments.length <= 1 ? 0.4 : 1, fontSize: 13, padding: 0 }}>✕</button>
+                </div>
+              ))}
+            </div>
+            <button type="button" disabled={instruments.length >= 10} onClick={addInstrument} style={{ width: "100%", marginTop: 9, border: "1px dashed rgb(var(--c-accent))", borderRadius: 10, background: "transparent", color: "rgb(var(--c-accent-text))", padding: "9px 10px", fontSize: 12, fontWeight: 700, cursor: instruments.length >= 10 ? "not-allowed" : "pointer", opacity: instruments.length >= 10 ? 0.45 : 1 }}>{isId ? "+ Tambah instrumen" : "+ Add instrument"}</button>
+            <div style={{ ...rowStyle, flexWrap: "wrap", alignItems: "flex-start", marginTop: 4 }}>
+              <span style={{ fontSize: 12, color: "rgb(var(--c-forest-800))" }}>{isId ? "Total bobot" : "Total weight"}</span>
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-end", gap: 6, minWidth: 0 }}>
+                {totalWeight === 100
+                  ? <span style={{ display: "inline-flex", borderRadius: 999, padding: "4px 8px", background: "rgb(var(--c-forest-50))", color: "rgb(var(--c-forest-800))", fontSize: 10.5, fontWeight: 700 }}>{isId ? "Sesuai 100%" : "Matches 100%"}</span>
+                  : <><span style={{ display: "inline-flex", borderRadius: 8, padding: "4px 7px", background: "rgb(var(--c-cream))", border: "1px solid rgb(var(--c-border))", color: "rgb(var(--c-charcoal))", fontSize: 10.5, fontWeight: 700 }}>{isId ? "Total bobot " + totalWeight + "% — harus 100%" : "Total weight " + totalWeight + "% — must be 100%"}</span>{totalWeight > 0 && <button type="button" onClick={normalizeWeights} style={{ border: "1px solid rgb(var(--c-border))", borderRadius: 8, padding: "5px 7px", background: "rgb(var(--c-surface))", color: "rgb(var(--c-forest-800))", fontSize: 10.5, fontWeight: 700, cursor: "pointer" }}>{isId ? "Samakan ke 100%" : "Normalize to 100%"}</button>}</>}
+              </div>
+            </div>
+            <div style={{ ...rowStyle, borderBottom: 0, paddingBottom: 0 }}>
+              <span style={{ fontSize: 12, color: "rgb(var(--c-forest-800))" }}>{isId ? "Rata-rata tertimbang (return)" : "Weighted average (return)"}</span>
+              <strong style={{ fontSize: 12, color: "rgb(var(--c-accent-text))", whiteSpace: "nowrap" }}>{formatPercent(weightedReturn)}/{isId ? "tahun" : "year"}</strong>
+            </div>
+          </Card>
         </>
       }
-      onSave={() => onSaveResult({ id: "invest", title: "Investasi", value: `${formatIDR(Math.round(monthlyPayment))}/bln`, plan: { type: "investment", targetAmount: target, monthlyAmount: monthlyPayment, timeframe: years, preparedAssets: starting } })}
+      onSave={() => onSaveResult({
+        id: "invest",
+        title: isId ? "Investasi" : "Investment",
+        value: formatIDR(Math.round(finalValue)),
+        plan: { type: "investment", targetAmount: finalValue, monthlyAmount: safeMonthly, timeframe: safeYears, preparedAssets: safeStarting },
+      })}
       onNavigate={onNavigate}
       calcId="invest"
       relatedId="invest"
