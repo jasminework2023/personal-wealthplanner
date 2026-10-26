@@ -370,44 +370,6 @@ function InvestCalc({ onSaveResult, onNavigate }) {
               <strong style={{ whiteSpace: "nowrap", fontSize: 13, color: "rgb(var(--c-charcoal))" }}>{formatPercent(weightedReturn)}/{isId ? "tahun" : "year"}</strong>
             </div>
           </div>
-        </>
-      }
-      results={
-        <>
-          <ResultTile
-            label={(isId ? "Proyeksi nilai investasi" : "Projected investment value") + " (" + safeYears + " " + (isId ? "tahun" : "years") + ")"}
-            value={formatIDR(Math.round(finalValue))}
-            sub={(isId ? "Modal disetor" : "Capital contributed") + " " + formatIDR(Math.round(totalContributed)) + " · " + (isId ? "asumsi, bukan jaminan" : "assumption, not a guarantee")}
-          />
-          <Card style={{ marginTop: 10, padding: 14, minWidth: 0, overflow: "hidden" }}>
-            <h4 style={{ margin: "0 0 4px", fontSize: 14, color: "rgb(var(--c-charcoal))" }}>{isId ? "Grafik proyeksi" : "Projection chart"}</h4>
-            <svg viewBox="0 0 340 125" width="100%" height="auto" role="img" aria-label={isId ? "Grafik nilai investasi dan modal disetor per tahun" : "Chart of investment value and capital contributed by year"} style={{ display: "block", maxWidth: "100%", overflow: "hidden" }}>
-              <line x1="12" y1="104" x2="328" y2="104" stroke="rgb(var(--c-border))" strokeWidth="1" />
-              <polyline points={contributedPoints} fill="none" stroke="rgb(var(--c-muted))" strokeWidth="2" strokeDasharray="5 4" strokeLinejoin="round" />
-              <polyline points={valuePoints} fill="none" stroke="rgb(var(--c-accent-text))" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
-              <text x="12" y="121" fontSize="10" fill="rgb(var(--c-muted))">{isId ? "Tahun 0" : "Year 0"}</text>
-              <text x="328" y="121" textAnchor="end" fontSize="10" fill="rgb(var(--c-muted))">{isId ? "Tahun " + safeYears : "Year " + safeYears}</text>
-            </svg>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", alignItems: "center", fontSize: 11, color: "rgb(var(--c-forest-800))", marginTop: 4 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 99, background: "rgb(var(--c-accent-text))" }} />{isId ? "Nilai investasi" : "Investment value"}</span>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 99, background: "rgb(var(--c-muted))" }} />{isId ? "Modal disetor" : "Capital contributed"}</span>
-            </div>
-          </Card>
-          <Card style={{ marginTop: 10, padding: 14, minWidth: 0 }}>
-            <h4 style={{ margin: "0 0 10px", fontSize: 14, color: "rgb(var(--c-charcoal))" }}>{isId ? "Ringkasan investasi" : "Investment summary"}</h4>
-            <div className="stack" style={{ gap: 0 }}>
-              <BreakdownRow label={isId ? "Dana awal" : "Starting amount"} value={formatIDR(Math.round(safeStarting))} />
-              <BreakdownRow label={isId ? "Total setoran" : "Total contributions"} value={formatIDR(Math.round(safeMonthly * months))} sub={months + " " + (isId ? "bulan" : "months") + " × " + formatIDR(Math.round(safeMonthly))} />
-              <BreakdownRow label={isId ? "Return dari investasi" : "Investment return"} value={formatIDR(Math.round(investmentReturn))} sub={formatPercent(weightedReturn) + " / " + (isId ? "tahun" : "year")} highlight />
-              <div className="divider" style={{ margin: "8px 0" }} />
-              <BreakdownRow label={isId ? "Total akhir" : "Final total"} value={formatIDR(Math.round(finalValue))} highlight />
-            </div>
-          </Card>
-          <p style={{ margin: "8px 0 0", fontSize: 10.5, lineHeight: 1.5, color: "rgb(var(--c-muted))" }}>{isId ? "Potensi return adalah asumsi ilustratif, bukan jaminan. Simulasi edukatif, bukan rekomendasi produk investasi." : "Potential returns are illustrative assumptions, not guarantees. This is an educational simulation, not an investment product recommendation."}</p>
-          <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 12, background: "rgb(var(--c-forest-50))", color: "rgb(var(--c-forest-800))", fontSize: 12, lineHeight: 1.55 }}>
-            {isId ? "Tahukah kamu? Investasi yang bagus bukan sekadar menghasilkan return tinggi. Susun target nominal dan waktunya, lalu sesuaikan strategi investasi dengan profil risiko serta kebutuhan likuiditasmu." : "Did you know? A good investment is not just about high returns. Set a target amount and timeline, then match your investment strategy to your risk profile and liquidity needs."}
-          </div>
-          <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener" style={{ display: "block", width: "100%", boxSizing: "border-box", marginTop: 10, textAlign: "center", textDecoration: "none", borderRadius: 12, padding: "12px 14px", fontSize: 13, fontWeight: 700, background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))" }}>{isId ? "Konsultasikan Rencana" : "Consult Your Plan"}</a>
           <Card style={{ marginTop: 10, padding: 14, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
               <h4 style={{ margin: 0, fontSize: 14, color: "rgb(var(--c-charcoal))" }}>{isId ? "Alokasi aset" : "Asset allocation"}</h4>
@@ -449,6 +411,45 @@ function InvestCalc({ onSaveResult, onNavigate }) {
               <strong style={{ fontSize: 12, color: "rgb(var(--c-accent-text))", whiteSpace: "nowrap" }}>{formatPercent(weightedReturn)}/{isId ? "tahun" : "year"}</strong>
             </div>
           </Card>
+        </>
+      }
+      results={
+        <>
+          <ResultTile
+            label={(isId ? "Proyeksi nilai investasi" : "Projected investment value") + " (" + safeYears + " " + (isId ? "tahun" : "years") + ")"}
+            value={formatIDR(Math.round(finalValue))}
+            sub={(isId ? "Modal disetor" : "Capital contributed") + " " + formatIDR(Math.round(totalContributed)) + " · " + (isId ? "asumsi, bukan jaminan" : "assumption, not a guarantee")}
+          />
+          <Card style={{ marginTop: 10, padding: 14, minWidth: 0, overflow: "hidden" }}>
+            <h4 style={{ margin: "0 0 4px", fontSize: 14, color: "rgb(var(--c-charcoal))" }}>{isId ? "Grafik proyeksi" : "Projection chart"}</h4>
+            <svg viewBox="0 0 340 125" width="100%" height="auto" role="img" aria-label={isId ? "Grafik nilai investasi dan modal disetor per tahun" : "Chart of investment value and capital contributed by year"} style={{ display: "block", maxWidth: "100%", overflow: "hidden" }}>
+              <line x1="12" y1="104" x2="328" y2="104" stroke="rgb(var(--c-border))" strokeWidth="1" />
+              <polyline points={contributedPoints} fill="none" stroke="rgb(var(--c-muted))" strokeWidth="2" strokeDasharray="5 4" strokeLinejoin="round" />
+              <polyline points={valuePoints} fill="none" stroke="rgb(var(--c-accent-text))" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+              <text x="12" y="121" fontSize="10" fill="rgb(var(--c-muted))">{isId ? "Tahun 0" : "Year 0"}</text>
+              <text x="328" y="121" textAnchor="end" fontSize="10" fill="rgb(var(--c-muted))">{isId ? "Tahun " + safeYears : "Year " + safeYears}</text>
+            </svg>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", alignItems: "center", fontSize: 11, color: "rgb(var(--c-forest-800))", marginTop: 4 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 99, background: "rgb(var(--c-accent-text))" }} />{isId ? "Nilai investasi" : "Investment value"}</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 99, background: "rgb(var(--c-muted))" }} />{isId ? "Modal disetor" : "Capital contributed"}</span>
+            </div>
+          </Card>
+          <Card style={{ marginTop: 10, padding: 14, minWidth: 0 }}>
+            <h4 style={{ margin: "0 0 10px", fontSize: 14, color: "rgb(var(--c-charcoal))" }}>{isId ? "Ringkasan investasi" : "Investment summary"}</h4>
+            <div className="stack" style={{ gap: 0 }}>
+              <BreakdownRow label={isId ? "Dana awal" : "Starting amount"} value={formatIDR(Math.round(safeStarting))} />
+              <BreakdownRow label={isId ? "Total setoran" : "Total contributions"} value={formatIDR(Math.round(safeMonthly * months))} sub={months + " " + (isId ? "bulan" : "months") + " × " + formatIDR(Math.round(safeMonthly))} />
+              <BreakdownRow label={isId ? "Return dari investasi" : "Investment return"} value={formatIDR(Math.round(investmentReturn))} sub={formatPercent(weightedReturn) + " / " + (isId ? "tahun" : "year")} highlight />
+              <div className="divider" style={{ margin: "8px 0" }} />
+              <BreakdownRow label={isId ? "Total akhir" : "Final total"} value={formatIDR(Math.round(finalValue))} highlight />
+            </div>
+          </Card>
+          <p style={{ margin: "8px 0 0", fontSize: 10.5, lineHeight: 1.5, color: "rgb(var(--c-muted))" }}>{isId ? "Potensi return adalah asumsi ilustratif, bukan jaminan. Simulasi edukatif, bukan rekomendasi produk investasi." : "Potential returns are illustrative assumptions, not guarantees. This is an educational simulation, not an investment product recommendation."}</p>
+          <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 12, background: "rgb(var(--c-forest-50))", color: "rgb(var(--c-forest-800))", fontSize: 12, lineHeight: 1.55 }}>
+            {isId ? "Tahukah kamu? Investasi yang bagus bukan sekadar menghasilkan return tinggi. Susun target nominal dan waktunya, lalu sesuaikan strategi investasi dengan profil risiko serta kebutuhan likuiditasmu." : "Did you know? A good investment is not just about high returns. Set a target amount and timeline, then match your investment strategy to your risk profile and liquidity needs."}
+          </div>
+          <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener" style={{ display: "block", width: "100%", boxSizing: "border-box", marginTop: 10, textAlign: "center", textDecoration: "none", borderRadius: 12, padding: "12px 14px", fontSize: 13, fontWeight: 700, background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))" }}>{isId ? "Konsultasikan Rencana" : "Consult Your Plan"}</a>
+
         </>
       }
       onSave={() => onSaveResult({
