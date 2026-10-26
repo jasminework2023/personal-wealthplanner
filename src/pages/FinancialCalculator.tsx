@@ -938,6 +938,14 @@ function EduCalc({ onSaveResult, onNavigate }) {
 // 6. PENSION CALCULATOR
 // ============================================================
 function PensionCalc({ onSaveResult, onNavigate }) {
+  const [language, setLanguage] = React.useState(getAppLanguage());
+  React.useEffect(() => {
+    const updateLanguage = () => setLanguage(getAppLanguage());
+    window.addEventListener("wealthplanner:language-changed", updateLanguage);
+    return () => window.removeEventListener("wealthplanner:language-changed", updateLanguage);
+  }, []);
+  const isId = language === "id";
+
   const [monthlyNeeded, setMonthlyNeeded] = React.useState(10000000);
   const [retirementAge, setRetirementAge] = React.useState(60);
   const [lifeExpectancy, setLifeExpectancy] = React.useState(85);
@@ -945,44 +953,66 @@ function PensionCalc({ onSaveResult, onNavigate }) {
   const [inflation, setInflation] = React.useState(3);
   const [returnRate, setReturnRate] = React.useState(6);
 
-  const yearsToRetirement = retirementAge - currentAge;
-  const yearsInRetirement = lifeExpectancy - retirementAge;
+  const yearsToRetirement = Math.max(0, retirementAge - currentAge);
+  const yearsInRetirement = Math.max(1, lifeExpectancy - retirementAge);
   const futureMonthly = monthlyNeeded * Math.pow(1 + inflation / 100, yearsToRetirement);
   const monthlyInRetirement = futureMonthly * Math.pow(1 + inflation / 100, yearsInRetirement / 2);
   const totalNeed = monthlyInRetirement * 12 * yearsInRetirement;
   const monthlyRate = returnRate / 100 / 12;
   const months = yearsToRetirement * 12;
-  const monthlyPayment = totalNeed / (Math.pow(1 + monthlyRate, months) - 1) * monthlyRate;
+  const monthlyPayment = months <= 0
+    ? totalNeed
+    : monthlyRate === 0
+      ? totalNeed / months
+      : totalNeed * monthlyRate / (Math.pow(1 + monthlyRate, months) - 1);
+  const money = (value) => new Intl.NumberFormat(isId ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(Number(value) || 0);
+  const years = (value) => `${value} ${isId ? "tahun" : value === 1 ? "year" : "years"}`;
+  const age = (value) => `${isId ? "Usia" : "Age"} ${value}`;
 
   return (
     <CalcLayout
       inputs={
         <>
-          <NumberInput label="Kebutuhan bulanan saat pensiun" prefix="Rp" value={monthlyNeeded} onChange={setMonthlyNeeded} step={500000} />
-          <Slider label="Usia sekarang" value={currentAge} onChange={setCurrentAge} min={20} max={50} format={(v) => `${v} tahun`} />
-          <Slider label="Target usia pensiun" value={retirementAge} onChange={setRetirementAge} min={30} max={70} format={(v) => `${v} tahun`} />
-          <Slider label="Perkiraan usia harapan" value={lifeExpectancy} onChange={setLifeExpectancy} min={retirementAge + 10} max={100} format={(v) => `${v} tahun`} />
-          <Slider label="Inflasi biaya hidup" value={inflation} onChange={setInflation} min={1} max={8} step={0.5} format={(v) => `${v}%`} />
-          <Slider label="Return investasi" value={returnRate} onChange={setReturnRate} min={2} max={100} step={0.5} format={(v) => `${v}%`} />
+          <Slider label={isId ? "Usia sekarang" : "Current age"} value={currentAge} onChange={(value) => { setCurrentAge(value); setRetirementAge((prev) => Math.max(prev, value + 1)); }} min={20} max={70} format={(value) => years(value)} />
+          <Slider label={isId ? "Target usia pensiun" : "Target retirement age"} value={retirementAge} onChange={(value) => { setRetirementAge(value); setLifeExpectancy((prev) => Math.max(prev, value + 1)); }} min={Math.max(21, currentAge + 1)} max={80} format={(value) => years(value)} />
+          <Slider label={isId ? "Perkiraan usia harapan" : "Estimated life expectancy"} value={lifeExpectancy} onChange={setLifeExpectancy} min={retirementAge + 1} max={110} format={(value) => years(value)} />
+          <Slider label={isId ? "Inflasi biaya hidup" : "Living cost inflation"} value={inflation} onChange={setInflation} min={0} max={15} step={0.5} format={(value) => `${value}%`} />
+          <Slider label={isId ? "Return investasi" : "Investment return"} value={returnRate} onChange={setReturnRate} min={0} max={20} step={0.5} format={(value) => `${value}%`} />
         </>
       }
       results={
         <>
           <ResultTile
-            label="TABUNGAN BULANAN DIBUTUHKAN"
-            value={formatIDR(Math.round(monthlyPayment))}
-            sub={`Mulai sekarang hingga umur ${retirementAge}`}
+            label={isId ? "Tabungan Bulanan Dibutuhkan" : "Required Monthly Savings"}
+            value={money(Math.round(monthlyPayment))}
+            sub={isId ? `Mulai sekarang hingga umur ${retirementAge}` : `From now until age ${retirementAge}`}
           />
-          <div className="card" style={{ marginTop: 16 }}>
-            <h4 style={{ marginBottom: 16 }}>Simulasi Pensiun</h4>
-            <BreakdownRow label="Tahun hingga pensiun" value={`${yearsToRetirement} tahun`} />
-            <BreakdownRow label="Kebutuhan bulanan saat pensiun" value={formatIDR(Math.round(monthlyInRetirement))} sub={`Dari ${formatIDR(Math.round(futureMonthly))} (adjusted ${yearsInRetirement / 2} tahun inflasi)`} />
-            <BreakdownRow label="Tahun pensiun" value={`${yearsInRetirement} tahun`} sub={`Usia ${retirementAge}-${lifeExpectancy}`} />
-            <BreakdownRow label="Total dana yang dibutuhkan" value={formatIDR(Math.round(totalNeed))} highlight />
+          <Card style={{ marginTop: 16 }}>
+            <h4 style={{ marginTop: 0, marginBottom: 16 }}>{isId ? "Simulasi Pensiun" : "Retirement Simulation"}</h4>
+            <BreakdownRow label={isId ? "Tahun hingga pensiun" : "Years until retirement"} value={years(yearsToRetirement)} />
+            <BreakdownRow
+              label={isId ? "Estimasi kebutuhan bulanan saat pensiun" : "Estimated monthly needs in retirement"}
+              value={money(Math.round(monthlyInRetirement))}
+              sub={isId
+                ? `Dari ${money(Math.round(futureMonthly))} setelah penyesuaian inflasi selama ${yearsToRetirement} tahun menuju pensiun.`
+                : `From ${money(Math.round(futureMonthly))}, adjusted for inflation over ${yearsToRetirement} years until retirement.`}
+            />
+            <BreakdownRow label={isId ? "Lama masa pensiun" : "Retirement duration"} value={years(yearsInRetirement)} sub={`${age(retirementAge)}–${lifeExpectancy}`} />
+            <BreakdownRow label={isId ? "Total dana yang dibutuhkan" : "Total retirement fund needed"} value={money(Math.round(totalNeed))} highlight />
+            <BreakdownRow label={isId ? "Asumsi inflasi biaya hidup" : "Assumed living cost inflation"} value={`${inflation}% / ${isId ? "tahun" : "year"}`} />
+            <BreakdownRow label={isId ? "Asumsi return investasi" : "Assumed investment return"} value={`${returnRate}% / ${isId ? "tahun" : "year"}`} />
+          </Card>
+          <div style={{ marginTop: 10, padding: "11px 13px", background: "rgb(var(--c-cream))", border: "1px solid rgb(var(--c-border))", borderRadius: 12, fontSize: 11.5, lineHeight: 1.55, color: "rgb(var(--c-forest-800))" }}>
+            {isId
+              ? "Simulasi ini merupakan estimasi edukatif berdasarkan asumsi inflasi dan return investasi, bukan jaminan hasil investasi. Sesuaikan asumsi dengan kondisi dan profil risiko kamu."
+              : "This is an educational estimate based on assumed inflation and investment returns, not a guarantee of investment results. Adjust the assumptions to your circumstances and risk profile."}
           </div>
+          <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener" style={{ display: "block", width: "100%", boxSizing: "border-box", marginTop: 10, textAlign: "center", padding: "12px 14px", borderRadius: 10, background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))", textDecoration: "none", fontSize: 13, fontWeight: 700 }}>
+            {isId ? "Diskusikan rencana pensiunmu" : "Discuss your retirement plan"}
+          </a>
         </>
       }
-      onSave={() => onSaveResult({ id: "pension", title: "Pensiun", value: formatIDR(Math.round(monthlyPayment)) + "/bln", plan: { type: "retirement", targetAmount: totalNeed, monthlyAmount: monthlyPayment, timeframe: yearsToRetirement } })}
+      onSave={() => onSaveResult({ id: "pension", title: isId ? "Dana Pensiun" : "Retirement Fund", value: money(Math.round(monthlyPayment)) + (isId ? "/bln" : "/mo"), plan: { type: "retirement", targetAmount: totalNeed, monthlyAmount: monthlyPayment, timeframe: yearsToRetirement } })}
       onNavigate={onNavigate}
       calcId="pension"
       relatedId="pension"
