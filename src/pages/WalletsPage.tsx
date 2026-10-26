@@ -27,6 +27,18 @@ function textColorForBackground(hex: string): string {
   const darkContrast = (luminance + 0.05) / 0.05;
   return darkContrast >= 4.5 && darkContrast > whiteContrast ? "#0F1A14" : "#FFFFFF";
 }
+function walletCardColor(wallet: Wallet): string {
+  if (wallet.colorMode === "custom") return wallet.resolvedColor || resolveWalletColor(wallet.name);
+  const name = wallet.name.trim().toLowerCase();
+  const brandColors: Array<[string, string]> = [
+    ["bca", "#1A5FD0"], ["mandiri", "#003D79"], ["bni", "#F15A22"], ["bri", "#00529C"],
+    ["cimb", "#B02A3F"], ["gopay", "#00AA13"], ["ovo", "#4C3494"], ["dana", "#118EEA"],
+    ["shopeepay", "#EE4D2D"], ["jago", "#FFB800"], ["linkaja", "#E82529"],
+    ["stockbit", "#24382E"], ["cash in hand", "#0B7A52"], ["cash", "#0B7A52"],
+    ["tunai", "#0B7A52"], ["lainnya", "#4B5563"], ["other", "#4B5563"],
+  ];
+  return brandColors.find(([key]) => name.includes(key))?.[1] || wallet.resolvedColor || resolveWalletColor(wallet.name);
+}
 function walletTypeLabel(type: Wallet["type"], isId: boolean): string {
   if (type === "cash") return isId ? "TUNAI" : "CASH";
   if (type === "investment") return isId ? "INVESTASI" : "INVESTMENT";
@@ -166,7 +178,7 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
           };
           return <div className="relative w-full min-w-0" style={{ height: Math.max(0, (wallets.length - 1) * cardStep + FULL_WALLET_CARD_HEIGHT) }}>
             {wallets.map((wallet, index) => {
-              const walletColor = wallet.resolvedColor || resolveWalletColor(wallet.name);
+              const walletColor = walletCardColor(wallet);
               const foreground = textColorForBackground(walletColor);
               const normalizedName = wallet.name.trim().toLowerCase();
               const walletTransactions = allTransactions.filter((tx) =>
@@ -192,7 +204,7 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
                   color: foreground,
                   border: "none",
                   opacity: 1,
-                  boxShadow: index === wallets.length - 1 ? "0 -6px 16px rgba(0,0,0,.18)" : "0 -6px 16px rgba(0,0,0,.18)",
+                  boxShadow: "0 -6px 16px rgba(0,0,0,.18)",
                   padding: 0,
                   marginTop: 0,
                   overflow: "hidden",
