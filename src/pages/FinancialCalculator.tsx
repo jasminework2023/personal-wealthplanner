@@ -348,7 +348,7 @@ function InsuranceCalc({ onSaveResult, onNavigate }) {
             <BreakdownRow label="Income replacement" value={formatIDR(Math.round(adjustedAnnualIncome * yearsCover))} sub={`${yearsCover} tahun × ${formatIDR(Math.round(adjustedAnnualIncome))}/thn (sudah adjusted inflasi ${inflationRate}%)`} />
             <BreakdownRow label="Pelunasan utang" value={formatIDR(debts)} sub="Sisa hutang aktif" />
             <BreakdownRow label="Dana tanggungan" value={formatIDR(dependents * 50000000)} sub={`${dependents} orang × Rp 50jt`} />
-            <div className="divider" style={{ margin: "12px 0" }} />
+            <div className="divider" style={{ margin: "6px 0" }} />
             <BreakdownRow label="Total kebutuhan" value={formatIDR(Math.round(dimNeed))} highlight />
             <BreakdownRow label="Coverage sekarang" value={`-${formatIDR(existing)}`} muted />
           </div>
@@ -996,13 +996,13 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
 
   return (
     <div>
-      <Section style={{ paddingTop: 32, paddingBottom: 16 }}>
+      <Section style={{ paddingTop: 12, paddingBottom: 4 }}>
         <button
           onClick={() => onNavigate({ name: "calc" })}
           style={{
             background: "rgb(var(--c-cream))", border: 0, color: "rgb(var(--c-forest-800))",
             padding: "8px 14px", borderRadius: 999, font: "inherit",
-            fontSize: 13, fontWeight: 500, cursor: "pointer", marginBottom: 24,
+            fontSize: 13, fontWeight: 500, cursor: "pointer", marginBottom: 8,
             display: "inline-flex", alignItems: "center", gap: 6,
           }}
         >
@@ -1011,15 +1011,15 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
 
       </Section>
 
-      <Section style={{ paddingTop: 24, paddingBottom: 24 }}>
+      <Section style={{ paddingTop: 8, paddingBottom: 12 }}>
         <div className="wp-waris-grid">
           <style>{`.wp-waris-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}.wp-waris-grid>*{min-width:0}@media(min-width:900px){.wp-waris-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px}.wp-waris-input{position:sticky;top:88px}}.wp-waris-grid button{font-family:inherit}`}</style>
           {/* INPUT SECTION */}
-          <div className="card wp-waris-input" style={{ padding: 20 }}>
-            <h3 style={{ fontSize: 18, marginBottom: 20 }}>Input Data Warisan</h3>
-            <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>{[{ value: "umum", label: "Umum" }, { value: "syariah", label: "Syariah / Faraidh" }].map((opt) => <button key={opt.value} type="button" onClick={() => setModeWarisan(opt.value)} style={{ flex: 1, minWidth: 0, padding: "10px 8px", borderRadius: 10, border: modeWarisan === opt.value ? "1px solid rgb(var(--c-accent))" : "1px solid rgb(var(--c-border))", background: modeWarisan === opt.value ? "rgb(var(--c-accent))" : "rgb(var(--c-cream))", color: modeWarisan === opt.value ? "rgb(var(--c-accent-ink))" : "rgb(var(--c-forest-800))", font: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{opt.label}</button>)}</div>
+          <div className="card wp-waris-input" style={{ padding: 16 }}>
+            <h3 style={{ fontSize: 18, marginBottom: 12 }}>Input Data Warisan</h3>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>{[{ value: "umum", label: "Umum" }, { value: "syariah", label: "Syariah / Faraidh" }].map((opt) => <button key={opt.value} type="button" onClick={() => setModeWarisan(opt.value)} style={{ flex: 1, minWidth: 0, padding: "10px 8px", borderRadius: 10, border: modeWarisan === opt.value ? "1px solid rgb(var(--c-accent))" : "1px solid rgb(var(--c-border))", background: modeWarisan === opt.value ? "rgb(var(--c-accent))" : "rgb(var(--c-cream))", color: modeWarisan === opt.value ? "rgb(var(--c-accent-ink))" : "rgb(var(--c-forest-800))", font: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{opt.label}</button>)}</div>
             {modeWarisan === "umum" && <div style={{ fontSize: 12, color: "rgb(var(--c-forest-800))", lineHeight: 1.5, marginBottom: 14 }}>Mode umum menampilkan estimasi harta bersih dan target warisan. Pembagian faraidh tersedia pada mode Syariah.</div>}
-            <div className="stack" style={{ gap: 16 }}>
+            <div className="stack" style={{ gap: 12 }}>
               <div>
                 <label className="label-sm">Total Aset</label>
                 <NumberInput label="" prefix="Rp" value={totalAset} onChange={setTotalAset} step={50000000} />
@@ -1117,7 +1117,7 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
           {/* OUTPUT SECTION */}
           <div>
             {/* HARTA BERSIH */}
-            <div className="card" style={{ marginBottom: 20, padding: 20, background: "rgb(var(--c-forest-50))" }}>
+            <div className="card" style={{ marginBottom: 12, padding: 16, background: "rgb(var(--c-forest-50))" }}>
               <div className="muted" style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>TOTAL HARTA BERSIH</div>
               <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontSize: "clamp(26px, 8vw, 36px)", fontWeight: 700, lineHeight: 1 }}>
                 {formatIDR(Math.max(0, hartaBersih))}
@@ -1130,7 +1130,7 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
             </div>
 
             {/* DISTRIBUTION TABLE */}
-            {modeWarisan === "syariah" && <div className="card" style={{ marginBottom: 20, padding: 20, overflow: "auto" }}>
+            {modeWarisan === "syariah" && <div className="card" style={{ marginBottom: 12, padding: 16, overflow: "auto" }}>
               <h4 style={{ marginBottom: 16 }}>Pembagian Warisan</h4>
               {ahliWaris.length > 0 ? (
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
