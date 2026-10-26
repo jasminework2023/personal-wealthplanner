@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, PiggyBank, Plus, Receipt, Search, CalendarDays, SlidersHorizontal, X, Pencil, Trash2 } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, PiggyBank, Plus, Receipt, Search, CalendarDays, SlidersHorizontal, X, Pencil, Trash2, Wallet as WalletIcon } from "lucide-react";
 import { AddTransactionModal } from "../components/AddTransactionModal";
 import { EditTransactionModal } from "../components/EditTransactionModal";
 import { Card } from "../components/Card";
 import { DataStatusBanner } from "../components/DataStatusBanner";
 import { formatRupiah, getAppLanguage } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
+import { useNavigate } from "react-router-dom";
 import type { Transaction as TransactionItem, TransactionType } from "../data/types";
 
 type Filter = "All" | TransactionType;
@@ -47,6 +48,7 @@ function formatTransactionDate(value: string): string {
 }
 
 export function Transaction() {
+  const navigate = useNavigate();
   const { loading, error, isRealData, username, transactions } = useFinanceData(undefined, true);
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
@@ -92,6 +94,7 @@ export function Transaction() {
           <p className="page-sub">{txText.intro}</p>
         </div>
         <div className="flex items-center gap-2">
+          <button type="button" onClick={() => navigate("/wallets")} className="inline-flex items-center gap-2 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-xs font-semibold text-forest-900 shadow-sm"><WalletIcon size={16}/><span>Wallet</span></button>
           <button type="button" onClick={() => setCalendarOpen(true)} className="inline-flex items-center gap-2 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-xs font-semibold text-forest-900 shadow-sm"><CalendarDays size={16}/><span>{selectedMonth === "all" && selectedYear === "all" ? txText.all : `${selectedMonth === "all" ? txText.allMonths : ["","Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][Number(selectedMonth)]} ${selectedYear === "all" ? "" : selectedYear}`.trim()}</span></button>
           <button type="button" onClick={() => setModalOpen(true)} className="inline-flex items-center gap-1.5 rounded-full bg-[#DDF7E8] px-4 py-2.5 text-xs font-bold text-[#0B6B47] shadow-pop sm:text-sm"><Plus size={16} /> {txText.add}</button>
         </div>
