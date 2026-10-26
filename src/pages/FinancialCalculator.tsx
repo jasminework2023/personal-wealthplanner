@@ -844,111 +844,155 @@ function PensionCalc({ onSaveResult, onNavigate }) {
 // 7. HAJI & UMROH CALCULATOR
 // ============================================================
 function HajiCalc({ onSaveResult, onNavigate }) {
+  const [language, setLanguage] = React.useState(getAppLanguage());
+  React.useEffect(() => {
+    const updateLanguage = () => setLanguage(getAppLanguage());
+    window.addEventListener("wealthplanner:language-changed", updateLanguage);
+    return () => window.removeEventListener("wealthplanner:language-changed", updateLanguage);
+  }, []);
+  const isId = language === "id";
+
+  const tahunSaatIni = new Date().getFullYear();
   const [daftarHaji, setDaftarHaji] = React.useState(40000000);
   const [nilaiManfaatSubsidi, setNilaiManfaatSubsidi] = React.useState(0);
-  const [targetBerangkat, setTargetBerangkat] = React.useState(2028);
+  const [targetTahunInput, setTargetTahunInput] = React.useState(String(tahunSaatIni + 2));
   const [dpSetoran, setDpSetoran] = React.useState(10000000);
   const [inflasi, setInflasi] = React.useState(5);
   const [returnInvestasi, setReturnInvestasi] = React.useState(0);
 
-  const tahunSaatIni = new Date().getFullYear();
-  const tahunMenuju = targetBerangkat - tahunSaatIni;
-  
-  const totalBiayaMendasar = daftarHaji;
-  const totalBiayaDenganInflasi = totalBiayaMendasar * Math.pow(1 + inflasi / 100, tahunMenuju);
-  // Nilai manfaat dan dukungan pemerintah dimasukkan sebagai estimasi gabungan,
-  // lalu diproyeksikan dengan asumsi inflasi yang sama. Default 0 agar simulasi
-  // tetap konservatif bila pengguna belum memiliki estimasi resmi.
-  const estimasiBantuanSaatBerangkat = nilaiManfaatSubsidi * Math.pow(1 + inflasi / 100, tahunMenuju);
-  const estimasiBiayaJemaah = Math.max(totalBiayaDenganInflasi - estimasiBantuanSaatBerangkat, 0);
-  const sisaDanaDibutuhkan = Math.max(estimasiBiayaJemaah - dpSetoran, 0);
-  const totalBulan = tahunMenuju > 0 ? tahunMenuju * 12 : 0;
-  const returnBulanan = returnInvestasi / 100 / 12;
-  // Kalau ada estimasi return investasi, setoran bulanan dihitung pakai rumus
-  // future value of annuity (uang yang ditabung ikut "berbunga"), jadi makin
-  // tinggi return-nya, makin kecil setoran bulanan yang dibutuhkan.
-  // Kalau return 0%, hasilnya sama persis kayak perhitungan lama (linear).
-  const budiBulanan = totalBulan <= 0
-    ? 0
+  const finite = (value) => Number.isFinite(Number(value)) ? Number(value) : 0;
+  const targetParsed = targetTahunInput.trim() === "" ? tahunSaatIni : Number(targetTahunInput);
+  const targetBerangkat = Number.isFinite(targetParsed) ? targetParsed : tahunSaatIni;
+  const tahunMenuju = Math.max(0, targetBerangkat - tahunSaatIni);
+  const biayaHaji = Math.max(0, finite(daftarHaji));
+  const bantuanAwal = Math.max(0, finite(nilaiManfaatSubsidi));
+  const dp = Math.max(0, finite(dpSetoran));
+  const inflasiRate = Math.max(0, finite(inflasi));
+  const returnRate = Math.max(0, finite(returnInvestasi));
+  const totalBiayaDenganInflasi = finite(biayaHaji * Math.pow(1 + inflasiRate / 100, tahunMenuju));
+  const estimasiBantuan = finite(bantuanAwal * Math.pow(1 + inflasiRate / 100, tahunMenuju));
+  const estimasiBiayaJemaah = Math.max(finite(totalBiayaDenganInflasi - estimasiBantuan), 0);
+  const sisaDana = Math.max(finite(estimasiBiayaJemaah - dp), 0);
+  const totalBulan = tahunMenuju * 12;
+  const returnBulanan = returnRate / 100 / 12;
+  const annuityDenominator = Math.pow(1 + returnBulanan, totalBulan) - 1;
+  const budgetBulananRaw = totalBulan <= 0
+    ? sisaDana
     : returnBulanan === 0
-      ? sisaDanaDibutuhkan / totalBulan
-      : sisaDanaDibutuhkan * returnBulanan / (Math.pow(1 + returnBulanan, totalBulan) - 1);
-  const budiBulananTanpaInvestasi = totalBulan > 0 ? sisaDanaDibutuhkan / totalBulan : 0;
-  const hematDariInvestasi = Math.max(budiBulananTanpaInvestasi - budiBulanan, 0);
+      ? sisaDana / totalBulan
+      : annuityDenominator > 0
+        ? sisaDana * returnBulanan / annuityDenominator
+        : 0;
+  const budgetBulanan = Math.max(finite(budgetBulananRaw), 0);
+  const budgetTanpaInvestasi = totalBulan > 0 ? finite(sisaDana / totalBulan) : 0;
+  const hemat = Math.max(finite(budgetTanpaInvestasi - budgetBulanan), 0);
+  const percent = (value) => {
+    const rounded = Math.round(finite(value) * 10) / 10;
+    return `${rounded.toLocaleString(isId ? "id-ID" : "en-US", { maximumFractionDigits: 1 })}%`;
+  };
+  const clampTargetYear = () => {
+    const parsed = targetTahunInput.trim() === "" ? tahunSaatIni : Number(targetTahunInput);
+    const safeYear = Number.isFinite(parsed) ? Math.round(parsed) : tahunSaatIni;
+    setTargetTahunInput(String(Math.min(tahunSaatIni + 30, Math.max(tahunSaatIni, safeYear))));
+  };
+
+  const labelStyle = { display: "block", fontSize: 12, fontWeight: 600, color: "rgb(var(--c-forest-800))", marginBottom: 6 };
+  const yearInputStyle = {
+    width: "100%", boxSizing: "border-box", border: "1px solid rgb(var(--c-border))",
+    borderRadius: 10, padding: "11px 12px", fontSize: 13,
+    background: "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))",
+  };
+  const resultCardStyle = {
+    minWidth: 0, background: "rgb(var(--c-forest-50))",
+    border: "1px solid rgb(var(--c-forest-100))", borderRadius: 16, padding: 14,
+    boxSizing: "border-box",
+  };
+  const resultLabelStyle = {
+    minHeight: 30, fontSize: 10, fontWeight: 700, letterSpacing: ".06em",
+    color: "rgb(var(--c-forest-800))", textTransform: "uppercase", marginBottom: 8,
+  };
+  const resultValueStyle = { fontSize: 24, fontWeight: 800, lineHeight: 1.15, color: "rgb(var(--c-accent-text))", overflowWrap: "anywhere" };
+  const subStyle = { fontSize: 11, color: "rgb(var(--c-forest-800))", lineHeight: 1.45, marginTop: 7, overflowWrap: "anywhere" };
 
   return (
     <CalcLayout
       inputs={
         <>
-          <NumberInput label="Biaya haji saat ini (acuan)" prefix="Rp" value={daftarHaji} onChange={setDaftarHaji} step={1000000} />
-          <NumberInput label="Perkiraan Nilai Manfaat Haji & Subsidi Pemerintah" prefix="Rp" value={nilaiManfaatSubsidi} onChange={setNilaiManfaatSubsidi} step={1000000} hint="Masukkan estimasi gabungan bantuan pembiayaan. Isi 0 jika belum ada estimasi." />
-          <NumberInput label="Target tahun keberangkatan" value={targetBerangkat} onChange={setTargetBerangkat} min={tahunSaatIni} max={tahunSaatIni + 30} step={1} />
-          <NumberInput label="DP / Setoran awal" prefix="Rp" value={dpSetoran} onChange={setDpSetoran} step={1000000} />
-          <Slider label="Estimasi inflasi biaya haji" value={inflasi} onChange={setInflasi} min={0} max={10} step={0.5} format={(v) => `${v}%`} />
-          <Slider label="Estimasi return investasi tahunan" value={returnInvestasi} onChange={setReturnInvestasi} min={0} max={20} step={0.5} format={(v) => `${v}%`} />
+          <NumberInput label={isId ? "Biaya haji saat ini (acuan)" : "Current Hajj cost (reference)"} prefix="Rp" value={daftarHaji} onChange={setDaftarHaji} step={1000000} />
+          <NumberInput
+            label={isId ? "Perkiraan Nilai Manfaat Haji & Subsidi Pemerintah" : "Estimated Hajj Benefit Value & Government Subsidy"}
+            prefix="Rp" value={nilaiManfaatSubsidi} onChange={setNilaiManfaatSubsidi} step={1000000}
+            hint={isId ? "Masukkan estimasi gabungan bantuan pembiayaan. Isi 0 jika belum ada estimasi." : "Enter the combined estimate of financing assistance. Enter 0 if you have no estimate yet."}
+          />
+          <div>
+            <label style={labelStyle}>{isId ? "Target tahun keberangkatan" : "Target departure year"}</label>
+            <input
+              type="text" inputMode="numeric" pattern="[0-9]*"
+              aria-label={isId ? "Target tahun keberangkatan" : "Target departure year"}
+              placeholder={isId ? "Masukkan tahun" : "Enter year"}
+              value={targetTahunInput}
+              onChange={(event) => setTargetTahunInput(event.target.value.replace(/[^0-9]/g, ""))}
+              onBlur={clampTargetYear}
+              style={yearInputStyle}
+            />
+          </div>
+          <NumberInput label={isId ? "DP / Setoran awal" : "Down payment / Initial deposit"} prefix="Rp" value={dpSetoran} onChange={setDpSetoran} step={1000000} />
+          <Slider label={isId ? "Estimasi inflasi biaya haji" : "Estimated Hajj cost inflation"} value={inflasi} onChange={setInflasi} min={0} max={10} step={0.5} format={percent} />
+          <Slider label={isId ? "Estimasi return investasi tahunan" : "Estimated annual investment return"} value={returnInvestasi} onChange={setReturnInvestasi} min={0} max={20} step={0.5} format={percent} />
         </>
       }
       results={
         <>
-          <div className="row" style={{ gap: 16, marginBottom: 16 }}>
-            <div className="card" style={{ flex: 1, background: "var(--surface-2)" }}>
-              <div className="muted" style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>TARGET BERANGKAT</div>
-              <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontSize: 32, fontWeight: 700, lineHeight: 1, marginBottom: 4 }}>
-                {targetBerangkat}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, marginBottom: 10 }}>
+            <div style={resultCardStyle}>
+              <div style={resultLabelStyle}>{isId ? "Target berangkat" : "Target departure"}</div>
+              <div style={resultValueStyle}>{targetBerangkat}</div>
+              <div style={subStyle}>
+                {tahunMenuju === 0 ? (isId ? "Tahun ini" : "This year") : (isId ? `Dalam ${tahunMenuju} tahun` : `In ${tahunMenuju} ${tahunMenuju === 1 ? "year" : "years"}`)}
               </div>
-              <div className="muted" style={{ fontSize: 12 }}>Dalam {tahunMenuju} tahun</div>
             </div>
-            <div className="card" style={{ flex: 1, background: "var(--surface-2)" }}>
-              <div className="muted" style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>ESTIMASI BIAYA JEMAAH (SETELAH BANTUAN)</div>
-              <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontSize: 28, fontWeight: 700, lineHeight: 1, marginBottom: 4 }}>
-                {formatIDR(Math.round(estimasiBiayaJemaah))}
+            <div style={resultCardStyle}>
+              <div style={resultLabelStyle}>{isId ? "Estimasi biaya jemaah (setelah bantuan)" : "Estimated pilgrim cost (after assistance)"}</div>
+              <div style={resultValueStyle}>{formatIDR(Math.round(estimasiBiayaJemaah))}</div>
+              <div style={subStyle}>
+                {isId ? "Estimasi total biaya" : "Estimated total cost"} {formatIDR(Math.round(totalBiayaDenganInflasi))} − {isId ? "bantuan" : "assistance"} {formatIDR(Math.round(estimasiBantuan))}
               </div>
-              <div className="muted" style={{ fontSize: 12 }}>Estimasi total biaya {formatIDR(Math.round(totalBiayaDenganInflasi))} − bantuan {formatIDR(Math.round(estimasiBantuanSaatBerangkat))}</div>
-            </div>
-          </div>
-
-          <div className="card" style={{ marginTop: 16, padding: 20 }}>
-            <h4 style={{ marginBottom: 16 }}>Rencana Pelunasan</h4>
-            <div className="stack" style={{ gap: 12 }}>
-              <div className="row-between">
-                <span>DP / Setoran awal</span>
-                <span className="mono" style={{ fontWeight: 600 }}>{formatIDR(dpSetoran)}</span>
-              </div>
-              <div className="row-between">
-                <span>Sisa dana dibutuhkan</span>
-                <span className="mono" style={{ fontWeight: 600, color: "var(--accent)" }}>{formatIDR(Math.round(sisaDanaDibutuhkan))}</span>
-              </div>
-              <div className="divider" style={{ margin: "8px 0" }} />
-              <div className="row-between">
-                <span style={{ fontWeight: 600 }}>Budget bulanan yang diperlukan</span>
-                <span className="mono" style={{ fontWeight: 700, fontSize: 18, color: "var(--positive)" }}>{formatIDR(Math.round(budiBulanan))}</span>
-              </div>
-              {returnInvestasi > 0 && hematDariInvestasi > 0 && (
-                <div className="row-between">
-                  <span className="muted" style={{ fontSize: 12 }}>Lebih hemat berkat investasi {returnInvestasi}%/thn</span>
-                  <span className="mono" style={{ fontSize: 12, color: "var(--accent)" }}>−{formatIDR(Math.round(hematDariInvestasi))}/bln</span>
-                </div>
-              )}
             </div>
           </div>
-
-          <div style={{ marginTop: 16, padding: "12px 16px", background: "var(--surface-2)", borderRadius: 14, fontSize: 13, color: "var(--ink-2)", lineHeight: 1.55 }}>
-            🕋 <span style={{ marginLeft: 8 }}>
-              Untuk Haji Reguler, total biaya penyelenggaraan (BPIH) tidak selalu sama dengan biaya yang dibayar jemaah (Bipih). Masukkan perkiraan gabungan Nilai Manfaat Haji dan subsidi pemerintah jika ingin memperhitungkan bantuan tersebut. Nilai aktual dapat berubah setiap tahun; proyeksi bantuan di kalkulator ini hanya asumsi, bukan angka resmi untuk tahun keberangkatan mendatang.
-            </span>
+          <Card style={{ marginTop: 10, padding: 14, gap: 10 }}>
+            <h4 style={{ margin: 0, color: "rgb(var(--c-forest-800))" }}>{isId ? "Rencana Pelunasan" : "Payoff Plan"}</h4>
+            <BreakdownRow label={isId ? "DP / Setoran awal" : "Down payment / Initial deposit"} value={formatIDR(Math.round(dp))} />
+            <BreakdownRow label={isId ? "Sisa dana dibutuhkan" : "Remaining funds needed"} value={formatIDR(Math.round(sisaDana))} />
+            <BreakdownRow label={isId ? "Budget bulanan yang diperlukan" : "Required monthly budget"} value={formatIDR(Math.round(budgetBulanan))} highlight />
+            {returnRate > 0 && hemat > 0 && <BreakdownRow label={isId ? `Lebih hemat berkat investasi ${percent(returnRate)}/thn` : `Saved thanks to ${percent(returnRate)}/yr investment return`} value={`−${formatIDR(Math.round(hemat))}/${isId ? "bln" : "mo"}`} muted />}
+          </Card>
+          <div style={{ marginTop: 10, padding: "10px 12px", background: "rgb(var(--c-cream))", border: "1px solid rgb(var(--c-border))", borderRadius: 12, fontSize: 11.5, lineHeight: 1.5, color: "rgb(var(--c-forest-800))" }}>
+            {isId
+              ? "Untuk Haji Reguler, total biaya penyelenggaraan (BPIH) tidak selalu sama dengan biaya yang dibayar jemaah (Bipih). Masukkan perkiraan gabungan Nilai Manfaat Haji dan subsidi pemerintah jika ingin memperhitungkan bantuan tersebut. Nilai aktual dapat berubah setiap tahun; proyeksi bantuan di kalkulator ini hanya asumsi, bukan angka resmi untuk tahun keberangkatan mendatang."
+              : "For Regular Hajj, the total operating cost (BPIH) is not always the same as the amount paid by the pilgrim (Bipih). Enter a combined estimate of Hajj Benefit Value and government subsidy if you want to include that assistance. Actual values may change every year; the assistance projection in this calculator is only an assumption, not an official figure for a future departure year."}
           </div>
-
+          <div style={{ marginTop: 10, padding: 12, background: "rgb(var(--c-forest-50))", borderRadius: 12, fontSize: 12, lineHeight: 1.55, color: "rgb(var(--c-forest-800))" }}>
+            {isId
+              ? "Tahukah kamu? Persiapan haji bukan hanya soal biaya pelunasan, tetapi juga kesiapan menghadapi risiko kesehatan dan meninggal dunia. Rencanakan dana haji sekaligus pelajari opsi proteksi dan skema badal haji sesuai ketentuan yang berlaku."
+              : "Did you know? Hajj preparation is not only about the final payment, but also readiness for health risks and death. Plan your Hajj funds while learning about protection options and badal Hajj arrangements, subject to applicable rules."}
+          </div>
+          <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener" aria-label={isId ? "Konsultasikan Rencana" : "Consult Your Plan"} style={{ display: "block", width: "100%", boxSizing: "border-box", marginTop: 10, textAlign: "center", background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))", borderRadius: 10, padding: "12px 14px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
+            {isId ? "Konsultasikan Rencana" : "Consult Your Plan"}
+          </a>
         </>
       }
-      onSave={() => onSaveResult({ id: "haji", title: "Haji & Umroh", value: `${targetBerangkat} · Rp ${formatIDR(Math.round(budiBulanan))}/bln`, plan: { type: "hajj", targetAmount: estimasiBiayaJemaah, monthlyAmount: budiBulanan, timeframe: tahunMenuju, preparedAssets: dpSetoran, targetYear: targetBerangkat } })}
+      onSave={() => onSaveResult({
+        id: "haji",
+        title: isId ? "Haji & Umroh" : "Hajj & Umrah",
+        value: `${targetBerangkat} · Rp ${formatIDR(Math.round(budgetBulanan))}/${isId ? "bln" : "mo"}`,
+        plan: { type: "hajj", targetAmount: estimasiBiayaJemaah, monthlyAmount: budgetBulanan, timeframe: tahunMenuju, preparedAssets: dp, targetYear: targetBerangkat },
+      })}
       onNavigate={onNavigate}
       calcId="haji"
       relatedId={null}
     />
   );
 }
-
-// ============================================================
 // ============================================================
 // 8. WARISAN CALCULATOR (REBUILT — CLEAN, SIMPLE, PIE CHART)
 // ============================================================
