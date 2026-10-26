@@ -29,6 +29,7 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
   const { wallets, unassigned, totalBalance, loading, error, refresh } = useWallets();
   const finance = useFinanceData(undefined, true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [walletStackSpacing, setWalletStackSpacing] = useState(48);
   const [editing, setEditing] = useState<Wallet | null>(null);
   const [mode, setMode] = useState<"auto"|"custom">("auto");
   const [color, setColor] = useState("#0B4D38");
@@ -111,8 +112,13 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
         <h2 className="text-base font-semibold text-slate-900 dark:text-white">Wallet kamu · {wallets.length}</h2>
         <button type="button" onClick={() => navigate("/settings")} className="min-h-9 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-[#0B6B47] transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-[rgb(var(--c-surface))] dark:text-emerald-300 dark:hover:bg-white/5">+ Tambah</button>
       </div>
+      <div className="flex items-center gap-3 px-1 pb-1 pt-0.5">
+        <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">Tumpukan</span>
+        <input aria-label="Atur jarak tumpukan wallet" type="range" min={48} max={88} step={4} value={walletStackSpacing} onChange={(event) => setWalletStackSpacing(Number(event.target.value))} className="h-1.5 min-w-0 flex-1 cursor-pointer accent-[#0B6B47]" />
+        <span className="shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">{walletStackSpacing === 48 ? "Rapat" : walletStackSpacing >= 80 ? "Terbuka" : "Sedang"}</span>
+      </div>
       <div className="max-h-[560px] overflow-y-auto overscroll-contain rounded-[22px]">
-        <div className="relative w-full" style={{height: (wallets.length - 1) * 48 + 176}}>
+        <div className="relative w-full" style={{height: (wallets.length - 1) * walletStackSpacing + 176}}>
           {wallets.map((wallet, index) => {
             const isFront = index === wallets.length - 1;
             const walletColor = wallet.resolvedColor || resolveWalletColor(wallet.name);
@@ -123,7 +129,7 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
               onClick={() => { setSelectedId(wallet.id); setNotice(""); }}
               className="wallet-stack-card absolute left-0 top-0 block min-h-[48px] w-full overflow-hidden rounded-t-[22px] text-left text-white transition-transform duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
               style={{
-                top: index * 48,
+                top: index * walletStackSpacing,
                 zIndex: index + 1,
                 height: isFront ? 176 : 112,
                 "--wallet-stack-color": walletColor,
