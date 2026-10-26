@@ -84,7 +84,7 @@ async function fetchAllRanges(spreadsheetId: string) {
   const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.batchGet({
     spreadsheetId,
-    ranges: ["Transaction!B10:G", "Budgeting!B1:N40", "Asset Tracker!B1:N45"],
+    ranges: ["Transaction!B10:I", "Budgeting!B1:N40", "Asset Tracker!B1:N45"],
   });
   const [transactionRows, budgetRows, assetRows] = (res.data.valueRanges || []).map(
     (r) => r.values || []
@@ -98,7 +98,7 @@ async function fetchAllRanges(spreadsheetId: string) {
 
 // ---------- TRANSACTION ----------
 function getTransactions(rows: unknown[][], year?: number) {
-  const typeMap: Record<string, string> = { income: "Income", expense: "Expense", saving: "Saving" };
+  const typeMap: Record<string, string> = { income: "Income", expense: "Expense", saving: "Saving", transfer: "Transfer" };
 
   return rows
     .map((row, index) => ({ row, sheetRow: index + 10 }))
@@ -114,7 +114,7 @@ function getTransactions(rows: unknown[][], year?: number) {
       type: typeMap[String(row[2]).trim().toLowerCase()] || "Expense",
       category: row[3] || "",
       description: row[4] || "",
-      amount: parseRupiah(row[5]),
+      amount: parseRupiah(row[5]),\n      wallet: row[6] || "",\n      toWallet: row[7] || "",
       year: Number(String(row[0] || "").split("/").pop()) || undefined,
       sheetRow,
     }));
