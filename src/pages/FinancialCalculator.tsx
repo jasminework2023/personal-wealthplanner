@@ -678,14 +678,22 @@ function BreakdownRow({ label, value, sub, highlight, muted }) {
 // ============================================================
 function EduCalc({ onSaveResult, onNavigate }) {
   const currentYear = new Date().getFullYear();
-  const levelDurations = { Preschool: 2, TK: 2, SD: 6, SMP: 3, SMA: 3, Kuliah: 4 };
-  const levelOrder = ["Preschool", "TK", "SD", "SMP", "SMA", "Kuliah"];
+  const [language, setLanguage] = React.useState(getAppLanguage());
+  const isId = language === "id";
+  React.useEffect(() => {
+    const change = () => setLanguage(getAppLanguage());
+    window.addEventListener("wealthplanner:language-changed", change);
+    return () => window.removeEventListener("wealthplanner:language-changed", change);
+  }, []);
+  const levelDurations = { TK: 2, SD: 6, SMP: 3, SMA: 3, Kuliah: 4 };
+  const levelOrder = ["TK", "SD", "SMP", "SMA", "Kuliah"];
+  const levelLabel = (level) => ({ TK: isId ? "TK" : "Kindergarten", SD: isId ? "SD" : "Elementary School", SMP: isId ? "SMP" : "Junior High School", SMA: isId ? "SMA" : "Senior High School", Kuliah: isId ? "Kuliah" : "College / University" }[level] || level);
   const frequencyOptions = [
-    { value: "once", label: "Sekali bayar", payments: 1 },
-    { value: "monthly", label: "Bulanan", payments: 12 },
-    { value: "quarterly", label: "Kuartalan", payments: 4 },
-    { value: "semester", label: "Semesteran", payments: 2 },
-    { value: "annual", label: "Tahunan", payments: 1 },
+    { value: "once", label: isId ? "Sekali bayar" : "One-time", payments: 1 },
+    { value: "monthly", label: isId ? "Bulanan" : "Monthly", payments: 12 },
+    { value: "quarterly", label: isId ? "Kuartalan" : "Quarterly", payments: 4 },
+    { value: "semester", label: isId ? "Semesteran" : "Per semester", payments: 2 },
+    { value: "annual", label: isId ? "Tahunan" : "Annual", payments: 1 },
   ];
 
   const [educationLevel, setEducationLevel] = React.useState("SD");
@@ -777,7 +785,7 @@ function EduCalc({ onSaveResult, onNavigate }) {
     setDuration(levelDurations[level] ?? 4);
   };
   const updateCostItem = (id, patch) => setCostItems((prev) => prev.map((item) => item.id === id ? { ...item, ...patch } : item));
-  const addCostItem = () => setCostItems((prev) => [...prev, { id: `cost-${Date.now()}`, name: "Biaya Lainnya", amount: 0, frequency: "annual" }]);
+  const addCostItem = () => setCostItems((prev) => [...prev, { id: `cost-${Date.now()}`, name: isId ? "Biaya Lainnya" : "Other Costs", amount: 0, frequency: "annual" }]);
   const removeCostItem = (id) => setCostItems((prev) => prev.length <= 1 ? prev : prev.filter((item) => item.id !== id));
 
   const addEducationPlan = () => {
@@ -791,16 +799,16 @@ function EduCalc({ onSaveResult, onNavigate }) {
   };
   const removeEducationPlan = (id) => setEducationPlans((prev) => prev.filter((item) => item.id !== id));
 
-  const infoText = "Uang yang harus sudah ada di hari pertama jenjang dimulai. Karena sisa dana tetap diinvestasikan dengan return yang kamu isi sambil dipakai membayar biaya tiap tahun, jumlahnya lebih kecil dari total biaya.";
+  const infoText = isId ? "Uang yang harus sudah ada di hari pertama jenjang dimulai. Karena sisa dana tetap diinvestasikan dengan return yang kamu isi sambil dipakai membayar biaya tiap tahun, jumlahnya lebih kecil dari total biaya." : "The amount needed on the first day of this education stage. Because the remaining funds stay invested at your assumed return while annual costs are paid, this amount is lower than the total cost.";
 
   const renderStage = (item, isCurrent = false) => (
     <details key={item.id} open={isCurrent ? true : undefined} style={{ borderTop: "1px solid rgb(var(--c-border))", minWidth: 0 }}>
       <summary style={{ listStyle: "none", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 0", cursor: "pointer", minWidth: 0 }}>
         <span style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0, flex: "1 1 auto" }}>
           <span style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", fontSize: 12, fontWeight: 700, color: "rgb(var(--c-charcoal))" }}>
-            {item.level}{isCurrent && <Tag variant="accent">simulasi saat ini</Tag>}
+            {levelLabel(item.level)}{isCurrent && <Tag variant="accent">{isId ? "simulasi saat ini" : "current simulation"}</Tag>}
           </span>
-          <span style={{ fontSize: 10.5, color: "rgb(var(--c-muted))" }}>{item.startYear}–{item.startYear + item.duration - 1} · {item.duration} tahun</span>
+          <span style={{ fontSize: 10.5, color: "rgb(var(--c-muted))" }}>{item.startYear}–{item.startYear + item.duration - 1} · {item.duration} {isId ? "tahun" : "years"}</span>
         </span>
         <span style={{ display: "flex", alignItems: "center", gap: 7, flex: "0 0 auto" }}>
           <strong style={{ fontSize: 11.5, textAlign: "right", color: "rgb(var(--c-accent-text))" }}>{rupiah(item.total)}</strong>
@@ -809,45 +817,45 @@ function EduCalc({ onSaveResult, onNavigate }) {
       </summary>
 
       <div style={{ padding: "2px 0 12px", fontSize: 12, minWidth: 0 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "rgb(var(--c-muted))", textTransform: "uppercase", letterSpacing: ".04em", margin: "2px 0 4px" }}>Detail simulasi</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "rgb(var(--c-muted))", textTransform: "uppercase", letterSpacing: ".04em", margin: "2px 0 4px" }}>{isId ? "Detail simulasi" : "Simulation details"}</div>
         {item.costItems.map((cost, i) => (
           <div key={`${cost.id}-${i}`} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", borderBottom: "1px dashed rgb(var(--c-border))" }}>
-            <span style={{ color: "rgb(var(--c-muted))", minWidth: 0, overflowWrap: "anywhere" }}>{cost.name || "Biaya"} ({frequencyLabel(cost.frequency).toLowerCase()})</span>
+            <span style={{ color: "rgb(var(--c-muted))", minWidth: 0, overflowWrap: "anywhere" }}>{cost.name || (isId ? "Biaya" : "Cost")} ({frequencyLabel(cost.frequency).toLowerCase()})</span>
             <strong style={{ fontWeight: 600, textAlign: "right", flex: "0 0 auto" }}>{rupiah(cost.amount)}</strong>
           </div>
         ))}
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", borderBottom: "1px dashed rgb(var(--c-border))" }}>
-          <span style={{ color: "rgb(var(--c-muted))" }}>Mulai pendidikan</span><strong>{item.startYear}</strong>
+          <span style={{ color: "rgb(var(--c-muted))" }}>{isId ? "{isId ? "Mulai pendidikan" : "Education starts"}" : "Education starts"}</span><strong>{item.startYear}</strong>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "5px 0", borderBottom: "1px dashed rgb(var(--c-border))" }}>
-          <span style={{ color: "rgb(var(--c-muted))" }}>Durasi pendidikan</span><strong>{item.duration} tahun</strong>
+          <span style={{ color: "rgb(var(--c-muted))" }}>{isId ? "Durasi pendidikan" : "Education duration"}</span><strong>{item.duration} {isId ? "tahun" : "years"}</strong>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "7px 0 5px", marginTop: 3, borderTop: "1px solid rgb(var(--c-border))" }}>
-          <strong style={{ color: "rgb(var(--c-accent-text))" }}>Total kebutuhan {item.level}</strong>
+          <strong style={{ color: "rgb(var(--c-accent-text))" }}>{isId ? "Total kebutuhan" : "Total cost"} {levelLabel(item.level)}</strong>
           <strong style={{ color: "rgb(var(--c-accent-text))", textAlign: "right" }}>{rupiah(item.total)}</strong>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, padding: "6px 0", borderBottom: "1px dashed rgb(var(--c-border))" }}>
           <span style={{ color: "rgb(var(--c-muted))", flex: "1 1 auto", minWidth: 0 }}>
-            Dana yang perlu terkumpul saat {item.level} dimulai
+            {isId ? "Dana yang perlu terkumpul saat" : "Funds needed when"} {levelLabel(item.level)} {isId ? "dimulai" : "starts"}
             <details style={{ display: "inline-block", verticalAlign: "middle", marginLeft: 4, position: "relative" }}>
-              <summary aria-label="Penjelasan dana yang perlu terkumpul" style={{ listStyle: "none", display: "inline-grid", placeItems: "center", width: 16, height: 16, borderRadius: "50%", background: "rgb(var(--c-forest-50))", color: "rgb(var(--c-accent-text))", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>!</summary>
+              <summary aria-label={isId ? "Penjelasan dana yang perlu terkumpul" : "Explanation of funds needed"} style={{ listStyle: "none", display: "inline-grid", placeItems: "center", width: 16, height: 16, borderRadius: "50%", background: "rgb(var(--c-forest-50))", color: "rgb(var(--c-accent-text))", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>!</summary>
               <div style={{ position: "absolute", zIndex: 5, top: 21, left: 0, width: "min(270px, 75vw)", padding: 10, borderRadius: 10, border: "1px solid rgb(var(--c-border))", background: "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", fontSize: 11, lineHeight: 1.5, boxShadow: "0 4px 12px rgba(0,0,0,.08)" }}>{infoText}</div>
             </details>
           </span>
           <strong style={{ textAlign: "right", flex: "0 0 auto" }}>{rupiah(item.requiredAtStart)}</strong>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "6px 0", borderBottom: "1px dashed rgb(var(--c-border))" }}>
-          <span style={{ color: "rgb(var(--c-muted))" }}>Perlu menabung / bulan<span style={{ display: "block", fontSize: 10.5, marginTop: 2 }}>{item.monthsUntilStart} bulan sampai {item.level} dimulai</span></span>
-          <strong style={{ textAlign: "right", flex: "0 0 auto" }}>{item.monthsUntilStart === 0 ? "Segera disiapkan" : rupiah(item.monthlySaving)}</strong>
+          <span style={{ color: "rgb(var(--c-muted))" }}>{isId ? "Perlu menabung / bulan" : "Monthly savings needed"}<span style={{ display: "block", fontSize: 10.5, marginTop: 2 }}>{item.monthsUntilStart} {isId ? "bulan sampai" : "months until"} {levelLabel(item.level)} {isId ? "dimulai" : "starts"}</span></span>
+          <strong style={{ textAlign: "right", flex: "0 0 auto" }}>{item.monthsUntilStart === 0 ? isId ? "Segera disiapkan" : "Prepare now" : rupiah(item.monthlySaving)}</strong>
         </div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "rgb(var(--c-muted))", textTransform: "uppercase", letterSpacing: ".04em", margin: "12px 0 4px" }}>Proyeksi biaya per tahun</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "rgb(var(--c-muted))", textTransform: "uppercase", letterSpacing: ".04em", margin: "12px 0 4px" }}>{isId ? "Proyeksi biaya per tahun" : "Annual cost projection"}</div>
         <div style={{ overflowX: "auto", width: "100%" }}>
           <table style={{ width: "100%", minWidth: 220, borderCollapse: "collapse", fontSize: 12 }}>
-            <thead><tr style={{ borderBottom: "1px solid rgb(var(--c-border))" }}><th style={{ textAlign: "left", padding: "5px 0", color: "rgb(var(--c-muted))" }}>Tahun</th><th style={{ textAlign: "right", padding: "5px 0", color: "rgb(var(--c-muted))" }}>Estimasi biaya</th></tr></thead>
+            <thead><tr style={{ borderBottom: "1px solid rgb(var(--c-border))" }}><th style={{ textAlign: "left", padding: "5px 0", color: "rgb(var(--c-muted))" }}>{isId ? "Tahun" : "Year"}</th><th style={{ textAlign: "right", padding: "5px 0", color: "rgb(var(--c-muted))" }}>{isId ? "Estimasi biaya" : "Estimated cost"}</th></tr></thead>
             <tbody>{item.yearlyCosts.map((yearItem) => <tr key={yearItem.year} style={{ borderBottom: "1px dashed rgb(var(--c-border))" }}><td style={{ padding: "5px 0" }}>{yearItem.year}</td><td style={{ padding: "5px 0", textAlign: "right" }}>{rupiah(yearItem.cost)}</td></tr>)}</tbody>
           </table>
         </div>
-        {!isCurrent && <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}><button type="button" onClick={() => removeEducationPlan(item.id)} style={{ border: 0, background: "transparent", color: "rgb(var(--c-down))", fontSize: 11, cursor: "pointer" }}>Hapus jenjang</button></div>}
+        {!isCurrent && <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}><button type="button" onClick={() => removeEducationPlan(item.id)} style={{ border: 0, background: "transparent", color: "rgb(var(--c-down))", fontSize: 11, cursor: "pointer" }}>{isId ? "Hapus jenjang" : "Remove stage"}</button></div>}
       </div>
     </details>
   );
@@ -857,53 +865,54 @@ function EduCalc({ onSaveResult, onNavigate }) {
   return <CalcLayout
     inputs={<>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <div><div style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--c-charcoal))" }}>Tambah jenjang pendidikan</div><div style={{ fontSize: 11, color: "rgb(var(--c-muted))", marginTop: 3 }}>Atur komponen biaya dan frekuensi pembayaran sesuai kondisi sekolah/kampus.</div></div>
+        <div><div style={{ fontSize: 16, fontWeight: 700, color: "rgb(var(--c-charcoal))" }}>{isId ? "Tambah jenjang pendidikan" : "Add education stage"}</div><div style={{ fontSize: 11, color: "rgb(var(--c-muted))", marginTop: 3 }}>{isId ? "Atur komponen biaya dan frekuensi pembayaran sesuai kondisi sekolah/kampus." : "Set cost items and payment frequency based on your school or university."}</div></div>
         {educationPlans.length > 0 && <Tag variant="accent">{educationPlans.length} jenjang ditambahkan</Tag>}
       </div>
       <div>
-        <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "rgb(var(--c-forest-800))", marginBottom: 7 }}>Jenjang pendidikan</label>
+        <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "rgb(var(--c-forest-800))", marginBottom: 7 }}>{isId ? "Jenjang pendidikan" : "Education stage"}</label>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6 }}>
           {levelOrder.map((level) => <button key={level} type="button" onClick={() => applyLevel(level)} style={{ minWidth: 0, padding: "9px 6px", borderRadius: 9, border: educationLevel === level ? "2px solid rgb(var(--c-accent-text))" : "1px solid rgb(var(--c-border))", background: educationLevel === level ? "rgb(var(--c-forest-50))" : "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{level}</button>)}
         </div>
       </div>
-      <NumberInput label="Tahun mulai pendidikan" value={startYear} onChange={setStartYear} min={currentYear} step={1} hint={yearsUntilStart === 0 ? "Pendidikan dimulai tahun ini." : `Sekitar ${yearsUntilStart} tahun lagi.`} />
-      <Slider label="Inflasi / kenaikan biaya pendidikan" value={inflation} onChange={setInflation} min={0} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
-      <Slider label="Estimasi return investasi" value={returnRate} onChange={setReturnRate} min={0} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
-      <Slider label="Durasi pendidikan" value={duration} onChange={setDuration} min={1} max={12} step={1} format={(v) => `${v} tahun`} />
+      <NumberInput label={isId ? "Tahun mulai pendidikan" : "Education start year"} value={startYear} onChange={setStartYear} min={currentYear} step={1} hint={yearsUntilStart === 0 ? (isId ? "Pendidikan dimulai tahun ini." : "Education starts this year.") : (isId ? `Sekitar ${yearsUntilStart} tahun lagi.` : `In about ${yearsUntilStart} years.`)} />
+      <Slider label={isId ? "Inflasi / kenaikan biaya pendidikan" : "Education cost inflation"} value={inflation} onChange={setInflation} min={0} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
+      <Slider label={isId ? "Estimasi return investasi" : "Estimated investment return"} value={returnRate} onChange={setReturnRate} min={0} max={15} step={0.5} format={(v) => `${v}%/tahun`} />
+      <Slider label={isId ? "Durasi pendidikan" : "Education duration"} value={duration} onChange={setDuration} min={1} max={12} step={1} format={(v) => `${v} tahun`} />
       <div className="card" style={{ background: "rgb(var(--c-cream))", padding: 14 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "rgb(var(--c-charcoal))", marginBottom: 10 }}>Komponen biaya</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "rgb(var(--c-charcoal))", marginBottom: 10 }}>{isId ? "Komponen biaya" : "Cost items"}</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {costItems.map((item) => <div key={item.id} style={{ border: "1px solid rgb(var(--c-border))", borderRadius: 10, padding: 8, minWidth: 0, boxSizing: "border-box" }}>
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, .9fr)", gap: 6, alignItems: "center" }}>
-              <input value={item.name} onChange={(e) => updateCostItem(item.id, { name: e.target.value })} placeholder="Nama biaya" style={{ width: "100%", minWidth: 0, boxSizing: "border-box", borderRadius: 8, padding: "8px 9px", border: "1px solid rgb(var(--c-border))", background: "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", fontSize: 12, fontWeight: 500 }} />
+              <input value={item.name} onChange={(e) => updateCostItem(item.id, { name: e.target.value })} placeholder={isId ? "Nama biaya" : "Cost name"} style={{ width: "100%", minWidth: 0, boxSizing: "border-box", borderRadius: 8, padding: "8px 9px", border: "1px solid rgb(var(--c-border))", background: "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", fontSize: 12, fontWeight: 500 }} />
               <div style={{ minWidth: 0 }}><NumberInput label="" prefix="Rp" value={item.amount} onChange={(v) => updateCostItem(item.id, { amount: v })} step={100000} /></div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
               <select value={item.frequency} onChange={(e) => updateCostItem(item.id, { frequency: e.target.value })} style={{ flex: 1, minWidth: 0, boxSizing: "border-box", borderRadius: 8, padding: "8px 9px", border: "1px solid rgb(var(--c-border))", background: "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", fontSize: 12, fontWeight: 500 }}>
                 {frequencyOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
               </select>
-              {costItems.length > 1 && <button type="button" onClick={() => removeCostItem(item.id)} style={{ border: 0, background: "transparent", color: "rgb(var(--c-down))", fontSize: 11, cursor: "pointer" }}>Hapus</button>}
+              {costItems.length > 1 && <button type="button" onClick={() => removeCostItem(item.id)} style={{ border: 0, background: "transparent", color: "rgb(var(--c-down))", fontSize: 11, cursor: "pointer" }}>{isId ? "Hapus" : "Remove"}</button>}
             </div>
-            <div style={{ fontSize: 10, color: "rgb(var(--c-muted))", marginTop: 5 }}>{item.frequency === "once" ? "Dibayar satu kali pada awal jenjang." : `${paymentCount(item.frequency)}x per tahun selama ${safeDuration} tahun.`}</div>
+            <div style={{ fontSize: 10, color: "rgb(var(--c-muted))", marginTop: 5 }}>{item.frequency === "once" ? isId ? (item.frequency === "once" ? "Dibayar satu kali pada awal jenjang." : `${paymentCount(item.frequency)}x per tahun selama ${safeDuration} tahun.`) : (item.frequency === "once" ? "Paid once at the start of the stage." : `${paymentCount(item.frequency)}x per year for ${safeDuration} years.`)}</div>
           </div>)}
         </div>
-        <button type="button" onClick={addCostItem} style={{ marginTop: 10, border: "1px dashed rgb(var(--c-border))", background: "transparent", color: "rgb(var(--c-accent-text))", borderRadius: 9, padding: "8px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>+ Tambah komponen biaya</button>
+        <button type="button" onClick={addCostItem} style={{ marginTop: 10, border: "1px dashed rgb(var(--c-border))", background: "transparent", color: "rgb(var(--c-accent-text))", borderRadius: 9, padding: "8px 10px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>{isId ? "+ Tambah komponen biaya" : "+ Add cost item"}</button>
       </div>
       <div className="card" style={{ background: "rgb(var(--c-cream))", padding: 14 }}>
-        <div style={{ fontSize: 11, color: "rgb(var(--c-muted))", marginBottom: 5 }}>Simulasi saat ini</div>
+        <div style={{ fontSize: 11, color: "rgb(var(--c-muted))", marginBottom: 5 }}>{isId ? "Simulasi saat ini" : "Current simulation"}</div>
         <div style={{ fontSize: 14, fontWeight: 700, color: "rgb(var(--c-charcoal))" }}>{educationLevel} · {safeStartYear}–{safeStartYear + safeDuration - 1}</div>
         <div style={{ fontSize: 14, fontWeight: 700, color: "rgb(var(--c-accent-text))", marginTop: 4 }}>{rupiah(currentStage.total)}</div>
       </div>
-      <Button onClick={addEducationPlan} icon={<Plus size={15} />} iconRight={<ArrowRight size={14} />}>Tambahkan {educationLevel}</Button>
+      <Button onClick={addEducationPlan} icon={<Plus size={15} />} iconRight={<ArrowRight size={14} />}>{isId ? "Tambahkan" : "Add"} {levelLabel(educationLevel)}</Button>
     </>}
     results={<>
-      <ResultTile label="TOTAL KEBUTUHAN PENDIDIKAN (GABUNGAN)" value={rupiah(totalEducationNeed)} sub={`${educationPlans.length} jenjang tersimpan + simulasi ${educationLevel} saat ini`} />
+      <ResultTile label={isId ? "TOTAL KEBUTUHAN PENDIDIKAN (GABUNGAN)" : "TOTAL EDUCATION FUND NEEDED (COMBINED)"} value={rupiah(totalEducationNeed)} sub={isId ? `${educationPlans.length} jenjang tersimpan + simulasi ${levelLabel(educationLevel)} saat ini` : `${educationPlans.length} saved stages + current ${levelLabel(educationLevel)} simulation`} />
       <div className="card" style={{ marginTop: 16, padding: 14, minWidth: 0 }}>
-        <h4 style={{ margin: "0 0 4px", fontSize: 14 }}>Rencana pendidikan</h4>
+        <h4 style={{ margin: "0 0 4px", fontSize: 14 }}>{isId ? "Rencana pendidikan" : "Education plan"}</h4>
         {educationPlans.map((item) => renderStage(item))}
         {renderStage({ ...currentStage, id: "current-education-simulation" }, true)}
       </div>
-      <div style={{ marginTop: 16, padding: "12px 16px", background: "rgb(var(--c-cream))", borderRadius: 14, fontSize: 11, color: "rgb(var(--c-muted))", lineHeight: 1.55 }}>Catatan: uang pangkal sekali bayar dihitung di tahun pertama. Biaya lain mengikuti frekuensi pembayaran × durasi. Inflasi dan return adalah asumsi, sesuaikan.</div>
+      <div style={{ marginTop: 16, padding: "12px 16px", background: "rgb(var(--c-cream))", borderRadius: 14, fontSize: 11, color: "rgb(var(--c-muted))", lineHeight: 1.55 }}>{isId ? "Catatan: uang pangkal sekali bayar dihitung di tahun pertama. Biaya lain mengikuti frekuensi pembayaran × durasi. Inflasi dan return adalah asumsi, sesuaikan." : "Note: one-time entrance fees are counted in the first year. Other costs follow the selected payment frequency × duration. Inflation and returns are assumptions; adjust as needed."}</div>
+      <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener noreferrer" style={{ display: "block", marginTop: 12, textAlign: "center", padding: "14px 16px", borderRadius: 14, background: "rgb(var(--c-forest-800))", color: "#fff", fontWeight: 700, textDecoration: "none" }}>{isId ? "Diskusikan rencana keuanganmu" : "Discuss Your Plan"} →</a>
     </>}
     onSave={() => onSaveResult({
       id: "edu",
