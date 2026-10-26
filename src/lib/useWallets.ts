@@ -7,10 +7,10 @@ export interface Wallet {
   openingBalance:number; balance:number; txCount:number; sortOrder:number;
 }
 export interface WalletsData { wallets:Wallet[]; unassigned:{count:number;net:number}; totalBalance:number; }
-const cache=new Map<string,{at:number;promise:Promise<{ok:boolean;data:any}>}>();
+const cache=new Map<string,{at:number;promise:Promise<{ok:boolean;status:number;data:any}>}>();
 function sharedFetch(url:string,ttl=15000) {
  const now=Date.now(),hit=cache.get(url);if(hit&&now-hit.at<ttl)return hit.promise;
- const promise=fetch(url).then(async r=>({ok:r.ok,data:await r.json().catch(()=>({}))})).catch(e=>{cache.delete(url);throw e;});
+ const promise=fetch(url).then(async r=>({ok:r.ok,status:r.status,data:await r.json().catch(()=>({}))})).then(r=>{if(!r.ok)cache.delete(url);return r;}).catch(e=>{cache.delete(url);throw e;});
  cache.set(url,{at:now,promise});return promise;
 }
 export function useWallets() {
@@ -20,8 +20,8 @@ export function useWallets() {
   const token=getStoredToken();if(!token){setLoading(false);return;}
   const url=`/api/wallets?token=${encodeURIComponent(token)}`;if(force)cache.delete(url);
   setLoading(true);
-  try{const r=await sharedFetch(url,force?0:15000);if(!r.ok)throw new Error(r.data?.error||"Gagal memuat wallet");setData(r.data);setError(null);}
-  catch(e){setError(e instanceof Error?e.message:"Gagal memuat wallet");}
+  try{const r=await sharedFetch(url,force?0:15000);if(!r.ok)throw new Error(r.data?.error||(r.status===404?"API wallet tidak ditemukan (HTTP 404)":r.status===504||r.status===408?"Server terlalu lama merespons (HTTP "+r.status+"), coba lagi":"Gagal memuat wallet (HTTP "+r.status+")"));setData(r.data);setError(null);}
+  catch(e){setError(e instanceof Error?(e.message==="Failed to fetch"?"Tidak bisa terhubung ke server":e.message):"Gagal memuat wallet");}
   finally{setLoading(false);}
  },[]);
  useEffect(()=>{void refresh();const changed=()=>void refresh(true);window.addEventListener("wealthplanner:transaction-added",changed);window.addEventListener("wealthplanner:setup-changed",changed);return()=>{window.removeEventListener("wealthplanner:transaction-added",changed);window.removeEventListener("wealthplanner:setup-changed",changed);};},[refresh]);
