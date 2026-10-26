@@ -18,7 +18,7 @@ async function validateWallets(sheets:ReturnType<typeof sheetsClient>,spreadshee
  const title=String(setup.properties.title).replace(/'/g,"''");
  const rr=await sheets.spreadsheets.values.get({spreadsheetId,range:`'${title}'!K1:L200`});
  const rows=rr.data.values||[];const header=rows.findIndex(r=>norm(r?.[0])==="category");if(header<0)throw new Error("Header bank Category tidak ditemukan");
- const active=new Map<string,string>();for(const r of rows.slice(header+1)){const name=display(r?.[0]);if(!name||norm(name)==="total")break;if(["true","yes","1","active","aktif","checked","✓"].includes(norm(r?.[1])))active.set(norm(name),name);}
+ const active=new Map<string,string>();for(const r of rows.slice(header+1)){const name=display(r?.[0]);if(!name)continue;if(norm(name)==="total")break;if(["true","yes","1","active","aktif","checked","✓"].includes(norm(r?.[1])))active.set(norm(name),name);}
  for(const name of [wallet,toWallet].filter(Boolean))if(!active.has(norm(name)))throw new Error(`Wallet "${name}" tidak ditemukan atau tidak aktif pada Setup`);
  return {wallet,toWallet};
 }
