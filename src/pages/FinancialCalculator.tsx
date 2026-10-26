@@ -795,6 +795,9 @@ function HajiCalc({ onSaveResult, onNavigate }) {
 // ============================================================
 // Redeploy trigger: refresh WarisanCalc production build.
 function WarisanCalc({ onSaveResult, onNavigate }) {
+  const [language, setLanguage] = React.useState(getAppLanguage());
+  React.useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
+  const isId = language === "id";
   // INPUT STATE
   const [totalAset, setTotalAset] = React.useState(1000000000);
   const [hutang, setHutang] = React.useState(0);
@@ -992,7 +995,7 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
     fraksi: aw.fraksi,
   }));
 
-  const COLORS = ["#5EE5B0", "#FFB800", "#FF9A6B", "#C6F24E", "#7C9CFF", "#E5A4FF", "#FFD66B"];
+  const COLORS = ["rgb(var(--c-accent))", "rgb(var(--c-forest-800))", "rgb(var(--c-accent-text))", "rgb(var(--c-forest-50))", "rgb(var(--c-accent-ink))", "rgb(var(--c-muted))", "rgb(var(--c-charcoal))"];
 
   const pctTarget = targetWarisan > 0 ? Math.min(100, Math.round((Math.max(0, hartaBersih) / targetWarisan) * 100)) : 0;
   const kurangTarget = Math.max(0, targetWarisan - Math.max(0, hartaBersih));
@@ -1138,16 +1141,16 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
 
 // Simple Pie Chart Component
 function SimplePieChart({ data, colors }) {
-  const total = data.reduce((sum, d) => sum + d.value, 0);
-  let currentAngle = -90;
+  const total = data.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+  if (!data.length || total <= 0) return null;
 
+  let currentAngle = -90;
   const slices = data.map((item, idx) => {
     const percentage = item.value / total;
     const sliceAngle = percentage * 360;
     const startAngle = currentAngle;
     const endAngle = currentAngle + sliceAngle;
     currentAngle = endAngle;
-
     const startRad = (startAngle * Math.PI) / 180;
     const endRad = (endAngle * Math.PI) / 180;
     const x1 = 100 + 80 * Math.cos(startRad);
@@ -1155,38 +1158,21 @@ function SimplePieChart({ data, colors }) {
     const x2 = 100 + 80 * Math.cos(endRad);
     const y2 = 100 + 80 * Math.sin(endRad);
     const largeArc = sliceAngle > 180 ? 1 : 0;
-
     const pathData = `M 100 100 L ${x1} ${y1} A 80 80 0 ${largeArc} 1 ${x2} ${y2} Z`;
-
-    return (
-      <g key={idx}>
-        <path d={pathData} fill={colors[idx % colors.length]} opacity="0.85" />
-        {percentage > 0.08 && (
-          <text
-            x={100 + 50 * Math.cos((startRad + endRad) / 2)}
-            y={100 + 50 * Math.sin((startRad + endRad) / 2)}
-            textAnchor="middle"
-            dy="0.3em"
-            style={{ fontSize: 12, fontWeight: 700, fill: "#1a1a1a", pointerEvents: "none" }}
-          >
-            {(percentage * 100).toFixed(0)}%
-          </text>
-        )}
-      </g>
-    );
+    return <path key={idx} d={pathData} fill={colors[idx % colors.length]} stroke="rgb(var(--c-surface))" strokeWidth="1.5" />;
   });
 
   return (
-    <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-      <svg width="220" height="220" viewBox="0 0 200 200" style={{ flexShrink: 0 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center", width: "100%", minWidth: 0 }}>
+      <svg role="img" aria-label="Inheritance distribution chart" viewBox="0 0 200 200" style={{ display: "block", width: "min(100%, 220px)", height: "auto", aspectRatio: "1 / 1", flex: "0 1 auto" }}>
         {slices}
       </svg>
-      <div className="stack" style={{ gap: 8, flex: 1 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 9, width: "100%", minWidth: 0 }}>
         {data.map((item, idx) => (
-          <div key={idx} className="row" style={{ gap: 8, alignItems: "center", fontSize: 12 }}>
-            <div style={{ width: 12, height: 12, borderRadius: 2, background: colors[idx % colors.length] }} />
-            <span style={{ flex: 1 }}>{item.name}</span>
-            <span style={{ fontWeight: 600 }}>{(item.fraksi * 100).toFixed(1)}%</span>
+          <div key={idx} style={{ display: "flex", gap: 8, alignItems: "center", minWidth: 0, fontSize: 12, color: "rgb(var(--c-charcoal))" }}>
+            <span aria-hidden="true" style={{ width: 11, height: 11, borderRadius: 3, background: colors[idx % colors.length], flex: "0 0 11px" }} />
+            <span style={{ flex: "1 1 auto", minWidth: 0, overflowWrap: "anywhere" }}>{item.name}</span>
+            <span style={{ flex: "0 0 auto", fontWeight: 700, color: "rgb(var(--c-forest-800))", fontVariantNumeric: "tabular-nums" }}>{(item.fraksi * 100).toFixed(1).replace(".", ",")}%</span>
           </div>
         ))}
       </div>
