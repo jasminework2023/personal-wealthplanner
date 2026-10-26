@@ -15,7 +15,8 @@ export const CALCULATOR_META = [
   { id: "haji", title: "Haji & Umroh", desc: "Rencanakan target biaya dan budget pelunasan.", titleEn: "Hajj & Umrah", descEn: "Plan your target cost and payoff budget." },
   { id: "zakat", title: "Zakat dan Wakaf", desc: "Simulasikan zakat penghasilan, zakat maal, dan wakaf.", titleEn: "Zakat & Waqf", descEn: "Simulate income zakat, wealth zakat (zakat maal), and waqf." },
   { id: "invest", title: "Investasi", desc: "Hitung kebutuhan investasi rutin untuk mencapai target.", titleEn: "Investing", descEn: "Calculate the regular investment needed to reach your target." },
-  { id: "insurance", title: "Kebutuhan Asuransi", desc: "Estimasi kebutuhan uang pertanggungan berdasarkan income.", titleEn: "Insurance Needs", descEn: "Estimate the coverage amount you need based on income." };
+  { id: "insurance", title: "Kebutuhan Asuransi", desc: "Estimasi kebutuhan uang pertanggungan berdasarkan income.", titleEn: "Insurance Needs", descEn: "Estimate the coverage amount you need based on income." }
+];
 
 const COLORS = ["#7C9CFF", "#C6F24E", "#FFB800", "#E5A4FF", "#5EE5B0", "#FF9A6B"];
 
