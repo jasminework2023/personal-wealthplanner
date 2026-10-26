@@ -72,10 +72,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Transaction rows start at row 10 and occupy B:I. The wallet fields are
     // stored in H:I; add their labels only when those header cells are empty.
     // Never overwrite an existing header or any transaction data.
-    const walletHeader = await sheets.spreadsheets.values.get({
-      spreadsheetId: user.spreadsheet_id,
-      range: "Transaction!H9:I9",
-    });
+    // Independent reads run in parallel so the request stays well under the
+    // serverless time limit (Sheets + Supabase were previously sequential).
+    const [walletHeader, meta, existingRes] = await Promise.all([
+      sheets.spreadsheets.values.get({ spreadsheetId: user.spreadsheet_id, range: "Transaction!H9:I9" }),
+      sheets.spreadsheets.get({ spreadsheetId: user.spreadsheet_id, fields: "sheets.properties(sheetId,title)" }),
+      sb.from("wallets").select("*").eq("username", user.username),
+    ]);
     const headerValues = walletHeader.data.values?.[0] || [];
     const headerH = display(headerValues[0]);
     const headerI = display(headerValues[1]);
@@ -90,7 +93,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       throw new Error("Header wallet belum cocok. Periksa Transaction!H9:I9 sebelum menggunakan fitur Wallet.");
     }
     // Resolve Setup by its actual title, matching setup.ts behavior.
-    const meta = await sheets.spreadsheets.get({ spreadsheetId: user.spreadsheet_id, fields: "sheets.properties(sheetId,title)" });
     const setupTitle = (meta.data.sheets || []).map((s) => String(s.properties?.title || "")).find((title) => title.trim().toLowerCase().replace(/\s+/g, "") === "setup");
     if (!setupTitle) throw new Error("Tab Setup tidak ditemukan di spreadsheet");
     const quotedSetupTitle = "'" + setupTitle.replace(/'/g, "''") + "'";
@@ -106,17 +108,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const status=norm(setupRows[i]?.[1]);
       if (["true","yes","1","active","aktif","checked","✓"].includes(status)) active.set(norm(name),name);
     }
-    const { data: existing, error: listError } = await sb.from("wallets").select("*").eq("username",user.username);
+    const { data: existing, error: listError } = existingRes;
     if (listError) throw new Error("Gagal membaca wallets: "+listError.message);
+    const toInsert: { username: string; name: string; name_key: string }[] = [];
     for (const name of active.values()) {
       const key=norm(name);
       const found=(existing||[]).find((w:any)=>w.name_key===key);
-      if (!found) {
-        const { error }=await sb.from("wallets").insert({ username:user.username,name,name_key:key });
-        if (error && !String(error.message).toLowerCase().includes("duplicate")) throw new Error("Gagal sinkronisasi wallet: "+error.message);
-      } else if (found.archived_at) {
+      if (!found) toInsert.push({ username:user.username,name,name_key:key });
+      else if (found.archived_at) {
         await sb.from("wallets").update({ name,name_key:key,archived_at:null,updated_at:new Date().toISOString() }).eq("id",found.id).eq("username",user.username);
       }
+    }
+    if (toInsert.length) {
+      const { error } = await sb.from("wallets").upsert(toInsert,{ onConflict:"username,name_key",ignoreDuplicates:true });
+      if (error) throw new Error("Gagal sinkronisasi wallet: "+error.message);
     }
     const { data: wallets, error: walletError } = await sb.from("wallets").select("*").eq("username",user.username).is("archived_at",null).order("sort_order").order("created_at");
     if (walletError) throw new Error("Gagal membaca wallet aktif: "+walletError.message);
