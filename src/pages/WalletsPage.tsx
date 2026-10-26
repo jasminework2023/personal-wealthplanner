@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, RefreshCw, Wallet as WalletIcon, Palette, Check, AlertCircle, ArrowDownLeft, ArrowUpRight, ArrowLeftRight, History, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWallets, type Wallet } from "../lib/useWallets";
@@ -9,6 +9,30 @@ import type { Transaction } from "../data/types";
 
 const presets = ["#0B4D38","#1A5FD0","#003D79","#4C3494","#0B7A52","#B02A3F","#4B5563","#7C3AED"];
 const moneyText = (n: number) => `${n < 0 ? "−" : "+"}${formatRupiah(Math.abs(n))}`;
+const FULL_WALLET_CARD_HEIGHT = 204;
+const WALLET_CARD_GAP = 12;
+function appLanguage(): "id" | "en" {
+  try {
+    const stored = localStorage.getItem("wealthplanner_language") || localStorage.getItem("app_language") || localStorage.getItem("language");
+    if (stored) return stored.toLowerCase().startsWith("en") ? "en" : "id";
+  } catch {}
+  return document.documentElement.lang.toLowerCase().startsWith("en") ? "en" : "id";
+}
+function textColorForBackground(hex: string): string {
+  const safe = /^#[0-9a-f]{6}$/i.test(hex) ? hex : "#123524";
+  const rgb = [1, 3, 5].map((i) => parseInt(safe.slice(i, i + 2), 16) / 255)
+    .map((v) => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const luminance = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  const whiteContrast = 1.05 / (luminance + 0.05);
+  const darkContrast = (luminance + 0.05) / 0.05;
+  return darkContrast >= 4.5 && darkContrast > whiteContrast ? "#0F1A14" : "#FFFFFF";
+}
+function walletTypeLabel(type: Wallet["type"], isId: boolean): string {
+  if (type === "cash") return isId ? "TUNAI" : "CASH";
+  if (type === "investment") return isId ? "INVESTASI" : "INVESTMENT";
+  if (type === "bank") return "BANK";
+  return "E-WALLET";
+}
 function txDate(value: string) {
   const raw = String(value || "");
   const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
@@ -29,7 +53,7 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
   const { wallets, unassigned, totalBalance, loading, error, refresh } = useWallets();
   const finance = useFinanceData(undefined, true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [walletStackSpacing, setWalletStackSpacing] = useState(48);
+  const [walletStackSpacing, setWalletStackSpacing] = useState(0);\n  const [isId, setIsId] = useState(() => appLanguage() === "id");
   const [editing, setEditing] = useState<Wallet | null>(null);
   const [mode, setMode] = useState<"auto"|"custom">("auto");
   const [color, setColor] = useState("#0B4D38");
@@ -42,6 +66,11 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
   const [transferAmount, setTransferAmount] = useState("");
   const [transferNote, setTransferNote] = useState("Transfer antar-wallet");
   const [transferSaving, setTransferSaving] = useState(false);
+  useEffect(() => {
+    const syncLanguage = () => setIsId(appLanguage() === "id");
+    window.addEventListener("wealthplanner:language-changed", syncLanguage);
+    return () => window.removeEventListener("wealthplanner:language-changed", syncLanguage);
+  }, []);
   useEffect(() => { if(editing){setMode(editing.colorMode);setColor(editing.color || editing.resolvedColor);setOpening(String(editing.openingBalance));} },[editing]);
   const selected = wallets.find((wallet) => wallet.id === selectedId) || null;
   const history = useMemo(() => {
@@ -107,50 +136,102 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
     {loading && wallets.length===0 && <p className="py-8 text-center text-slate-500">Memuat wallet…</p>}
     {!selected && !loading && !error && wallets.length===0 && <div className="rounded-2xl border border-dashed p-6 text-center"><WalletIcon className="mx-auto mb-2 text-slate-400"/><p className="font-medium">Belum ada wallet aktif</p><p className="mt-1 text-sm text-slate-500">Tambahkan rekening atau dompet di Pengaturan. Wallet akan tersinkron otomatis.</p><button className="mt-4 rounded-full bg-[#123524] px-4 py-2 text-sm text-white" onClick={()=>navigate("/settings")}>Buka Pengaturan</button></div>}
     {!selected && wallets.length>0 && <div className="grid grid-cols-2 gap-3"><button onClick={()=>navigate("/transaction")} className="flex items-center justify-center gap-2 rounded-2xl bg-[#123524] px-3 py-4 text-sm font-semibold text-white"><ArrowDownLeft size={18}/> Catat transaksi</button><button onClick={()=>{setTransferFrom(wallets[0]?.name || "");setTransferTo(wallets[1]?.name || "");setTransferOpen(true);setNotice("");}} disabled={wallets.length<2} className="flex items-center justify-center gap-2 rounded-2xl border border-[#D4E5DA] bg-white px-3 py-4 text-sm font-semibold text-[#123524] disabled:opacity-40"><ArrowLeftRight size={18}/> Transfer</button></div>}
-    {!selected && wallets.length > 0 && <section className="space-y-3">
+    {!selected && wallets.length > 0 && <section className="space-y-3 pb-[calc(140px+env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-base font-semibold text-slate-900 dark:text-white">Wallet kamu · {wallets.length}</h2>
         <button type="button" onClick={() => navigate("/settings")} className="min-h-9 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-[#0B6B47] transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-[rgb(var(--c-surface))] dark:text-emerald-300 dark:hover:bg-white/5">+ Tambah</button>
       </div>
-      <div className="flex items-center gap-3 px-1 pb-1 pt-0.5">
-        <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">Tumpukan</span>
-        <input aria-label="Atur jarak tumpukan wallet" type="range" min={48} max={88} step={4} value={walletStackSpacing} onChange={(event) => setWalletStackSpacing(Number(event.target.value))} className="h-1.5 min-w-0 flex-1 cursor-pointer accent-[#0B6B47]" />
-        <span className="shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">{walletStackSpacing === 48 ? "Rapat" : walletStackSpacing >= 80 ? "Terbuka" : "Sedang"}</span>
+      <div className="flex min-h-11 items-center gap-3 px-1 pb-1 pt-0.5">
+        <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">{isId ? "Tumpukan" : "Stacked"}</span>
+        <input aria-label={isId ? "Kerapatan tumpukan kartu" : "Card stack spacing"} type="range" min={0} max={100} step={1} value={walletStackSpacing} onChange={(event) => setWalletStackSpacing(Number(event.target.value))} className="h-11 min-w-0 flex-1 cursor-pointer accent-[#0B6B47]" />
+        <span className="shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">{isId ? "Rapat" : "Spread"}</span>
       </div>
-      <div className="max-h-[560px] overflow-y-auto overscroll-contain rounded-[22px]">
-        <div className="relative w-full" style={{height: (wallets.length - 1) * walletStackSpacing + 176}}>
-          {wallets.map((wallet, index) => {
-            const isFront = index === wallets.length - 1;
-            const walletColor = wallet.resolvedColor || resolveWalletColor(wallet.name);
-            return <button
-              key={wallet.id}
-              type="button"
-              aria-label={`Buka detail ${wallet.name}`}
-              onClick={() => { setSelectedId(wallet.id); setNotice(""); }}
-              className="absolute left-0 top-0 block min-h-[48px] w-full overflow-hidden rounded-t-[22px] text-left text-white transition-transform duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
-              style={{
-                top: index * walletStackSpacing,
-                zIndex: index + 1,
-                height: isFront ? 176 : 48,
-                backgroundColor: walletColor,
-                boxShadow: "0 -4px 12px rgb(0 0 0 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.18)",
-              } as CSSProperties}
-            >
-              <div className="flex h-12 items-start justify-between gap-3 px-[18px] pt-[11px] text-base font-semibold leading-5">
-                <span className="min-w-0 flex-1 truncate">{wallet.name}</span>
-                <span className="shrink-0 whitespace-nowrap tabular-nums">{formatRupiah(wallet.balance)}</span>
-              </div>
-              {isFront && <div className="px-[18px] pb-4 pt-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/80">{wallet.type}</p>
-                <p className="mt-1 text-sm text-white/90">Saldo awal {formatRupiah(wallet.openingBalance)}</p>
-                <div className="mt-2 flex items-center justify-between gap-3">
-                  <p className="text-sm text-white/90">{wallet.txCount} transaksi wallet</p>
-                  <span className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-black/15 px-4 text-sm font-semibold text-white">Buka <ChevronRight size={16} className="ml-1"/></span>
+      <div className="w-full min-w-0">
+        {(() => {
+          const visibleHeight = 88 + (FULL_WALLET_CARD_HEIGHT + WALLET_CARD_GAP - 88) * walletStackSpacing / 100;
+          const cardStep = visibleHeight;
+          const allTransactions = finance.transactions;
+          const currentMonth = new Date().getMonth();
+          const currentYear = new Date().getFullYear();
+          const inCurrentMonth = (tx: Transaction) => {
+            const date = txDate(tx.date);
+            if (date) {
+              const d = new Date(date);
+              if (d.getMonth() !== currentMonth || d.getFullYear() !== currentYear) return false;
+            } else if (String(tx.month || "").toLowerCase() !== new Date().toLocaleString("en-US", { month: "long" }).toLowerCase() || Number(tx.year || currentYear) !== currentYear) {
+              return false;
+            }
+            return true;
+          };
+          return <div className="relative w-full min-w-0" style={{ height: Math.max(0, (wallets.length - 1) * cardStep + FULL_WALLET_CARD_HEIGHT) }}>
+            {wallets.map((wallet, index) => {
+              const walletColor = wallet.resolvedColor || resolveWalletColor(wallet.name);
+              const foreground = textColorForBackground(walletColor);
+              const normalizedName = wallet.name.trim().toLowerCase();
+              const walletTransactions = allTransactions.filter((tx) =>
+                (String(tx.wallet || "").trim().toLowerCase() === normalizedName ||
+                  String(tx.toWallet || "").trim().toLowerCase() === normalizedName) && inCurrentMonth(tx)
+              ).sort((a, b) => txDate(b.date) - txDate(a.date) || Number(b.sheetRow || 0) - Number(a.sheetRow || 0));
+              const moneyIn = walletTransactions.filter((tx) => tx.type === "Income" || (tx.type === "Transfer" && String(tx.toWallet || "").trim().toLowerCase() === normalizedName)).reduce((sum, tx) => sum + tx.amount, 0);
+              const moneyOut = walletTransactions.filter((tx) => tx.type === "Expense" || (tx.type === "Transfer" && String(tx.wallet || "").trim().toLowerCase() === normalizedName)).reduce((sum, tx) => sum + tx.amount, 0);
+              const walletExtras = wallet as Wallet & { accountNumber?: string; account_number?: string; account?: string; maskedAccount?: string };
+              const account = walletExtras.maskedAccount || walletExtras.accountNumber || walletExtras.account_number || walletExtras.account;
+              const latest = walletTransactions[0];
+              return <button
+                key={wallet.id}
+                type="button"
+                aria-label={`${isId ? "Buka detail" : "Open details for"} ${wallet.name}`}
+                onClick={() => { setSelectedId(wallet.id); setNotice(""); }}
+                className="absolute left-0 top-0 block w-full min-w-0 rounded-t-[24px] rounded-b-[24px] text-left transition-[top,height,transform] duration-[180ms] ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 motion-reduce:transition-none"
+                style={{
+                  top: index * cardStep,
+                  zIndex: index + 1,
+                  height: FULL_WALLET_CARD_HEIGHT,
+                  backgroundColor: walletColor,
+                  color: foreground,
+                  border: "none",
+                  opacity: 1,
+                  boxShadow: index === wallets.length - 1 ? "0 -6px 16px rgba(0,0,0,.18)" : "0 -6px 16px rgba(0,0,0,.18)",
+                  padding: 0,
+                  marginTop: 0,
+                  overflow: "hidden",
+                }}
+              >
+                <div className="flex h-[54px] items-center justify-between gap-2 px-4 pt-1">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[15px] font-semibold leading-5">{wallet.name}</p>
+                    <p className="mt-0.5 text-[11px] font-medium uppercase leading-3 tracking-[0.1em]" style={{ opacity: 0.85 }}>{walletTypeLabel(wallet.type, isId)}</p>
+                  </div>
+                  <span className="max-w-[56%] shrink-0 whitespace-nowrap text-right text-[clamp(12px,3.5vw,16px)] font-semibold leading-5 tabular-nums">{formatRupiah(wallet.balance)}</span>
                 </div>
-              </div>}
-            </button>;
-          })}
-        </div>
+                <div className="px-4 pb-3 pt-1" style={{ color: foreground }}>
+                  {account && <p className="mb-2 text-xs tabular-nums" style={{ opacity: 0.85 }}>•••• {String(account).replace(/\s/g, "").slice(-4)}</p>}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="min-w-0 rounded-xl bg-black/[0.07] px-2.5 py-2">
+                      <p className="text-[10px] leading-4" style={{ opacity: 0.8 }}>{isId ? "Masuk bulan ini" : "Money in this month"}</p>
+                      <p className="mt-0.5 truncate text-xs font-semibold tabular-nums">{formatRupiah(moneyIn)}</p>
+                    </div>
+                    <div className="min-w-0 rounded-xl bg-black/[0.07] px-2.5 py-2">
+                      <p className="text-[10px] leading-4" style={{ opacity: 0.8 }}>{isId ? "Keluar bulan ini" : "Money out this month"}</p>
+                      <p className="mt-0.5 truncate text-xs font-semibold tabular-nums">{formatRupiah(moneyOut)}</p>
+                    </div>
+                  </div>
+                  {latest && <div className="mt-2 min-w-0">
+                    <p className="text-[10px] leading-4" style={{ opacity: 0.8 }}>{isId ? "Transaksi terakhir" : "Latest transaction"}</p>
+                    <div className="flex min-w-0 items-center justify-between gap-2">
+                      <p className="min-w-0 flex-1 truncate text-xs font-medium">{latest.description || latest.category}</p>
+                      <p className="shrink-0 text-xs font-semibold tabular-nums">{moneyText(latest.type === "Expense" ? -latest.amount : latest.amount)}</p>
+                    </div>
+                  </div>}
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <p className="truncate text-[11px]" style={{ opacity: 0.8 }}>{wallet.txCount} {isId ? "transaksi wallet" : "wallet transactions"}</p>
+                    <span className="inline-flex min-h-8 shrink-0 items-center rounded-full bg-black/[0.08] px-3 text-xs font-semibold">{isId ? "Buka" : "Open"} <ChevronRight size={14} className="ml-1"/></span>
+                  </div>
+                </div>
+              </button>;
+            })}
+          </div>;
+        })()}
       </div>
     </section>}
     {selected && <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm"><div className="flex items-center gap-2 border-b border-slate-100 p-4 sm:p-5"><History size={18} className="text-[#0B6B47]"/><div><h2 className="font-semibold text-slate-900">Riwayat transaksi</h2><p className="text-xs text-slate-500">{history.length} transaksi terkait wallet ini</p></div></div>{finance.loading ? <p className="p-6 text-center text-sm text-slate-500">Memuat riwayat…</p> : history.length===0 ? <div className="p-8 text-center"><ReceiptIcon/><p className="mt-2 font-medium text-slate-800">Belum ada riwayat transaksi</p><p className="mt-1 text-sm text-slate-500">Transaksi baru yang memilih wallet ini akan muncul di sini.</p><button onClick={()=>navigate("/transaction")} className="mt-4 rounded-full bg-[#123524] px-4 py-2 text-sm text-white">Buka transaksi</button></div> : <div className="divide-y divide-slate-100">{history.map((tx,i)=>{const amount=signedAmount(tx);const Icon=tx.type==="Income"?ArrowDownLeft:tx.type==="Expense"?ArrowUpRight:ArrowLeftRight;return <div key={`${tx.sheetRow||"tx"}-${tx.date}-${i}`} className="flex items-center gap-3 p-4"><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${amount<0?"bg-rose-50 text-rose-600":amount>0?"bg-emerald-50 text-emerald-700":"bg-slate-100 text-slate-500"}`}><Icon size={18}/></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-slate-900">{tx.description || tx.category}</p><p className="mt-0.5 text-xs text-slate-500">{tx.category} · {dateLabel(tx.date)}{tx.type==="Transfer"||tx.type==="Saving"?` · ${tx.wallet || "—"} → ${tx.toWallet || "—"}`:""}</p></div><p className={`shrink-0 text-right text-sm font-semibold tabular-nums ${amount<0?"text-rose-600":amount>0?"text-emerald-700":"text-slate-500"}`}>{moneyText(amount)}</p></div>})}</div>}</section>}
