@@ -7,8 +7,27 @@ import { assetGroups, totalAssets as mockTotalAssets, assetTarget, stocksID as m
 const TOKEN_KEY = "wealthplanner_token";
 const API_BASE = "/api";
 
+/**
+ * Resolve a dashboard token synchronously.
+ * A fresh token in the URL takes precedence over a stale token in localStorage.
+ * This also avoids a race where a page action runs before a React effect captures the URL.
+ */
 export function getStoredToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
+  const params = new URLSearchParams(window.location.search);
+  const urlToken = (params.get("token") || params.get("ref") || "").trim();
+  if (urlToken) {
+    try {
+      localStorage.setItem(TOKEN_KEY, urlToken);
+    } catch {
+      // Continue with the URL token if browser storage is unavailable.
+    }
+    return urlToken;
+  }
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
 }
 
 export function setStoredToken(token: string) {
@@ -21,10 +40,15 @@ export function clearStoredToken() {
 
 function captureTokenFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const token = params.get("token");
+  const token = (params.get("token") || params.get("ref") || "").trim();
   if (token) {
     setStoredToken(token);
-    window.history.replaceState({}, "", window.location.pathname);
+    // Remove only authentication parameters, preserving unrelated query params and the hash.
+    params.delete("token");
+    params.delete("ref");
+    const query = params.toString();
+    const nextUrl = window.location.pathname + (query ? `?${query}` : "") + window.location.hash;
+    window.history.replaceState({}, "", nextUrl);
   }
 }
 
