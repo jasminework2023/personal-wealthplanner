@@ -1,4 +1,4 @@
-export type TransactionType = "Income" | "Expense" | "Saving";
+export type TransactionType = "Income" | "Expense" | "Saving" | "Transfer";
 
 export interface Transaction {
   date: string; // dd/mm/yyyy
@@ -8,6 +8,8 @@ export interface Transaction {
   category: string;
   description: string;
   amount: number;
+  wallet?: string;
+  toWallet?: string;
   sheetRow?: number;
 }
 

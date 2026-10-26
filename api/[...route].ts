@@ -12,6 +12,7 @@ import h_delete_asset_item from "../server/api/delete-asset-item.js";
 import h_delete_transaction from "../server/api/delete-transaction.js";
 import h_receipt_ai from "../server/api/receipt-ai.js";
 import h_setup from "../server/api/setup.js";
+import h_wallets from "../server/api/wallets.js";
 import h_update_asset_target from "../server/api/update-asset-target.js";
 import h_update_asset from "../server/api/update-asset.js";
 import h_update_budget from "../server/api/update-budget.js";
@@ -36,6 +37,7 @@ const handlers: Record<string, (req: VercelRequest, res: VercelResponse) => unkn
   "delete-transaction": h_delete_transaction,
   "receipt-ai": h_receipt_ai,
   setup: h_setup,
+  wallets: h_wallets,
   "update-asset-target": h_update_asset_target,
   "update-asset": h_update_asset,
   "update-budget": h_update_budget,
