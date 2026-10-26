@@ -82,7 +82,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (header < 0) throw new Error("Header Category pada Setup!K:L tidak ditemukan");
     const active = new Map<string,string>();
     for (let i=header+1;i<setupRows.length;i++) {
-      const name=display(setupRows[i]?.[0]); if (!name || norm(name)==="total") break;
+      const name=display(setupRows[i]?.[0]); if (!name) continue; if (norm(name)==="total") break;
       const status=norm(setupRows[i]?.[1]);
       if (["true","yes","1","active","aktif","checked","✓"].includes(status)) active.set(norm(name),name);
     }
