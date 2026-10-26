@@ -57,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ? "Pembayaran sudah terkonfirmasi. Akses dashboard aktif."
         : "Pembayaran belum terkonfirmasi. Sistem akan mengaktifkan akses otomatis setelah webhook pembayaran diterima.",
       username: user.username,
-      dashboardUrl: `https://wealthplanner.id/dashboard/welcome?token=${encodeURIComponent(user.dashboard_token)}`,
+      dashboardUrl: `https://wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}`,
       spreadsheetUrl: user.spreadsheet_id
         ? `https://docs.google.com/spreadsheets/d/${user.spreadsheet_id}/edit`
         : null,
