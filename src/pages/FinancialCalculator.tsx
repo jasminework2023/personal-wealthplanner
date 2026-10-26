@@ -348,7 +348,7 @@ function InsuranceCalc({ onSaveResult, onNavigate }) {
             <BreakdownRow label="Income replacement" value={formatIDR(Math.round(adjustedAnnualIncome * yearsCover))} sub={`${yearsCover} tahun × ${formatIDR(Math.round(adjustedAnnualIncome))}/thn (sudah adjusted inflasi ${inflationRate}%)`} />
             <BreakdownRow label="Pelunasan utang" value={formatIDR(debts)} sub="Sisa hutang aktif" />
             <BreakdownRow label="Dana tanggungan" value={formatIDR(dependents * 50000000)} sub={`${dependents} orang × Rp 50jt`} />
-            <div className="divider" style={{ margin: "6px 0" }} />
+            <div className="divider" style={{ margin: "12px 0" }} />
             <BreakdownRow label="Total kebutuhan" value={formatIDR(Math.round(dimNeed))} highlight />
             <BreakdownRow label="Coverage sekarang" value={`-${formatIDR(existing)}`} muted />
           </div>
@@ -994,228 +994,145 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
 
   const COLORS = ["#5EE5B0", "#FFB800", "#FF9A6B", "#C6F24E", "#7C9CFF", "#E5A4FF", "#FFD66B"];
 
+  const pctTarget = targetWarisan > 0 ? Math.min(100, Math.round((Math.max(0, hartaBersih) / targetWarisan) * 100)) : 0;
+  const kurangTarget = Math.max(0, targetWarisan - Math.max(0, hartaBersih));
+  const totalNominalBagi = ahliWaris.reduce((sum, aw) => sum + aw.nominal, 0);
+  const modeBtn = (active) => ({
+    flex: 1, minWidth: 0, padding: "8px 6px", borderRadius: 10, border: 0, cursor: "pointer",
+    font: "inherit", fontSize: 12, fontWeight: 700,
+    background: active ? "rgb(var(--c-accent))" : "rgb(var(--c-cream))",
+    color: active ? "rgb(var(--c-accent-ink))" : "rgb(var(--c-forest-800))",
+  });
+  const th = { padding: "6px 0", fontWeight: 600, color: "rgb(var(--c-forest-800))", fontSize: 11 };
+  const td = { padding: "7px 0", fontSize: 12, fontWeight: 600, fontVariantNumeric: "tabular-nums" };
+
   return (
-    <div>
-      <Section style={{ paddingTop: 12, paddingBottom: 4 }}>
-        <button
-          onClick={() => onNavigate({ name: "calc" })}
-          style={{
-            background: "rgb(var(--c-cream))", border: 0, color: "rgb(var(--c-forest-800))",
-            padding: "8px 14px", borderRadius: 999, font: "inherit",
-            fontSize: 13, fontWeight: 500, cursor: "pointer", marginBottom: 8,
-            display: "inline-flex", alignItems: "center", gap: 6,
-          }}
-        >
-          ← Semua kalkulator
-        </button>
-
-      </Section>
-
-      <Section style={{ paddingTop: 8, paddingBottom: 12 }}>
-        <div className="wp-waris-grid">
-          <style>{`.wp-waris-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}.wp-waris-grid>*{min-width:0}@media(min-width:900px){.wp-waris-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px}.wp-waris-input{position:sticky;top:88px}}.wp-waris-grid button{font-family:inherit}`}</style>
-          {/* INPUT SECTION */}
-          <div className="card wp-waris-input" style={{ padding: 16 }}>
-            <h3 style={{ fontSize: 18, marginBottom: 12 }}>Input Data Warisan</h3>
-            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>{[{ value: "umum", label: "Umum" }, { value: "syariah", label: "Syariah / Faraidh" }].map((opt) => <button key={opt.value} type="button" onClick={() => setModeWarisan(opt.value)} style={{ flex: 1, minWidth: 0, padding: "10px 8px", borderRadius: 10, border: modeWarisan === opt.value ? "1px solid rgb(var(--c-accent))" : "1px solid rgb(var(--c-border))", background: modeWarisan === opt.value ? "rgb(var(--c-accent))" : "rgb(var(--c-cream))", color: modeWarisan === opt.value ? "rgb(var(--c-accent-ink))" : "rgb(var(--c-forest-800))", font: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{opt.label}</button>)}</div>
-            {modeWarisan === "umum" && <div style={{ fontSize: 12, color: "rgb(var(--c-forest-800))", lineHeight: 1.5, marginBottom: 14 }}>Mode umum menampilkan estimasi harta bersih dan target warisan. Pembagian faraidh tersedia pada mode Syariah.</div>}
-            <div className="stack" style={{ gap: 12 }}>
-              <div>
-                <label className="label-sm">Total Aset</label>
-                <NumberInput label="" prefix="Rp" value={totalAset} onChange={setTotalAset} step={50000000} />
-              </div>
-
-              <div>
-                <label className="label-sm">Hutang</label>
-                <NumberInput label="" prefix="Rp" value={hutang} onChange={setHutang} step={10000000} />
-              </div>
-
-              <div>
-                <label className="label-sm">Biaya Pemakaman & Kewajiban</label>
-                <NumberInput label="" prefix="Rp" value={biayaPemakaman} onChange={setBiayaPemakaman} step={5000000} />
-              </div>
-
-              <div className="divider" style={{ margin: "12px 0" }} />
-
-              <div>
-                <label className="label-sm">Target Warisan</label>
-                <NumberInput label="" prefix="Rp" value={targetWarisan} onChange={setTargetWarisan} step={50000000} />
-                <div style={{ fontSize: 11, marginTop: 6, color: "rgb(var(--c-muted))" }}>Target digunakan untuk melihat kecukupan harta bersih.</div>
-              </div>
-              {modeWarisan === "syariah" && <div><label className="label-sm">Ahli Waris</label></div>}
-
-              <div>
-                <label className="label-sm">Jenis Kelamin Pewaris</label>
-                <div className="row" style={{ gap: 8, marginTop: 6 }}>
-                  {[
-                    { v: "laki", label: "Laki-laki" },
-                    { v: "perempuan", label: "Perempuan" },
-                  ].map((opt) => (
-                    <button
-                      key={opt.v}
-                      onClick={() => setGenderPewaris(opt.v)}
-                      style={{
-                        flex: 1,
-                        padding: "10px 12px",
-                        borderRadius: 10,
-                        border: 0,
-                        cursor: "pointer",
-                        font: "inherit",
-                        fontSize: 13,
-                        fontWeight: 600,
-                        background: genderPewaris === opt.v ? "rgb(var(--c-accent))" : "rgb(var(--c-cream))",
-                        color: genderPewaris === opt.v ? "rgb(var(--c-accent-ink))" : "rgb(var(--c-forest-800))",
-                      }}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="muted" style={{ fontSize: 11, marginTop: 6, lineHeight: 1.5 }}>
-                  Menentukan pasangan ahli waris: laki-laki → istri, perempuan → suami.
-                </div>
-              </div>
-
-              {modeWarisan === "syariah" && <>
-              {genderPewaris === "laki" ? (
-                <div>
-                  <label className="label-sm">Jumlah Istri</label>
-                  <Slider label="" value={jumlahIstri} onChange={setJumlahIstri} min={0} max={4} step={1} format={(v) => `${v}`} />
-                </div>
-              ) : (
-                <label style={{ display: "flex", gap: 8, alignItems: "center", cursor: "pointer" }}>
-                  <input type="checkbox" checked={suamiHidup} onChange={(e) => setSuamiHidup(e.target.checked)} style={{ width: 18, height: 18, cursor: "pointer" }} />
-                  <span style={{ fontSize: 14, fontWeight: 500 }}>Suami masih hidup</span>
-                </label>
-              )}
-
-              <div className="row" style={{ gap: 12 }}>
-                <div style={{ flex: 1 }}>
-                  <label className="label-sm">Anak Laki-laki</label>
-                  <Slider label="" value={jumlahAnakLaki} onChange={setJumlahAnakLaki} min={0} max={10} step={1} format={(v) => `${v}`} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label className="label-sm">Anak Perempuan</label>
-                  <Slider label="" value={jumlahAnakPerempuan} onChange={setJumlahAnakPerempuan} min={0} max={10} step={1} format={(v) => `${v}`} />
-                </div>
-              </div>
-
-              <div className="row" style={{ gap: 12 }}>
-                <label style={{ display: "flex", gap: 8, alignItems: "center", cursor: "pointer", flex: 1 }}>
-                  <input type="checkbox" checked={ayahHidup} onChange={(e) => setAyahHidup(e.target.checked)} style={{ width: 18, height: 18, cursor: "pointer" }} />
-                  <span style={{ fontSize: 14, fontWeight: 500 }}>Ayah masih hidup</span>
-                </label>
-                <label style={{ display: "flex", gap: 8, alignItems: "center", cursor: "pointer", flex: 1 }}>
-                  <input type="checkbox" checked={ibuHidup} onChange={(e) => setIbuHidup(e.target.checked)} style={{ width: 18, height: 18, cursor: "pointer" }} />
-                  <span style={{ fontSize: 14, fontWeight: 500 }}>Ibu masih hidup</span>
-                </label>
-              </div>
-              </>}
-            </div>
+    <CalcLayout
+      calcId="warisan"
+      onNavigate={onNavigate}
+      onSave={() => onSaveResult({
+        id: "warisan",
+        title: "Perencanaan Warisan",
+        value: modeWarisan === "umum"
+          ? `Harta bersih ${formatIDR(Math.round(hartaBersih))} · ${pctTarget}% dari target`
+          : `${ahliWaris.length} ahli waris · Total ${formatIDR(Math.round(totalNominalBagi))}`,
+        plan: { type: "inheritance", targetAmount: modeWarisan === "umum" ? targetWarisan : totalAset, preparedAssets: totalAset - hutang, timeframe: 1 },
+      })}
+      inputs={
+        <>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="button" onClick={() => setModeWarisan("umum")} style={modeBtn(modeWarisan === "umum")}>Umum</button>
+            <button type="button" onClick={() => setModeWarisan("syariah")} style={modeBtn(modeWarisan === "syariah")}>Syariah (Faraidh)</button>
           </div>
-
-          {/* OUTPUT SECTION */}
-          <div>
-            {/* HARTA BERSIH */}
-            <div className="card" style={{ marginBottom: 12, padding: 16, background: "rgb(var(--c-forest-50))" }}>
-              <div className="muted" style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>TOTAL HARTA BERSIH</div>
-              <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontSize: "clamp(26px, 8vw, 36px)", fontWeight: 700, lineHeight: 1 }}>
-                {formatIDR(Math.max(0, hartaBersih))}
+          <NumberInput label="Total Aset" prefix="Rp" value={totalAset} onChange={setTotalAset} step={50000000} />
+          <NumberInput label="Hutang" prefix="Rp" value={hutang} onChange={setHutang} step={10000000} />
+          <NumberInput label="Biaya Pemakaman & Kewajiban" prefix="Rp" value={biayaPemakaman} onChange={setBiayaPemakaman} step={5000000} />
+          <NumberInput label="Target Warisan" prefix="Rp" value={targetWarisan} onChange={setTargetWarisan} step={50000000} hint="Target digunakan untuk melihat kecukupan harta bersih." />
+          {modeWarisan === "syariah" && (
+            <>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "rgb(var(--c-forest-800))", marginBottom: 7 }}>Jenis Kelamin Pewaris</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button type="button" onClick={() => setGenderPewaris("laki")} style={modeBtn(genderPewaris === "laki")}>Laki-laki</button>
+                  <button type="button" onClick={() => setGenderPewaris("perempuan")} style={modeBtn(genderPewaris === "perempuan")}>Perempuan</button>
+                </div>
+                <div style={{ fontSize: 11, marginTop: 5, lineHeight: 1.4, color: "rgb(var(--c-muted))" }}>Menentukan pasangan ahli waris: laki-laki → istri, perempuan → suami.</div>
               </div>
-              <div style={{ fontSize: 12, color: "rgb(var(--c-muted))", marginTop: 12, lineHeight: 1.6 }}>
-                <div>Total Aset: {formatIDR(totalAset)}</div>
-                <div>- Hutang: {formatIDR(hutang)}</div>
-                <div>- Biaya Pemakaman: {formatIDR(biayaPemakaman)}</div>
-              </div>
-            </div>
-
-            {/* DISTRIBUTION TABLE */}
-            {modeWarisan === "syariah" && <div className="card" style={{ marginBottom: 12, padding: 16, overflow: "auto" }}>
-              <h4 style={{ marginBottom: 16 }}>Pembagian Warisan</h4>
-              {ahliWaris.length > 0 ? (
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-                  <thead>
-                    <tr style={{ borderBottom: "1px solid rgb(var(--c-border))" }}>
-                      <th style={{ textAlign: "left", padding: "10px 0", fontWeight: 600, color: "rgb(var(--c-forest-800))", fontSize: 12 }}>Ahli Waris</th>
-                      <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "rgb(var(--c-forest-800))", fontSize: 12 }}>Fraksi</th>
-                      <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "rgb(var(--c-forest-800))", fontSize: 12 }}>%</th>
-                      <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "rgb(var(--c-forest-800))", fontSize: 12 }}>Nominal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ahliWaris.map((aw, idx) => {
-                      return (
-                        <tr key={idx} style={{ borderBottom: "1px solid rgb(var(--c-border))" }}>
-                          <td style={{ padding: "10px 0", fontWeight: 500 }}>
-                            <div>{aw.nama}</div>
-                            <div style={{ fontSize: 11, color: "rgb(var(--c-muted))" }}>{aw.status}</div>
-                          </td>
-                          <td style={{ textAlign: "right", padding: "10px 0", fontVariantNumeric: "tabular-nums", fontWeight: 600, fontSize: 12 }}>
-                            {aw.fraksiText}
-                          </td>
-                          <td style={{ textAlign: "right", padding: "10px 0", fontVariantNumeric: "tabular-nums", fontWeight: 600, fontSize: 12 }}>
-                            {(aw.fraksi * 100).toFixed(1)}%
-                          </td>
-                          <td style={{ textAlign: "right", padding: "10px 0", fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: 13, color: "rgb(var(--c-accent-text))" }}>
-                            {formatIDR(Math.round(aw.nominal))}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              {genderPewaris === "laki" ? (
+                <Slider label="Jumlah Istri" value={jumlahIstri} onChange={setJumlahIstri} min={0} max={4} step={1} format={(v) => `${v}`} />
               ) : (
-                <div className="muted" style={{ fontSize: 13 }}>Tidak ada ahli waris berdasarkan input.</div>
+                <label style={{ display: "flex", gap: 8, alignItems: "center", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
+                  <input type="checkbox" checked={suamiHidup} onChange={(e) => setSuamiHidup(e.target.checked)} style={{ width: 16, height: 16 }} /> Suami masih hidup
+                </label>
               )}
-            </div>}
-
-            {/* PIE CHART */}
-            {modeWarisan === "syariah" && ahliWaris.length > 0 && (
-              <div className="card" style={{ marginBottom: 20, padding: 20 }}>
-                <h4 style={{ marginBottom: 16 }}>Visualisasi Pembagian</h4>
-                <SimplePieChart data={pieData} colors={COLORS} />
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 10 }}>
+                <Slider label="Anak Laki-laki" value={jumlahAnakLaki} onChange={setJumlahAnakLaki} min={0} max={10} step={1} format={(v) => `${v}`} />
+                <Slider label="Anak Perempuan" value={jumlahAnakPerempuan} onChange={setJumlahAnakPerempuan} min={0} max={10} step={1} format={(v) => `${v}`} />
               </div>
-            )}
-
-            {/* DISCLAIMER */}
-            <div className="card" style={{ padding: 14, background: "rgb(var(--c-cream))", borderLeft: "3px solid rgb(var(--c-accent))", fontSize: 12, color: "rgb(var(--c-forest-800))", lineHeight: 1.6 }}>
-              <strong style={{ color: "rgb(var(--c-charcoal))" }}>📋 DISCLAIMER:</strong><br />
-              Simulasi ini bersifat edukatif dan dapat berbeda tergantung kondisi ahli waris serta ketentuan syariah yang berlaku. Untuk kasus kompleks, konsultasikan dengan ahli faraidh atau Pengadilan Agama.
-            </div>
-
-            {/* CTA BUTTONS */}
-            <div className="row" style={{ gap: 12, marginTop: 20, flexWrap: "wrap" }}>
-              <button
-                onClick={() => {
-                  const totalNominal = ahliWaris.reduce((sum, aw) => sum + aw.nominal, 0);
-                  onSaveResult({ id: "warisan", title: "Perencanaan Warisan", value: `${ahliWaris.length} ahli waris · Total ${formatIDR(Math.round(totalNominal))}`, plan: { type: "inheritance", targetAmount: totalAset, preparedAssets: totalAset - hutang, timeframe: 1 } });
-                }}
-                style={{
-                  background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))", border: 0, borderRadius: 12,
-                  padding: "14px 20px", fontSize: 15, fontWeight: 600, cursor: "pointer", flex: 1, minWidth: 180,
-                }}
-              >
-                ✓ Simpan Hasil
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const totalNominal = ahliWaris.reduce((sum, aw) => sum + aw.nominal, 0);
-                  onSaveResult({ id: "warisan", title: "Perencanaan Warisan", value: `${ahliWaris.length} ahli waris · Total ${formatIDR(Math.round(totalNominal))}`, plan: { type: "inheritance", targetAmount: totalAset, preparedAssets: totalAset - hutang, timeframe: 1 } });
-                  onNavigate({ name: "protection", calculatorId: "warisan" });
-                }}
-                style={{
-                  background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))", border: "1px solid rgb(var(--c-accent))", borderRadius: 12,
-                  padding: "14px 20px", fontSize: 15, fontWeight: 600, cursor: "pointer", flex: 1, minWidth: 180,
-                }}
-              >
-                Lindungi Rencana Ini →
-              </button>
-            </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 10 }}>
+                <label style={{ display: "flex", gap: 8, alignItems: "center", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
+                  <input type="checkbox" checked={ayahHidup} onChange={(e) => setAyahHidup(e.target.checked)} style={{ width: 16, height: 16 }} /> Ayah masih hidup
+                </label>
+                <label style={{ display: "flex", gap: 8, alignItems: "center", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
+                  <input type="checkbox" checked={ibuHidup} onChange={(e) => setIbuHidup(e.target.checked)} style={{ width: 16, height: 16 }} /> Ibu masih hidup
+                </label>
+              </div>
+            </>
+          )}
+        </>
+      }
+      results={
+        <div style={{ display: "grid", gap: 10 }}>
+          <ResultTile
+            label="Total harta bersih"
+            value={formatIDR(Math.round(Math.max(0, hartaBersih)))}
+            sub={`Aset ${formatIDR(totalAset)} − Hutang ${formatIDR(hutang)} − Pemakaman ${formatIDR(biayaPemakaman)}`}
+          />
+          {modeWarisan === "umum" && (
+            <Card style={{ padding: 14 }}>
+              <h4 style={{ margin: "0 0 8px", fontSize: 14 }}>Target Warisan</h4>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 5 }}>
+                <span style={{ color: "rgb(var(--c-muted))" }}>Harta bersih vs target</span><b>{pctTarget}%</b>
+              </div>
+              <div style={{ height: 8, borderRadius: 8, background: "rgb(var(--c-border))", overflow: "hidden", marginBottom: 8 }}>
+                <div style={{ width: `${pctTarget}%`, height: "100%", background: "rgb(var(--c-accent))" }} />
+              </div>
+              <BreakdownRow label="Target warisan" value={formatIDR(targetWarisan)} />
+              <BreakdownRow label="Total harta bersih" value={formatIDR(Math.round(Math.max(0, hartaBersih)))} />
+              <BreakdownRow label={kurangTarget > 0 ? "Kekurangan dari target" : "Target tercapai"} value={formatIDR(Math.round(kurangTarget))} highlight />
+              <div style={{ fontSize: 11, marginTop: 8, color: "rgb(var(--c-muted))" }}>Pembagian ke ahli waris (faraidh) hanya ditampilkan pada mode Syariah.</div>
+            </Card>
+          )}
+          {modeWarisan === "syariah" && (
+            <Card style={{ padding: 14, overflow: "auto" }}>
+              <h4 style={{ margin: "0 0 6px", fontSize: 14 }}>Pembagian Warisan (Faraidh)</h4>
+              {ahliWaris.length > 0 ? (
+                <>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid rgb(var(--c-border))" }}>
+                        <th style={{ ...th, textAlign: "left" }}>Ahli Waris</th>
+                        <th style={{ ...th, textAlign: "right" }}>Fraksi</th>
+                        <th style={{ ...th, textAlign: "right" }}>%</th>
+                        <th style={{ ...th, textAlign: "right" }}>Nominal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ahliWaris.map((aw, idx) => (
+                        <tr key={idx} style={{ borderBottom: "1px solid rgb(var(--c-border))" }}>
+                          <td style={{ padding: "7px 0", fontSize: 12, fontWeight: 600 }}>
+                            <div>{aw.nama}</div>
+                            <div style={{ fontSize: 10, fontWeight: 400, color: "rgb(var(--c-muted))" }}>{aw.status}</div>
+                          </td>
+                          <td style={{ ...td, textAlign: "right" }}>{aw.fraksiText}</td>
+                          <td style={{ ...td, textAlign: "right" }}>{(aw.fraksi * 100).toFixed(1).replace(".", ",")}%</td>
+                          <td style={{ ...td, textAlign: "right", color: "rgb(var(--c-accent-text))" }}>{formatIDR(Math.round(aw.nominal))}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700, marginTop: 8 }}>
+                    <span>Total dibagikan</span><span style={{ fontVariantNumeric: "tabular-nums" }}>{formatIDR(Math.round(totalNominalBagi))}</span>
+                  </div>
+                  {adaAul && <div style={{ fontSize: 11, marginTop: 6, color: "rgb(var(--c-muted))" }}>Terjadi 'aul: bagian dikurangi secara proporsional.</div>}
+                </>
+              ) : (
+                <div style={{ fontSize: 12, color: "rgb(var(--c-muted))" }}>Belum ada ahli waris yang dipilih.</div>
+              )}
+            </Card>
+          )}
+          {modeWarisan === "syariah" && ahliWaris.length > 0 && (
+            <Card style={{ padding: 14 }}>
+              <h4 style={{ margin: "0 0 8px", fontSize: 14 }}>Visualisasi Pembagian</h4>
+              <SimplePieChart data={pieData} colors={COLORS} />
+            </Card>
+          )}
+          <div style={{ padding: "10px 12px", borderRadius: 12, background: "rgb(var(--c-cream))", borderLeft: "3px solid rgb(var(--c-accent))", fontSize: 11, lineHeight: 1.5, color: "rgb(var(--c-forest-800))" }}>
+            <strong>Disclaimer:</strong> Simulasi ini bersifat edukatif dan dapat berbeda tergantung kondisi ahli waris serta ketentuan syariah yang berlaku. Untuk kasus kompleks, konsultasikan dengan ahli faraidh atau Pengadilan Agama.
           </div>
         </div>
-      </Section>
-    </div>
+      }
+    />
   );
 }
 
