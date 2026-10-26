@@ -7,16 +7,15 @@ import { loadFinancialPlans } from "../lib/financialPlans";
 import { getAppLanguage } from "../lib/format";
 
 export const CALCULATOR_META = [
-  { id: "checkup", title: "Financial Check-Up", desc: "Cek kesehatan cashflow, utang, dana darurat, dan likuiditas." },
+  { id: "checkup", title: "Financial Check-Up", desc: "Cek kesehatan cashflow, utang, dana darurat, dan likuiditas.", titleEn: "Financial Check-Up", descEn: "Check the health of your cash flow, debt, emergency fund, and liquidity." },
   { id: "rumah", title: "KPR", desc: "Simulasikan KPR konvensional atau syariah dengan skenario cicilan.", titleEn: "Mortgage", descEn: "Simulate conventional or Sharia-compliant mortgages and compare monthly payments." },
-  { id: "edu", title: "Dana Pendidikan", desc: "Hitung kebutuhan biaya pendidikan sampai anak lulus." },
-  { id: "pension", title: "Dana Pensiun", desc: "Proyeksikan kebutuhan pensiun dan tabungan bulanan." },
-  { id: "warisan", title: "Perencanaan Warisan", desc: "Simulasikan pembagian aset berdasarkan input ahli waris." },
-  { id: "haji", title: "Haji & Umroh", desc: "Rencanakan target biaya dan budget pelunasan." },
-  { id: "zakat", title: "Zakat", desc: "Simulasikan zakat maal dan zakat penghasilan." },
-  { id: "invest", title: "Investasi", desc: "Hitung kebutuhan investasi rutin untuk mencapai target." },
-  { id: "insurance", title: "Kebutuhan Asuransi", desc: "Estimasi kebutuhan uang pertanggungan berdasarkan income." },
-];
+  { id: "edu", title: "Dana Pendidikan", desc: "Hitung kebutuhan biaya pendidikan sampai anak lulus.", titleEn: "Education Fund", descEn: "Calculate education costs until your child graduates." },
+  { id: "pension", title: "Dana Pensiun", desc: "Proyeksikan kebutuhan pensiun dan tabungan bulanan.", titleEn: "Retirement Fund", descEn: "Project your retirement needs and monthly savings." },
+  { id: "warisan", title: "Perencanaan Warisan", desc: "Simulasikan pembagian aset berdasarkan input ahli waris.", titleEn: "Inheritance Planning", descEn: "Simulate how assets are divided based on your heirs." },
+  { id: "haji", title: "Haji & Umroh", desc: "Rencanakan target biaya dan budget pelunasan.", titleEn: "Hajj & Umrah", descEn: "Plan your target cost and payoff budget." },
+  { id: "zakat", title: "Zakat dan Wakaf", desc: "Simulasikan zakat penghasilan, zakat maal, dan wakaf.", titleEn: "Zakat & Waqf", descEn: "Simulate income zakat, wealth zakat (zakat maal), and waqf." },
+  { id: "invest", title: "Investasi", desc: "Hitung kebutuhan investasi rutin untuk mencapai target.", titleEn: "Investing", descEn: "Calculate the regular investment needed to reach your target." },
+  { id: "insurance", title: "Kebutuhan Asuransi", desc: "Estimasi kebutuhan uang pertanggungan berdasarkan income.", titleEn: "Insurance Needs", descEn: "Estimate the coverage amount you need based on income." };
 
 const COLORS = ["#7C9CFF", "#C6F24E", "#FFB800", "#E5A4FF", "#5EE5B0", "#FF9A6B"];
 
