@@ -99,16 +99,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
     const sections = req.body?.sections as Record<Section, SetupItem[]>;
     if (!sections || typeof sections !== "object") return res.status(400).json({ error: "Setup tidak lengkap" });
-    const renames = Array.isArray(req.body?.renames) ? req.body.renames.filter((r: any) => r?.section === "bank" && String(r.from || "").trim() && String(r.to || "").trim() && String(r.from).trim() !== String(r.to).trim()).map((r: any) => ({ from: String(r.from).trim().replace(/\\s+/g, " "), to: String(r.to).trim().replace(/\\s+/g, " ") })) : [];
+    const renames = Array.isArray(req.body?.renames) ? req.body.renames.filter((r: any) => r?.section === "bank" && String(r.from || "").trim() && String(r.to || "").trim() && String(r.from).trim() !== String(r.to).trim()).map((r: any) => ({ from: String(r.from).trim().replace(/\s+/g, " "), to: String(r.to).trim().replace(/\s+/g, " ") })) : [];
     const renameTargets = new Set<string>();
     for (const r of renames) {
-      const key = r.to.toLowerCase().replace(/\\s+/g, " ");
+      const key = r.to.toLowerCase().replace(/\s+/g, " ");
       if (renameTargets.has(key)) return res.status(400).json({ error: `Nama bank tujuan duplikat: ${r.to}` });
       renameTargets.add(key);
     }
-    const bankNames = (Array.isArray(sections.bank) ? sections.bank : []).map(i => String(i?.name || "").trim().replace(/\\s+/g, " ").toLowerCase());
+    const bankNames = (Array.isArray(sections.bank) ? sections.bank : []).map(i => String(i?.name || "").trim().replace(/\s+/g, " ").toLowerCase());
     for (const r of renames) {
-      if (bankNames.includes(r.to.toLowerCase().replace(/\\s+/g, " ")) && !bankNames.includes(r.from.toLowerCase().replace(/\\s+/g, " "))) {
+      if (bankNames.includes(r.to.toLowerCase().replace(/\s+/g, " ")) && !bankNames.includes(r.from.toLowerCase().replace(/\s+/g, " "))) {
         return res.status(400).json({ error: `Nama bank "${r.to}" sudah digunakan` });
       }
     }
@@ -168,8 +168,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (renames.length) {
       const sb = createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SERVICE_ROLE_KEY as string);
       for (const rename of renames) {
-        const oldKey = rename.from.toLowerCase().replace(/\\s+/g, " ");
-        const newKey = rename.to.toLowerCase().replace(/\\s+/g, " ");
+        const oldKey = rename.from.toLowerCase().replace(/\s+/g, " ");
+        const newKey = rename.to.toLowerCase().replace(/\s+/g, " ");
         const { data: walletRows, error: walletReadError } = await sb.from("wallets").select("id,name_key").eq("username", user.username).eq("name_key", oldKey);
         if (walletReadError) throw new Error(`Setup tersimpan, tetapi metadata wallet gagal dibaca untuk "${rename.from}". Periksa dan sinkronkan wallet secara manual: ${walletReadError.message}`);
         const { data: duplicate, error: duplicateError } = await sb.from("wallets").select("id").eq("username", user.username).eq("name_key", newKey);
@@ -189,8 +189,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const originalTo = String(txRows[i]?.[1] || "");
           let from = originalFrom, to = originalTo;
           for (const rename of renames) {
-            if (from.trim().replace(/\\s+/g, " ").toLowerCase() === rename.from.toLowerCase().replace(/\\s+/g, " ")) from = rename.to;
-            if (to.trim().replace(/\\s+/g, " ").toLowerCase() === rename.from.toLowerCase().replace(/\\s+/g, " ")) to = rename.to;
+            if (from.trim().replace(/\s+/g, " ").toLowerCase() === rename.from.toLowerCase().replace(/\s+/g, " ")) from = rename.to;
+            if (to.trim().replace(/\s+/g, " ").toLowerCase() === rename.from.toLowerCase().replace(/\s+/g, " ")) to = rename.to;
           }
           if (from !== originalFrom || to !== originalTo) updates.push({ range: `Transaction!H${i + 10}:I${i + 10}`, values: [[from, to]] });
         }
