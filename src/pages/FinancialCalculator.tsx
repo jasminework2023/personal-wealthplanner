@@ -321,18 +321,8 @@ function RumahCalc({ onSaveResult, onNavigate }) {
         </div>})}
       </div>
       <p style={{fontSize:11,lineHeight:1.5,color:"rgb(var(--c-muted))",margin:"10px 0 0"}}>{isId?"*Estimasi nilai rumah dikurangi sisa pokok pinjaman. Nilai rumah memakai asumsi kenaikan harga yang kamu isi.":"*Estimated home value minus remaining loan principal. Home value uses your assumed annual appreciation."}</p>
-      <div style={{marginTop:14,paddingTop:14,borderTop:"1px solid rgb(var(--c-border))"}}>
-        <h4 style={{marginBottom:8}}>{isId?"Proyeksi Investasi Plan 2":"Plan 2 Investment Projection"}</h4>
-        <div className="stack" style={{gap:4}}>
-          <BreakdownRow label={isId?"Investasi awal dari DP":"Initial investment from down payment"} value={`Rp ${formatIDR(Math.round(initialInvestment))}`}/>
-          <BreakdownRow label={isId?"Total tambahan investasi berkala":"Total additional periodic investments"} value={`Rp ${formatIDR(Math.round(finalTotalInvested-initialInvestment))}`}/>
-          <BreakdownRow label={isId?"Estimasi nilai investasi di akhir periode":"Estimated investment value at end"} value={`Rp ${formatIDR(Math.round(finalInvestmentValue))}`} highlight/>
-          <BreakdownRow label={isId?"Estimasi hasil investasi":"Estimated investment gain"} value={`Rp ${formatIDR(Math.round(finalInvestmentGain))}`} sub={`${isId?"Asumsi return":"Assumed return"} ${investmentReturn}% ${isId?"per tahun, dikompaun bulanan":"per year, compounded monthly"}`}/>
-        </div>
-        <p style={{fontSize:11,lineHeight:1.5,color:"rgb(var(--c-muted))",margin:"10px 0 0"}}>{isId?"Investasi berkala dihitung otomatis dari selisih positif cicilan KPR dan sewa pada bulan yang sama. Kenaikan sewa dan return investasi mengikuti asumsi yang kamu masukkan. Belum memperhitungkan apresiasi harga rumah maupun biaya kepemilikan.":"Periodic investments use the positive difference between mortgage payments and rent. Rent increases and investment returns follow your assumptions. Home appreciation and ownership costs are excluded."}</p>
-      </div>
     </div>
-    <div style={{marginTop:16,padding:"12px 16px",background:"rgb(var(--c-cream))",borderRadius:14,fontSize:11,color:"rgb(var(--c-muted))",lineHeight:1.55}}>{isId?"Disclaimer: hasil adalah simulasi/estimasi edukatif, bukan penawaran pembiayaan. Biaya provisi, administrasi, asuransi, pajak, notaris, dan biaya lain belum diperhitungkan.":"Disclaimer: this is an educational estimate, not a financing offer. Provision, administration, insurance, tax, notary, and other costs are excluded."}</div>
+    <div style={{marginTop:16,padding:"12px 16px",background:"rgb(var(--c-cream))",borderRadius:14,fontSize:11,color:"rgb(var(--c-muted))",lineHeight:1.55}}> {isId?"Disclaimer: hasil adalah simulasi/estimasi edukatif, bukan penawaran pembiayaan. Biaya provisi, administrasi, asuransi, pajak, notaris, dan biaya lain belum diperhitungkan.":"Disclaimer: this is an educational estimate, not a financing offer. Provision, administration, insurance, tax, notary, and other costs are excluded."}</div>
     <div style={{marginTop:14,padding:12,borderRadius:14,background:"rgb(var(--c-forest-50))",color:"rgb(var(--c-forest-800))",fontSize:12,lineHeight:1.55}}><strong style={{display:"block",marginBottom:5}}>{isId?"Tahukah kamu?":"Did you know?"}</strong>{isId?"Pelunasan KPR tidak selalu otomatis menyelesaikan seluruh kewajiban ketika pencari nafkah meninggal. Siapkan strategi pelunasan KPR dan proteksi jiwa agar keluarga tetap punya pilihan untuk mempertahankan rumahnya.":"Paying off a mortgage is not always automatic when the primary earner dies. Plan for mortgage repayment and life protection so your family can retain the option to keep their home."}</div>
     <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:12,minHeight:46,padding:"12px 16px",borderRadius:12,background:"rgb(var(--c-forest-800))",color:"white",fontSize:13,fontWeight:800,textDecoration:"none"}}>{isId?"Konsultasikan Rencana":"Discuss Your Plan"} <ArrowRight size={16}/></a>
   </>} onSave={()=>onSaveResult({id:"rumah",title:"KPR",value:`Rp ${formatIDR(Math.round(safeLoan))} · Rp ${formatIDR(Math.round(monthlyPayment))}/bln`,plan:{type:"home",targetAmount:kprMode==="existing"?safeLoan:homePrice,obligationAmount:safeLoan,monthlyAmount:monthlyPayment,timeframe:effectiveTenor,preparedAssets:kprMode==="new"?downPayment:0,financingType,kprMode,homePrice,downPayment,loanAmount,outstanding,remainingYears,currentRate,currentInstallment,fixedRate,fixedYears,floatingRate,tenor,syariahMargin,rentalPrice,annualRentIncrease,investmentReturn,annualHomeAppreciation}})} onNavigate={onNavigate} calcId="rumah" relatedId="kpr"/>;
@@ -1707,8 +1697,6 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
         save: "Simpan Hasil",
         saved: "Tersimpan",
         protect: "Lindungi rencana ini",
-        disclaimer:
-          "Simulasi bersifat edukatif. Hasil aktual dapat berbeda sesuai kondisi dan asumsi yang digunakan.",
       }
     : {
         input: "Input",
@@ -1717,8 +1705,6 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
         save: "Save Result",
         saved: "Saved",
         protect: "Protect this plan",
-        disclaimer:
-          "This is an educational simulation. Actual results may differ depending on your conditions and assumptions.",
       };
 
   const save = () => {
@@ -1805,16 +1791,6 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
 
           {results}
 
-          <p
-            style={{
-              fontSize: 11,
-              color: "rgb(var(--c-muted))",
-              lineHeight: 1.5,
-              marginTop: 12,
-            }}
-          >
-            {copy.disclaimer}
-          </p>
         </div>
       </div>
 
