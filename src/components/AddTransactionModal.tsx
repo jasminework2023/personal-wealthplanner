@@ -217,7 +217,7 @@ export function AddTransactionModal({
       month: now.toLocaleString("en-US", { month: "long" }),
       year: now.getFullYear(),
       type: form.type,
-      category: form.category,
+      category: form.type === "Transfer" ? "Transfer" : form.category,
       description: form.description.trim(),
       amount: parseAmountInput(form.amount),
       ...(wallet ? { wallet } : {}),
@@ -324,11 +324,12 @@ export function AddTransactionModal({
           </div>
           {wallets.length > 0 && <div className="grid gap-2 sm:grid-cols-2"><label className="text-xs">Dari wallet<select value={wallet} onChange={e=>setWallet(e.target.value)} className="mt-1 w-full rounded-xl border bg-white px-3 py-3 text-sm"><option value="">Tidak ditentukan</option>{wallets.map(w=><option key={w.id} value={w.name}>{w.name}</option>)}</select></label>{(form.type==="Transfer" || form.type==="Saving") && <label className="text-xs">Ke wallet<select value={toWallet} onChange={e=>setToWallet(e.target.value)} className="mt-1 w-full rounded-xl border bg-white px-3 py-3 text-sm"><option value="">Tidak ditentukan</option>{wallets.map(w=><option key={w.id} value={w.name}>{w.name}</option>)}</select></label>}</div>}
           <select
-            value={form.category}
+            value={form.type === "Transfer" ? "Transfer" : form.category}
+            disabled={form.type === "Transfer"}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
             className="w-full border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px] bg-white"
           >
-            {(activeCategories[form.type].length ? activeCategories[form.type] : fallbackCategories).map((c) => (
+            {(form.type === "Transfer" ? ["Transfer"] : (activeCategories[form.type].length ? activeCategories[form.type] : fallbackCategories)).map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>
