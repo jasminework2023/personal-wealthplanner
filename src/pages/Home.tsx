@@ -18,6 +18,7 @@ import { loadFinancialPlans } from "../lib/financialPlans";
 const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 const menus = [
   { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
+  { key: "wallets", label: "Wallet", icon: Wallet, to: "/wallets", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
   { key: "budget", label: "Budget", icon: Wallet, to: "/budgeting", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
   { key: "report", label: "Report", icon: Landmark, to: "/finance", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
   { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator", tone: "bg-[#DDF7E8] text-[#0B6B47]" },

@@ -12,6 +12,7 @@ import { FinancialProtection } from "./pages/FinancialProtection";
 import { FinancialCalculator, CalculatorDetail } from "./pages/FinancialCalculator";
 import { saveFinancialPlan } from "./lib/financialPlans";
 import { Goals } from "./pages/Goals";
+import { WalletsPage } from "./pages/WalletsPage";
 
 function CalculatorRoute() {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/finance" element={<DashboardFinance />} />
           <Route path="/transactions" element={<TransactionReport />} />
           <Route path="/transaction" element={<Transaction />} />
+          <Route path="/wallets" element={<WalletsPage />} />
           <Route path="/budgeting" element={<MonthlyBudgeting />} />
           <Route path="/calculator" element={<CalculatorRoute />} />
           <Route path="/calculator/:id" element={<CalculatorRoute />} />
