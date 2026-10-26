@@ -106,7 +106,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if(type==="income") add(from,"inflow");
       if(type==="expense") add(from,"outflow");
       if(type==="transfer"){add(from,"outflow");add(to,"inflow");}
-      if(type==="saving"){if(from&&to){add(from,"outflow");add(to,"inflow");}else if(from)add(from,"outflow");}
+      if(type==="saving"&&from&&to){add(from,"outflow");add(to,"inflow");}
     }
     const result=(wallets||[]).filter((w:any)=>activeKeys.has(w.name_key)).map((w:any)=>{
       const s=sums.get(w.name_key)||{inflow:0,outflow:0,count:0};

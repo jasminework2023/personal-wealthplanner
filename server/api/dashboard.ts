@@ -114,7 +114,9 @@ function getTransactions(rows: unknown[][], year?: number) {
       type: typeMap[String(row[2]).trim().toLowerCase()] || "Expense",
       category: row[3] || "",
       description: row[4] || "",
-      amount: parseRupiah(row[5]),\n      wallet: row[6] || "",\n      toWallet: row[7] || "",
+      amount: parseRupiah(row[5]),
+      wallet: row[6] || "",
+      toWallet: row[7] || "",
       year: Number(String(row[0] || "").split("/").pop()) || undefined,
       sheetRow,
     }));
