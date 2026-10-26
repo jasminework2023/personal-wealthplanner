@@ -83,30 +83,115 @@ function CalculatorBody({ id, onSaveResult, onNavigate }) {
 // 1. FINANCIAL CHECKUP
 // ============================================================
 function CheckupCalc({ onSaveResult, onNavigate }) {
-  const { totalIncome, totalExpense, totalSaving, assets, isRealData, month } = useFinanceData();
-  const [manualDebt, setManualDebt] = React.useState(0);
-  const income = isRealData ? totalIncome : 10000000;
-  const expenses = isRealData ? totalExpense : 7500000;
-  const savings = isRealData ? totalSaving : 20000000;
-  const debt = manualDebt;
-  const cash = assets.liquidAssets.reduce((s, x) => s + (Number(x.value)||0), 0);
-  const investments = assets.investmentAssets.reduce((s, x) => s + (Number(x.value)||0), 0);
-  const annualGrossIncome = income * 12;
-  const securityRate = annualGrossIncome > 0 ? (cash + investments) / annualGrossIncome : 0;
-  const savingRate = income > 0 ? ((income-expenses)/income)*100 : 0;
-  const debtRatio = income > 0 ? (debt/income)*100 : 0;
-  const emergencyMonths = expenses > 0 ? cash/expenses : 0;
-  const liquidity = assets.totalAssets > 0 ? (cash/assets.totalAssets)*100 : 0;
-  let score=0; if(savingRate>=20)score+=25;else if(savingRate>=10)score+=18;else if(savingRate>0)score+=10; if(debtRatio===0)score+=25;else if(debtRatio<10)score+=22;else if(debtRatio<30)score+=15;else score+=5; if(emergencyMonths>=6)score+=30;else if(emergencyMonths>=3)score+=22;else if(emergencyMonths>=1)score+=12; if(liquidity>=30)score+=20;else if(liquidity>=15)score+=14;else score+=7;
-  const grade=score>=80?"A":score>=65?"B":score>=50?"C":"D";
-  return <CalcLayout inputs={<>
-    <div style={{padding:"11px 13px",background:"rgb(var(--c-cream))",borderRadius:12,border:"1px solid rgb(var(--c-forest-100))",fontSize:11,color:"rgb(var(--c-forest-800))"}}>Sumber data: {isRealData?`Dashboard Finance · ${month}`:"mode demo"}. Income, expense, saving, cash dan investment assets mengikuti data dashboard.</div>
-    <NumberInput label="Cicilan utang bulanan" prefix="Rp" value={debt} onChange={setManualDebt} step={100000}/>
-  </>} results={<>
-    <div style={{background:"rgb(var(--c-forest-50))",border:"1px solid rgb(var(--c-forest-100))",borderRadius:24,padding:28}}><div className="row-between"><div className="mono" style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"rgb(var(--c-forest-800))"}}>SKOR KEUANGANMU</div><div style={{fontWeight:800,fontSize:56,color:"rgb(var(--c-accent-text))"}}>{grade}</div></div><div style={{fontWeight:800,fontSize:78,lineHeight:.9,marginTop:12,color:"rgb(var(--c-accent-text))"}}>{Math.round(score)}<span style={{fontSize:24,color:"rgb(var(--c-muted))"}}>/100</span></div></div>
-    <div className="card" style={{marginTop:16}}><h4 style={{marginBottom:12}}>Financial Security Rate</h4><ResultTile label="FINANCIAL SECURITY RATE" value={`${securityRate.toFixed(2)}×`} sub="(Cash + Investment Assets) ÷ Annual Gross Income"/><p className="muted" style={{fontSize:11,lineHeight:1.5,marginTop:10}}>Rasio ini menunjukkan besarnya aset kas dan investasi dibandingkan penghasilan bruto tahunan. Bukan skor 0–100.</p></div>
-    <div className="stack" style={{gap:8,marginTop:16}}><ScoreRow label="Saving rate" value={`${savingRate.toFixed(1)}%`} status={savingRate>=20?"good":savingRate>=10?"ok":"warn"} target=">20%"/><ScoreRow label="Debt ratio" value={`${debtRatio.toFixed(1)}%`} status={debtRatio<10?"good":debtRatio<30?"ok":"warn"} target="<10%"/><ScoreRow label="Dana darurat" value={`${emergencyMonths.toFixed(1)} bln`} status={emergencyMonths>=6?"good":emergencyMonths>=3?"ok":"warn"} target=">6 bln"/><ScoreRow label="Liquidity" value={`${liquidity.toFixed(1)}%`} status={liquidity>=30?"good":liquidity>=15?"ok":"warn"} target=">30%"/></div>
-  </>} onSave={()=>onSaveResult({id:"checkup",title:"Financial Check-Up",value:`Score ${Math.round(score)}/100 · FSR ${securityRate.toFixed(2)}×`,plan:{type:"cashflow",targetAmount:0,monthlyAmount:income,preparedAssets:cash+investments,timeframe:1}})} onNavigate={onNavigate} calcId="checkup" relatedId="checkup"/>;
+  const { totalIncome, totalExpense, assets, isRealData, month } = useFinanceData();
+  const [language, setLanguage] = React.useState(getAppLanguage());
+  const [loans, setLoans] = React.useState([
+    { id: "kpr", name: "KPR", payment: 5503098, years: 20, principal: 800000000 },
+    { id: "kendaraan", name: "Kendaraan", payment: 1500000, years: 2, principal: 30000000 },
+  ]);
+  const [readiness, setReadiness] = React.useState(65);
+  const [protectionScore, setProtectionScore] = React.useState(0);
+  const [hasProtectionScore, setHasProtectionScore] = React.useState(false);
+  const [showGradeInfo, setShowGradeInfo] = React.useState(false);
+  const isId = language === "id";
+  const finite = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
+  const money = (v) => new Intl.NumberFormat(isId ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(finite(v));
+  const decimal = (v) => new Intl.NumberFormat(isId ? "id-ID" : "en-US", { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(finite(v));
+  const percent = (v) => decimal(v) + "%";
+
+  React.useEffect(() => {
+    const updateLanguage = () => setLanguage(getAppLanguage());
+    window.addEventListener("wealthplanner:language-changed", updateLanguage);
+    return () => window.removeEventListener("wealthplanner:language-changed", updateLanguage);
+  }, []);
+  React.useEffect(() => {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem("wp-calc-insurance") || "null");
+      const valid = stored && Number.isFinite(Number(stored.protectionScore));
+      setProtectionScore(valid ? Math.min(20, Math.max(0, Number(stored.protectionScore))) : 0);
+      setHasProtectionScore(!!valid);
+    } catch { setProtectionScore(0); setHasProtectionScore(false); }
+  }, []);
+
+  const income = Math.max(0, finite(isRealData ? totalIncome : 20000000));
+  const expenses = Math.max(0, finite(isRealData ? totalExpense : 16000000));
+  const cash = isRealData ? (assets?.liquidAssets || []).reduce((s, x) => s + Math.max(0, finite(x?.value)), 0) : 40000000;
+  const investments = isRealData ? (assets?.investmentAssets || []).reduce((s, x) => s + Math.max(0, finite(x?.value)), 0) : 0;
+  const safeLoans = loans.map((l) => ({ ...l, payment: Math.max(0, finite(l.payment)), years: Math.min(50, Math.max(0, finite(l.years))), principal: Math.max(0, finite(l.principal)) }));
+  const totalPayments = safeLoans.reduce((s, l) => s + l.payment, 0);
+  const debtOutstanding = safeLoans.reduce((s, l) => s + l.principal, 0);
+  const dsr = income > 0 ? totalPayments / income * 100 : totalPayments > 0 ? 100 : 0;
+  const emergencyMonths = expenses > 0 ? cash / expenses : 0;
+  const savingRate = income > 0 ? Math.max(0, (income - expenses) / income * 100) : 0;
+  const emergencyPoints = Math.round(Math.min(1, emergencyMonths / 6) * 20);
+  const dsrPoints = Math.round(dsr <= 20 ? 20 : dsr <= 30 ? 20 - (dsr - 20) * .6 : dsr <= 40 ? 14 - (dsr - 30) * .6 : dsr < 50 ? 8 - (dsr - 40) * .8 : 0);
+  const savingPoints = Math.round(Math.min(1, savingRate / 25) * 20);
+  const insurancePoints = Math.round(protectionScore);
+  const readinessPoints = Math.round(Math.min(100, Math.max(0, finite(readiness))) / 100 * 20);
+  const score = [emergencyPoints, dsrPoints, savingPoints, insurancePoints, readinessPoints].reduce((s, v) => s + Math.min(20, Math.max(0, finite(v))), 0);
+  const grade = score >= 85 ? "A" : score >= 70 ? "B" : score >= 55 ? "C" : score >= 40 ? "D" : "E";
+  const gradeName = (isId ? { A: "Sangat Sehat", B: "Baik", C: "Sehat", D: "Waspada", E: "Kritis" } : { A: "Excellent", B: "Good", C: "Healthy", D: "Needs attention", E: "Critical" })[grade];
+  const nextThreshold = score < 70 ? 70 : score < 85 ? 85 : null;
+  const pointsToNext = nextThreshold === null ? 0 : nextThreshold - score;
+  const dsrStatus = dsr <= 30 ? (isId ? "Sehat" : "Healthy") : dsr <= 40 ? (isId ? "Waspada" : "Caution") : (isId ? "Tinggi" : "High");
+
+  React.useEffect(() => {
+    try { window.localStorage.setItem("wp-calc-checkup", JSON.stringify({ debtOutstanding })); } catch { /* storage unavailable */ }
+  }, [debtOutstanding]);
+
+  const updateLoan = (id, key, value) => setLoans((prev) => prev.map((l) => l.id === id ? { ...l, [key]: value } : l));
+  const addLoan = () => setLoans((prev) => prev.length >= 10 ? prev : [...prev, { id: "loan-" + Date.now() + "-" + prev.length, name: "", payment: 0, years: 0, principal: 0 }]);
+  const inputStyle = { width: "100%", minWidth: 0, boxSizing: "border-box", padding: "10px", border: "1px solid rgb(var(--c-border))", borderRadius: 10, background: "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", fontSize: 13 };
+  const labelStyle = { display: "block", fontSize: 11, fontWeight: 600, color: "rgb(var(--c-muted))", marginBottom: 5 };
+  const rows = [
+    { key: "emergency", label: isId ? "Dana darurat" : "Emergency fund", value: decimal(emergencyMonths) + (isId ? " bulan" : " months"), points: emergencyPoints, hint: isId ? "Target 6 bulan pengeluaran" : "Target: 6 months of expenses" },
+    { key: "dsr", label: isId ? "Rasio cicilan (DSR)" : "Debt service ratio (DSR)", value: percent(dsr), points: dsrPoints, hint: isId ? "Idealnya maksimal 30% penghasilan" : "Ideally no more than 30% of income" },
+    { key: "saving", label: isId ? "Tingkat menabung" : "Savings rate", value: percent(savingRate), points: savingPoints, hint: isId ? "Target 25% atau lebih" : "Target: 25% or higher" },
+    { key: "insurance", label: isId ? "Proteksi asuransi" : "Insurance protection", value: insurancePoints + "/20", points: insurancePoints, hint: hasProtectionScore ? (isId ? "Berdasarkan skor proteksi tersimpan" : "Based on saved protection score") : (isId ? "Belum dihitung di kalkulator Proteksi" : "Not yet calculated in Protection calculator") },
+    { key: "readiness", label: isId ? "Kesiapan finansial" : "Financial readiness", value: Math.round(readiness) + "%", points: readinessPoints, hint: isId ? "Penilaian kesiapan finansialmu" : "Your self-assessed financial readiness" },
+  ];
+
+  return <CalcLayout inputs={<div style={{ display: "grid", gap: 16 }}>
+    <div style={{ padding: "11px 13px", background: "rgb(var(--c-cream))", borderRadius: 12, border: "1px solid rgb(var(--c-border))", fontSize: 11, color: "rgb(var(--c-muted))", lineHeight: 1.6 }}>
+      {isId ? "Sumber data" : "Data source"}: {isRealData ? "Dashboard Finance · " + month : (isId ? "mode demo" : "demo mode")}. {isId ? "Penghasilan, pengeluaran, kas, dan investasi mengikuti data dashboard." : "Income, expenses, cash, and investments follow dashboard data."}
+    </div>
+    <div>
+      <div className="row-between" style={{ marginBottom: 8 }}><h4 style={{ margin: 0 }}>{isId ? "Cicilan dan utang" : "Loans and debt"}</h4><span style={{ fontSize: 11, color: "rgb(var(--c-muted))" }}>{loans.length}/10</span></div>
+      {safeLoans.map((loan, index) => <div key={loan.id} style={{ padding: "12px 0", borderBottom: "1px dashed rgb(var(--c-border))" }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
+          <input aria-label={isId ? "Nama pinjaman " + (index + 1) : "Loan name " + (index + 1)} value={loan.name} onChange={(e) => updateLoan(loan.id, "name", e.target.value)} placeholder={isId ? "Nama pinjaman" : "Loan name"} style={inputStyle}/>
+          <button type="button" onClick={() => setLoans((prev) => prev.filter((l) => l.id !== loan.id))} aria-label={isId ? "Hapus pinjaman" : "Remove loan"} style={{ border: "1px solid rgb(var(--c-border))", background: "rgb(var(--c-surface))", color: "rgb(var(--c-muted))", borderRadius: 9, padding: "9px 10px", cursor: "pointer", whiteSpace: "nowrap", fontSize: 11 }}>{isId ? "Hapus" : "Remove"}</button>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 9 }}>
+          <div><label style={labelStyle}>{isId ? "Cicilan/bulan" : "Monthly payment"}</label><NumberInput label="" prefix="Rp" value={loan.payment} onChange={(v) => updateLoan(loan.id, "payment", v)} step={100000}/></div>
+          <div><label style={labelStyle}>{isId ? "Sisa tenor" : "Remaining term"}</label><NumberInput label="" value={loan.years} onChange={(v) => updateLoan(loan.id, "years", Math.min(50, Math.max(0, v)))} suffix={isId ? "th" : "yrs"} step={1}/></div>
+          <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>{isId ? "Sisa pokok utang" : "Outstanding principal"}</label><NumberInput label="" prefix="Rp" value={loan.principal} onChange={(v) => updateLoan(loan.id, "principal", v)} step={5000000}/></div>
+        </div>
+      </div>)}
+      <button type="button" onClick={addLoan} disabled={loans.length >= 10} style={{ marginTop: 12, width: "100%", padding: 11, borderRadius: 11, border: "1px dashed rgb(var(--c-border))", background: "transparent", color: "rgb(var(--c-accent-text))", fontWeight: 700, cursor: loans.length >= 10 ? "not-allowed" : "pointer", opacity: loans.length >= 10 ? .5 : 1 }}>+ {isId ? "Tambah pinjaman" : "Add loan"}</button>
+      <div style={{ marginTop: 14, padding: 14, borderRadius: 14, background: "rgb(var(--c-forest-50))", border: "1px solid rgb(var(--c-forest-100))" }}>
+        <div style={{ fontSize: 11, color: "rgb(var(--c-muted))" }}>{isId ? "Total cicilan per bulan" : "Total monthly payments"}</div><div style={{ fontSize: 22, fontWeight: 800, color: "rgb(var(--c-charcoal))", marginTop: 4 }}>Rp {money(totalPayments)}</div>
+        <div className="row-between" style={{ marginTop: 10, gap: 8, fontSize: 12 }}><span>DSR · {percent(dsr)}</span><strong style={{ color: "rgb(var(--c-accent-text))" }}>{dsrStatus}</strong></div>
+        <div style={{ height: 8, background: "rgb(var(--c-border))", borderRadius: 99, position: "relative", marginTop: 9 }}><div style={{ height: "100%", width: Math.min(100, Math.max(0, dsr)) + "%", background: dsr <= 30 ? "rgb(var(--c-accent))" : dsr <= 40 ? "rgb(var(--c-muted))" : "rgb(var(--c-down))", borderRadius: 99 }}/><div aria-hidden="true" style={{ position: "absolute", left: "30%", top: -3, height: 14, borderLeft: "2px solid rgb(var(--c-charcoal))" }}/></div>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "rgb(var(--c-muted))", marginTop: 5 }}><span>0%</span><span>30%</span><span>100%</span></div>
+      </div>
+    </div>
+    <div style={{ padding: 15, border: "1px solid rgb(var(--c-border))", borderRadius: 14 }}>
+      <div className="row-between" style={{ marginBottom: 8 }}><label htmlFor="checkup-readiness" style={{ fontWeight: 700, fontSize: 13 }}>{isId ? "Kesiapan finansial" : "Financial readiness"}</label><strong style={{ color: "rgb(var(--c-accent-text))" }}>{Math.round(readiness)}%</strong></div>
+      <input id="checkup-readiness" aria-label={isId ? "Kesiapan finansial" : "Financial readiness"} type="range" min="0" max="100" step="5" value={readiness} onChange={(e) => setReadiness(Number(e.target.value))} style={{ width: "100%", accentColor: "rgb(var(--c-accent))" }}/>
+      <div style={{ fontSize: 11, color: "rgb(var(--c-muted))", lineHeight: 1.5 }}>{isId ? "Geser sesuai penilaianmu terhadap kesiapan mencapai tujuan finansial." : "Adjust based on how ready you feel to reach your financial goals."}</div>
+    </div>
+  </div>} results={<div style={{ display: "grid", gap: 16, minWidth: 0 }}>
+    <div style={{ background: "rgb(var(--c-forest-50))", border: "1px solid rgb(var(--c-forest-100))", borderRadius: 24, padding: 20, overflow: "hidden" }}>
+      <div className="row-between" style={{ alignItems: "flex-start", gap: 10 }}><div><div style={{ fontSize: 11, letterSpacing: ".08em", fontWeight: 700, color: "rgb(var(--c-muted))" }}>{isId ? "SKOR KEUANGANMU" : "YOUR FINANCIAL SCORE"}</div><div style={{ marginTop: 6, fontSize: 15, fontWeight: 700, color: "rgb(var(--c-charcoal))" }}>{gradeName}</div></div><div style={{ display: "flex", alignItems: "center", gap: 8 }}><div style={{ fontSize: 48, lineHeight: 1, fontWeight: 800, color: "rgb(var(--c-accent-text))" }}>{grade}</div><button type="button" aria-expanded={showGradeInfo} aria-label={isId ? "Penjelasan nilai" : "Grade explanation"} onClick={() => setShowGradeInfo((v) => !v)} style={{ width: 25, height: 25, borderRadius: "50%", border: "1px solid rgb(var(--c-border))", background: "rgb(var(--c-surface))", color: "rgb(var(--c-charcoal))", cursor: "pointer" }}>!</button></div></div>
+      {showGradeInfo && <p style={{ fontSize: 12, lineHeight: 1.6, color: "rgb(var(--c-muted))", margin: "10px 0 0" }}>{isId ? "A: sangat sehat (85–100); B: baik (70–84); C: sehat (55–69); D: perlu perhatian (40–54); E: kritis (di bawah 40)." : "A: excellent (85–100); B: good (70–84); C: healthy (55–69); D: needs attention (40–54); E: critical (below 40)."}</p>}
+      <div style={{ display: "flex", justifyContent: "center", margin: "16px auto 8px" }}><svg width="170" height="170" viewBox="0 0 170 170" role="img" aria-label={isId ? "Skor " + score + " dari 100" : "Score " + score + " out of 100"}><circle cx="85" cy="85" r="72" fill="none" stroke="rgb(var(--c-border))" strokeWidth="14"/><circle cx="85" cy="85" r="72" fill="none" stroke="rgb(var(--c-accent))" strokeWidth="14" strokeLinecap="round" strokeDasharray={(score / 100 * 452.4) + " 452.4"} transform="rotate(-90 85 85)"/><text x="85" y="82" textAnchor="middle" fontSize="38" fontWeight="800" fill="rgb(var(--c-accent-text))">{score}</text><text x="85" y="106" textAnchor="middle" fontSize="13" fill="rgb(var(--c-muted))">/100</text></svg></div>
+      <div style={{ textAlign: "center", fontSize: 12, color: "rgb(var(--c-muted))" }}>{nextThreshold === null ? (isId ? "Grade tertinggi — pertahankan!" : "Top grade — keep it up!") : (isId ? "Butuh " + pointsToNext + " poin lagi untuk grade " + (nextThreshold === 70 ? "B" : "A") + "." : pointsToNext + " more points to grade " + (nextThreshold === 70 ? "B" : "A") + ".")}</div>
+    </div>
+    <div style={{ border: "1px solid rgb(var(--c-border))", borderRadius: 18, padding: 16 }}><h4 style={{ margin: "0 0 14px", color: "rgb(var(--c-charcoal))" }}>{isId ? "Rincian skor" : "Score breakdown"}</h4><div style={{ display: "grid", gap: 15 }}>{rows.map((row) => <div key={row.key}><div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "baseline" }}><span style={{ fontSize: 12, fontWeight: 700, color: "rgb(var(--c-charcoal))" }}>{row.label}</span><span style={{ fontSize: 12, fontWeight: 800, color: "rgb(var(--c-accent-text))", whiteSpace: "nowrap" }}>{row.value} · {row.points}/20</span></div><div style={{ height: 7, borderRadius: 99, background: "rgb(var(--c-border))", marginTop: 7, overflow: "hidden" }}><div style={{ height: "100%", width: (row.points / 20 * 100) + "%", background: row.points / 20 >= .8 ? "rgb(var(--c-accent))" : row.points / 20 >= .5 ? "rgb(var(--c-muted))" : "rgb(var(--c-down))", borderRadius: 99 }}/></div><div style={{ marginTop: 4, fontSize: 10, color: "rgb(var(--c-muted))" }}>{row.hint}</div></div>)}</div></div>
+    <div style={{ padding: 15, borderRadius: 14, background: "rgb(var(--c-cream))", border: "1px solid rgb(var(--c-border))", fontSize: 12, lineHeight: 1.6, color: "rgb(var(--c-charcoal))" }}><strong>{isId ? "Tahukah kamu?" : "Did you know?"}</strong><div style={{ marginTop: 5 }}>{isId ? "Kesehatan finansial bukan hanya soal besarnya penghasilan, tetapi juga kemampuan mengelola cicilan, menyiapkan dana darurat, dan menjaga proteksi." : "Financial health is not just about income; it also depends on managing debt, building an emergency fund, and maintaining protection."}</div></div>
+    <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "14px 16px", borderRadius: 14, background: "rgb(var(--c-forest-800))", color: "#fff", fontWeight: 700, textDecoration: "none" }}>{isId ? "Diskusikan rencana keuanganmu" : "Discuss your financial plan"} →</a>
+  </div>} onSave={() => onSaveResult({ id: "checkup", title: isId ? "Pemeriksaan Kesehatan Keuangan" : "Financial Check-Up", value: isId ? "Skor " + score + "/100 · " + grade : "Score " + score + "/100 · " + grade, plan: { type: "cashflow", targetAmount: 0, monthlyAmount: income, preparedAssets: cash + investments, timeframe: 1 } })} onNavigate={onNavigate} calcId="checkup" relatedId="checkup"/>;
 }
 
 // ============================================================
