@@ -127,12 +127,12 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
               type="button"
               aria-label={`Buka detail ${wallet.name}`}
               onClick={() => { setSelectedId(wallet.id); setNotice(""); }}
-              className="wallet-stack-card absolute left-0 top-0 block min-h-[48px] w-full overflow-hidden rounded-t-[22px] text-left text-white transition-transform duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+              className="absolute left-0 top-0 block min-h-[48px] w-full overflow-hidden rounded-t-[22px] text-left text-white transition-transform duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
               style={{
                 top: index * walletStackSpacing,
                 zIndex: index + 1,
                 height: isFront ? 176 : 48,
-                "--wallet-stack-color": walletColor,
+                backgroundColor: walletColor,
                 boxShadow: "0 -4px 12px rgb(0 0 0 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.18)",
               } as CSSProperties}
             >
