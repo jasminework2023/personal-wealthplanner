@@ -1485,20 +1485,189 @@ function ZakatCalc({ onSaveResult, onNavigate }) {
 
 
 function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
-  const [saved,setSaved]=React.useState(false);
-  const meta=CALCULATOR_META.find(x=>x.id===calcId);
-  const protectLabel={rumah:"Proteksi Cicilan KPR & Rumah",edu:"Lindungi Dana Pendidikan",pension:"Lindungi Dana Pensiun",haji:"Lindungi Rencana Haji",invest:"Lindungi Aset & Investasi",checkup:"Cek Kebutuhan Proteksi",insurance:"Review Proteksi",warisan:"Lindungi Rencana Warisan",zakat:"Lanjut ke Proteksi Finansial"}[calcId]||"Lanjut ke Proteksi Finansial";
-  const save=()=>{ if(!saved){onSave();setSaved(true);setTimeout(()=>setSaved(false),1800);} };
-  const goProtection=()=>{save();onNavigate({name:"protection", calculatorId:calcId});};
-  return <div>
-    <div className="wp-calc-grid" style={{display:"grid",gridTemplateColumns:"1fr",gap:10,alignItems:"start"}}>
-      <Card style={{position:"sticky",top:20}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}><h3 style={{margin:0,fontSize:18}}>Input</h3><Tag>auto-update</Tag></div><div style={{display:"grid",gap:10}}>{inputs}</div></Card>
-      <div><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:12,flexWrap:"wrap"}}><h3 style={{margin:0,fontSize:18}}>Hasil Perhitungan</h3><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><Button variant="secondary" size="sm" onClick={save} icon={saved?<Check size={14}/>:<Plus size={14}/>}>{saved?"Tersimpan":"Simpan Hasil"}</Button><Button variant="primary" size="sm" onClick={goProtection} iconRight={<ArrowRight size={14}/>}>Lindungi rencana ini</Button></div></div>{results}<p style={{fontSize:11,color:"rgb(var(--c-muted))",lineHeight:1.5,marginTop:12}}>Simulasi bersifat edukatif. Hasil aktual dapat berbeda sesuai kondisi dan asumsi yang digunakan.</p>
-        {calcId !== "rumah" && <Card style={{marginTop:18,background:"linear-gradient(135deg, rgb(var(--c-forest-50)), rgb(var(--c-surface)))",borderColor:"rgb(var(--c-forest-100))"}}><Tag variant="accent">PROTEKSI FINANSIAL</Tag><h4 style={{fontSize:18,margin:"12px 0 7px",color:"rgb(var(--c-charcoal))"}}>{protectLabel}</h4><p style={{fontSize:12,lineHeight:1.6,color:"rgb(var(--c-forest-800))",margin:0}}>{calcId==="pendidikan" ? <>Menyiapkan dana pendidikan anak adalah komitmen jangka panjang. Namun, risiko seperti sakit kritis atau meninggal dunia bisa mengganggu penghasilan dan rencana menabung yang sudah disusun. Pastikan ada perlindungan finansial agar impian pendidikan anak tetap punya jalan untuk diwujudkan, meski keadaan berubah.</> : calcId==="haji" ? <>Ibadah haji adalah impian yang dipersiapkan sejak jauh-jauh hari. Dengan masa tunggu yang bisa mencapai puluhan tahun, ada banyak hal yang perlu direncanakan agar impian ini tetap terjaga.<br/><br/>Namun, bagaimana jika di tengah masa tunggu, calon jemaah meninggal dunia? Keluarga mungkin perlu mengurus kelanjutan rencana ibadah, termasuk opsi badal haji yang membutuhkan biaya tambahan sesuai ketentuannya.<br/><br/><strong>Sudahkah kamu menyiapkan dana dan perlindungan agar rencana hajimu tetap terjaga, apa pun yang terjadi?</strong></> : "Rencana keuanganmu akan tetap tersimpan. Cek risiko yang bisa mengganggu target ini dan lihat apa yang masih perlu dilindungi."}</p><Button variant="primary" size="sm" onClick={goProtection} iconRight={<ArrowRight size={14}/>} style={{marginTop:14}}>Lindungi rencana ini</Button></Card>}
+  const [saved, setSaved] = React.useState(false);
+  const [language, setLanguage] = React.useState(getAppLanguage());
+
+  React.useEffect(() => {
+    const updateLanguage = () => {
+      setLanguage(getAppLanguage());
+    };
+
+    window.addEventListener("wealthplanner:language-changed", updateLanguage);
+
+    return () => {
+      window.removeEventListener(
+        "wealthplanner:language-changed",
+        updateLanguage
+      );
+    };
+  }, []);
+
+  const isId = language === "id";
+
+  const copy = isId
+    ? {
+        input: "Input",
+        autoUpdate: "auto-update",
+        results: "Hasil Perhitungan",
+        save: "Simpan Hasil",
+        saved: "Tersimpan",
+        protect: "Lindungi rencana ini",
+        disclaimer:
+          "Simulasi bersifat edukatif. Hasil aktual dapat berbeda sesuai kondisi dan asumsi yang digunakan.",
+      }
+    : {
+        input: "Input",
+        autoUpdate: "auto-update",
+        results: "Calculation Results",
+        save: "Save Result",
+        saved: "Saved",
+        protect: "Protect this plan",
+        disclaimer:
+          "This is an educational simulation. Actual results may differ depending on your conditions and assumptions.",
+      };
+
+  const save = () => {
+    if (!saved) {
+      onSave();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1800);
+    }
+  };
+
+  const goProtection = () => {
+    save();
+    onNavigate({ name: "protection", calculatorId: calcId });
+  };
+
+  return (
+    <div>
+      <div
+        className="wp-calc-grid"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          gap: 10,
+          alignItems: "start",
+        }}
+      >
+        <Card style={{ position: "sticky", top: 20 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 16,
+              flexWrap: "wrap",
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: 18 }}>{copy.input}</h3>
+            <Tag>{copy.autoUpdate}</Tag>
+          </div>
+
+          <div style={{ display: "grid", gap: 10 }}>{inputs}</div>
+        </Card>
+
+        <div style={{ minWidth: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: 18 }}>{copy.results}</h3>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={save}
+                icon={saved ? <Check size={14} /> : <Plus size={14} />}
+              >
+                {saved ? copy.saved : copy.save}
+              </Button>
+
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={goProtection}
+                iconRight={<ArrowRight size={14} />}
+              >
+                {copy.protect}
+              </Button>
+            </div>
+          </div>
+
+          {results}
+
+          <p
+            style={{
+              fontSize: 11,
+              color: "rgb(var(--c-muted))",
+              lineHeight: 1.5,
+              marginTop: 12,
+            }}
+          >
+            {copy.disclaimer}
+          </p>
+        </div>
       </div>
+
+      <style>{`
+        @media(min-width:1181px){
+          .wp-calculator .wp-calc-grid{
+            grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)!important;
+            gap:20px!important;
+          }
+        }
+
+        @media(max-width:1180px){
+          .wp-calculator .wp-calc-grid{
+            grid-template-columns:minmax(0,1fr)!important;
+            gap:16px!important;
+          }
+
+          .wp-calculator .wp-calc-grid>div:first-child{
+            position:relative!important;
+            top:0!important;
+          }
+
+          .wp-calculator .wp-calc-grid>div,
+          .wp-calculator .wp-calc-grid .wp-calc-card{
+            min-width:0;
+            max-width:100%;
+            box-sizing:border-box;
+          }
+
+          .wp-calculator .wp-calc-grid input,
+          .wp-calculator .wp-calc-grid select,
+          .wp-calculator .wp-calc-grid textarea{
+            min-width:0;
+            max-width:100%;
+          }
+
+          .wp-calculator .wp-calc-grid table{
+            min-width:560px;
+          }
+
+          .wp-calculator .wp-calc-grid [style*="grid-template-columns"]{
+            min-width:0;
+          }
+        }
+      `}</style>
     </div>
-    <style>{`@media(min-width:1181px){.wp-calculator .wp-calc-grid{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)!important;gap:20px!important}}@media(max-width:1180px){.wp-calculator .wp-calc-grid{grid-template-columns:minmax(0,1fr)!important;gap:16px!important}.wp-calculator .wp-calc-grid>div:first-child{position:relative!important;top:0!important}.wp-calculator .wp-calc-grid>div,.wp-calculator .wp-calc-grid .wp-calc-card{min-width:0;max-width:100%;box-sizing:border-box}.wp-calculator .wp-calc-grid input,.wp-calculator .wp-calc-grid select,.wp-calculator .wp-calc-grid textarea{min-width:0;max-width:100%}.wp-calculator .wp-calc-grid table{min-width:560px}.wp-calculator .wp-calc-grid [style*="grid-template-columns"]{min-width:0}}`}</style>
-  </div>;
+  );
 }
 
 
