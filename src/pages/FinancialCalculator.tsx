@@ -609,7 +609,7 @@ function InsuranceCalc({ onSaveResult, onNavigate }) {
       const x = (n / scale).toLocaleString(isId ? "id-ID" : "en-US", { maximumFractionDigits: 2 });
       return "Rp " + x + " " + unit;
     }
-    return "Rp " + formatIDR(n);
+    return "Rp " + n.toLocaleString(isId ? "id-ID" : "en-US", { maximumFractionDigits: 0 });
   };
   const chipStyle = (kind) => ({
     display: "inline-flex", alignItems: "center", borderRadius: 999, padding: "3px 8px",
