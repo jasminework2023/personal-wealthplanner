@@ -84,11 +84,24 @@ export function Settings() {
     (Object.keys(cleaned) as SectionKey[]).forEach((key) => {
       cleaned[key] = cleaned[key].filter((x) => x.name.trim()).map((x) => ({ name: x.name.trim(), active: x.active }));
     });
+    // Explicitly identify in-place bank renames. Reordering, removing, or adding
+    // banks alone must not rewrite historical transaction references.
+    const originalBankNames = new Set(original.bank.map((item) => item.name.trim().replace(/\s+/g, " ").toLowerCase()).filter(Boolean));
+    const cleanedBankNames = new Set(cleaned.bank.map((item) => item.name.trim().replace(/\s+/g, " ").toLowerCase()).filter(Boolean));
+    const renames = original.bank.flatMap((item, index) => {
+      const from = item.name.trim().replace(/\s+/g, " ");
+      const to = cleaned.bank[index]?.name.trim().replace(/\s+/g, " ") || "";
+      const oldKey = from.toLowerCase();
+      const newKey = to.toLowerCase();
+      return from && to && oldKey !== newKey && !cleanedBankNames.has(oldKey) && !originalBankNames.has(newKey)
+        ? [{ section: "bank", from, to }]
+        : [];
+    });
     setSaving(true); setError(""); setMessage("");
     try {
       const res = await fetch(`${API_BASE}/setup`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, sections: cleaned }),
+        body: JSON.stringify({ token, sections: cleaned, renames }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan setup");
