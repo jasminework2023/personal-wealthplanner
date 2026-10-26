@@ -1000,7 +1000,7 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
         <button
           onClick={() => onNavigate({ name: "calc" })}
           style={{
-            background: "var(--chip)", border: 0, color: "var(--ink-2)",
+            background: "rgb(var(--c-cream))", border: 0, color: "rgb(var(--c-forest-800))",
             padding: "8px 14px", borderRadius: 999, font: "inherit",
             fontSize: 13, fontWeight: 500, cursor: "pointer", marginBottom: 24,
             display: "inline-flex", alignItems: "center", gap: 6,
@@ -1012,12 +1012,13 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
       </Section>
 
       <Section style={{ paddingTop: 24, paddingBottom: 24 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "flex-start" }}>
+        <div className="wp-waris-grid">
+          <style>{`.wp-waris-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}.wp-waris-grid>*{min-width:0}@media(min-width:900px){.wp-waris-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px}.wp-waris-input{position:sticky;top:88px}}.wp-waris-grid button{font-family:inherit}`}</style>
           {/* INPUT SECTION */}
-          <div className="card" style={{ position: "sticky", top: 88, padding: 24 }}>
+          <div className="card wp-waris-input" style={{ padding: 20 }}>
             <h3 style={{ fontSize: 18, marginBottom: 20 }}>Input Data Warisan</h3>
-            <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>{[{ value: "umum", label: "Umum" }, { value: "syariah", label: "Syariah / Faraidh" }].map((opt) => <button key={opt.value} type="button" onClick={() => setModeWarisan(opt.value)} style={{ flex: 1, padding: "10px 12px", borderRadius: 10, border: modeWarisan === opt.value ? "1px solid var(--accent)" : "1px solid var(--border)", background: modeWarisan === opt.value ? "var(--accent)" : "var(--chip)", color: modeWarisan === opt.value ? "var(--accent-ink)" : "var(--ink-2)", font: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{opt.label}</button>)}</div>
-            {modeWarisan === "umum" && <div style={{ fontSize: 12, color: "var(--ink-2)", lineHeight: 1.5, marginBottom: 14 }}>Mode umum menampilkan estimasi harta bersih dan target warisan. Pembagian faraidh tersedia pada mode Syariah.</div>}
+            <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>{[{ value: "umum", label: "Umum" }, { value: "syariah", label: "Syariah / Faraidh" }].map((opt) => <button key={opt.value} type="button" onClick={() => setModeWarisan(opt.value)} style={{ flex: 1, minWidth: 0, padding: "10px 8px", borderRadius: 10, border: modeWarisan === opt.value ? "1px solid rgb(var(--c-accent))" : "1px solid rgb(var(--c-border))", background: modeWarisan === opt.value ? "rgb(var(--c-accent))" : "rgb(var(--c-cream))", color: modeWarisan === opt.value ? "rgb(var(--c-accent-ink))" : "rgb(var(--c-forest-800))", font: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>{opt.label}</button>)}</div>
+            {modeWarisan === "umum" && <div style={{ fontSize: 12, color: "rgb(var(--c-forest-800))", lineHeight: 1.5, marginBottom: 14 }}>Mode umum menampilkan estimasi harta bersih dan target warisan. Pembagian faraidh tersedia pada mode Syariah.</div>}
             <div className="stack" style={{ gap: 16 }}>
               <div>
                 <label className="label-sm">Total Aset</label>
@@ -1039,7 +1040,7 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
               <div>
                 <label className="label-sm">Target Warisan</label>
                 <NumberInput label="" prefix="Rp" value={targetWarisan} onChange={setTargetWarisan} step={50000000} />
-                <div style={{ fontSize: 11, marginTop: 6, color: "var(--muted)" }}>Target digunakan untuk melihat kecukupan harta bersih.</div>
+                <div style={{ fontSize: 11, marginTop: 6, color: "rgb(var(--c-muted))" }}>Target digunakan untuk melihat kecukupan harta bersih.</div>
               </div>
               {modeWarisan === "syariah" && <div><label className="label-sm">Ahli Waris</label></div>}
 
@@ -1059,11 +1060,11 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
                         borderRadius: 10,
                         border: 0,
                         cursor: "pointer",
+                        font: "inherit",
                         fontSize: 13,
                         fontWeight: 600,
-                        font: "inherit",
-                        background: genderPewaris === opt.v ? "var(--accent)" : "var(--chip)",
-                        color: genderPewaris === opt.v ? "var(--accent-ink)" : "var(--ink-2)",
+                        background: genderPewaris === opt.v ? "rgb(var(--c-accent))" : "rgb(var(--c-cream))",
+                        color: genderPewaris === opt.v ? "rgb(var(--c-accent-ink))" : "rgb(var(--c-forest-800))",
                       }}
                     >
                       {opt.label}
@@ -1116,12 +1117,12 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
           {/* OUTPUT SECTION */}
           <div>
             {/* HARTA BERSIH */}
-            <div className="card" style={{ marginBottom: 20, padding: 20, background: "color-mix(in oklab, var(--accent) 15%, var(--surface))" }}>
+            <div className="card" style={{ marginBottom: 20, padding: 20, background: "rgb(var(--c-forest-50))" }}>
               <div className="muted" style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>TOTAL HARTA BERSIH</div>
-              <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontSize: 36, fontWeight: 700, lineHeight: 1 }}>
+              <div style={{ fontFamily: "Plus Jakarta Sans, sans-serif", fontSize: "clamp(26px, 8vw, 36px)", fontWeight: 700, lineHeight: 1 }}>
                 {formatIDR(Math.max(0, hartaBersih))}
               </div>
-              <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 12, lineHeight: 1.6 }}>
+              <div style={{ fontSize: 12, color: "rgb(var(--c-muted))", marginTop: 12, lineHeight: 1.6 }}>
                 <div>Total Aset: {formatIDR(totalAset)}</div>
                 <div>- Hutang: {formatIDR(hutang)}</div>
                 <div>- Biaya Pemakaman: {formatIDR(biayaPemakaman)}</div>
@@ -1134,28 +1135,28 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
               {ahliWaris.length > 0 ? (
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                   <thead>
-                    <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                      <th style={{ textAlign: "left", padding: "10px 0", fontWeight: 600, color: "var(--ink-2)", fontSize: 12 }}>Ahli Waris</th>
-                      <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "var(--ink-2)", fontSize: 12 }}>Fraksi</th>
-                      <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "var(--ink-2)", fontSize: 12 }}>%</th>
-                      <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "var(--ink-2)", fontSize: 12 }}>Nominal</th>
+                    <tr style={{ borderBottom: "1px solid rgb(var(--c-border))" }}>
+                      <th style={{ textAlign: "left", padding: "10px 0", fontWeight: 600, color: "rgb(var(--c-forest-800))", fontSize: 12 }}>Ahli Waris</th>
+                      <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "rgb(var(--c-forest-800))", fontSize: 12 }}>Fraksi</th>
+                      <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "rgb(var(--c-forest-800))", fontSize: 12 }}>%</th>
+                      <th style={{ textAlign: "right", padding: "10px 0", fontWeight: 600, color: "rgb(var(--c-forest-800))", fontSize: 12 }}>Nominal</th>
                     </tr>
                   </thead>
                   <tbody>
                     {ahliWaris.map((aw, idx) => {
                       return (
-                        <tr key={idx} style={{ borderBottom: "1px solid var(--border)" }}>
+                        <tr key={idx} style={{ borderBottom: "1px solid rgb(var(--c-border))" }}>
                           <td style={{ padding: "10px 0", fontWeight: 500 }}>
                             <div>{aw.nama}</div>
-                            <div style={{ fontSize: 11, color: "var(--muted)" }}>{aw.status}</div>
+                            <div style={{ fontSize: 11, color: "rgb(var(--c-muted))" }}>{aw.status}</div>
                           </td>
-                          <td style={{ textAlign: "right", padding: "10px 0", fontFamily: "JetBrains Mono", fontWeight: 600, fontSize: 12 }}>
+                          <td style={{ textAlign: "right", padding: "10px 0", fontVariantNumeric: "tabular-nums", fontWeight: 600, fontSize: 12 }}>
                             {aw.fraksiText}
                           </td>
-                          <td style={{ textAlign: "right", padding: "10px 0", fontFamily: "JetBrains Mono", fontWeight: 600, fontSize: 12 }}>
+                          <td style={{ textAlign: "right", padding: "10px 0", fontVariantNumeric: "tabular-nums", fontWeight: 600, fontSize: 12 }}>
                             {(aw.fraksi * 100).toFixed(1)}%
                           </td>
-                          <td style={{ textAlign: "right", padding: "10px 0", fontFamily: "JetBrains Mono", fontWeight: 700, fontSize: 13, color: "var(--accent)" }}>
+                          <td style={{ textAlign: "right", padding: "10px 0", fontVariantNumeric: "tabular-nums", fontWeight: 700, fontSize: 13, color: "rgb(var(--c-accent-text))" }}>
                             {formatIDR(Math.round(aw.nominal))}
                           </td>
                         </tr>
@@ -1177,8 +1178,8 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
             )}
 
             {/* DISCLAIMER */}
-            <div className="card" style={{ padding: 14, background: "var(--surface-2)", borderLeft: "3px solid var(--accent)", fontSize: 12, color: "var(--ink-2)", lineHeight: 1.6 }}>
-              <strong style={{ color: "var(--ink)" }}>📋 DISCLAIMER:</strong><br />
+            <div className="card" style={{ padding: 14, background: "rgb(var(--c-cream))", borderLeft: "3px solid rgb(var(--c-accent))", fontSize: 12, color: "rgb(var(--c-forest-800))", lineHeight: 1.6 }}>
+              <strong style={{ color: "rgb(var(--c-charcoal))" }}>📋 DISCLAIMER:</strong><br />
               Simulasi ini bersifat edukatif dan dapat berbeda tergantung kondisi ahli waris serta ketentuan syariah yang berlaku. Untuk kasus kompleks, konsultasikan dengan ahli faraidh atau Pengadilan Agama.
             </div>
 
@@ -1190,7 +1191,7 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
                   onSaveResult({ id: "warisan", title: "Perencanaan Warisan", value: `${ahliWaris.length} ahli waris · Total ${formatIDR(Math.round(totalNominal))}`, plan: { type: "inheritance", targetAmount: totalAset, preparedAssets: totalAset - hutang, timeframe: 1 } });
                 }}
                 style={{
-                  background: "var(--accent)", color: "var(--accent-ink)", border: 0, borderRadius: 12,
+                  background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))", border: 0, borderRadius: 12,
                   padding: "14px 20px", fontSize: 15, fontWeight: 600, cursor: "pointer", flex: 1, minWidth: 180,
                 }}
               >
@@ -1204,7 +1205,7 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
                   onNavigate({ name: "protection", calculatorId: "warisan" });
                 }}
                 style={{
-                  background: "var(--accent)", color: "var(--accent-ink)", border: "1px solid var(--accent)", borderRadius: 12,
+                  background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))", border: "1px solid rgb(var(--c-accent))", borderRadius: 12,
                   padding: "14px 20px", fontSize: 15, fontWeight: 600, cursor: "pointer", flex: 1, minWidth: 180,
                 }}
               >
