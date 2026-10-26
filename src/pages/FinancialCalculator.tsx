@@ -554,56 +554,121 @@ function InvestCalc({ onSaveResult, onNavigate }) {
 // 4. INSURANCE CALCULATOR (WITH INFLATION)
 // ============================================================
 function InsuranceCalc({ onSaveResult, onNavigate }) {
-  const [income, setIncome] = React.useState(10000000);
-  const [dependents, setDependents] = React.useState(2);
-  const [debts, setDebts] = React.useState(50000000);
-  const [existing, setExisting] = React.useState(0);
-  const [yearsCover, setYearsCover] = React.useState(10);
-  const [inflationRate, setInflationRate] = React.useState(3);
-
-  const annualIncome = income * 12;
-  const inflationMultiplier = Math.pow(1 + inflationRate / 100, yearsCover);
-  const adjustedAnnualIncome = annualIncome * inflationMultiplier;
-  const dimNeed = adjustedAnnualIncome * yearsCover + debts + (dependents * 50000000);
-  const gap = Math.max(dimNeed - existing, 0);
-
-  return (
-    <CalcLayout
-      inputs={
-        <>
-          <NumberInput label="Pemasukan bulanan" prefix="Rp" value={income} onChange={setIncome} step={500000} />
-          <NumberInput label="Jumlah tanggungan (anak, ortu, dst.)" value={dependents} onChange={setDependents} min={0} step={1} />
-          <NumberInput label="Total utang aktif" prefix="Rp" value={debts} onChange={setDebts} step={5000000} />
-          <NumberInput label="Uang pertanggungan polis sekarang" prefix="Rp" value={existing} onChange={setExisting} step={50000000} />
-          <Slider label="Penggantian income selama" value={yearsCover} onChange={setYearsCover} min={3} max={25} format={(v) => `${v} tahun`} />
-          <Slider label="Estimasi inflasi tahunan" value={inflationRate} onChange={setInflationRate} min={0} max={10} step={0.5} format={(v) => `${v}%`} />
-        </>
+  const [language, setLanguage] = React.useState(getAppLanguage());
+  const isId = language === "id";
+  const [income, setIncome] = React.useState(20000000);
+  const [debt, setDebt] = React.useState(830000000);
+  const [debtAuto, setDebtAuto] = React.useState(false);
+  const [goals, setGoals] = React.useState(300000000);
+  const [goalsAuto, setGoalsAuto] = React.useState(false);
+  const [expenses, setExpenses] = React.useState(9000000);
+  const [lifeCover, setLifeCover] = React.useState(1000000000);
+  const [criticalCover, setCriticalCover] = React.useState(200000000);
+  const [premium, setPremium] = React.useState(1900000);
+  const [hasHealth, setHasHealth] = React.useState(true);
+  const [healthLimit, setHealthLimit] = React.useState(1000000000);
+  const safe = (v) => Number.isFinite(Number(v)) ? Math.max(0, Number(v)) : 0;
+  const nIncome = safe(income), nDebt = safe(debt), nGoals = safe(goals), nExpenses = safe(expenses);
+  const nLife = safe(lifeCover), nCritical = safe(criticalCover), nPremium = safe(premium), nLimit = safe(healthLimit);
+  React.useEffect(() => {
+    const change = () => setLanguage(getAppLanguage());
+    window.addEventListener("wealthplanner:language-changed", change);
+    return () => window.removeEventListener("wealthplanner:language-changed", change);
+  }, []);
+  React.useEffect(() => {
+    try {
+      const raw = JSON.parse(window.localStorage.getItem("wp-calc-checkup") || "null");
+      if (raw && Number.isFinite(Number(raw.debtOutstanding)) && Number(raw.debtOutstanding) >= 0) {
+        setDebt(Number(raw.debtOutstanding)); setDebtAuto(true);
       }
-      results={
-        <>
-          <ResultTile
-            label="GAP UANG PERTANGGUNGAN"
-            value={formatIDR(gap)}
-            sub={gap > 0 ? "Tambahan UP yang ideal kamu beli — pakai term life untuk premi paling efisien." : "Coverage kamu sudah cukup. Tetap review tiap 2 tahun ya."}
-            accent={gap > 0 ? "var(--accent)" : "var(--positive)"}
-          />
-          <div className="card" style={{ marginTop: 16 }}>
-            <h4 style={{ marginBottom: 16 }}>Breakdown kebutuhan (metode DIME)</h4>
-            <BreakdownRow label="Income replacement" value={formatIDR(Math.round(adjustedAnnualIncome * yearsCover))} sub={`${yearsCover} tahun × ${formatIDR(Math.round(adjustedAnnualIncome))}/thn (sudah adjusted inflasi ${inflationRate}%)`} />
-            <BreakdownRow label="Pelunasan utang" value={formatIDR(debts)} sub="Sisa hutang aktif" />
-            <BreakdownRow label="Dana tanggungan" value={formatIDR(dependents * 50000000)} sub={`${dependents} orang × Rp 50jt`} />
-            <div className="divider" style={{ margin: "12px 0" }} />
-            <BreakdownRow label="Total kebutuhan" value={formatIDR(Math.round(dimNeed))} highlight />
-            <BreakdownRow label="Coverage sekarang" value={`-${formatIDR(existing)}`} muted />
-          </div>
-        </>
+    } catch { /* Ignore invalid local storage. */ }
+    try {
+      const raw = window.localStorage.getItem("wp-calc-goals-total");
+      if (raw !== null && raw.trim() !== "" && Number.isFinite(Number(raw)) && Number(raw) >= 0) {
+        setGoals(Number(raw)); setGoalsAuto(true);
       }
-      onSave={() => onSaveResult({ id: "insurance", title: "Kebutuhan Asuransi", value: formatIDR(gap) + " gap", plan: { type: "income_protection", targetAmount: gap, income, timeframe: yearsCover, preparedAssets: existing } })}
-      onNavigate={onNavigate}
-      calcId="insurance"
-      relatedId="insurance"
-    />
-  );
+    } catch { /* Ignore invalid local storage. */ }
+  }, []);
+  const needLife = nDebt + nGoals + nExpenses * 12 * 5 + 50000000;
+  const shortLife = Math.max(0, needLife - nLife);
+  const needCritical = nIncome * 12 * 3;
+  const shortCritical = Math.max(0, needCritical - nCritical);
+  const gapTotal = shortLife + shortCritical;
+  const lifeRatio = needLife > 0 ? nLife / needLife : 1;
+  const criticalRatio = needCritical > 0 ? nCritical / needCritical : 1;
+  const premiumPct = nIncome > 0 ? nPremium / nIncome * 100 : 0;
+  const healthRatio = hasHealth ? Math.min(1, nLimit / 500000000) : 0;
+  const protectionScore = Math.min(1, lifeRatio) * 8 + Math.min(1, criticalRatio) * 6 + healthRatio * 4 + (nPremium > 0 ? premiumPct <= 15 ? 2 : premiumPct <= 20 ? 1 : 0 : 0);
+  React.useEffect(() => {
+    try { window.localStorage.setItem("wp-calc-insurance", JSON.stringify({ protectionScore, gapTotal })); } catch { /* Storage unavailable. */ }
+  }, [protectionScore, gapTotal]);
+  const fmtShort = (value) => {
+    const n = Number.isFinite(Number(value)) ? Number(value) : 0;
+    const units = [[1e12, isId ? "triliun" : "trillion"], [1e9, isId ? "miliar" : "billion"], [1e6, isId ? "jt" : "million"]];
+    for (const [scale, unit] of units) if (n >= scale) {
+      const x = (n / scale).toLocaleString(isId ? "id-ID" : "en-US", { maximumFractionDigits: 2 });
+      return "Rp " + x + " " + unit;
+    }
+    return "Rp " + formatIDR(n);
+  };
+  const chipStyle = (kind) => ({
+    display: "inline-flex", alignItems: "center", borderRadius: 999, padding: "3px 8px",
+    fontSize: 10.5, fontWeight: 700, whiteSpace: "nowrap",
+    background: kind === "ok" ? "rgb(var(--c-forest-50))" : "rgb(var(--c-cream))",
+    color: kind === "ok" ? "rgb(var(--c-forest-800))" : kind === "bad" ? "rgb(var(--c-down))" : "rgb(var(--c-charcoal))",
+    border: "1px solid " + (kind === "ok" ? "rgb(var(--c-forest-100))" : kind === "bad" ? "rgb(var(--c-down))" : "rgb(var(--c-warn))")
+  });
+  const status = (ratio) => ratio >= 1 ? { text: isId ? "Cukup" : "Adequate", kind: "ok" } : ratio >= .5 ? { text: isId ? "Kurang" : "Short", kind: "warn" } : { text: isId ? "Rendah" : "Low", kind: "bad" };
+  const healthStatus = !hasHealth ? { text: isId ? "Belum ada" : "None", kind: "bad" } : nLimit >= 500000000 ? { text: isId ? "Cukup" : "Adequate", kind: "ok" } : { text: isId ? "Kurang" : "Short", kind: "warn" };
+  const premiumStatus = premiumPct <= 15 ? { text: isId ? "Sehat" : "Healthy", kind: "ok" } : premiumPct <= 20 ? { text: isId ? "Waspada" : "Caution", kind: "warn" } : { text: isId ? "Tinggi" : "High", kind: "bad" };
+  const small = { fontSize: 11, color: "rgb(var(--c-muted))", lineHeight: 1.5 };
+  const cardStyle = { padding: 14, border: "1px solid rgb(var(--c-border))", borderRadius: 14, background: "rgb(var(--c-surface))", display: "grid", gap: 10, minWidth: 0 };
+  const rowStyle = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap", minWidth: 0 };
+  const chip = (s) => <span style={chipStyle(s.kind)}>{s.text}</span>;
+  const line = (label, value, extra) => <div style={rowStyle}><span style={{ fontSize: 12, color: "rgb(var(--c-charcoal))" }}>{label}</span><div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", justifyContent: "flex-end" }}><strong style={{ fontSize: 12, color: "rgb(var(--c-charcoal))", overflowWrap: "anywhere" }}>{value}</strong>{extra}</div></div>;
+  const inputLabel = (label, auto, onEdit) => <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}><span>{label}</span>{auto && <span style={chipStyle("ok")}>{isId ? "otomatis dari " + (label === (isId ? "Utang tersisa" : "Outstanding debt") ? "Checkup" : "Goals") : "auto from " + (label === (isId ? "Utang tersisa" : "Outstanding debt") ? "Checkup" : "Goals")}</span>}</div>;
+  const choiceStyle = (active) => ({ flex: 1, border: "1px solid rgb(var(--c-border))", borderRadius: 10, padding: "10px 12px", background: active ? "rgb(var(--c-accent))" : "rgb(var(--c-surface))", color: active ? "rgb(var(--c-accent-ink))" : "rgb(var(--c-charcoal))", fontWeight: 700, cursor: "pointer" });
+  return <CalcLayout
+    inputs={<div style={{ display: "grid", gap: 10, minWidth: 0 }}>
+      <NumberInput label={isId ? "Penghasilan / bulan" : "Income / month"} prefix="Rp" value={income} onChange={setIncome} step={500000}/>
+      <NumberInput label={inputLabel(isId ? "Utang tersisa" : "Outstanding debt", debtAuto)} prefix="Rp" value={debt} onChange={(v) => { setDebt(v); setDebtAuto(false); }} step={10000000}/>
+      <NumberInput label={inputLabel(isId ? "Dana pendidikan & tujuan keluarga" : "Education & family goals fund", goalsAuto)} prefix="Rp" value={goals} onChange={(v) => { setGoals(v); setGoalsAuto(false); }} step={10000000}/>
+      <NumberInput label={isId ? "Pengeluaran bulanan keluarga" : "Family monthly expenses"} prefix="Rp" value={expenses} onChange={setExpenses} step={500000}/>
+      <NumberInput label={isId ? "Santunan jiwa terpasang" : "Life cover in force"} prefix="Rp" value={lifeCover} onChange={setLifeCover} step={50000000}/>
+      <NumberInput label={isId ? "Santunan sakit kritis terpasang" : "Critical illness cover in force"} prefix="Rp" value={criticalCover} onChange={setCriticalCover} step={25000000}/>
+      <NumberInput label={isId ? "Premi / bulan terpasang" : "Premium / month in force"} prefix="Rp" value={premium} onChange={setPremium} step={100000}/>
+      <div><div style={{ fontSize: 12, fontWeight: 600, color: "rgb(var(--c-charcoal))", marginBottom: 7 }}>{isId ? "Asuransi kesehatan rawat inap" : "Inpatient health insurance"}</div><div style={{ display: "flex", gap: 8 }}><button type="button" aria-pressed={hasHealth} onClick={() => setHasHealth(true)} style={choiceStyle(hasHealth)}>{isId ? "Ada" : "Yes"}</button><button type="button" aria-pressed={!hasHealth} onClick={() => setHasHealth(false)} style={choiceStyle(!hasHealth)}>{isId ? "Tidak ada" : "None"}</button></div></div>
+      {hasHealth && <NumberInput label={isId ? "Limit tahunan" : "Annual limit"} prefix="Rp" value={healthLimit} onChange={setHealthLimit} step={50000000}/>}
+    </div>}
+    results={<div style={{ display: "grid", gap: 10, minWidth: 0 }}>
+      <ResultTile label={isId ? "Gap proteksi (jiwa + sakit kritis)" : "Protection gap (life + critical illness)"} value={fmtShort(gapTotal)} sub={isId ? "Masuk ke skor Proteksi di Financial Checkup" : "Feeds the Protection score in Financial Check-Up"}/>
+      <Card padding={14}><div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{isId ? "Jiwa" : "Life"}</div>
+        {line(isId ? "Utang" : "Debt", fmtShort(nDebt))}
+        {line(isId ? "Dana pendidikan & tujuan" : "Education & goals fund", fmtShort(nGoals))}
+        {line(isId ? "Biaya hidup keluarga 5 tahun" : "Family living costs, 5 years", fmtShort(nExpenses * 12 * 5))}
+        {line(isId ? "Dana akhir hayat" : "Final expenses", fmtShort(50000000))}
+        {line((isId ? "Kebutuhan − terpasang " : "Need − cover in force ") + fmtShort(nLife), shortLife > 0 ? (isId ? "Kurang " : "Shortfall ") + fmtShort(shortLife) : (isId ? "Tercukupi" : "Fully covered"), chip(shortLife > 0 ? status(lifeRatio) : { text: isId ? "Cukup" : "Adequate", kind: "ok" }))}
+      </Card>
+      <Card padding={14}><div style={{ fontWeight: 700, fontSize: 14 }}>{isId ? "Kesehatan" : "Health"}</div>
+        {line(isId ? "Rawat inap & limit tahunan" : "Inpatient & annual limit", hasHealth ? (isId ? "Ada · " : "Yes · ") + fmtShort(nLimit) : (isId ? "Tidak ada" : "None"), chip(healthStatus))}
+        <div style={small}>{isId ? "Patokan limit minimal Rp 500 jt/tahun adalah asumsi, sesuaikan." : "The Rp 500 million/year minimum limit benchmark is an assumption; adjust it."}</div>
+      </Card>
+      <Card padding={14}><div style={{ fontWeight: 700, fontSize: 14 }}>{isId ? "Sakit kritis" : "Critical illness"}</div>
+        {line(isId ? "Pengganti penghasilan 3 tahun" : "3-year income replacement", fmtShort(needCritical))}
+        {line((isId ? "Kebutuhan − terpasang " : "Need − cover in force ") + fmtShort(nCritical), shortCritical > 0 ? (isId ? "Kurang " : "Shortfall ") + fmtShort(shortCritical) : (isId ? "Tercukupi" : "Fully covered"), chip(shortCritical > 0 ? status(criticalRatio) : { text: isId ? "Cukup" : "Adequate", kind: "ok" }))}
+      </Card>
+      <Card padding={14}><div style={{ fontWeight: 700, fontSize: 14 }}>{isId ? "Beban premi" : "Premium burden"}</div>
+        <div style={{ height: 8, borderRadius: 99, background: "rgb(var(--c-border))", overflow: "hidden" }}><div style={{ height: "100%", width: Math.min(100, premiumPct / 20 * 100) + "%", background: premiumStatus.kind === "ok" ? "rgb(var(--c-accent-text))" : premiumStatus.kind === "warn" ? "rgb(var(--c-warn))" : "rgb(var(--c-down))" }}/></div>
+        {line((fmtShort(nPremium) + (isId ? "/bln dari penghasilan" : "/month of income")), nIncome > 0 ? premiumPct.toLocaleString(isId ? "id-ID" : "en-US", { maximumFractionDigits: 1 }) + "%" : "-", chip(premiumStatus))}
+        <div style={small}>{isId ? "Patokan umum ±10–15% penghasilan." : "General benchmark: about 10–15% of income."}</div>
+      </Card>
+      <div style={small}>{isId ? "Patokan umum untuk edukasi, bukan rekomendasi produk." : "General benchmarks for education, not a product recommendation."}</div>
+      <div style={{ background: "rgb(var(--c-forest-50))", borderRadius: 12, padding: 12, fontSize: 12, lineHeight: 1.55, color: "rgb(var(--c-forest-800))", overflowWrap: "anywhere" }}>{isId ? "Tahukah kamu? Besar proteksi ideal bukan sekadar mengikuti nominal polis orang lain. Hitung kebutuhan santunan berdasarkan penghasilan, tanggungan, utang, dan tujuan keluarga agar perlindungannya sesuai kebutuhan." : "Did you know? The ideal amount of protection is not about copying someone else's policy. Calculate the benefit you need based on income, dependents, debts, and family goals so your coverage fits your needs."}</div>
+      <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener" style={{ display: "block", width: "100%", boxSizing: "border-box", background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))", borderRadius: 10, padding: "12px 14px", fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none" }}>{isId ? "Konsultasikan Rencana" : "Consult Your Plan"}</a>
+    </div>}
+    onSave={() => onSaveResult({ id: "insurance", title: isId ? "Kebutuhan Asuransi" : "Insurance Needs", value: fmtShort(gapTotal) + " gap", plan: { type: "income_protection", targetAmount: gapTotal, income: nIncome, timeframe: 5, preparedAssets: nLife + nCritical } })}
+    onNavigate={onNavigate} calcId="insurance" relatedId="insurance"
+  />;
 }
 
 function BreakdownRow({ label, value, sub, highlight, muted }) {
