@@ -311,7 +311,7 @@ export function AddTransactionModal({
             {(["Income", "Expense", "Saving", "Transfer"] as TransactionType[]).map((t) => (
               <button
                 key={t}
-                onClick={() => setForm((f) => ({ ...f, type: t, category: activeCategories[t][0] || f.category }))}
+                onClick={() => setForm((f) => ({ ...f, type: t, category: t === "Transfer" ? "Transfer" : activeCategories[t][0] || f.category }))}
                 className={`flex-1 text-[13px] font-semibold py-2.5 rounded-xl border ${
                   form.type === t
                     ? "border-forest-600 bg-forest-50 text-forest-700 font-medium"
