@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, PiggyBank, Plus, Receipt, Search, CalendarDays, SlidersHorizontal, X, Pencil, Trash2, Wallet as WalletIcon } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, PiggyBank, Plus, Receipt, Search, CalendarDays, SlidersHorizontal, X, Pencil, Trash2 } from "lucide-react";
 import { AddTransactionModal } from "../components/AddTransactionModal";
 import { EditTransactionModal } from "../components/EditTransactionModal";
 import { Card } from "../components/Card";
