@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, PiggyBank, Plus, Receipt, Search, CalendarDays, SlidersHorizontal, X, Pencil, Trash2 } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, PiggyBank, Plus, Receipt, Search, CalendarDays, SlidersHorizontal, X, Pencil, Trash2 } from "lucide-react";
 import { AddTransactionModal } from "../components/AddTransactionModal";
 import { EditTransactionModal } from "../components/EditTransactionModal";
 import { Card } from "../components/Card";
@@ -80,9 +80,9 @@ export function Transaction() {
     })
     .sort((a, b) => { const difference = sortOrder === "newest" ? transactionDateValue(b.date) - transactionDateValue(a.date) : transactionDateValue(a.date) - transactionDateValue(b.date); return difference || (sortOrder === "newest" ? Number(b.sheetRow || 0) - Number(a.sheetRow || 0) : Number(a.sheetRow || 0) - Number(b.sheetRow || 0)); }), [transactions, filter, search, selectedMonth, selectedYear, sortOrder]);
 
-  const filters: Filter[] = ["All", "Income", "Expense", "Saving"];
-  const iconFor = (type: TransactionType) => type === "Income" ? ArrowDownLeft : type === "Expense" ? ArrowUpRight : PiggyBank;
-  const colorFor = (type: TransactionType) => type === "Income" ? "bg-[#DFF3E7] text-[#0B6B47]" : type === "Expense" ? "bg-[#FDE3EA] text-[#C23A5B]" : "bg-[#E8DDFA] text-[#6F46B0]";
+  const filters: Filter[] = ["All", "Income", "Expense", "Saving", "Transfer"];
+  const iconFor = (type: TransactionType) => type === "Income" ? ArrowDownLeft : type === "Expense" ? ArrowUpRight : type === "Transfer" ? ArrowLeftRight : PiggyBank;
+  const colorFor = (type: TransactionType) => type === "Income" ? "bg-[#DFF3E7] text-[#0B6B47]" : type === "Expense" ? "bg-[#FDE3EA] text-[#C23A5B]" : type === "Transfer" ? "bg-[#DCEBFF] text-[#1A5FD0]" : "bg-[#E8DDFA] text-[#6F46B0]";
 
   return (
     <div className="flex flex-col gap-5">
@@ -108,7 +108,7 @@ export function Transaction() {
           </div>
           {calendarOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-3 sm:items-center"><div className="w-full max-w-sm rounded-2xl bg-white p-4 shadow-xl"><div className="mb-4 flex items-center justify-between"><h3 className="font-semibold text-forest-900">{txText.filter}</h3><button type="button" aria-label={txText.close} onClick={() => setCalendarOpen(false)} className="rounded-full p-1 text-charcoal/60"><X size={20}/></button></div><button type="button" onClick={() => {setSelectedMonth("all");setSelectedYear("all");setCalendarOpen(false);}} className={`mb-3 w-full rounded-xl border px-3 py-2.5 text-left text-sm ${selectedMonth === "all" && selectedYear === "all" ? "border-forest-700 bg-forest-50 text-forest-900" : "border-charcoal/10 text-charcoal"}`}>{txText.all}</button><p className="mb-1 text-xs text-charcoal/60">{txText.month}</p><select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="mb-3 w-full rounded-xl border border-charcoal/10 bg-white px-3 py-2.5 text-sm text-forest-900"><option value="all">{txText.allMonths}</option>{["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((month, i) => <option key={month} value={String(i + 1)}>{month}</option>)}</select><p className="mb-1 text-xs text-charcoal/60">{txText.year}</p><select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="mb-4 w-full rounded-xl border border-charcoal/10 bg-white px-3 py-2.5 text-sm text-forest-900"><option value="all">{txText.allYears}</option>{availableYears.map((year) => <option key={year} value={year}>{year}</option>)}</select><button type="button" onClick={() => setCalendarOpen(false)} className="w-full rounded-xl bg-forest-700 py-2.5 text-sm font-semibold text-white">{txText.apply}</button></div></div>}
           <div className="flex gap-2 overflow-x-auto whitespace-nowrap pb-1">
-            {filters.map((item) => <button key={item} type="button" onClick={() => setFilter(item)} className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition ${filter === item ? "bg-[#123524] text-white shadow-sm" : "bg-charcoal/[0.05] text-forest-800 hover:bg-charcoal/10"}`}>{item === "All" ? "Semua" : item === "Income" ? "Pemasukan" : item === "Expense" ? "Pengeluaran" : "Tabungan"}</button>)}
+            {filters.map((item) => <button key={item} type="button" onClick={() => setFilter(item)} className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition ${filter === item ? "bg-[#123524] text-white shadow-sm" : "bg-charcoal/[0.05] text-forest-800 hover:bg-charcoal/10"}`}>{item === "All" ? "Semua" : item === "Income" ? "Pemasukan" : item === "Expense" ? "Pengeluaran" : item === "Transfer" ? "Transfer" : "Tabungan"}</button>)}
           </div>
           {loading ? <p className="py-10 text-center text-sm text-charcoal/50">{txText.loading}</p> : filteredTransactions.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center">
