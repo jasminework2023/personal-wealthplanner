@@ -1343,77 +1343,145 @@ function SimplePieChart({ data, colors }) {
 // 9. ZAKAT CALCULATOR
 // ============================================================
 function ZakatCalc({ onSaveResult, onNavigate }) {
-  const [hartaTersimpan, setHartaTersimpan] = React.useState(50000000);
-  const [penghasilanBulanan, setPenghasilanBulanan] = React.useState(10000000);
-  const [bulanBekerja, setBulanBekerja] = React.useState(12);
+  const [language, setLanguage] = React.useState(getAppLanguage());
+  React.useEffect(() => {
+    const update = () => setLanguage(getAppLanguage());
+    window.addEventListener("wealthplanner:language-changed", update);
+    return () => window.removeEventListener("wealthplanner:language-changed", update);
+  }, []);
+  const isId = language === "id";
+  const [tab, setTab] = React.useState("income");
+  const [income, setIncome] = React.useState(20000000);
+  const [basis, setBasis] = React.useState("gross");
+  const [basicNeeds, setBasicNeeds] = React.useState(9000000);
+  const [goldPrice, setGoldPrice] = React.useState(2500000);
+  const [rate, setRate] = React.useState(2.5);
+  const [showIncomeInfo, setShowIncomeInfo] = React.useState(false);
+  const [savings, setSavings] = React.useState(60000000);
+  const [investments, setInvestments] = React.useState(120000000);
+  const [goldSilver, setGoldSilver] = React.useState(30000000);
+  const [receivables, setReceivables] = React.useState(0);
+  const [debts, setDebts] = React.useState(10000000);
+  const [showDebtInfo, setShowDebtInfo] = React.useState(false);
+  const [waqfTarget, setWaqfTarget] = React.useState(30000000);
+  const [waqfInstallment, setWaqfInstallment] = React.useState(250000);
 
-  // Nishab mengacu ke 85 gr emas. Per Mei 2026 ~ Rp 2.500.000/gr → Rp 212.500.000
-  const nishabMaal = 212500000;
+  const fmt = (n) => formatIDR(Math.round(Number.isFinite(n) ? n : 0));
+  const pct = (n) => `${Number(n).toLocaleString(isId ? "id-ID" : "en-US", { maximumFractionDigits: 1 })}%`;
+  const monthlyNisab = 85 * goldPrice / 12;
+  const incomeBasis = basis === "gross" ? income : Math.max(0, income - basicNeeds);
+  const monthlyZakat = incomeBasis >= monthlyNisab ? incomeBasis * rate / 100 : 0;
+  const annualZakat = monthlyZakat * 12;
+  const totalAssets = savings + investments + goldSilver + receivables;
+  const netWealth = Math.max(0, totalAssets - debts);
+  const maalNisab = 85 * goldPrice;
+  const maalZakat = netWealth >= maalNisab ? netWealth * 0.025 : 0;
+  const waqfMonths = waqfTarget > 0 && waqfInstallment > 0 ? Math.ceil(waqfTarget / waqfInstallment) : 0;
+  const waqfYears = Math.floor(waqfMonths / 12);
+  const waqfRemainder = waqfMonths % 12;
+  const duration = waqfMonths === 0 ? "-" : waqfRemainder === 0
+    ? `${waqfYears} ${isId ? "tahun" : "years"} (${waqfMonths} ${isId ? "bulan" : "months"})`
+    : `${waqfYears} ${isId ? "tahun" : "years"} ${waqfRemainder} ${isId ? "bulan" : "months"} (${waqfMonths} ${isId ? "bulan" : "months"})`;
+  const tabButton = (key, label) => <button type="button" aria-pressed={tab === key} onClick={() => setTab(key)} style={{ minWidth: 0, padding: "10px 5px", borderRadius: 10, border: tab === key ? "1px solid rgb(var(--c-accent))" : "1px solid rgb(var(--c-border))", background: tab === key ? "rgb(var(--c-accent))" : "rgb(var(--c-surface))", color: tab === key ? "rgb(var(--c-accent-ink))" : "rgb(var(--c-charcoal))", font: "inherit", fontSize: 12, fontWeight: 700, lineHeight: 1.3, overflowWrap: "anywhere", cursor: "pointer" }}>{label}</button>;
+  const infoButton = (open, toggle, label) => <button type="button" aria-label={label} aria-expanded={open} onClick={toggle} style={{ width: 20, height: 20, flex: "0 0 20px", borderRadius: 999, border: "1px solid rgb(var(--c-border))", background: "rgb(var(--c-cream))", color: "rgb(var(--c-forest-800))", font: "inherit", fontSize: 12, fontWeight: 800, cursor: "pointer", padding: 0 }}>!</button>;
+  const infoBoxStyle = { padding: "10px 12px", borderRadius: 10, background: "rgb(var(--c-cream))", border: "1px solid rgb(var(--c-border))", color: "rgb(var(--c-charcoal))", fontSize: 11, lineHeight: 1.5, overflowWrap: "anywhere" };
+  const noteStyle = { padding: "10px 12px", borderRadius: 10, background: "rgb(var(--c-cream))", color: "rgb(var(--c-forest-800))", fontSize: 11, lineHeight: 1.5 };
+  const summaryTitle = { margin: "0 0 8px", fontSize: 14, color: "rgb(var(--c-charcoal))" };
+  const statusChip = (due) => <span style={{ display: "inline-flex", alignItems: "center", padding: "5px 9px", borderRadius: 999, background: "rgb(var(--c-forest-50))", border: "1px solid rgb(var(--c-border))", color: "rgb(var(--c-forest-800))", fontSize: 11, fontWeight: 700 }}>{due ? (isId ? "Wajib zakat" : "Zakat due") : (isId ? "Belum wajib" : "Not yet due")}</span>;
+  const saveValue = tab === "income" ? `${fmt(monthlyZakat)}/bln` : tab === "maal" ? fmt(maalZakat) : `${fmt(waqfInstallment)} /bln · ${waqfMonths} ${isId ? "bulan" : "months"}`;
 
-  const zakatMaal = hartaTersimpan >= nishabMaal ? hartaTersimpan * 0.025 : 0;
-
-  const pendapatanTahunan = penghasilanBulanan * bulanBekerja;
-  const zakatProfesi = pendapatanTahunan * 0.025;
-
-  const totalZakat = zakatMaal + zakatProfesi;
-
-  return (
-    <CalcLayout
-      inputs={
-        <>
-          <NumberInput label="Harta tersimpan (tabungan/investasi)" prefix="Rp" value={hartaTersimpan} onChange={setHartaTersimpan} step={5000000} />
-          <NumberInput label="Penghasilan bulanan" prefix="Rp" value={penghasilanBulanan} onChange={setPenghasilanBulanan} step={500000} />
-          <Slider label="Bulan bekerja per tahun" value={bulanBekerja} onChange={setBulanBekerja} min={1} max={12} step={1} format={(v) => `${v} bulan`} />
-        </>
-      }
-      results={
-        <>
-          <ResultTile
-            label="TOTAL ZAKAT YANG HARUS DIBAYAR"
-            value={formatIDR(Math.round(totalZakat))}
-            sub="Per tahun / per hijriah"
-          />
-
-          <div className="card" style={{ marginTop: 16, padding: 20 }}>
-            <h4 style={{ marginBottom: 16 }}>Breakdown Zakat</h4>
-            <div className="stack" style={{ gap: 12 }}>
-              <div>
-                <div className="row-between" style={{ marginBottom: 4 }}>
-                  <span>Zakat Maal (Harta)</span>
-                  <span className="mono" style={{ fontWeight: 600 }}>{formatIDR(Math.round(zakatMaal))}</span>
-                </div>
-                <div className="muted" style={{ fontSize: 12 }}>
-                  {hartaTersimpan >= nishabMaal
-                    ? `2.5% dari ${formatIDR(hartaTersimpan)} — harta mencapai nishab`
-                    : `Harta belum mencapai nishab ${formatIDR(nishabMaal)} — belum wajib zakat maal`}
-                </div>
-              </div>
-
-              <div>
-                <div className="row-between" style={{ marginBottom: 4 }}>
-                  <span>Zakat Profesi (Gaji)</span>
-                  <span className="mono" style={{ fontWeight: 600 }}>{formatIDR(Math.round(zakatProfesi))}</span>
-                </div>
-                <div className="muted" style={{ fontSize: 12 }}>2.5% dari {formatIDR(Math.round(pendapatanTahunan))}/tahun</div>
-              </div>
-            </div>
+  return <CalcLayout
+    inputs={<>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 6 }}>
+        {tabButton("income", isId ? "Zakat Penghasilan" : "Income Zakat")}
+        {tabButton("maal", isId ? "Zakat Maal" : "Wealth Zakat (Zakat Maal)")}
+        {tabButton("waqf", isId ? "Wakaf" : "Waqf")}
+      </div>
+      {tab === "income" && <>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "rgb(var(--c-forest-800))" }}>{isId ? "Penghasilan / bulan" : "Income / month"}</span>
+            {infoButton(showIncomeInfo, () => setShowIncomeInfo(!showIncomeInfo), isId ? "Penjelasan bruto dan netto" : "Gross and net explanation")}
           </div>
-
-          <div style={{ marginTop: 16, padding: "12px 16px", background: "var(--surface)", borderRadius: 14, fontSize: 13, color: "var(--ink-2)", lineHeight: 1.55 }}>
-            ℹ️ <span style={{ marginLeft: 8 }}>
-              Perhitungan zakat mengacu pada nishab emas (85 gr emas ≈ {formatIDR(nishabMaal)}, harga emas berfluktuasi) dan haul — aset tersimpan dihitung minimal 12 bulan penuh.
-            </span>
+          {showIncomeInfo && <div style={{ ...infoBoxStyle, marginBottom: 9 }}>{isId ? "Ulama berbeda pendapat. Bruto: dihitung dari seluruh penghasilan kotor sebelum dikurangi apa pun. Netto: dihitung dari penghasilan setelah dikurangi kebutuhan pokok. Isi sesuai pendapat yang kamu ikuti." : "Scholars differ in opinion. Gross: calculated from all income before any deductions. Net: calculated after deducting basic needs. Choose according to the opinion you follow."}</div>}
+          <NumberInput label="" prefix="Rp" value={income} onChange={setIncome} step={500000} />
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 8 }}>
+          <button type="button" aria-pressed={basis === "gross"} onClick={() => setBasis("gross")} style={{ padding: 9, borderRadius: 10, border: basis === "gross" ? "1px solid rgb(var(--c-accent))" : "1px solid rgb(var(--c-border))", background: basis === "gross" ? "rgb(var(--c-accent))" : "rgb(var(--c-surface))", color: basis === "gross" ? "rgb(var(--c-accent-ink))" : "rgb(var(--c-charcoal))", font: "inherit", fontSize: 12, fontWeight: 700 }}>{isId ? "Bruto" : "Gross"}</button>
+          <button type="button" aria-pressed={basis === "net"} onClick={() => setBasis("net")} style={{ padding: 9, borderRadius: 10, border: basis === "net" ? "1px solid rgb(var(--c-accent))" : "1px solid rgb(var(--c-border))", background: basis === "net" ? "rgb(var(--c-accent))" : "rgb(var(--c-surface))", color: basis === "net" ? "rgb(var(--c-accent-ink))" : "rgb(var(--c-charcoal))", font: "inherit", fontSize: 12, fontWeight: 700 }}>{isId ? "Netto" : "Net"}</button>
+        </div>
+        {basis === "net" && <NumberInput label={isId ? "Kebutuhan pokok / bulan" : "Basic needs / month"} prefix="Rp" value={basicNeeds} onChange={setBasicNeeds} step={500000} />}
+        <NumberInput label={isId ? "Harga emas per gram" : "Gold price per gram"} prefix="Rp" value={goldPrice} onChange={setGoldPrice} step={50000} hint={isId ? "Contoh, isi harga emas terkini. Nisab = 85 gram emas." : "Example; enter the current gold price. Nisab = 85 grams of gold."} />
+        <Slider label={isId ? "Tarif zakat" : "Zakat rate"} value={rate} onChange={setRate} min={0} max={10} step={0.5} format={pct} />
+      </>}
+      {tab === "maal" && <>
+        <NumberInput label={isId ? "Tabungan & kas" : "Savings & cash"} prefix="Rp" value={savings} onChange={setSavings} step={1000000} />
+        <NumberInput label={isId ? "Investasi (reksa dana, saham, sukuk)" : "Investments (mutual funds, stocks, sukuk)"} prefix="Rp" value={investments} onChange={setInvestments} step={1000000} />
+        <NumberInput label={isId ? "Emas & perak" : "Gold & silver"} prefix="Rp" value={goldSilver} onChange={setGoldSilver} step={1000000} />
+        <NumberInput label={isId ? "Piutang lancar" : "Current receivables"} prefix="Rp" value={receivables} onChange={setReceivables} step={1000000} />
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "rgb(var(--c-forest-800))" }}>{isId ? "Utang jatuh tempo" : "Debts due"}</span>
+            {infoButton(showDebtInfo, () => setShowDebtInfo(!showDebtInfo), isId ? "Penjelasan utang jatuh tempo" : "Explanation of debts due")}
           </div>
-        </>
-      }
-      onSave={() => onSaveResult({ id: "zakat", title: "Zakat Tahunan", value: formatIDR(Math.round(totalZakat)), plan: null })}
-      onNavigate={onNavigate}
-      calcId="zakat"
-      relatedId={null}
-    />
-  );
+          {showDebtInfo && <div style={{ ...infoBoxStyle, marginBottom: 9 }}>{isId ? "Utang yang harus dibayar dalam waktu dekat. Sebagian ulama membolehkannya dikurangkan dari total harta sebelum dihitung zakat." : "Debts payable in the near future. Some scholars allow these to be deducted from total assets before calculating zakat."}</div>}
+          <NumberInput label="" prefix="Rp" value={debts} onChange={setDebts} step={1000000} />
+        </div>
+        <NumberInput label={isId ? "Harga emas per gram" : "Gold price per gram"} prefix="Rp" value={goldPrice} onChange={setGoldPrice} step={50000} hint={isId ? "Nisab = 85 gram emas." : "Nisab = 85 grams of gold."} />
+      </>}
+      {tab === "waqf" && <>
+        <NumberInput label={isId ? "Target wakaf uang" : "Cash waqf target"} prefix="Rp" value={waqfTarget} onChange={setWaqfTarget} step={1000000} />
+        <NumberInput label={isId ? "Rencana cicilan wakaf / bulan" : "Planned waqf installment / month"} prefix="Rp" value={waqfInstallment} onChange={setWaqfInstallment} step={50000} />
+      </>}
+    </>}
+    results={<div style={{ display: "grid", gap: 10, minWidth: 0 }}>
+      {tab === "income" && <>
+        <ResultTile label={isId ? "Zakat penghasilan / bulan" : "Income zakat / month"} value={fmt(monthlyZakat)} sub={incomeBasis >= monthlyNisab ? (isId ? `Penghasilan di atas nisab bulanan ${fmt(monthlyNisab)}` : `Income is above the monthly nisab of ${fmt(monthlyNisab)}`) : (isId ? `Belum mencapai nisab bulanan ${fmt(monthlyNisab)}, belum wajib zakat penghasilan` : `Below the monthly nisab of ${fmt(monthlyNisab)}; income zakat is not yet due`)} />
+        <Card style={{ padding: 14 }}>
+          <h4 style={summaryTitle}>{isId ? "Ringkasan zakat" : "Zakat summary"}</h4>
+          <BreakdownRow label={isId ? "Dasar perhitungan" : "Calculation basis"} value={`${basis === "gross" ? (isId ? "Bruto" : "Gross") : (isId ? "Netto" : "Net")} · ${fmt(incomeBasis)}`} />
+          <BreakdownRow label={isId ? "Nisab / bulan" : "Nisab / month"} value={fmt(monthlyNisab)} />
+          <BreakdownRow label={isId ? "Zakat / bulan" : "Zakat / month"} value={fmt(monthlyZakat)} highlight />
+          <BreakdownRow label={isId ? "Zakat / tahun" : "Zakat / year"} value={fmt(annualZakat)} />
+        </Card>
+        <div style={noteStyle}>{isId ? "Simulasi edukatif. Konfirmasi nisab dan haul ke lembaga zakat resmi." : "Educational estimate. Confirm the nisab and haul with an official zakat institution."}</div>
+      </>}
+      {tab === "maal" && <>
+        <ResultTile label={isId ? "Zakat maal" : "Wealth zakat (Zakat Maal)"} value={fmt(maalZakat)} sub={netWealth >= maalNisab ? (isId ? "2,5% dari harta bersih, sudah di atas nisab" : "2.5% of net wealth, above the nisab") : (isId ? "Harta bersih belum mencapai nisab, belum wajib zakat maal" : "Net wealth is below the nisab; wealth zakat is not yet due")} />
+        <Card style={{ padding: 14 }}>
+          <h4 style={summaryTitle}>{isId ? "Ringkasan zakat maal" : "Wealth zakat summary"}</h4>
+          <BreakdownRow label={isId ? "Total harta" : "Total assets"} value={fmt(totalAssets)} />
+          <BreakdownRow label={isId ? "− Utang jatuh tempo" : "− Debts due"} value={fmt(debts)} />
+          <BreakdownRow label={isId ? "Harta bersih" : "Net wealth"} value={fmt(netWealth)} highlight />
+          <BreakdownRow label={isId ? "Nisab (85 g emas)" : "Nisab (85 g gold)"} value={fmt(maalNisab)} />
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "rgb(var(--c-charcoal))" }}>{isId ? "Status" : "Status"}</span>
+            {statusChip(netWealth >= maalNisab)}
+            {infoButton(showDebtInfo, () => setShowDebtInfo(!showDebtInfo), isId ? "Penjelasan haul zakat maal" : "Explanation of wealth zakat haul")}
+          </div>
+          {showDebtInfo && <div style={{ ...infoBoxStyle, marginTop: 8 }}>{isId ? "Zakat maal wajib bila harta bersih mencapai nisab dan sudah dimiliki penuh selama satu tahun hijriah (haul)." : "Wealth zakat is due when net wealth reaches the nisab and has been owned for one full Hijri year (haul)."}</div>}
+        </Card>
+        <div style={noteStyle}>{isId ? "Simulasi edukatif. Konfirmasi nisab dan haul ke lembaga zakat resmi." : "Educational estimate. Confirm the nisab and haul with an official zakat institution."}</div>
+      </>}
+      {tab === "waqf" && <>
+        <Card style={{ padding: 14 }}>
+          <h4 style={summaryTitle}>{isId ? "Ringkasan wakaf" : "Waqf summary"}</h4>
+          <BreakdownRow label={isId ? "Lama" : "Duration"} value={duration} />
+          <BreakdownRow label={isId ? "Total wakaf" : "Total waqf"} value={waqfTarget > 0 && waqfInstallment > 0 ? fmt(waqfTarget) : "-"} highlight />
+        </Card>
+        <div style={noteStyle}>{isId ? "Wakaf bersifat sukarela, tidak termasuk kewajiban zakat." : "Waqf is voluntary and is not a zakat obligation."}</div>
+      </>}
+      <div style={{ padding: 12, borderRadius: 12, background: "rgb(var(--c-forest-50))", color: "rgb(var(--c-forest-800))", fontSize: 12, lineHeight: 1.55, overflowWrap: "anywhere" }}>
+        {isId ? "Tahukah kamu? Wakaf bisa menjadi amal jariyah yang manfaatnya terus mengalir. Kamu bisa merencanakan wakaf melalui alokasi aset atau mengeksplorasi skema proteksi jiwa dengan manfaat santunan yang diniatkan untuk wakaf, sesuai ketentuan polis dan lembaga wakaf." : "Did you know? Waqf can be a continuing charity (sadaqah jariyah) whose benefits keep flowing. You can plan waqf through asset allocation or explore life-protection schemes whose benefit is intended for waqf, subject to the policy terms and the waqf institution."}
+      </div>
+      <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener" style={{ display: "block", width: "100%", boxSizing: "border-box", textAlign: "center", padding: "12px 14px", borderRadius: 10, background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))", textDecoration: "none", fontSize: 13, fontWeight: 700 }}>{isId ? "Konsultasikan Rencana" : "Consult Your Plan"}</a>
+    </div>}
+    onSave={() => onSaveResult({ id: "zakat", title: isId ? "Zakat dan Wakaf" : "Zakat and Waqf", value: saveValue, plan: null })}
+    onNavigate={onNavigate}
+    calcId="zakat"
+    relatedId={null}
+  />;
 }
-
 
 
 function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
