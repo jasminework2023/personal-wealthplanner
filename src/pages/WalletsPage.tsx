@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ArrowLeft, RefreshCw, Wallet as WalletIcon, Palette, Check, AlertCircle, ArrowDownLeft, ArrowUpRight, ArrowLeftRight, History, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWallets, type Wallet } from "../lib/useWallets";
@@ -128,7 +128,7 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
                 height: isFront ? 176 : 112,
                 "--wallet-stack-color": walletColor,
                 boxShadow: "0 -4px 12px rgb(0 0 0 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.18)",
-              }}
+              } as CSSProperties}
             >
               <div className="flex h-12 items-start justify-between gap-3 px-[18px] pt-[11px] text-base font-semibold leading-5">
                 <span className="min-w-0 flex-1 truncate">{wallet.name}</span>
