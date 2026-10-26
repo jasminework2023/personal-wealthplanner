@@ -69,6 +69,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== "GET") return res.status(405).json({ error: "Method Not Allowed" });
 
     const sheets = sheetsClient();
+    // Transaction rows start at row 10 and occupy B:I. The wallet fields are
+    // stored in H:I; add their labels only when those header cells are empty.
+    // Never overwrite an existing header or any transaction data.
+    const walletHeader = await sheets.spreadsheets.values.get({
+      spreadsheetId: user.spreadsheet_id,
+      range: "Transaction!H9:I9",
+    });
+    const headerValues = walletHeader.data.values?.[0] || [];
+    const headerH = display(headerValues[0]);
+    const headerI = display(headerValues[1]);
+    if (!headerH && !headerI) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: user.spreadsheet_id,
+        range: "Transaction!H9:I9",
+        valueInputOption: "RAW",
+        requestBody: { values: [["Wallet", "To Wallet"]] },
+      });
+    } else if (norm(headerH) !== "wallet" || norm(headerI) !== "to wallet") {
+      throw new Error("Header wallet belum cocok. Periksa Transaction!H9:I9 sebelum menggunakan fitur Wallet.");
+    }
     // Resolve Setup by its actual title, matching setup.ts behavior.
     const meta = await sheets.spreadsheets.get({ spreadsheetId: user.spreadsheet_id, fields: "sheets.properties(sheetId,title)" });
     const setupTitle = (meta.data.sheets || []).map((s) => String(s.properties?.title || "")).find((title) => title.trim().toLowerCase().replace(/\s+/g, "") === "setup");
