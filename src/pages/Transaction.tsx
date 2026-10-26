@@ -7,6 +7,7 @@ import { DataStatusBanner } from "../components/DataStatusBanner";
 import { formatRupiah, getAppLanguage } from "../lib/format";
 import { useFinanceData } from "../lib/useFinanceData";
 import { useNavigate } from "react-router-dom";
+import { WalletsPage } from "./WalletsPage";
 import type { Transaction as TransactionItem, TransactionType } from "../data/types";
 
 type Filter = "All" | TransactionType;
@@ -53,6 +54,7 @@ export function Transaction() {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const txText = language === "id" ? { title: "Transaksi", intro: "Kelola dan telusuri semua transaksi keuanganmu.", all: "Semua Transaksi", allMonths: "Semua bulan", add: "Tambah Transaksi", list: "Daftar Transaksi", search: "Cari transaksi...", filter: "Filter transaksi", month: "Bulan", year: "Tahun", allYears: "Semua tahun", apply: "Terapkan filter", loading: "Memuat transaksi...", empty: "Belum ada transaksi", emptyHint: "Coba ubah filter atau tambahkan transaksi baru.", close: "Tutup filter", newestToOldest: "Urutkan dari terbaru ke terlama", oldestToNewest: "Urutkan dari terlama ke terbaru", edit: "Edit transaksi" } : { title: "Transaction", intro: "Manage and review all your financial transactions.", all: "All Transactions", allMonths: "All months", add: "Add Transaction", list: "Transaction List", search: "Search transactions...", filter: "Filter transactions", month: "Month", year: "Year", allYears: "All years", apply: "Apply filters", loading: "Loading transactions...", empty: "No transactions yet", emptyHint: "Try changing the filters or add a new transaction.", close: "Close filter", newestToOldest: "Sort newest to oldest", oldestToNewest: "Sort oldest to newest", edit: "Edit transaction" };
+  const [activeTab, setActiveTab] = useState<"transactions" | "wallets">("transactions");
   const [filter, setFilter] = useState<Filter>("All");
   const [search, setSearch] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("all");
@@ -88,13 +90,17 @@ export function Transaction() {
 
   return (
     <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-2 rounded-2xl bg-charcoal/[0.05] p-1">
+        <button type="button" onClick={() => setActiveTab("transactions")} className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${activeTab === "transactions" ? "bg-white text-[#123524] shadow-sm" : "text-charcoal/55"}`}>Transaction List</button>
+        <button type="button" onClick={() => setActiveTab("wallets")} className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${activeTab === "wallets" ? "bg-[#123524] text-white shadow-sm" : "text-charcoal/55"}`}>Dompet</button>
+      </div>
+      {activeTab === "wallets" ? <WalletsPage embedded /> : <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="page-title">{txText.title}</h1>
           <p className="page-sub">{txText.intro}</p>
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => navigate("/wallets")} className="inline-flex items-center gap-2 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-xs font-semibold text-forest-900 shadow-sm"><WalletIcon size={16}/><span>Wallet</span></button>
           <button type="button" onClick={() => setCalendarOpen(true)} className="inline-flex items-center gap-2 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-xs font-semibold text-forest-900 shadow-sm"><CalendarDays size={16}/><span>{selectedMonth === "all" && selectedYear === "all" ? txText.all : `${selectedMonth === "all" ? txText.allMonths : ["","Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][Number(selectedMonth)]} ${selectedYear === "all" ? "" : selectedYear}`.trim()}</span></button>
           <button type="button" onClick={() => setModalOpen(true)} className="inline-flex items-center gap-1.5 rounded-full bg-[#DDF7E8] px-4 py-2.5 text-xs font-bold text-[#0B6B47] shadow-pop sm:text-sm"><Plus size={16} /> {txText.add}</button>
         </div>
@@ -153,6 +159,7 @@ export function Transaction() {
           window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));
         }}
       />
+      </div>}
     </div>
   );
 }
