@@ -25,7 +25,7 @@ const menus = [
   { key: "goals", label: "Goals", icon: Target, to: "/goals", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
   { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
   { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true, tone: "bg-[#DDF7E8] text-[#0B6B47]" },
-  { key: "ai", label: "AI Assistant", icon: Bot, soon: true, tone: "bg-[#DDF7E8] text-[#0B6B47]" },
+  { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
   { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
 ];
 
