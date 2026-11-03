@@ -61,7 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!apiKey) return res.status(503).json({ error: "AI belum dikonfigurasi. Hubungi administrator." });
     const history = (previous || []).reverse().map((m: any) => ({ role: m.role, content: m.content }));
     stage = "groq_request";
-    const completion = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, temperature: 1, max_completion_tokens: 900, messages: [{ role: "system", content: `Kamu adalah Wealthplanner AI, asisten perencanaan keuangan pribadi yang ramah, jelas, dan tidak menghakimi. Jawab dalam bahasa Indonesia kecuali pengguna memakai bahasa lain. Gunakan data keuangan pengguna berikut hanya sebagai konteks; jangan mengarang angka. Jika data tidak cukup, katakan dengan jujur. Berikan edukasi, bukan rekomendasi investasi personal yang menjanjikan hasil. Nama pengguna: ${user.username || "Pengguna"}. Data keuangan: ${JSON.stringify(finance)}` }, ...history, { role: "user", content: message }] }) });
+    const completion = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, temperature: 1, max_completion_tokens: 2400, messages: [{ role: "system", content: `Kamu adalah Wealthplanner AI, asisten perencanaan keuangan pribadi yang ramah, jelas, dan tidak menghakimi. Jawab dalam bahasa Indonesia kecuali pengguna memakai bahasa lain. Gunakan data keuangan pengguna berikut hanya sebagai konteks; jangan mengarang angka. Jika data tidak cukup, katakan dengan jujur. Berikan edukasi, bukan rekomendasi investasi personal yang menjanjikan hasil. Nama pengguna: ${user.username || "Pengguna"}. Data keuangan: ${JSON.stringify(finance)}` }, ...history, { role: "user", content: message }] }) });
     stage = "groq_response";
     const payload: any = await completion.json();
     if (!completion.ok) {
@@ -69,8 +69,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(502).json({ error: `Groq (${completion.status}): ${String(payload?.error?.message || "Provider menolak request.").slice(0, 220)}` });
     }
     stage = "save_messages";
-    const answer = String(payload?.choices?.[0]?.message?.content || "").trim();
-    if (!answer) return res.status(502).json({ error: "AI belum memberikan jawaban." });
+    const choice = payload?.choices?.[0];
+    const rawContent = choice?.message?.content;
+    const answer = (typeof rawContent === "string"
+      ? rawContent
+      : Array.isArray(rawContent)
+        ? rawContent.map((part: any) => typeof part?.text === "string" ? part.text : "").join("\\n")
+        : "").trim();
+    if (!answer) {
+      console.error("AI empty completion", JSON.stringify({
+        model, finish_reason: choice?.finish_reason ?? null,
+        usage: payload?.usage ?? null,
+        response_id: payload?.id ?? null,
+        response_keys: payload && typeof payload === "object" ? Object.keys(payload) : [],
+        message_keys: choice?.message && typeof choice.message === "object" ? Object.keys(choice.message) : [],
+        refusal: choice?.message?.refusal ?? null,
+      }));
+      return res.status(502).json({
+        error: `AI tidak mengirim teks jawaban (finish_reason: ${String(choice?.finish_reason || "tidak tersedia")}). Coba kirim ulang.`,
+      });
+    }
     const { error: saveUserError } = await db.from("ai_messages").insert({ conversation_id: conversationId, user_id: String(user.user_id), role: "user", content: message });
     if (saveUserError) throw saveUserError;
     const { error: saveAssistantError } = await db.from("ai_messages").insert({ conversation_id: conversationId, user_id: String(user.user_id), role: "assistant", content: answer });
