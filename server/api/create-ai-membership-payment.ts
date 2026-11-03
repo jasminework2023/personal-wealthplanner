@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
     const { data: user, error } = await supabase
       .from("users")
-      .select("user_id, email, dashboard_token, is_active")
+      .select("user_id, email, is_active")
       .eq("dashboard_token", token)
       .maybeSingle();
 
@@ -41,7 +41,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!user.email) return res.status(400).json({ error: "Email akun belum tersedia. Hubungi support." });
 
     const selected = PLANS[plan];
-    const externalId = `ai-pro:${user.dashboard_token}:${randomUUID()}`;
+    // Opaque provider reference. The dashboard bearer token never leaves our server.
+    const externalId = `ai-pro-${randomUUID()}`;
+    const { error: intentError } = await supabase.from("ai_payment_intents").insert({
+      external_id: externalId,
+      user_id: String(user.user_id),
+      plan,
+      amount_idr: selected.amount,
+      status: "pending",
+    });
+    if (intentError) throw intentError;
+
     const response = await fetch("https://api.xendit.co/v2/invoices", {
       method: "POST",
       headers: {
@@ -53,7 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         amount: selected.amount,
         payer_email: user.email,
         description: selected.description,
-        success_redirect_url: `https://wealthplanner.id/dashboard?token=${encodeURIComponent(user.dashboard_token)}&membership=success`,
+        success_redirect_url: "https://wealthplanner.id/dashboard?membership=success",
         failure_redirect_url: "https://wealthplanner.id/dashboard?membership=failed",
       }),
     });
@@ -61,6 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const invoice = await response.json().catch(() => ({}));
     if (!response.ok || !invoice.invoice_url) {
       console.error("AI PRO+ Xendit invoice error:", invoice);
+      await supabase.from("ai_payment_intents").update({ status: "failed" }).eq("external_id", externalId);
       return res.status(502).json({ error: "Gagal membuat invoice AI PRO+." });
     }
 
