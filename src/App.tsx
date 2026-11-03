@@ -6,7 +6,6 @@ import { TransactionReport } from "./pages/TransactionReport";
 import { Transaction } from "./pages/Transaction";
 import { MonthlyBudgeting } from "./pages/MonthlyBudgeting";
 import { Settings } from "./pages/Settings";
-import { Guidance } from "./pages/Guidance";
 import { DashboardWelcome } from "./pages/DashboardWelcome";
 import { FinancialProtection } from "./pages/FinancialProtection";
 import { FinancialCalculator, CalculatorDetail } from "./pages/FinancialCalculator";
