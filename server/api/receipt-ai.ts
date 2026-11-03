@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { randomUUID } from "node:crypto";
 
 const MAX_IMAGE_DATA_URL_BYTES = 3.5 * 1024 * 1024;
 const ALLOWED_CATEGORIES = [
@@ -217,7 +218,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   });
   const { data: user, error: authError } = await supabase
     .from("users")
-    .select("username, is_active")
+    .select("user_id, username, is_active")
     .eq("dashboard_token", token)
     .single();
 
@@ -272,6 +273,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
+  // Reserve 2 credits atomically. They are committed only after valid structured
+  // transaction data is returned; provider failures release the reservation.
+  const requestId = randomUUID();
+  const { data: creditRows, error: creditError } = await supabase.rpc("reserve_ai_credits", {
+    p_user_id: user.user_id,
+    p_request_id: requestId,
+    p_feature: "receipt_scan",
+    p_credits: 2,
+  });
+
+  if (creditError || !Array.isArray(creditRows) || !creditRows[0]) {
+    console.error("receipt-ai credit reservation failed:", creditError?.message || "No RPC result");
+    return res.status(503).json({ error: "Kuota AI belum dapat diverifikasi. Silakan coba lagi." });
+  }
+  if (!creditRows[0].allowed) {
+    const reason = String(creditRows[0].reason || "");
+    const status = reason === "ai_access_expired" || reason === "user_not_found" ? 403
+      : reason === "insufficient_credits" ? 402 : 409;
+    return res.status(status).json({
+      error: reason === "ai_access_expired"
+        ? "Masa akses AI kamu sudah berakhir. Perpanjang AI PRO+ untuk melanjutkan."
+        : reason === "insufficient_credits"
+          ? "Kredit AI kamu tidak mencukupi untuk scan struk."
+          : "Akses AI belum dapat digunakan. Coba lagi beberapa saat.",
+      reason,
+      creditsRemaining: Number(creditRows[0].credits_remaining) || 0,
+    });
+  }
+
+  async function settleCredit(success: boolean) {
+    const { data, error } = await supabase.rpc("settle_ai_credit", {
+      p_user_id: user.user_id,
+      p_request_id: requestId,
+      p_success: success,
+    });
+    if (error || !Array.isArray(data) || !data[0]) {
+      throw new Error(error?.message || "Gagal menyelesaikan pencatatan kredit AI.");
+    }
+    return data[0];
+  }
+
   let lastError: { status: number; message: string } | null = null;
 
   for (const provider of providers) {
@@ -285,6 +327,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         lastError = { status: response.status >= 500 ? 502 : 400, message: `AI struk gagal (${provider.name}): ${providerMessage}` };
         // Coba provider berikutnya hanya kalau ini masalah server/kuota, bukan input yang salah.
         if (response.status >= 500 || response.status === 429) continue;
+        try { await settleCredit(false); } catch (settleError) {
+          console.error("receipt-ai credit refund failed:", settleError);
+          return res.status(503).json({ error: "Permintaan gagal dan pengembalian kredit sedang diproses." });
+        }
         return res.status(lastError.status).json({ error: lastError.message });
       }
 
@@ -309,7 +355,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const transaction = normalizeTransaction(parsed);
-      return res.status(200).json({ success: true, transaction, provider: provider.name });
+      try {
+        const settlement = await settleCredit(true);
+        return res.status(200).json({
+          success: true,
+          transaction,
+          provider: provider.name,
+          creditsRemaining: Number(settlement.credits_remaining) || 0,
+        });
+      } catch (settleError) {
+        console.error("receipt-ai credit commit failed:", settleError);
+        return res.status(503).json({ error: "Hasil AI sudah diproses, tetapi status kredit belum tersimpan. Hubungi support sebelum mengulang scan." });
+      }
     } catch (error) {
       console.error(`receipt-ai ${provider.name} error:`, error);
       if (error instanceof Error && error.name === "TimeoutError") {
@@ -321,5 +378,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
+  try { await settleCredit(false); } catch (settleError) {
+    console.error("receipt-ai final credit refund failed:", settleError);
+    return res.status(503).json({ error: "Permintaan gagal dan pengembalian kredit sedang diproses." });
+  }
   return res.status(lastError?.status || 500).json({ error: lastError?.message || "Gagal membaca struk" });
 }
