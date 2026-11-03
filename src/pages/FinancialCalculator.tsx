@@ -1903,11 +1903,7 @@ export function FinancialCalculator({ onOpen }: { onOpen: (id: string) => void }
         .wp-calculator-hub .hub-calculator-row:active { opacity: .82; }
         @media (prefers-reduced-motion: reduce) { .wp-calculator-hub .hub-calculator-row { transition: none !important; } }
       `}</style>
-      <header>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: "rgb(var(--c-muted))" }}>{copy.label}</div>
-        <h1 style={{ fontSize: "clamp(25px, 5vw, 28px)", lineHeight: 1.15, fontWeight: 800, color: "rgb(var(--c-charcoal))", letterSpacing: "-.035em", margin: "6px 0 5px" }}>{copy.title}</h1>
-        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.4, color: "rgb(var(--c-muted))", maxWidth: 460 }}>{copy.subtitle}</p>
-      </header>
+
       {HUB_SECTIONS.map((section) => (
         <section key={section.key} style={{ minWidth: 0 }}>
           <h2 style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".09em", color: "rgb(var(--c-muted))", margin: "0 0 9px" }}>{section.title[isId ? "id" : "en"]}</h2>
