@@ -184,13 +184,7 @@ export function Goals() {
   }
 
   return (
-    <div className="goals-page flex flex-col gap-4 pb-6">
-      <div className="flex items-start gap-3.5">
-        <button onClick={() => navigate("/")} aria-label="Kembali ke Home" className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm"><ArrowLeft size={18}/></button>
-        
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="goals-page flex flex-col gap-4 pb-6">      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="goal-list-heading text-[16px] font-bold text-[#111815] dark:text-white">{id ? "Daftar target" : "Your goals"}</p>
         <button type="button" onClick={() => setShowManualGoal((open) => !open)} className="goal-add-button inline-flex h-[36px] items-center gap-2 rounded-[14px] bg-[#00B86E] px-4 text-[14px] font-bold text-[#03140C] shadow-sm dark:bg-[#00E08A]"><Plus size={15}/>{id ? "Tambah target" : "Add goal"}</button>
       </div>
