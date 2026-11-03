@@ -125,7 +125,7 @@ export function FinancialProtection() {
   }
 
   return <div className="financial-protection-page flex flex-col gap-5">
-    <div><h1 className="page-title">{id ? "Proteksi Finansial" : "Financial Protection"}</h1><p className="page-sub">{id ? "Lihat rencana yang ingin kamu jaga dan bagian yang masih perlu dipersiapkan." : "Review the plans you want to protect and what still needs to be prepared."}</p></div>
+    
 
     <Card className="protection-hero overflow-hidden !border !border-[#07794E] !p-4">
       <div className="flex flex-col gap-5">
