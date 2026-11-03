@@ -248,6 +248,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
+  // Atomic database-backed fixed-window limit: default 5 requests per active account per minute.
+  // The RPC is intentionally server-only; if its migration has not been applied, fail closed.
+  const windowSeconds = Number(process.env.AI_RECEIPT_RATE_WINDOW_SECONDS) || 60;
+  const maxRequests = Number(process.env.AI_RECEIPT_RATE_MAX_REQUESTS) || 5;
+  const { data: rateRows, error: rateError } = await supabase.rpc("consume_ai_rate_limit", {
+    p_username: user.username,
+    p_window_seconds: windowSeconds,
+    p_max_requests: maxRequests,
+  });
+
+  if (rateError || !Array.isArray(rateRows) || !rateRows[0]) {
+    console.error("receipt-ai rate limit check failed:", rateError?.message || "No RPC result");
+    return res.status(503).json({ error: "Layanan AI sedang disiapkan. Silakan coba beberapa saat lagi." });
+  }
+
+  if (!rateRows[0].allowed) {
+    const retryAfter = Math.max(1, Number(rateRows[0].retry_after_seconds) || windowSeconds);
+    res.setHeader("Retry-After", String(retryAfter));
+    return res.status(429).json({
+      error: "Batas penggunaan AI struk sementara tercapai. Coba lagi sebentar.",
+      retryAfterSeconds: retryAfter,
+    });
+  }
+
   let lastError: { status: number; message: string } | null = null;
 
   for (const provider of providers) {
