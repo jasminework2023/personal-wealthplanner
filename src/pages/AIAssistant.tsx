@@ -80,6 +80,7 @@ export function AIAssistant() {
       </aside>
     </div>}
   </div>;
+}
 
 function SparkleIcon() { return <Bot size={26}/>; }
 
