@@ -189,6 +189,7 @@ async function handleStart(chatId: string, username: string, args: string) {
   }
 
   const user = result.user;
+  if (!user) return;
   if (!user.spreadsheet_id) {
     await sendMessage(chatId, "✅ Telegram berhasil terhubung!\n\nSekarang selesaikan langkah Hubungkan Google Sheet di Dashboard. Setelah Sheet tersambung, kamu bisa langsung mencatat transaksi di sini.");
     return;
