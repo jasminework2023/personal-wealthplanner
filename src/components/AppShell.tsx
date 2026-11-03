@@ -31,7 +31,7 @@ export function AppShell() {
   const navLabels = language === "id" ? { home: "Beranda", goals: "Target", close: "Tutup", quickAdd: "Tulis transaksi atau unggah foto struk" } : { home: "Home", goals: "Goals", close: "Close", quickAdd: "Enter a transaction or upload a receipt photo" };
   const location = useLocation();
   const navigate = useNavigate();
-  const titleId: Record<string, string> = { "/": "Home", "/finance": "Finance Report", "/transactions": "Komunitas", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/guidance": "Panduan", "/goals": "Target", "/ai-assistant": "Asisten AI" };
+  const titleId: Record<string, string> = { "/": "Home", "/finance": "Finance Report", "/transactions": "Komunitas", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/goals": "Target", "/ai-assistant": "Asisten AI" };
   const title = language === "en" ? (location.pathname.startsWith("/calculator/") ? "Financial Calculator" : (titles[location.pathname] ?? "Wealthplanner")) : (location.pathname.startsWith("/calculator/") ? "Kalkulator Keuangan" : (titleId[location.pathname] ?? "Wealthplanner"));
 
   return (
