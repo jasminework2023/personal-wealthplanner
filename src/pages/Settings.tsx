@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 const API_BASE = "/api";
-import { Check, ExternalLink, GripVertical, Plus, Settings2, Trash2, User as UserIcon, Loader2, RotateCcw, Sparkles, Crown } from "lucide-react";
+import { Check, ExternalLink, GripVertical, Plus, Settings2, Trash2, User as UserIcon, Loader2, RotateCcw, Crown } from "lucide-react";
 import { Card } from "../components/Card";
 import { getDisplayName, setDisplayName } from "../lib/settings";
 import { getAppLanguage, setAppLanguage, type AppLanguage } from "../lib/format";
