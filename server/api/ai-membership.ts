@@ -19,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const supabase = createClient(url, key, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
-    const { data: user, error } = await supabase
+    const { data, error } = await supabase
       .from("users")
       .select([
         "user_id",
@@ -38,6 +38,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .maybeSingle();
 
     if (error) throw error;
+    const user = data as {
+      user_id: string;
+      is_active: boolean;
+      lifetime_pro_status: boolean | null;
+      ai_trial_started_at: string | null;
+      ai_trial_expires_at: string | null;
+      ai_membership_plan: string | null;
+      ai_membership_started_at: string | null;
+      ai_membership_expires_at: string | null;
+      ai_credits_remaining: number | null;
+      ai_credit_period_started_at: string | null;
+      ai_credit_period_expires_at: string | null;
+    } | null;
     if (!user) return res.status(401).json({ error: "Sesi tidak valid." });
     if (!user.is_active) return res.status(403).json({ error: "Akun belum aktif." });
 
