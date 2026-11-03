@@ -245,7 +245,7 @@ begin
 
   return query select true, 'activated', v_expiry;
 end;
-$;
+$$;
 
 revoke all on function public.reserve_ai_credits(text, text, text, integer) from public, anon, authenticated;
 revoke all on function public.settle_ai_credit(text, text, boolean) from public, anon, authenticated;
