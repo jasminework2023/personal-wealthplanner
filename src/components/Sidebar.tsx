@@ -99,7 +99,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       <div className="px-2 pb-4 pt-2 border-t border-white/12 flex flex-col gap-0.5">
-        <NavItem to="/guidance" label={labels.guidance} icon={BookOpen} onNavigate={onNavigate} />
         <NavItem to="/settings" label={labels.profile} icon={Settings} onNavigate={onNavigate} />
       </div>
     </div>
