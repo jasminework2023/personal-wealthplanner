@@ -1,4 +1,4 @@
-import { Menu, BookOpen } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { getAppLanguage } from "../lib/format";
