@@ -7,6 +7,7 @@ import h_add_budget_category from "../server/api/add-budget-category.js";
 import h_add_transaction from "../server/api/add-transaction.js";
 import h_connect_sheet from "../server/api/connect-sheet.js";
 import h_create_payment from "../server/api/create-payment.js";
+import h_create_ai_membership_payment from "../server/api/create-ai-membership-payment.js";
 import h_create_wealth_tracker_payment from "../server/api/create-wealth-tracker-payment.js";
 import h_dashboard from "../server/api/dashboard.js";
 import h_delete_asset_item from "../server/api/delete-asset-item.js";
@@ -33,6 +34,7 @@ const handlers: Record<string, (req: VercelRequest, res: VercelResponse) => unkn
   "add-transaction": h_add_transaction,
   "connect-sheet": h_connect_sheet,
   "create-payment": h_create_payment,
+  "create-ai-membership-payment": h_create_ai_membership_payment,
   "create-wealth-tracker-payment": h_create_wealth_tracker_payment,
   dashboard: h_dashboard,
   "delete-asset-item": h_delete_asset_item,
