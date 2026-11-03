@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 const API_BASE = "/api";
-import { Check, ExternalLink, GripVertical, Plus, Settings2, Trash2, User as UserIcon, Loader2, RotateCcw } from "lucide-react";
+import { Check, ExternalLink, GripVertical, Plus, Settings2, Trash2, User as UserIcon, Loader2, RotateCcw, Sparkles, Crown } from "lucide-react";
 import { Card } from "../components/Card";
 import { getDisplayName, setDisplayName } from "../lib/settings";
 import { getAppLanguage, setAppLanguage, type AppLanguage } from "../lib/format";
@@ -37,6 +37,47 @@ export function Settings() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [membership, setMembership] = useState<any>(null);
+  const [membershipLoading, setMembershipLoading] = useState(true);
+  const [membershipError, setMembershipError] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState<"ai_pro_monthly" | "ai_pro_annual" | null>(null);
+
+  async function loadMembership() {
+    const token = getStoredToken();
+    if (!token) { setMembershipLoading(false); return; }
+    setMembershipLoading(true);
+    setMembershipError("");
+    try {
+      const response = await fetch(`${API_BASE}/ai-membership?token=${encodeURIComponent(token)}`);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Gagal memuat membership AI.");
+      setMembership(data);
+    } catch (e) {
+      setMembershipError(e instanceof Error ? e.message : "Gagal memuat membership AI.");
+    } finally {
+      setMembershipLoading(false);
+    }
+  }
+
+  async function purchaseAIMembership(plan: "ai_pro_monthly" | "ai_pro_annual") {
+    const token = getStoredToken();
+    if (!token) { setMembershipError("Sesi dashboard tidak ditemukan. Muat ulang halaman."); return; }
+    setPaymentLoading(plan);
+    setMembershipError("");
+    try {
+      const response = await fetch(`${API_BASE}/create-ai-membership-payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, plan }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.paymentLink) throw new Error(data.error || "Gagal membuat pembayaran AI PRO+.");
+      window.location.assign(data.paymentLink);
+    } catch (e) {
+      setMembershipError(e instanceof Error ? e.message : "Gagal membuat pembayaran AI PRO+.");
+      setPaymentLoading(null);
+    }
+  }
 
   async function loadSetup() {
     const token = getStoredToken();
@@ -57,7 +98,7 @@ export function Settings() {
     } finally { setLoading(false); }
   }
 
-  useEffect(() => { loadSetup(); }, []);
+  useEffect(() => { loadSetup(); loadMembership(); }, []);
 
   const changed = useMemo(() => JSON.stringify(setup) !== JSON.stringify(original), [setup, original]);
 
@@ -156,6 +197,44 @@ export function Settings() {
         <label className="text-[13px] font-medium text-charcoal/75">{id ? "Nama Tampilan" : "Display Name"}</label>
         <p className="text-[12px] text-charcoal/50 mt-0.5 mb-2">{id ? "Dipakai untuk sapaan di dashboard. Kalau kosong, nama akun digunakan sebagai fallback." : "Used for dashboard greetings. If blank, your account name will be used."}</p>
         <div className="flex gap-2"><input value={name} onChange={(e) => setName(e.target.value)} placeholder={username || (id ? "Nama kamu" : "Your name")} className="min-w-0 flex-1 border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px] outline-none focus:border-forest-400 focus:ring-2 focus:ring-forest-100"/><button onClick={handleSaveName} className="flex items-center gap-1.5 bg-[#123524] text-white rounded-xl px-5 py-3 text-[13px] font-semibold hover:bg-forest-800">{savedName && <Check size={14}/>} {savedName ? (id ? "Tersimpan" : "Saved") : (id ? "Simpan" : "Save")}</button></div>
+      </Card>
+
+      <Card className="max-w-2xl">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E9E2FF] text-[#6845A5]"><Crown size={19}/></span>
+          <div><h3 className="text-[15px] font-semibold text-forest-900">AI Membership</h3><p className="text-[12px] text-charcoal/50 mt-0.5">Kelola akses AI Financial Assistant dan AI Scan Struk.</p></div>
+        </div>
+        {membershipLoading ? <div className="py-6 flex justify-center text-charcoal/40"><Loader2 className="animate-spin"/></div> : membership ? (
+          <div className="rounded-2xl border border-charcoal/10 bg-charcoal/[0.025] p-4 mb-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[13px] font-semibold text-charcoal">Status akses AI</span>
+              <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${membership.aiAccess === "active" ? "bg-forest-100 text-forest-700" : "bg-charcoal/10 text-charcoal/60"}`}>{membership.aiAccess === "active" ? "Aktif" : "Tidak aktif"}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <div><p className="text-[11px] text-charcoal/50">Sisa kredit AI</p><p className="text-[22px] font-bold text-forest-900">{Number(membership.creditsRemaining || 0).toLocaleString("id-ID")} <span className="text-[11px] font-medium text-charcoal/50">credits</span></p></div>
+              <div><p className="text-[11px] text-charcoal/50">Lifetime Personal</p><p className="text-[14px] font-semibold text-charcoal mt-1">{membership.lifetimePro ? "Aktif" : "Belum aktif"}</p></div>
+            </div>
+            {membership.aiTrialExpiresAt && <p className="mt-3 text-[11px] text-charcoal/55">Trial AI sampai {new Date(membership.aiTrialExpiresAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}.</p>}
+            {membership.aiMembershipExpiresAt && <p className="mt-1 text-[11px] text-charcoal/55">AI PRO+ sampai {new Date(membership.aiMembershipExpiresAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}.</p>}
+          </div>
+        ) : null}
+        {membershipError && <p className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-[12px] text-rose-700">{membershipError}</p>}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-charcoal/10 p-3.5">
+            <p className="text-[13px] font-semibold text-charcoal">AI PRO+ Bulanan</p>
+            <p className="text-[20px] font-bold text-forest-900 mt-1">Rp20.000 <span className="text-[11px] font-medium text-charcoal/50">/ 30 hari</span></p>
+            <p className="text-[11px] text-charcoal/55 mt-1 mb-3">300 kredit AI setiap 30 hari.</p>
+            <button onClick={() => purchaseAIMembership("ai_pro_monthly")} disabled={paymentLoading !== null} className="w-full rounded-full bg-[#123524] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-50">{paymentLoading === "ai_pro_monthly" ? "Menyiapkan..." : "Pilih Bulanan"}</button>
+          </div>
+          <div className="rounded-2xl border border-forest-200 bg-forest-50/40 p-3.5">
+            <p className="text-[13px] font-semibold text-charcoal">AI PRO+ Tahunan</p>
+            <p className="text-[20px] font-bold text-forest-900 mt-1">Rp199.000 <span className="text-[11px] font-medium text-charcoal/50">/ tahun</span></p>
+            <p className="text-[11px] text-charcoal/55 mt-1 mb-3">300 kredit AI diperbarui setiap 30 hari.</p>
+            <button onClick={() => purchaseAIMembership("ai_pro_annual")} disabled={paymentLoading !== null} className="w-full rounded-full bg-[#123524] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-50">{paymentLoading === "ai_pro_annual" ? "Menyiapkan..." : "Pilih Tahunan"}</button>
+          </div>
+        </div>
+        <p className="mt-3 text-[10.5px] leading-relaxed text-charcoal/45">Pembayaran melalui Xendit. Perpanjangan dilakukan manual dan tidak menggunakan auto-debit.</p>
+        <button onClick={loadMembership} className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-charcoal/55 hover:text-forest-700"><RotateCcw size={12}/> Perbarui status</button>
       </Card>
     </div>
   );
