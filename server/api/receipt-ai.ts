@@ -232,6 +232,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!user.is_active) {
     return res.status(403).json({ error: "Akun belum aktif." });
   }
+  const authenticatedUserId = user.user_id;
+  const authenticatedUsername = user.username;
 
   const providers = resolveProvider(req.body?.provider === "openai" ? "openai" : undefined);
   if (providers.length === 0) {
@@ -258,7 +260,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const windowSeconds = Number(process.env.AI_RECEIPT_RATE_WINDOW_SECONDS) || 60;
   const maxRequests = Number(process.env.AI_RECEIPT_RATE_MAX_REQUESTS) || 5;
   const { data: rateRows, error: rateError } = await supabase.rpc("consume_ai_rate_limit", {
-    p_username: user.username,
+    p_username: authenticatedUsername,
     p_window_seconds: windowSeconds,
     p_max_requests: maxRequests,
   });
@@ -281,7 +283,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // transaction data is returned; provider failures release the reservation.
   const requestId = randomUUID();
   const { data: creditRows, error: creditError } = await supabase.rpc("reserve_ai_credits", {
-    p_user_id: user.user_id,
+    p_user_id: authenticatedUserId,
     p_request_id: requestId,
     p_feature: "receipt_scan",
     p_credits: 2,
