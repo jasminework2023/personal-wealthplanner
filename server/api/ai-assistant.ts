@@ -15,9 +15,11 @@ async function getFinanceContext(spreadsheetId: string) {
   return { recentTransactions: transactions, assetTracker: assets.slice(0, 45), budget: budget.slice(0, 40) };
 }
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  let stage = "request";
   const token = String(req.method === "GET" ? req.query.token || "" : req.body?.token || "").trim();
   if (!token) return res.status(400).json({ error: "Token tidak ditemukan." });
   try {
+    stage = "database";
     const db = getDb();
     const { data: user, error } = await db.from("users").select("user_id, username, spreadsheet_id, is_active").eq("dashboard_token", token).single();
     if (error || !user || !user.is_active || !user.spreadsheet_id) return res.status(403).json({ error: "Akses dashboard tidak valid atau belum aktif." });
@@ -48,20 +50,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (convError || !data) throw convError || new Error("Gagal membuat percakapan.");
       conversation = data; conversationId = data.id;
     }
+    stage = "conversation_history";
     const { data: previous, error: historyError } = await db.from("ai_messages").select("role,content").eq("conversation_id", conversationId).eq("user_id", String(user.user_id)).order("created_at", { ascending: false }).limit(12);
     if (historyError) throw historyError;
+    stage = "google_sheets";
     const finance = await getFinanceContext(user.spreadsheet_id);
     const apiKey = process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY;
     const endpoint = process.env.GROQ_API_KEY ? "https://api.groq.com/openai/v1/chat/completions" : "https://api.openai.com/v1/chat/completions";
     const model = process.env.GROQ_API_KEY ? (process.env.GROQ_CHAT_MODEL || "openai/gpt-oss-20b") : (process.env.OPENAI_CHAT_MODEL || "gpt-4.1-mini");
     if (!apiKey) return res.status(503).json({ error: "AI belum dikonfigurasi. Hubungi administrator." });
     const history = (previous || []).reverse().map((m: any) => ({ role: m.role, content: m.content }));
-    const completion = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, temperature: 0.4, max_tokens: 900, messages: [{ role: "system", content: `Kamu adalah Wealthplanner AI, asisten perencanaan keuangan pribadi yang ramah, jelas, dan tidak menghakimi. Jawab dalam bahasa Indonesia kecuali pengguna memakai bahasa lain. Gunakan data keuangan pengguna berikut hanya sebagai konteks; jangan mengarang angka. Jika data tidak cukup, katakan dengan jujur. Berikan edukasi, bukan rekomendasi investasi personal yang menjanjikan hasil. Nama pengguna: ${user.username || "Pengguna"}. Data keuangan: ${JSON.stringify(finance)}` }, ...history, { role: "user", content: message }] }) });
+    stage = "groq_request";
+    const completion = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, temperature: 1, max_completion_tokens: 900, messages: [{ role: "system", content: `Kamu adalah Wealthplanner AI, asisten perencanaan keuangan pribadi yang ramah, jelas, dan tidak menghakimi. Jawab dalam bahasa Indonesia kecuali pengguna memakai bahasa lain. Gunakan data keuangan pengguna berikut hanya sebagai konteks; jangan mengarang angka. Jika data tidak cukup, katakan dengan jujur. Berikan edukasi, bukan rekomendasi investasi personal yang menjanjikan hasil. Nama pengguna: ${user.username || "Pengguna"}. Data keuangan: ${JSON.stringify(finance)}` }, ...history, { role: "user", content: message }] }) });
+    stage = "groq_response";
     const payload: any = await completion.json();
     if (!completion.ok) {
       console.error("AI provider error", completion.status, payload?.error?.message);
-      return res.status(502).json({ error: "AI sedang tidak bisa menjawab. Coba beberapa saat lagi." });
+      return res.status(502).json({ error: `Groq (${completion.status}): ${String(payload?.error?.message || "Provider menolak request.").slice(0, 220)}` });
     }
+    stage = "save_messages";
     const answer = String(payload?.choices?.[0]?.message?.content || "").trim();
     if (!answer) return res.status(502).json({ error: "AI belum memberikan jawaban." });
     const { error: saveUserError } = await db.from("ai_messages").insert({ conversation_id: conversationId, user_id: String(user.user_id), role: "user", content: message });
@@ -71,8 +78,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await db.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId).eq("user_id", String(user.user_id));
     return res.status(200).json({ conversationId, answer });
   } catch (error) {
-    console.error("AI Assistant API error:", error);
-    return res.status(500).json({ error: "Gagal memproses percakapan AI." });
+    console.error(`AI Assistant API error at ${stage}:`, error);
+    const detail = error instanceof Error ? error.message : "Unknown server error";
+    return res.status(500).json({ error: `Gagal pada tahap ${stage}: ${detail.slice(0, 180)}` });
   }
 }
 function sixty() { return 60; }
