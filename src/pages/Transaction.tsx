@@ -97,8 +97,7 @@ export function Transaction() {
       {activeTab === "wallets" ? <WalletsPage embedded /> : <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="page-title">{txText.title}</h1>
-          <p className="page-sub">{txText.intro}</p>
+
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => setCalendarOpen(true)} className="inline-flex items-center gap-2 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-xs font-semibold text-forest-900 shadow-sm"><CalendarDays size={16}/><span>{selectedMonth === "all" && selectedYear === "all" ? txText.all : `${selectedMonth === "all" ? txText.allMonths : ["","Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"][Number(selectedMonth)]} ${selectedYear === "all" ? "" : selectedYear}`.trim()}</span></button>
