@@ -94,6 +94,57 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let claimedUserId: string | null = null;
 
   try {
+    // AI PRO+ invoices use opaque external IDs mapped to a server-side intent.
+    // Keep this path isolated from Personal account activation and welcome email.
+    if (referenceId.startsWith("ai-pro-")) {
+      const { data: intent, error: intentError } = await supabase
+        .from("ai_payment_intents")
+        .select("external_id, user_id, plan, amount_idr, status")
+        .eq("external_id", referenceId)
+        .maybeSingle();
+      if (intentError) throw new Error(intentError.message);
+      if (!intent) return res.status(400).json({ error: "Referensi invoice AI PRO+ tidak dikenal." });
+      if (Number(intent.amount_idr) !== amount) {
+        return res.status(400).json({ error: "Nominal invoice AI PRO+ tidak sesuai." });
+      }
+      if (intent.status === "paid") {
+        return res.status(200).json({ received: true, duplicate: true });
+      }
+      if (intent.status !== "pending") {
+        return res.status(400).json({ error: "Invoice AI PRO+ tidak lagi berlaku." });
+      }
+
+      const { data: activationRows, error: activationError } = await supabase.rpc(
+        "activate_ai_membership_payment",
+        {
+          p_user_id: String(intent.user_id),
+          p_plan: String(intent.plan),
+          p_provider: "xendit",
+          p_provider_payment_id: paymentId,
+          p_amount_idr: amount,
+        },
+      );
+      if (activationError || !Array.isArray(activationRows) || !activationRows[0]) {
+        throw new Error(activationError?.message || "Aktivasi membership AI tidak memberikan hasil.");
+      }
+      if (!activationRows[0].activated && activationRows[0].reason !== "duplicate_payment") {
+        throw new Error(`Aktivasi membership AI ditolak: ${activationRows[0].reason || "unknown"}`);
+      }
+
+      const { error: intentUpdateError } = await supabase
+        .from("ai_payment_intents")
+        .update({ status: "paid", provider_payment_id: paymentId, paid_at: new Date().toISOString() })
+        .eq("external_id", referenceId)
+        .eq("status", "pending");
+      if (intentUpdateError) throw new Error(intentUpdateError.message);
+      return res.status(200).json({ received: true, membershipActivated: true, plan: intent.plan });
+    }
+
+    // Reject invoices created by the previous unsafe token-bearing reference format.
+    if (referenceId.startsWith("ai-pro:")) {
+      return res.status(400).json({ error: "Invoice AI PRO+ lama tidak dapat diproses. Buat invoice baru." });
+    }
+
     let user: any = null;
 
     // New Payment Session: dashboard token is the safest lookup.
