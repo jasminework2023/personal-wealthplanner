@@ -75,6 +75,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(404).json({ error: "Customer tidak ditemukan." });
     }
 
+    // Lifetime Personal purchases include a 12-month AI trial.
+    // The membership payment RPC is idempotent by provider + Lynk message ID.
+    if (amount === 149000) {
+      const { data: activationRows, error: activationError } = await supabase.rpc(
+        "activate_ai_membership_payment",
+        {
+          p_user_id: String(user.user_id),
+          p_plan: "lifetime_personal",
+          p_provider: "lynk",
+          p_provider_payment_id: messageId,
+          p_amount_idr: amount,
+        },
+      );
+      if (activationError || !Array.isArray(activationRows) || !activationRows[0]) {
+        throw new Error(activationError?.message || "Aktivasi trial AI tidak memberikan hasil.");
+      }
+      if (!activationRows[0].activated && activationRows[0].reason !== "duplicate_payment") {
+        throw new Error(`Aktivasi trial AI ditolak: ${activationRows[0].reason || "unknown"}`);
+      }
+    }
+
     // Idempotent: Lynk may retry the same successful event. is_active is INTEGER 0/1.
     if (Number(user.is_active) === 1) {
       return res.status(200).json({ received: true, alreadyActive: true });
