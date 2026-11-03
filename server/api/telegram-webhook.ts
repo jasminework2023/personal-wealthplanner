@@ -100,11 +100,11 @@ async function readReceiptFromTelegram(fileId: string) {
   return `data:${contentType};base64,${bytes.toString("base64")}`;
 }
 
-async function receiptAi(image: string) {
+async function receiptAi(image: string, token: string) {
   const response = await fetch("https://www.wealthplanner.id/api/receipt-ai", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image }),
+    body: JSON.stringify({ image, token }),
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data?.error || "AI gagal membaca struk.");
@@ -235,7 +235,7 @@ async function handlePhoto(chatId: string, fileId: string) {
 
   await telegramCall("sendChatAction", { chat_id: chatId, action: "typing" });
   const image = await readReceiptFromTelegram(fileId);
-  const transaction = await receiptAi(image);
+  const transaction = await receiptAi(image, user.dashboard_token);
 
   const pending = {
     transaction,
