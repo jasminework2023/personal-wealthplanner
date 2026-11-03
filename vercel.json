@@ -4,6 +4,10 @@
       "includeFiles": "server/{api,lib}/**",
       "maxDuration": 30
     },
+    "api/wallets.ts": {
+      "includeFiles": "server/{api,lib}/**",
+      "maxDuration": 30
+    },
     "api/telegram-webhook.ts": {
       "includeFiles": "server/{api,lib}/**"
     },
