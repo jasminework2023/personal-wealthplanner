@@ -54,7 +54,7 @@ begin
         updated_at = now()
     where current_limit.window_started_at <= now() - make_interval(secs => v_window_seconds)
        or current_limit.request_count < v_max_requests
-  returning ai_rate_limits.window_started_at, ai_rate_limits.request_count
+  returning current_limit.window_started_at, current_limit.request_count
     into v_started_at, v_count;
 
   if found then
