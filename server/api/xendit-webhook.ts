@@ -19,11 +19,14 @@ function getCallbackToken(req: VercelRequest) {
 }
 
 function isValidAmount(amount: number) {
-  return [149000, 139000].includes(amount);
+  return [149000, 139000, 20000, 199000].includes(amount);
 }
 
 function productName(amount: number) {
-  return amount === 139000 ? "Wealth Tracker AI" : "Wealthplanner Personal";
+  if (amount === 139000) return "Wealth Tracker AI";
+  if (amount === 20000) return "AI PRO+ — 30 Hari";
+  if (amount === 199000) return "AI PRO+ — 12 Bulan";
+  return "Wealthplanner Personal";
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -102,6 +105,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .maybeSingle();
       if (result.error) throw new Error(result.error.message);
       if (result.data) user = result.data;
+    }
+
+    // AI PRO+ Invoice: the external_id carries the dashboard token plus a unique invoice id.
+    if (!user && referenceId.startsWith("ai-pro:")) {
+      const tokenFromReference = referenceId.split(":")[1] || "";
+      if (tokenFromReference) {
+        const result = await supabase
+          .from("users")
+          .select(USER_COLUMNS)
+          .eq("dashboard_token", tokenFromReference)
+          .maybeSingle();
+        if (result.error) throw new Error(result.error.message);
+        if (result.data) user = result.data;
+      }
     }
 
     // Legacy Invoice: map by payer email when an account already exists.
@@ -200,6 +217,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ received: true, duplicate: true, inProgress: true });
     }
     claimedUserId = user.user_id;
+
+    // Grant AI entitlements only for the Lifetime Personal and AI PRO+ SKUs.
+    // The payment ledger RPC is idempotent by provider + payment ID, so webhook
+    // retries cannot grant the same trial or subscription twice.
+    const membershipPlan =
+      amount === 149000 ? "lifetime_personal" :
+      amount === 20000 ? "ai_pro_monthly" :
+      amount === 199000 ? "ai_pro_annual" : null;
+
+    if (membershipPlan) {
+      const { data: activationRows, error: activationError } = await supabase.rpc(
+        "activate_ai_membership_payment",
+        {
+          p_user_id: String(user.user_id),
+          p_plan: membershipPlan,
+          p_provider: "xendit",
+          p_provider_payment_id: paymentId,
+          p_amount_idr: amount,
+        },
+      );
+      if (activationError || !Array.isArray(activationRows) || !activationRows[0]) {
+        throw new Error(activationError?.message || "Aktivasi membership AI tidak memberikan hasil.");
+      }
+      if (!activationRows[0].activated && activationRows[0].reason !== "duplicate_payment") {
+        throw new Error(`Aktivasi membership AI ditolak: ${activationRows[0].reason || "unknown"}`);
+      }
+    }
 
     // New customers land on the onboarding page first (Make a Copy -> Connect
     // Sheet flow) instead of the main dashboard.
