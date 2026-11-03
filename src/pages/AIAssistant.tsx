@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bot, Plus, Send, Menu, X, Loader2 } from "lucide-react";
+import { Bot, Plus, Send, History, X, Loader2 } from "lucide-react";
 import { getStoredToken } from "../lib/useFinanceData";
 
 type Message = { id?: string; role: "user" | "assistant"; content: string };
@@ -54,11 +54,6 @@ export function AIAssistant() {
 
   return <div className="mx-auto flex min-h-[calc(100dvh-150px)] max-w-3xl flex-col pb-28 lg:min-h-[calc(100dvh-170px)] lg:pb-4">
     <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-forest-100 bg-white shadow-sm">
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-forest-100 px-4">
-        <button type="button" onClick={() => setHistoryOpen(true)} aria-label="Buka riwayat percakapan" className="flex h-9 w-9 items-center justify-center rounded-xl text-forest-800 hover:bg-forest-50"><Menu size={20}/></button>
-        <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-forest-900">Asisten AI</p><p className="text-[11px] text-charcoal/50">Tanya tentang kondisi keuanganmu</p></div>
-        <button type="button" onClick={newChat} aria-label="Chat baru" title="Chat baru" className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0B6B47] text-white"><Plus size={18}/></button>
-      </header>
       <div className="min-h-[300px] flex-1 space-y-3 overflow-y-auto overscroll-contain p-4">
         {messages.length === 0 && <div className="mx-auto max-w-md py-10 text-center"><span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47]"><SparkleIcon/></span><h2 className="text-base font-bold text-forest-900">Apa yang ingin kamu pahami?</h2><p className="mt-2 text-sm leading-relaxed text-charcoal/60">Tanyakan tentang cash flow, pengeluaran, aset, anggaran, atau tujuan finansialmu. Aku akan menggunakan data dashboard yang terhubung.</p><div className="mt-5 flex flex-wrap justify-center gap-2">{["Bagaimana kondisi cash flow-ku?","Kategori pengeluaran terbesarku apa?","Apa yang perlu aku perbaiki bulan ini?"].map((q) => <button key={q} onClick={() => setDraft(q)} className="rounded-full border border-forest-100 px-3 py-2 text-xs text-forest-800 hover:bg-forest-50">{q}</button>)}</div></div>}
         {messages.map((m, i) => <div key={m.id || i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}><div className={m.role === "user" ? "max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-[#0B6B47] px-4 py-3 text-sm leading-relaxed text-white" : "max-w-[90%] whitespace-pre-wrap rounded-2xl rounded-bl-md bg-[#F1F8F4] px-4 py-3 text-sm leading-relaxed text-forest-900"}><MarkdownContent content={m.content}/></div></div>)}
@@ -67,7 +62,8 @@ export function AIAssistant() {
       </div>
     </section>
     <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="fixed inset-x-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 mx-auto flex max-w-3xl items-end gap-2 rounded-2xl border border-forest-100 bg-white p-2 shadow-lg lg:sticky lg:bottom-0 lg:mt-3 lg:w-full">
-      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder="Tulis pertanyaan tentang keuanganmu..." rows={1} className="max-h-32 min-h-11 flex-1 resize-y bg-transparent px-3 py-3 text-sm outline-none"/>
+      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder="Tanya Wealth Planner AI" rows={1} className="max-h-32 min-h-11 flex-1 resize-y bg-transparent px-3 py-3 text-sm outline-none"/>
+      <button type="button" onClick={() => setHistoryOpen(true)} aria-label="Riwayat pesan" title="Riwayat pesan" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[#0B6B47] hover:bg-[#E8F5ED]"><History size={19}/></button>
       <button disabled={!draft.trim() || loading || !token} aria-label="Kirim pesan" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0B6B47] text-white disabled:opacity-40"><Send size={18}/></button>
     </form>
     {!token && <p className="mt-2 text-center text-xs text-amber-700">Buka dashboard melalui tautan akunmu untuk menggunakan AI Assistant.</p>}
