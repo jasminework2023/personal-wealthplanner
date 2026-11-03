@@ -380,7 +380,7 @@ export function AddTransactionModal({
     const r=await fetch(`${API_BASE}/receipt-ai`,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({image:dataUrl}),
+      body:JSON.stringify({image:dataUrl,token:getStoredToken()}),
     });
     const j=await r.json().catch(()=>({}));
     if(!r.ok) throw new Error(j.error||`Gagal membaca struk (HTTP ${r.status})`);
