@@ -166,7 +166,7 @@ create or replace function public.activate_ai_membership_payment(
 )
 returns table (activated boolean, reason text, expires_at timestamptz)
 language plpgsql security definer set search_path = public
-as $
+as $$
 declare
   v_user public.users%rowtype;
   v_payment_id uuid;
