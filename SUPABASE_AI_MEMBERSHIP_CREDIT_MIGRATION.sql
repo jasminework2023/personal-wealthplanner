@@ -21,7 +21,7 @@ alter table public.users add constraint users_ai_credits_remaining_check check (
 
 create table if not exists public.ai_membership_payments (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null,
+  user_id text not null,
   plan text not null check (plan in ('lifetime_personal','ai_pro_monthly','ai_pro_annual')),
   provider text not null check (provider in ('xendit','lynk','manual')),
   provider_payment_id text not null,
@@ -36,7 +36,7 @@ create index if not exists ai_membership_payments_user_paid_idx
 
 create table if not exists public.ai_credit_ledger (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null,
+  user_id text not null,
   request_id text not null,
   feature text not null,
   credits integer not null check (credits > 0),
@@ -53,7 +53,7 @@ alter table public.ai_credit_ledger enable row level security;
 -- No client policies: access is only through trusted server functions using service_role.
 
 create or replace function public.reserve_ai_credits(
-  p_user_id uuid, p_request_id text, p_feature text, p_credits integer
+  p_user_id text, p_request_id text, p_feature text, p_credits integer
 )
 returns table (
   allowed boolean, reason text, credits_remaining integer,
@@ -65,14 +65,14 @@ declare
   v_user public.users%rowtype;
   v_now timestamptz := now();
 begin
-  if p_user_id is null or p_request_id is null or length(trim(p_request_id)) = 0
+  if p_user_id is null or length(trim(p_user_id)) = 0 or p_request_id is null or length(trim(p_request_id)) = 0
      or p_feature is null or length(trim(p_feature)) = 0
      or p_credits is null or p_credits < 1 or p_credits > 100 then
     return query select false, 'invalid_request', 0, null::timestamptz, null::timestamptz;
     return;
   end if;
 
-  select * into v_user from public.users where user_id = p_user_id for update;
+  select * into v_user from public.users where user_id::text = trim(p_user_id) for update;
   if not found then
     return query select false, 'user_not_found', 0, null::timestamptz, null::timestamptz;
     return;
@@ -86,7 +86,7 @@ begin
   end if;
 
   if exists (select 1 from public.ai_credit_ledger
-             where user_id = p_user_id and request_id = trim(p_request_id)) then
+             where user_id::text = trim(p_user_id) and request_id = trim(p_request_id)) then
     return query select false, 'duplicate_request', v_user.ai_credits_remaining,
       v_user.ai_trial_expires_at, v_user.ai_membership_expires_at;
     return;
@@ -97,7 +97,7 @@ begin
       set ai_credits_remaining = 300,
           ai_credit_period_started_at = v_now,
           ai_credit_period_expires_at = v_now + interval '30 days'
-      where user_id = p_user_id returning * into v_user;
+      where user_id::text = trim(p_user_id) returning * into v_user;
   end if;
 
   if v_user.ai_credits_remaining < p_credits then
@@ -107,7 +107,7 @@ begin
   end if;
 
   update public.users set ai_credits_remaining = ai_credits_remaining - p_credits
-    where user_id = p_user_id returning * into v_user;
+    where user_id::text = trim(p_user_id) returning * into v_user;
 
   insert into public.ai_credit_ledger (user_id, request_id, feature, credits, status)
     values (p_user_id, trim(p_request_id), trim(p_feature), p_credits, 'reserved');
@@ -118,7 +118,7 @@ end;
 $$;
 
 create or replace function public.settle_ai_credit(
-  p_user_id uuid, p_request_id text, p_success boolean
+  p_user_id text, p_request_id text, p_success boolean
 )
 returns table (settled boolean, status text, credits_remaining integer)
 language plpgsql security definer set search_path = public
@@ -128,15 +128,15 @@ declare
   v_user public.users%rowtype;
 begin
   select * into v_ledger from public.ai_credit_ledger
-    where user_id = p_user_id and request_id = trim(p_request_id) for update;
+    where user_id::text = trim(p_user_id) and request_id = trim(p_request_id) for update;
   if not found then
-    select * into v_user from public.users where user_id = p_user_id;
+    select * into v_user from public.users where user_id::text = trim(p_user_id);
     return query select false, 'not_found', coalesce(v_user.ai_credits_remaining, 0);
     return;
   end if;
 
   if v_ledger.status <> 'reserved' then
-    select * into v_user from public.users where user_id = p_user_id;
+    select * into v_user from public.users where user_id::text = trim(p_user_id);
     return query select false, v_ledger.status, coalesce(v_user.ai_credits_remaining, 0);
     return;
   end if;
@@ -145,12 +145,12 @@ begin
     update public.ai_credit_ledger set status = 'committed', settled_at = now() where id = v_ledger.id;
   else
     update public.users set ai_credits_remaining = ai_credits_remaining + v_ledger.credits
-      where user_id = p_user_id returning * into v_user;
+      where user_id::text = trim(p_user_id) returning * into v_user;
     update public.ai_credit_ledger set status = 'refunded', settled_at = now() where id = v_ledger.id;
   end if;
 
   if v_user.user_id is null then
-    select * into v_user from public.users where user_id = p_user_id;
+    select * into v_user from public.users where user_id::text = trim(p_user_id);
   end if;
   return query select true, case when p_success then 'committed' else 'refunded' end,
     coalesce(v_user.ai_credits_remaining, 0);
@@ -158,7 +158,7 @@ end;
 $$;
 
 create or replace function public.activate_ai_membership_payment(
-  p_user_id uuid,
+  p_user_id text,
   p_plan text,
   p_provider text,
   p_provider_payment_id text,
@@ -173,7 +173,7 @@ declare
   v_expiry timestamptz;
   v_now timestamptz := now();
 begin
-  if p_user_id is null or p_provider_payment_id is null or length(trim(p_provider_payment_id)) = 0
+  if p_user_id is null or length(trim(p_user_id)) = 0 or p_provider_payment_id is null or length(trim(p_provider_payment_id)) = 0
      or p_provider not in ('xendit','lynk','manual') then
     return query select false, 'invalid_request', null::timestamptz;
     return;
@@ -188,7 +188,7 @@ begin
     return;
   end if;
 
-  select * into v_user from public.users where user_id = p_user_id for update;
+  select * into v_user from public.users where user_id::text = trim(p_user_id) for update;
   if not found then
     return query select false, 'user_not_found', null::timestamptz;
     return;
@@ -221,7 +221,7 @@ begin
       ai_credit_period_expires_at = case
         when ai_credit_period_expires_at is null or ai_credit_period_expires_at <= v_now then v_now + interval '30 days'
         else ai_credit_period_expires_at end
-    where user_id = p_user_id
+    where user_id::text = trim(p_user_id)
     returning ai_trial_expires_at into v_expiry;
   else
     update public.users set
@@ -239,7 +239,7 @@ begin
       ai_credits_remaining = 300,
       ai_credit_period_started_at = v_now,
       ai_credit_period_expires_at = v_now + interval '30 days'
-    where user_id = p_user_id
+    where user_id::text = trim(p_user_id)
     returning ai_membership_expires_at into v_expiry;
   end if;
 
@@ -247,9 +247,9 @@ begin
 end;
 $;
 
-revoke all on function public.reserve_ai_credits(uuid, text, text, integer) from public, anon, authenticated;
-revoke all on function public.settle_ai_credit(uuid, text, boolean) from public, anon, authenticated;
-revoke all on function public.activate_ai_membership_payment(uuid, text, text, text, bigint) from public, anon, authenticated;
-grant execute on function public.reserve_ai_credits(uuid, text, text, integer) to service_role;
-grant execute on function public.settle_ai_credit(uuid, text, boolean) to service_role;
-grant execute on function public.activate_ai_membership_payment(uuid, text, text, text, bigint) to service_role;
+revoke all on function public.reserve_ai_credits(text, text, text, integer) from public, anon, authenticated;
+revoke all on function public.settle_ai_credit(text, text, boolean) from public, anon, authenticated;
+revoke all on function public.activate_ai_membership_payment(text, text, text, text, bigint) from public, anon, authenticated;
+grant execute on function public.reserve_ai_credits(text, text, text, integer) to service_role;
+grant execute on function public.settle_ai_credit(text, text, boolean) to service_role;
+grant execute on function public.activate_ai_membership_payment(text, text, text, text, bigint) to service_role;
