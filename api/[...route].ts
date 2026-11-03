@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 import h_access from "../server/api/access.js";
+import h_ai_assistant from "../server/api/ai-assistant.js";
 import h_add_asset_item from "../server/api/add-asset-item.js";
 import h_add_budget_category from "../server/api/add-budget-category.js";
 import h_add_transaction from "../server/api/add-transaction.js";
@@ -25,6 +26,7 @@ import h_telegram_link from "../server/api/telegram-link.js";
 import h_telegram_webhook from "../server/api/telegram-webhook.js";
 
 const handlers: Record<string, (req: VercelRequest, res: VercelResponse) => unknown> = {
+  "ai-assistant": h_ai_assistant,
   access: h_access,
   "add-asset-item": h_add_asset_item,
   "add-budget-category": h_add_budget_category,
