@@ -248,9 +248,11 @@ export function DashboardFinance() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="min-w-0 truncate text-[21px] font-bold leading-[1.15] tracking-[-0.03em] text-forest-900">Finance Report</h1>
-        <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex max-w-full shrink-0 items-center gap-1.5 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-forest-900 shadow-sm">
+      <div className="flex items-center justify-between gap-2">
+        <select aria-label="Pilih laporan" value={activeReportTab} onChange={(e) => setActiveReportTab(e.target.value as typeof activeReportTab)} className="min-w-0 flex-1 appearance-none rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-forest-900 shadow-sm outline-none">
+          <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="cashflow">Cashflow Tracker</option>
+        </select>
+        <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-forest-900 shadow-sm">
           <CalendarDays size={15} className="shrink-0 text-forest-700" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-charcoal/50" />
         </button>
       </div>
@@ -275,15 +277,7 @@ export function DashboardFinance() {
           <button type="button" onClick={() => { setSelectedMonth(draftMonth); setSelectedYear(draftYear); setPeriodOpen(false); }} className="mt-5 w-full rounded-xl bg-[#0B4D38] px-4 py-3 text-[14px] font-semibold text-white hover:bg-[#083c2c]">Terapkan</button>
         </div>
       </div>}
-      <section aria-label="Report tabs">
-        <div className="flex items-center gap-2">
-          <button type="button" aria-label="Sebelumnya" onClick={() => selectReportTab(activeTabIndex - 1)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm transition-colors hover:bg-forest-50"><ChevronLeft size={18}/></button>
-          <div className="grid min-w-0 flex-1 grid-cols-3 gap-1 rounded-full border border-forest-100/60 bg-white p-1 shadow-sm" aria-label="Pilihan laporan">
-            {reportTabs.map((tab) => <button key={tab.id} type="button" onClick={() => setActiveReportTab(tab.id)} aria-current={activeReportTab === tab.id ? "page" : undefined} className={`min-w-0 rounded-full px-1 py-2.5 text-center text-[clamp(9px,2.6vw,12.5px)] font-semibold leading-tight transition-colors sm:px-2 ${activeReportTab === tab.id ? "bg-[#123524] text-white shadow-sm" : "text-forest-800 hover:bg-forest-50"}`}>{tab.label}</button>)}
-          </div>
-          <button type="button" aria-label="Berikutnya" onClick={() => selectReportTab(activeTabIndex + 1)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-white text-forest-800 shadow-sm transition-colors hover:bg-forest-50"><ChevronRight size={18}/></button>
-        </div>
-      </section>
+
 
 
       {activeReportTab === "income" && (() => {
