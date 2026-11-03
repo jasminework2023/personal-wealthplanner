@@ -41,6 +41,7 @@ export function Settings() {
   const [membershipLoading, setMembershipLoading] = useState(true);
   const [membershipError, setMembershipError] = useState("");
   const [paymentLoading, setPaymentLoading] = useState<"ai_pro_monthly" | "ai_pro_annual" | null>(null);
+  const [paymentEmail, setPaymentEmail] = useState("");
 
   async function loadMembership() {
     const token = getStoredToken();
@@ -68,7 +69,7 @@ export function Settings() {
       const response = await fetch(`${API_BASE}/create-ai-membership-payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, plan }),
+        body: JSON.stringify({ token, plan, email: paymentEmail }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.paymentLink) throw new Error(data.error || "Gagal membuat pembayaran AI PRO+.");
@@ -219,6 +220,7 @@ export function Settings() {
           </div>
         ) : null}
         {membershipError && <p className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-[12px] text-rose-700">{membershipError}</p>}
+        <div className="mb-3"><label className="mb-1 block text-[12px] font-medium text-charcoal/70">Email untuk invoice Xendit</label><input type="email" value={paymentEmail} onChange={(e) => setPaymentEmail(e.target.value)} placeholder="nama@email.com" className="w-full rounded-xl border border-charcoal/15 px-3.5 py-3 text-[13px] outline-none focus:border-forest-400" /></div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="rounded-2xl border border-charcoal/10 p-3.5">
             <p className="text-[13px] font-semibold text-charcoal">AI PRO+ Bulanan</p>

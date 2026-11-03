@@ -14,6 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const token = typeof req.body?.token === "string" ? req.body.token.trim() : "";
   const plan = req.body?.plan as Plan;
+  const suppliedEmail = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
   if (!token || token.length > 512 || !Object.prototype.hasOwnProperty.call(PLANS, plan)) {
     return res.status(400).json({ error: "Sesi atau pilihan membership tidak valid." });
   }
@@ -38,7 +39,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (error) throw error;
     if (!user) return res.status(401).json({ error: "Sesi tidak valid." });
     if (Number(user.is_active) !== 1) return res.status(403).json({ error: "Aktifkan akun Personal terlebih dahulu." });
-    if (!user.email) return res.status(400).json({ error: "Email akun belum tersedia. Hubungi support." });
+    let payerEmail = typeof user.email === "string" ? user.email.trim().toLowerCase() : "";
+    if (!payerEmail) {
+      if (!suppliedEmail || !/^\\S+@\\S+\\.\\S+$/.test(suppliedEmail)) {
+        return res.status(400).json({ error: "Masukkan email yang valid untuk invoice." });
+      }
+      const { error: emailError } = await supabase.from("users").update({ email: suppliedEmail }).eq("user_id", user.user_id);
+      if (emailError) throw emailError;
+      payerEmail = suppliedEmail;
+    }
 
     const selected = PLANS[plan];
     // Opaque provider reference. The dashboard bearer token never leaves our server.
@@ -61,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify({
         external_id: externalId,
         amount: selected.amount,
-        payer_email: user.email,
+        payer_email: payerEmail,
         description: selected.description,
         success_redirect_url: "https://wealthplanner.id/dashboard?membership=success",
         failure_redirect_url: "https://wealthplanner.id/dashboard?membership=failed",
