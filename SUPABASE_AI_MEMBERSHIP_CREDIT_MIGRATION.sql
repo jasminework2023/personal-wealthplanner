@@ -157,7 +157,99 @@ begin
 end;
 $$;
 
+create or replace function public.activate_ai_membership_payment(
+  p_user_id uuid,
+  p_plan text,
+  p_provider text,
+  p_provider_payment_id text,
+  p_amount_idr bigint
+)
+returns table (activated boolean, reason text, expires_at timestamptz)
+language plpgsql security definer set search_path = public
+as $
+declare
+  v_user public.users%rowtype;
+  v_payment_id uuid;
+  v_expiry timestamptz;
+  v_now timestamptz := now();
+begin
+  if p_user_id is null or p_provider_payment_id is null or length(trim(p_provider_payment_id)) = 0
+     or p_provider not in ('xendit','lynk','manual') then
+    return query select false, 'invalid_request', null::timestamptz;
+    return;
+  end if;
+
+  if not (
+    (p_plan = 'lifetime_personal' and p_amount_idr = 149000)
+    or (p_plan = 'ai_pro_monthly' and p_amount_idr = 20000)
+    or (p_plan = 'ai_pro_annual' and p_amount_idr = 199000)
+  ) then
+    return query select false, 'invalid_plan_or_amount', null::timestamptz;
+    return;
+  end if;
+
+  select * into v_user from public.users where user_id = p_user_id for update;
+  if not found then
+    return query select false, 'user_not_found', null::timestamptz;
+    return;
+  end if;
+
+  insert into public.ai_membership_payments
+    (user_id, plan, provider, provider_payment_id, amount_idr, status, paid_at)
+  values
+    (p_user_id, p_plan, p_provider, trim(p_provider_payment_id), p_amount_idr, 'paid', v_now)
+  on conflict (provider, provider_payment_id) do nothing
+  returning id into v_payment_id;
+
+  if v_payment_id is null then
+    return query select false, 'duplicate_payment', null::timestamptz;
+    return;
+  end if;
+
+  if p_plan = 'lifetime_personal' then
+    update public.users set
+      lifetime_pro_status = true,
+      ai_trial_started_at = coalesce(ai_trial_started_at, v_now),
+      ai_trial_expires_at = coalesce(ai_trial_expires_at,
+        coalesce(ai_trial_started_at, v_now) + interval '12 months'),
+      ai_credits_remaining = case
+        when ai_credit_period_expires_at is null or ai_credit_period_expires_at <= v_now then 300
+        else ai_credits_remaining end,
+      ai_credit_period_started_at = case
+        when ai_credit_period_expires_at is null or ai_credit_period_expires_at <= v_now then v_now
+        else ai_credit_period_started_at end,
+      ai_credit_period_expires_at = case
+        when ai_credit_period_expires_at is null or ai_credit_period_expires_at <= v_now then v_now + interval '30 days'
+        else ai_credit_period_expires_at end
+    where user_id = p_user_id
+    returning ai_trial_expires_at into v_expiry;
+  else
+    update public.users set
+      ai_membership_plan = p_plan,
+      ai_membership_started_at = case
+        when ai_membership_expires_at is not null and ai_membership_expires_at > v_now
+          then coalesce(ai_membership_started_at, v_now)
+        else v_now end,
+      ai_membership_expires_at = case
+        when ai_membership_expires_at is not null and ai_membership_expires_at > v_now
+          then ai_membership_expires_at + case when p_plan = 'ai_pro_monthly'
+            then interval '30 days' else interval '12 months' end
+        else v_now + case when p_plan = 'ai_pro_monthly'
+            then interval '30 days' else interval '12 months' end end,
+      ai_credits_remaining = 300,
+      ai_credit_period_started_at = v_now,
+      ai_credit_period_expires_at = v_now + interval '30 days'
+    where user_id = p_user_id
+    returning ai_membership_expires_at into v_expiry;
+  end if;
+
+  return query select true, 'activated', v_expiry;
+end;
+$;
+
 revoke all on function public.reserve_ai_credits(uuid, text, text, integer) from public, anon, authenticated;
 revoke all on function public.settle_ai_credit(uuid, text, boolean) from public, anon, authenticated;
+revoke all on function public.activate_ai_membership_payment(uuid, text, text, text, bigint) from public, anon, authenticated;
 grant execute on function public.reserve_ai_credits(uuid, text, text, integer) to service_role;
 grant execute on function public.settle_ai_credit(uuid, text, boolean) to service_role;
+grant execute on function public.activate_ai_membership_payment(uuid, text, text, text, bigint) to service_role;
