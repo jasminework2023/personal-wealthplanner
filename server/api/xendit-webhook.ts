@@ -19,11 +19,14 @@ function getCallbackToken(req: VercelRequest) {
 }
 
 function isValidAmount(amount: number) {
-  return [149000, 139000].includes(amount);
+  return [149000, 139000, 20000, 199000].includes(amount);
 }
 
 function productName(amount: number) {
-  return amount === 139000 ? "Wealth Tracker AI" : "Wealthplanner Personal";
+  if (amount === 139000) return "Wealth Tracker AI";
+  if (amount === 20000) return "AI PRO+ — 30 Hari";
+  if (amount === 199000) return "AI PRO+ — 12 Bulan";
+  return "Wealthplanner Personal";
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -91,6 +94,77 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let claimedUserId: string | null = null;
 
   try {
+    // AI PRO+ invoices use opaque external IDs mapped to a server-side intent.
+    // Keep this path isolated from Personal account activation and welcome email.
+    if (referenceId.startsWith("ai-pro-")) {
+      const { data: intent, error: intentError } = await supabase
+        .from("ai_payment_intents")
+        .select("external_id, user_id, plan, amount_idr, status")
+        .eq("external_id", referenceId)
+        .maybeSingle();
+      if (intentError) throw new Error(intentError.message);
+      if (!intent) return res.status(400).json({ error: "Referensi invoice AI PRO+ tidak dikenal." });
+      if (Number(intent.amount_idr) !== amount) {
+        return res.status(400).json({ error: "Nominal invoice AI PRO+ tidak sesuai." });
+      }
+      if (intent.status === "paid") {
+        return res.status(200).json({ received: true, duplicate: true });
+      }
+      if (intent.status !== "pending") {
+        return res.status(400).json({ error: "Invoice AI PRO+ tidak lagi berlaku." });
+      }
+
+      const { data: activationRows, error: activationError } = await supabase.rpc(
+        "activate_ai_membership_payment",
+        {
+          p_user_id: String(intent.user_id),
+          p_plan: String(intent.plan),
+          p_provider: "xendit",
+          p_provider_payment_id: paymentId,
+          p_amount_idr: amount,
+        },
+      );
+      if (activationError || !Array.isArray(activationRows) || !activationRows[0]) {
+        throw new Error(activationError?.message || "Aktivasi membership AI tidak memberikan hasil.");
+      }
+      if (!activationRows[0].activated) {
+        if (activationRows[0].reason !== "duplicate_payment") {
+          throw new Error(`Aktivasi membership AI ditolak: ${activationRows[0].reason || "unknown"}`);
+        }
+
+        // A duplicate provider payment ID is only an idempotent retry when the
+        // original ledger entry belongs to this exact user, plan, and amount.
+        const { data: existingPayment, error: existingPaymentError } = await supabase
+          .from("ai_membership_payments")
+          .select("user_id, plan, provider, provider_payment_id, amount_idr")
+          .eq("provider", "xendit")
+          .eq("provider_payment_id", paymentId)
+          .maybeSingle();
+        if (existingPaymentError) throw new Error(existingPaymentError.message);
+        if (
+          !existingPayment ||
+          String(existingPayment.user_id) !== String(intent.user_id) ||
+          String(existingPayment.plan) !== String(intent.plan) ||
+          Number(existingPayment.amount_idr) !== amount
+        ) {
+          return res.status(409).json({ error: "ID pembayaran sudah digunakan untuk invoice lain." });
+        }
+      }
+
+      const { error: intentUpdateError } = await supabase
+        .from("ai_payment_intents")
+        .update({ status: "paid", provider_payment_id: paymentId, paid_at: new Date().toISOString() })
+        .eq("external_id", referenceId)
+        .eq("status", "pending");
+      if (intentUpdateError) throw new Error(intentUpdateError.message);
+      return res.status(200).json({ received: true, membershipActivated: true, plan: intent.plan });
+    }
+
+    // Reject invoices created by the previous unsafe token-bearing reference format.
+    if (referenceId.startsWith("ai-pro:")) {
+      return res.status(400).json({ error: "Invoice AI PRO+ lama tidak dapat diproses. Buat invoice baru." });
+    }
+
     let user: any = null;
 
     // New Payment Session: dashboard token is the safest lookup.
@@ -102,6 +176,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .maybeSingle();
       if (result.error) throw new Error(result.error.message);
       if (result.data) user = result.data;
+    }
+
+    // AI PRO+ Invoice: the external_id carries the dashboard token plus a unique invoice id.
+    if (!user && referenceId.startsWith("ai-pro:")) {
+      const tokenFromReference = referenceId.split(":")[1] || "";
+      if (tokenFromReference) {
+        const result = await supabase
+          .from("users")
+          .select(USER_COLUMNS)
+          .eq("dashboard_token", tokenFromReference)
+          .maybeSingle();
+        if (result.error) throw new Error(result.error.message);
+        if (result.data) user = result.data;
+      }
     }
 
     // Legacy Invoice: map by payer email when an account already exists.
@@ -200,6 +288,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ received: true, duplicate: true, inProgress: true });
     }
     claimedUserId = user.user_id;
+
+    // Grant AI entitlements only for the Lifetime Personal and AI PRO+ SKUs.
+    // The payment ledger RPC is idempotent by provider + payment ID, so webhook
+    // retries cannot grant the same trial or subscription twice.
+    const membershipPlan =
+      amount === 149000 ? "lifetime_personal" :
+      amount === 20000 ? "ai_pro_monthly" :
+      amount === 199000 ? "ai_pro_annual" : null;
+
+    if (membershipPlan) {
+      const { data: activationRows, error: activationError } = await supabase.rpc(
+        "activate_ai_membership_payment",
+        {
+          p_user_id: String(user.user_id),
+          p_plan: membershipPlan,
+          p_provider: "xendit",
+          p_provider_payment_id: paymentId,
+          p_amount_idr: amount,
+        },
+      );
+      if (activationError || !Array.isArray(activationRows) || !activationRows[0]) {
+        throw new Error(activationError?.message || "Aktivasi membership AI tidak memberikan hasil.");
+      }
+      if (!activationRows[0].activated && activationRows[0].reason !== "duplicate_payment") {
+        throw new Error(`Aktivasi membership AI ditolak: ${activationRows[0].reason || "unknown"}`);
+      }
+    }
 
     // New customers land on the onboarding page first (Make a Copy -> Connect
     // Sheet flow) instead of the main dashboard.
