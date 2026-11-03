@@ -13,6 +13,7 @@ import { FinancialCalculator, CalculatorDetail } from "./pages/FinancialCalculat
 import { saveFinancialPlan } from "./lib/financialPlans";
 import { Goals } from "./pages/Goals";
 import { WalletsPage } from "./pages/WalletsPage";
+import { AIAssistant } from "./pages/AIAssistant";
 
 function CalculatorRoute() {
   const navigate = useNavigate();
@@ -55,6 +56,7 @@ export default function App() {
         <Route element={<AppShell />}>
           <Route path="/" element={<Home />} />
           <Route path="/finance" element={<DashboardFinance />} />
+          <Route path="/ai-assistant" element={<AIAssistant />} />
           <Route path="/transactions" element={<TransactionReport />} />
           <Route path="/transaction" element={<Transaction />} />
           <Route path="/wallets" element={<WalletsPage />} />
