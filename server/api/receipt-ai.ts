@@ -221,7 +221,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .eq("dashboard_token", token)
     .single();
 
-  if (authError || !user) {
+  if (authError) {
+    console.error("receipt-ai auth lookup failed:", authError.message);
+    return res.status(401).json({ error: "Sesi tidak valid. Muat ulang dashboard lalu coba lagi." });
+  }
+  if (!user) {
     return res.status(401).json({ error: "Sesi tidak valid. Muat ulang dashboard lalu coba lagi." });
   }
   if (!user.is_active) {
