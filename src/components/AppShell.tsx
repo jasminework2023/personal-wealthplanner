@@ -40,7 +40,7 @@ export function AppShell() {
       <MobileSidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
       <div className="flex-1 min-w-0">
         <Topbar title={title} onMenuClick={() => setMobileOpen(true)} />
-        <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 pb-32 lg:py-8">
+        <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-32 lg:py-8">
           <div className="hidden lg:flex items-center justify-end gap-3 mb-2">
             <DateHeader />
             <ThemeToggle variant="compact" />
