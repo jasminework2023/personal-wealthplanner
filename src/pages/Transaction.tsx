@@ -95,7 +95,7 @@ export function Transaction() {
         <button type="button" onClick={() => setActiveTab("wallets")} className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${activeTab === "wallets" ? "bg-[#123524] text-white shadow-sm" : "text-charcoal/55"}`}>Dompet</button>
       </div>
       {activeTab === "wallets" ? <WalletsPage embedded /> : <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-center gap-3">
         <div>
 
         </div>
