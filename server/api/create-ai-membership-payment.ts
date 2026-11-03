@@ -41,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (Number(user.is_active) !== 1) return res.status(403).json({ error: "Aktifkan akun Personal terlebih dahulu." });
     let payerEmail = typeof user.email === "string" ? user.email.trim().toLowerCase() : "";
     if (!payerEmail) {
-      if (!suppliedEmail || !/^\\S+@\\S+\\.\\S+$/.test(suppliedEmail)) {
+      if (!suppliedEmail || !/^\S+@\S+\.\S+$/.test(suppliedEmail)) {
         return res.status(400).json({ error: "Masukkan email yang valid untuk invoice." });
       }
       const { error: emailError } = await supabase.from("users").update({ email: suppliedEmail }).eq("user_id", user.user_id);
