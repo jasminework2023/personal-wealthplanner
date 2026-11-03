@@ -65,7 +65,6 @@ export default function App() {
           <Route path="/protection" element={<FinancialProtection />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/guidance" element={<Guidance />} />
         </Route>
       </Routes>
     </BrowserRouter>
