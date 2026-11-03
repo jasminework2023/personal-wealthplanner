@@ -127,8 +127,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (activationError || !Array.isArray(activationRows) || !activationRows[0]) {
         throw new Error(activationError?.message || "Aktivasi membership AI tidak memberikan hasil.");
       }
-      if (!activationRows[0].activated && activationRows[0].reason !== "duplicate_payment") {
-        throw new Error(`Aktivasi membership AI ditolak: ${activationRows[0].reason || "unknown"}`);
+      if (!activationRows[0].activated) {
+        if (activationRows[0].reason !== "duplicate_payment") {
+          throw new Error(`Aktivasi membership AI ditolak: ${activationRows[0].reason || "unknown"}`);
+        }
+
+        // A duplicate provider payment ID is only an idempotent retry when the
+        // original ledger entry belongs to this exact user, plan, and amount.
+        const { data: existingPayment, error: existingPaymentError } = await supabase
+          .from("ai_membership_payments")
+          .select("user_id, plan, provider, provider_payment_id, amount_idr")
+          .eq("provider", "xendit")
+          .eq("provider_payment_id", paymentId)
+          .maybeSingle();
+        if (existingPaymentError) throw new Error(existingPaymentError.message);
+        if (
+          !existingPayment ||
+          String(existingPayment.user_id) !== String(intent.user_id) ||
+          String(existingPayment.plan) !== String(intent.plan) ||
+          Number(existingPayment.amount_idr) !== amount
+        ) {
+          return res.status(409).json({ error: "ID pembayaran sudah digunakan untuk invoice lain." });
+        }
       }
 
       const { error: intentUpdateError } = await supabase
