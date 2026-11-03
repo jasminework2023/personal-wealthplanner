@@ -60,7 +60,7 @@ export function AIAssistant() {
     {historyOpen && <section className="rounded-2xl border border-forest-100 bg-white p-3"><div className="mb-2 flex items-center gap-2 text-sm font-semibold text-forest-900"><button onClick={() => setHistoryOpen(false)} aria-label="Kembali"><ArrowLeft size={16}/></button>Riwayat percakapan</div>{conversations.length ? conversations.map((c) => <button key={c.id} onClick={() => openConversation(c.id)} className="block w-full rounded-xl px-3 py-2 text-left text-sm text-charcoal hover:bg-forest-50">{c.title}</button>) : <p className="p-3 text-sm text-charcoal/50">Belum ada percakapan.</p>}</section>}
     <section className="flex-1 space-y-3 rounded-3xl border border-forest-100 bg-white p-4 shadow-sm">
       {messages.length === 0 && <div className="mx-auto max-w-md py-12 text-center"><span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47]"><SparkleIcon/></span><h2 className="text-base font-bold text-forest-900">Apa yang ingin kamu pahami?</h2><p className="mt-2 text-sm leading-relaxed text-charcoal/60">Tanyakan tentang cash flow, pengeluaran, aset, anggaran, atau tujuan finansialmu. Aku akan menggunakan data dashboard yang terhubung.</p><div className="mt-5 flex flex-wrap justify-center gap-2">{["Bagaimana kondisi cash flow-ku?","Kategori pengeluaran terbesarku apa?","Apa yang perlu aku perbaiki bulan ini?"].map((q) => <button key={q} onClick={() => setDraft(q)} className="rounded-full border border-forest-100 px-3 py-2 text-xs text-forest-800 hover:bg-forest-50">{q}</button>)}</div></div>}
-      {messages.map((m, i) => <div key={m.id || i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}><div className={m.role === "user" ? "max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-[#0B6B47] px-4 py-3 text-sm leading-relaxed text-white" : "max-w-[90%] whitespace-pre-wrap rounded-2xl rounded-bl-md bg-[#F1F8F4] px-4 py-3 text-sm leading-relaxed text-forest-900"}>{m.content}</div></div>)}
+      {messages.map((m, i) => <div key={m.id || i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}><div className={m.role === "user" ? "max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-[#0B6B47] px-4 py-3 text-sm leading-relaxed text-white" : "max-w-[90%] whitespace-pre-wrap rounded-2xl rounded-bl-md bg-[#F1F8F4] px-4 py-3 text-sm leading-relaxed text-forest-900"}><MarkdownContent content={m.content}/></div></div>)}
       {loading && <div className="flex items-center gap-2 text-xs text-charcoal/50"><Loader2 size={15} className="animate-spin"/>Sedang menyiapkan jawaban...</div>}
       {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-xs text-red-700">{error}</p>}
     </section>
@@ -69,3 +69,43 @@ export function AIAssistant() {
   </div>;
 }
 function SparkleIcon() { return <Bot size={26}/>; }
+
+
+function MarkdownContent({ content }: { content: string }) {
+  const lines = content.replace(/\r/g, "").split("\n");
+  const blocks: Array<{ type: string; text: string }> = [];
+  let paragraph: string[] = [];
+  const flush = () => {
+    if (paragraph.length) {
+      blocks.push({ type: "p", text: paragraph.join(" ") });
+      paragraph = [];
+    }
+  };
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) { flush(); continue; }
+    if (/^\|?\s*:?-{3,}/.test(line) || /^\|.*\|$/.test(line) && /^\|?[\s|:-]+\|?$/.test(line)) { flush(); continue; }
+    if (/^#{1,3}\s/.test(line)) { flush(); blocks.push({ type: "h", text: line.replace(/^#{1,3}\s*/, "") }); continue; }
+    if (/^---+$/.test(line)) { flush(); continue; }
+    if (/^[-*•]\s+/.test(line)) { flush(); blocks.push({ type: "li", text: line.replace(/^[-*•]\s+/, "") }); continue; }
+    if (/^\|.*\|$/.test(line)) {
+      const cells = line.split("|").slice(1, -1).map((cell) => cell.trim()).filter(Boolean);
+      if (cells.length) blocks.push({ type: "li", text: cells.join(" — ") });
+      continue;
+    }
+    paragraph.push(line.replace(/^\d+\.\s+/, ""));
+  }
+  flush();
+  const inline = (text: string) => text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith("**") && part.endsWith("**")
+      ? <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+      : part
+  );
+  return <div className="space-y-2.5 break-words">
+    {blocks.map((block, i) => block.type === "h"
+      ? <h3 key={i} className="text-sm font-bold">{inline(block.text)}</h3>
+      : block.type === "li"
+        ? <div key={i} className="flex gap-2 pl-1"><span className="text-[#0B6B47]">•</span><span>{inline(block.text)}</span></div>
+        : <p key={i}>{inline(block.text)}</p>)}
+  </div>;
+}
