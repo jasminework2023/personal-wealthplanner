@@ -44,7 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (convError || !data) return res.status(404).json({ error: "Percakapan tidak ditemukan." });
       conversation = data;
     } else {
-      const { data, error: convError } = await db.from("ai_conversations").insert({ user_id: String(user.user_id), title: message.slice(0,  sixty()) }).select("id,title").single();
+      const { data, error: convError } = await db.from("ai_conversations").insert({ user_id: String(user.user_id), title: message.slice(0, sixty()) }).select("id,title").single();
       if (convError || !data) throw convError || new Error("Gagal membuat percakapan.");
       conversation = data; conversationId = data.id;
     }
@@ -53,7 +53,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const finance = await getFinanceContext(user.spreadsheet_id);
     const apiKey = process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY;
     const endpoint = process.env.GROQ_API_KEY ? "https://api.groq.com/openai/v1/chat/completions" : "https://api.openai.com/v1/chat/completions";
-    const model = process.env.GROQ_API_KEY ? (process.env.GROQ_CHAT_MODEL || "llama-3.3-70b-versatile") : (process.env.OPENAI_CHAT_MODEL || "gpt-4.1-mini");
+    const model = process.env.GROQ_API_KEY ? (process.env.GROQ_CHAT_MODEL || "openai/gpt-oss-20b") : (process.env.OPENAI_CHAT_MODEL || "gpt-4.1-mini");
     if (!apiKey) return res.status(503).json({ error: "AI belum dikonfigurasi. Hubungi administrator." });
     const history = (previous || []).reverse().map((m: any) => ({ role: m.role, content: m.content }));
     const completion = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, temperature: 0.4, max_tokens: 900, messages: [{ role: "system", content: `Kamu adalah Wealthplanner AI, asisten perencanaan keuangan pribadi yang ramah, jelas, dan tidak menghakimi. Jawab dalam bahasa Indonesia kecuali pengguna memakai bahasa lain. Gunakan data keuangan pengguna berikut hanya sebagai konteks; jangan mengarang angka. Jika data tidak cukup, katakan dengan jujur. Berikan edukasi, bukan rekomendasi investasi personal yang menjanjikan hasil. Nama pengguna: ${user.username || "Pengguna"}. Data keuangan: ${JSON.stringify(finance)}` }, ...history, { role: "user", content: message }] }) });
