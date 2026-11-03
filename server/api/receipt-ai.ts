@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 const MAX_IMAGE_DATA_URL_BYTES = 3.5 * 1024 * 1024;
@@ -195,6 +196,36 @@ async function callProvider(
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
+  }
+
+  // Receipt processing is a paid-resource endpoint. Require the same dashboard
+  // token used by the rest of the app and verify it server-side before calling an AI provider.
+  const token = typeof req.body?.token === "string" ? req.body.token.trim() : "";
+  if (!token || token.length > 512) {
+    return res.status(401).json({ error: "Sesi tidak valid. Muat ulang dashboard lalu coba lagi." });
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error("receipt-ai: Supabase server credentials are not configured");
+    return res.status(503).json({ error: "Layanan AI struk sedang belum tersedia." });
+  }
+
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const { data: user, error: authError } = await supabase
+    .from("users")
+    .select("username, is_active")
+    .eq("dashboard_token", token)
+    .single();
+
+  if (authError || !user) {
+    return res.status(401).json({ error: "Sesi tidak valid. Muat ulang dashboard lalu coba lagi." });
+  }
+  if (!user.is_active) {
+    return res.status(403).json({ error: "Akun belum aktif." });
   }
 
   const providers = resolveProvider(req.body?.provider === "openai" ? "openai" : undefined);
