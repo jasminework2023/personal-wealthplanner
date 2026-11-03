@@ -9,7 +9,6 @@ import {
   Calculator,
   Shield,
   Settings,
-  BookOpen,
   UsersRound,
   Wallet,
   X,
