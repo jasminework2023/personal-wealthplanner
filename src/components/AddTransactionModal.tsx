@@ -178,14 +178,17 @@ export function AddTransactionModal({
     setFormError("");
     setAiError("");
     try {
-      if (token) {
-        const response = await fetch(`${API_BASE}/add-transaction`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token, transaction }),
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || "Gagal menyimpan transaksi");
+      if (!token) {
+        throw new Error("Sesi akun tidak ditemukan. Buka kembali dashboard dari link akunmu, lalu coba simpan transaksi lagi.");
+      }
+      const response = await fetch(`${API_BASE}/add-transaction`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, transaction }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.success !== true) {
+        throw new Error(data.error || "Transaksi belum berhasil disimpan. Coba lagi.");
       }
       onAdd(transaction);
       window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added", { detail: transaction }));
