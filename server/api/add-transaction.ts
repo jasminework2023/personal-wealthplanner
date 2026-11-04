@@ -33,8 +33,14 @@ async function validateWalletFields(sheets: ReturnType<typeof sheetsClient>, spr
   if (type === "Transfer" && (!wallet || !toWallet)) throw new Error("Transfer wajib memiliki Wallet asal dan To Wallet tujuan");
   if (type === "Saving" && toWallet && !wallet) throw new Error("Saving dengan To Wallet wajib memiliki Wallet asal");
   if ((type === "Income" || type === "Expense") && toWallet) throw new Error("To Wallet hanya boleh diisi untuk Transfer atau Saving");
-  const active = await activeWallets(sheets, spreadsheetId);
-  for (const name of [wallet,toWallet].filter(Boolean)) if (!active.has(norm(name))) throw new Error(`Wallet "${name}" tidak ditemukan atau tidak aktif pada Setup`);
+  // Transactions without a selected wallet are valid. Only read and validate
+  // the Setup wallet list when the user actually selected a wallet.
+  if (wallet || toWallet) {
+    const active = await activeWallets(sheets, spreadsheetId);
+    for (const name of [wallet,toWallet].filter(Boolean)) {
+      if (!active.has(norm(name))) throw new Error(`Wallet "${name}" tidak ditemukan atau tidak aktif pada Setup`);
+    }
+  }
   return { wallet, toWallet };
 }
 export default async function handler(req: VercelRequest, res: VercelResponse) {
