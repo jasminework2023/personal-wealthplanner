@@ -8,19 +8,23 @@ export interface Wallet {
 }
 export interface WalletsData { wallets:Wallet[]; unassigned:{count:number;net:number}; totalBalance:number; }
 const cache=new Map<string,{at:number;promise:Promise<{ok:boolean;status:number;data:any}>}>();
-function sharedFetch(url:string,ttl=15000) {
- const now=Date.now(),hit=cache.get(url);if(hit&&now-hit.at<ttl)return hit.promise;
- const promise=fetch(url).then(async r=>({ok:r.ok,status:r.status,data:await r.json().catch(()=>({}))})).then(r=>{if(!r.ok)cache.delete(url);return r;}).catch(e=>{cache.delete(url);throw e;});
- cache.set(url,{at:now,promise});return promise;
+function sharedFetch(url:string,ttl=15000,force=false) {
+ const now=Date.now(),hit=cache.get(url);
+ // Multiple mounted wallet hooks can receive the same transaction event.
+ // Share the in-flight forced refresh instead of issuing duplicate Sheets reads.
+ if(hit&&(hit.at===-1||(!force&&now-hit.at<ttl)))return hit.promise;
+ const entry={at:force?-1:now,promise:Promise.resolve({ok:false,status:0,data:{}} as any)};
+ entry.promise=fetch(url).then(async r=>({ok:r.ok,status:r.status,data:await r.json().catch(()=>({}))})).then(r=>{if(cache.get(url)===entry)entry.at=Date.now();return r;}).catch(e=>{if(cache.get(url)===entry)cache.delete(url);throw e;});
+ cache.set(url,entry);return entry.promise;
 }
 export function useWallets() {
  const [data,setData]=useState<WalletsData>({wallets:[],unassigned:{count:0,net:0},totalBalance:0});
  const [loading,setLoading]=useState(true);const [error,setError]=useState<string|null>(null);
  const refresh=useCallback(async(force=false)=>{
   const token=getStoredToken();if(!token){setLoading(false);return;}
-  const url=`/api/wallets?token=${encodeURIComponent(token)}`;if(force)cache.delete(url);
+  const url=`/api/wallets?token=${encodeURIComponent(token)}`;
   setLoading(true);
-  try{const r=await sharedFetch(url,force?0:15000);if(!r.ok)throw new Error(r.data?.error||(r.status===404?"API wallet tidak ditemukan (HTTP 404)":r.status===504||r.status===408?"Server terlalu lama merespons (HTTP "+r.status+"), coba lagi":"Gagal memuat wallet (HTTP "+r.status+")"));setData(r.data);setError(null);}
+  try{const r=await sharedFetch(url,15000,force);if(!r.ok)throw new Error(r.data?.error||(r.status===404?"API wallet tidak ditemukan (HTTP 404)":r.status===504||r.status===408?"Server terlalu lama merespons (HTTP "+r.status+"), coba lagi":"Gagal memuat wallet (HTTP "+r.status+")"));setData(r.data);setError(null);}
   catch(e){setError(e instanceof Error?(e.message==="Failed to fetch"?"Tidak bisa terhubung ke server":e.message):"Gagal memuat wallet");}
   finally{setLoading(false);}
  },[]);
