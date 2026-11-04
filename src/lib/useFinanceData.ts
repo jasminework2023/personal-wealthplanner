@@ -291,12 +291,22 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
     };
   }, [monthOverride, includeAllMonths, yearOverride]);
 
-  const totalIncome = state.transactions.filter((t) => t.type === "Income").reduce((s, t) => s + t.amount, 0);
-  const totalExpense = state.transactions.filter((t) => t.type === "Expense").reduce((s, t) => s + t.amount, 0);
-  const totalSaving = state.transactions.filter((t) => t.type === "Saving").reduce((s, t) => s + t.amount, 0);
+  // Gunakan satu sumber transaksi yang sudah dipastikan sesuai bulan dan tahun
+  // agar realisasi tidak tercampur ketika cache memuat data lintas periode.
+  const periodTransactions = state.transactions.filter((t) => {
+    const txMonth = String(t.month || "").trim().toLowerCase();
+    const txYear = Number(t.year || String(t.date || "").split("/").pop());
+    return txMonth === String(state.month || initialMonth).trim().toLowerCase()
+      && (!txYear || txYear === Number(state.year || initialYear));
+  });
+
+  const totalIncome = periodTransactions.filter((t) => t.type === "Income").reduce((s, t) => s + t.amount, 0);
+  const totalExpense = periodTransactions.filter((t) => t.type === "Expense").reduce((s, t) => s + t.amount, 0);
+  const totalSaving = periodTransactions.filter((t) => t.type === "Saving").reduce((s, t) => s + t.amount, 0);
 
   function byCategory(type: Transaction["type"]) {
-    const map = new Map<string, number>();
+    const normalize = (value: unknown) => String(value ?? "").trim().replace(/\\s+/g, " ").toLocaleLowerCase();
+    const map = new Map<string, { category: string; realization: number }>();
     const categorySource =
       type === "Income" ? incomeCategories :
       type === "Saving" ? savingCategories :
@@ -304,22 +314,31 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
     const setupKey = type === "Income" ? "income" : type === "Saving" ? "saving" : "expense";
     const configured = state.setup[setupKey] || [];
     const activeSetup = configured.filter((item) => item.active && item.name.trim());
+    const canonicalNames = new Map(activeSetup.map((item) => [normalize(item.name), item.name]));
 
-    for (const t of state.transactions) {
+    for (const t of periodTransactions) {
       if (t.type !== type) continue;
-      map.set(t.category, (map.get(t.category) || 0) + t.amount);
+      const key = normalize(t.category);
+      const category = canonicalNames.get(key) || String(t.category || "").trim();
+      if (!category) continue;
+      const existing = map.get(normalize(category));
+      map.set(normalize(category), {
+        category,
+        realization: (existing?.realization || 0) + Number(t.amount || 0),
+      });
     }
 
-    // Setup is the source of truth for which categories are active. Include
-    // custom categories too, not only the original built-in category list.
+    // Selalu tampilkan kategori aktif, termasuk kategori yang belum memiliki transaksi.
     for (const item of activeSetup) {
-      if (!map.has(item.name)) map.set(item.name, 0);
+      const key = normalize(item.name);
+      if (!map.has(key)) map.set(key, { category: item.name, realization: 0 });
     }
 
-    const fallbackAllocation = new Map(categorySource.map((c) => [c.category.toLowerCase(), c.allocation]));
-    return Array.from(map.entries()).map(([category, realization]) => ({
+    const budgetMap = new Map(Object.entries(state.budgetByCategory || {}).map(([name, amount]) => [normalize(name), amount]));
+    const fallbackAllocation = new Map(categorySource.map((c) => [normalize(c.category), c.allocation]));
+    return Array.from(map.values()).map(({ category, realization }) => ({
       category,
-      allocation: state.budgetByCategory[category] ?? fallbackAllocation.get(category.toLowerCase()) ?? 0,
+      allocation: budgetMap.get(normalize(category)) ?? fallbackAllocation.get(normalize(category)) ?? 0,
       realization,
     }));
   }
