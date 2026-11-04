@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, RefreshCw, Wallet as WalletIcon, Palette, Check, AlertCircle, ArrowDownLeft, ArrowUpRight, ArrowLeftRight, History, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWallets, type Wallet } from "../lib/useWallets";
@@ -66,6 +66,7 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
   const finance = useFinanceData(undefined, true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [walletStackSpacing, setWalletStackSpacing] = useState(0);
+  const walletTouchStartY = useRef<number | null>(null);
   const [isId, setIsId] = useState(() => appLanguage() === "id");
   const [editing, setEditing] = useState<Wallet | null>(null);
   const [mode, setMode] = useState<"auto"|"custom">("auto");
@@ -143,18 +144,12 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
     {notice && <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}
     {loading && wallets.length===0 && <p className="py-8 text-center text-slate-500">Memuat wallet…</p>}
     {!selected && !loading && !error && wallets.length===0 && <div className="rounded-2xl border border-dashed p-6 text-center"><WalletIcon className="mx-auto mb-2 text-slate-400"/><p className="font-medium">Belum ada wallet aktif</p><p className="mt-1 text-sm text-slate-500">Tambahkan rekening atau dompet di Pengaturan. Wallet akan tersinkron otomatis.</p><button className="mt-4 rounded-full bg-[#123524] px-4 py-2 text-sm text-white" onClick={()=>navigate("/settings")}>Buka Pengaturan</button></div>}
-    {!selected && wallets.length>0 && <div className="grid grid-cols-2 gap-3"><button onClick={()=>navigate("/transaction")} className="flex items-center justify-center gap-2 rounded-2xl bg-[#123524] px-3 py-4 text-sm font-semibold text-white"><ArrowDownLeft size={18}/> Catat transaksi</button><button onClick={()=>{setTransferFrom(wallets[0]?.name || "");setTransferTo(wallets[1]?.name || "");setTransferOpen(true);setNotice("");}} disabled={wallets.length<2} className="flex items-center justify-center gap-2 rounded-2xl border border-[#D4E5DA] bg-white px-3 py-4 text-sm font-semibold text-[#123524] disabled:opacity-40"><ArrowLeftRight size={18}/> Transfer</button></div>}
     {!selected && wallets.length > 0 && <section className="space-y-3 pb-[calc(140px+env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-base font-semibold text-slate-900 dark:text-white">Wallet kamu · {wallets.length}</h2>
         <button type="button" onClick={() => navigate("/settings")} className="min-h-9 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-[#0B6B47] transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-[rgb(var(--c-surface))] dark:text-emerald-300 dark:hover:bg-white/5">+ Tambah</button>
       </div>
-      <div className="flex min-h-11 items-center gap-3 px-1 pb-1 pt-0.5">
-        <span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">{isId ? "Tumpukan" : "Stacked"}</span>
-        <input aria-label={isId ? "Kerapatan tumpukan kartu" : "Card stack spacing"} type="range" min={0} max={100} step={1} value={walletStackSpacing} onChange={(event) => setWalletStackSpacing(Number(event.target.value))} className="h-11 min-w-0 flex-1 cursor-pointer accent-[#0B6B47]" />
-        <span className="shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">{isId ? "Rapat" : "Spread"}</span>
-      </div>
-      <div className="w-full min-w-0">
+      <div className="w-full min-w-0" onTouchStart={(event) => { walletTouchStartY.current = event.touches[0]?.clientY ?? null; }} onTouchEnd={(event) => { const startY = walletTouchStartY.current; const endY = event.changedTouches[0]?.clientY; walletTouchStartY.current = null; if (startY == null || endY == null) return; const delta = endY - startY; if (Math.abs(delta) > 28) setWalletStackSpacing(delta < 0 ? 0 : 100); }}>
         {(() => {
           const visibleHeight = 88 + (FULL_WALLET_CARD_HEIGHT + WALLET_CARD_GAP - 88) * walletStackSpacing / 100;
           const cardStep = visibleHeight;
