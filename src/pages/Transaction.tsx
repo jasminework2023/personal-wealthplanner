@@ -12,9 +12,13 @@ import type { Transaction as TransactionItem, TransactionType } from "../data/ty
 
 type Filter = "All" | TransactionType;
 
-function transactionParts(value: string): { day: number; month: number; year: number } {
+const MONTH_NUMBER: Record<string, number> = {
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+};
+
+function transactionParts(value: string, monthValue?: string): { day: number; month: number; year: number } {
   const raw = String(value || "").trim();
-  // ISO dates are unambiguous: YYYY-MM-DD.
   const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:$|T|\s)/);
   let day: number, month: number, year: number;
   if (iso) {
@@ -26,25 +30,31 @@ function transactionParts(value: string): { day: number; month: number; year: nu
     } else {
       const parts = raw.split(/[\/. -]/).filter(Boolean).map(Number);
       if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return { day: 0, month: 0, year: 0 };
-      [day, month, year] = parts;
-      // Source data uses DD/MM/YYYY; infer MM/DD/YYYY only when the second part exceeds 12.
-      if (day <= 12 && month > 12) [day, month] = [month, day];
+      const first = parts[0], second = parts[1];
+      day = first; month = second; year = parts[2];
+      const expectedMonth = MONTH_NUMBER[String(monthValue || "").trim().toLowerCase()];
+      if (expectedMonth && first === expectedMonth && second !== expectedMonth) {
+        month = first; day = second;
+      } else if (expectedMonth && second === expectedMonth && first !== expectedMonth) {
+        day = first; month = second;
+      } else if (first <= 12 && second > 12) {
+        day = second; month = first;
+      }
     }
   }
   if (year < 100) year += year < 50 ? 2000 : 1900;
   return { day, month, year };
 }
-function transactionDateValue(value: string): number {
-  const { day, month, year } = transactionParts(value);
+function transactionDateValue(value: string, monthValue?: string): number {
+  const { day, month, year } = transactionParts(value, monthValue);
   if (!year || month < 1 || month > 12 || day < 1 || day > 31) return 0;
   const date = new Date(year, month - 1, day);
-  // Reject impossible dates such as 31/02/2026 instead of silently rolling them forward.
   if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return 0;
   return date.getTime();
 }
-function formatTransactionDate(value: string): string {
-  const { day, month, year } = transactionParts(value);
-  if (!transactionDateValue(value)) return String(value || "—");
+function formatTransactionDate(value: string, monthValue?: string): string {
+  const { day, month, year } = transactionParts(value, monthValue);
+  if (!transactionDateValue(value, monthValue)) return String(value || "—");
   return [day, month, year].map((part, index) => String(part).padStart(index === 2 ? 4 : 2, "0")).join("/");
 }
 
@@ -65,14 +75,14 @@ export function Transaction() {
   const [editingTransaction, setEditingTransaction] = useState<TransactionItem | null>(null);
 
   const availableYears = useMemo(() => Array.from(new Set(transactions.map((t) => {
-    const parts = transactionParts(t.date);
+    const parts = transactionParts(t.date, t.month);
     return parts.year ? String(parts.year) : "";
   }).filter(Boolean))).sort((a, b) => Number(b) - Number(a)), [transactions]);
 
   const filteredTransactions = useMemo(() => transactions
     .filter((t) => filter === "All" || t.type === filter)
     .filter((t) => {
-      const parts = transactionParts(t.date);
+      const parts = transactionParts(t.date, t.month);
       const month = parts.month;
       const year = parts.year;
       return (selectedMonth === "all" || month === Number(selectedMonth)) && (selectedYear === "all" || year === Number(selectedYear));
@@ -82,7 +92,7 @@ export function Transaction() {
       const q = search.trim().toLowerCase();
       return !q || [t.description, t.category, t.type, t.date].some((v) => String(v || "").toLowerCase().includes(q));
     })
-    .sort((a, b) => { const difference = sortOrder === "newest" ? transactionDateValue(b.date) - transactionDateValue(a.date) : transactionDateValue(a.date) - transactionDateValue(b.date); return difference || (sortOrder === "newest" ? Number(b.sheetRow || 0) - Number(a.sheetRow || 0) : Number(a.sheetRow || 0) - Number(b.sheetRow || 0)); }), [transactions, filter, search, selectedMonth, selectedYear, sortOrder]);
+    .sort((a, b) => { const difference = sortOrder === "newest" ? transactionDateValue(b.date, b.month) - transactionDateValue(a.date, a.month) : transactionDateValue(a.date, a.month) - transactionDateValue(b.date, b.month); return difference || (sortOrder === "newest" ? Number(b.sheetRow || 0) - Number(a.sheetRow || 0) : Number(a.sheetRow || 0) - Number(b.sheetRow || 0)); }), [transactions, filter, search, selectedMonth, selectedYear, sortOrder]);
 
   const filters: Filter[] = ["All", "Income", "Expense", "Saving", "Transfer"];
   const iconFor = (type: TransactionType) => type === "Income" ? ArrowDownLeft : type === "Expense" ? ArrowUpRight : type === "Transfer" ? ArrowLeftRight : PiggyBank;
@@ -134,7 +144,7 @@ export function Transaction() {
                   <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${colorFor(t.type)}`}><Icon size={19} /></div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13.5px] font-semibold text-forest-900">{t.description || t.category}</p>
-                    <p className="mt-0.5 truncate text-[11.5px] text-charcoal/50">{t.category} · {formatTransactionDate(t.date)}</p>
+                    <p className="mt-0.5 truncate text-[11.5px] text-charcoal/50">{t.category} · {formatTransactionDate(t.date, t.month)}</p>
                   </div>
                   <p className={`num shrink-0 text-right text-[13.5px] font-semibold ${amountColor}`}>{amountPrefix}{formatRupiah(t.amount)}</p>
                   <button type="button" aria-label={txText.edit} title={txText.edit} onClick={() => setEditingTransaction(t)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-charcoal/40 hover:bg-forest-50 hover:text-forest-700"><Pencil size={16}/></button>
