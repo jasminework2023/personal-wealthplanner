@@ -142,18 +142,25 @@ const CURRENT_MONTH_NAME = new Date().toLocaleString("en-US", { month: "long" })
 // Tanpa ini, tiap komponen menembak /api/dashboard & /api/setup sendiri-sendiri
 // dan kuota baca Google Sheets (per menit) cepat habis.
 const sharedRequests = new Map<string, { p: Promise<{ ok: boolean; data: any }>; t: number }>();
-function sharedFetch(url: string, ttlMs: number): Promise<{ ok: boolean; data: any }> {
+function sharedFetch(url: string, ttlMs: number, force = false): Promise<{ ok: boolean; data: any }> {
   const now = Date.now();
   const hit = sharedRequests.get(url);
-  if (hit && now - hit.t < ttlMs) return hit.p;
-  const p = fetch(url)
+  // Coalesce simultaneous forced refreshes from every mounted useFinanceData()
+  // instance. A force refresh is shared while in flight, then cached briefly.
+  if (hit && (hit.t === -1 || (!force && now - hit.t < ttlMs))) return hit.p;
+  const entry = { p: Promise.resolve({ ok: false, data: {} as any }), t: force ? -1 : now };
+  entry.p = fetch(url)
     .then(async (r) => ({ ok: r.ok, data: await r.json().catch(() => ({})) }))
+    .then((result) => {
+      if (sharedRequests.get(url) === entry) entry.t = Date.now();
+      return result;
+    })
     .catch((e) => {
-      sharedRequests.delete(url);
+      if (sharedRequests.get(url) === entry) sharedRequests.delete(url);
       throw e;
     });
-  sharedRequests.set(url, { p, t: now });
-  return p;
+  sharedRequests.set(url, entry);
+  return entry.p;
 }
 
 export function useFinanceData(monthOverride?: string, includeAllMonths = false, yearOverride?: number): FinanceData {
@@ -202,15 +209,12 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
       setState((s) => ({ ...s, loading: true, error: null, month: requestedMonth }));
       const dashboardUrl = `${API_BASE}/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}`;
       const setupUrl = `${API_BASE}/setup?token=${encodeURIComponent(token)}`;
-      // After a successful write, bypass the in-memory request cache so the next read reflects Google Sheets.
-      if (force) {
-        sharedRequests.delete(dashboardUrl);
-        sharedRequests.delete(setupUrl);
-      }
+      // A successful write must refresh from Sheets. The shared fetch layer
+      // coalesces this forced refresh across all mounted listeners.
       const ttl = force ? 0 : 20000;
       Promise.all([
-        sharedFetch(dashboardUrl, ttl),
-        sharedFetch(setupUrl, ttl),
+        sharedFetch(dashboardUrl, ttl, force),
+        sharedFetch(setupUrl, ttl, force),
       ])
         .then(([dashboard, setup]) => ({ dashboard, setup }))
         .then(({ dashboard, setup }) => {
