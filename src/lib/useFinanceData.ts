@@ -305,7 +305,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
   const totalSaving = periodTransactions.filter((t) => t.type === "Saving").reduce((s, t) => s + t.amount, 0);
 
   function byCategory(type: Transaction["type"]) {
-    const normalize = (value: unknown) => String(value ?? "").trim().replace(/\\s+/g, " ").toLocaleLowerCase();
+    const normalize = (value: unknown) => String(value ?? "").trim().replace(/\s+/g, " ").toLocaleLowerCase();
     const map = new Map<string, { category: string; realization: number }>();
     const categorySource =
       type === "Income" ? incomeCategories :
