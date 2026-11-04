@@ -97,29 +97,76 @@ async function fetchAllRanges(spreadsheetId: string) {
 }
 
 // ---------- TRANSACTION ----------
+const MONTH_NUMBER: Record<string, number> = {
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+};
+
+// Normalize dates from Sheets to YYYY-MM-DD. The Month column resolves
+// locale-dependent values such as 04/11/2026 (4 Nov or 11 Apr).
+function normalizeSheetDate(value: unknown, monthValue: unknown): string {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    const date = new Date(Date.UTC(1899, 11, 30) + Math.floor(value) * 86400000);
+    return date.toISOString().slice(0, 10);
+  }
+
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+  const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:$|T|\s)/);
+  if (iso) {
+    const y = Number(iso[1]), m = Number(iso[2]), day = Number(iso[3]);
+    const check = new Date(Date.UTC(y, m - 1, day));
+    return check.getUTCFullYear() === y && check.getUTCMonth() === m - 1 && check.getUTCDate() === day
+      ? String(y) + "-" + String(m).padStart(2, "0") + "-" + String(day).padStart(2, "0")
+      : "";
+  }
+
+  const parts = raw.match(/^(\d{1,2})[\/. -](\d{1,2})[\/. -](\d{2,4})$/);
+  if (parts) {
+    const first = Number(parts[1]), second = Number(parts[2]);
+    let year = Number(parts[3]), day = first, month = second;
+    const expectedMonth = MONTH_NUMBER[String(monthValue ?? "").trim().toLowerCase()];
+    if (expectedMonth && first === expectedMonth && second !== expectedMonth) {
+      month = first; day = second;
+    } else if (expectedMonth && second === expectedMonth && first !== expectedMonth) {
+      day = first; month = second;
+    } else if (first <= 12 && second > 12) {
+      day = second; month = first;
+    }
+    if (year < 100) year += year < 50 ? 2000 : 1900;
+    const check = new Date(Date.UTC(year, month - 1, day));
+    if (month < 1 || month > 12 || day < 1 || day > 31 ||
+      check.getUTCFullYear() !== year || check.getUTCMonth() !== month - 1 || check.getUTCDate() !== day) return "";
+    return String(year) + "-" + String(month).padStart(2, "0") + "-" + String(day).padStart(2, "0");
+  }
+
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString().slice(0, 10);
+}
+
 function getTransactions(rows: unknown[][], year?: number) {
   const typeMap: Record<string, string> = { income: "Income", expense: "Expense", saving: "Saving", transfer: "Transfer" };
 
   return rows
     .map((row, index) => ({ row, sheetRow: index + 10 }))
-    .filter(({ row }) => {
-      if (!row || row.length < 3 || !row[2]) return false;
-      if (!year) return true;
-      const rowYear = Number(String(row[0] || "").split("/").pop());
-      return !rowYear || rowYear === year;
+    .filter(({ row }) => row && row.length >= 3 && Boolean(row[2]))
+    .map(({ row, sheetRow }) => {
+      const date = normalizeSheetDate(row[0], row[1]);
+      const transactionYear = date ? Number(date.slice(0, 4)) : undefined;
+      return {
+        date,
+        month: row[1] || "",
+        type: typeMap[String(row[2]).trim().toLowerCase()] || "Expense",
+        category: row[3] || "",
+        description: row[4] || "",
+        amount: parseRupiah(row[5]),
+        wallet: row[6] || "",
+        toWallet: row[7] || "",
+        year: transactionYear,
+        sheetRow,
+      };
     })
-    .map(({ row, sheetRow }) => ({
-      date: row[0] || "",
-      month: row[1] || "",
-      type: typeMap[String(row[2]).trim().toLowerCase()] || "Expense",
-      category: row[3] || "",
-      description: row[4] || "",
-      amount: parseRupiah(row[5]),
-      wallet: row[6] || "",
-      toWallet: row[7] || "",
-      year: Number(String(row[0] || "").split("/").pop()) || undefined,
-      sheetRow,
-    }));
+    .filter((transaction) => !year || !transaction.year || transaction.year === year);
 }
 
 // ---------- BUDGETING ----------
