@@ -46,6 +46,6 @@ export function MonthlyBudgeting(){
     <BudgetSection title={language==="id"?"Daftar Pemasukan":"Income List"} rows={incomeRows} type="Income" month={month} isRealData={isRealData} onSaved={onSaved}/>
     <BudgetSection title={language==="id"?"Daftar Pengeluaran":"Expense List"} rows={expenseRows} type="Expense" month={month} isRealData={isRealData} onSaved={onSaved}/>
     <BudgetSection title={language==="id"?"Daftar Tabungan":"Saving List"} rows={savingRows} type="Saving" month={month} isRealData={isRealData} onSaved={onSaved}/>
-    <div className="rounded-[22px] bg-[#F59BB8] p-5 text-[#123524]"><div className="flex items-center justify-between gap-3"><span className="text-[13.5px] font-semibold">{language==="id"?"Sisa Anggaran Pengeluaran":"Remaining Expense Budget"}</span><span className={`num text-[18px] font-bold ${remaining<0?"text-[#A93A5C]":"text-[#123524]"}`}>{formatRupiah(remaining)}</span></div></div>
+    <div className="rounded-[22px] bg-[#F59BB8] p-5 text-[#123524]"><div className="flex items-center justify-between gap-3"><span className="text-[13.5px] font-semibold">{language==="id"?"Sisa Alokasi":"Remaining Allocation"}</span><span className={`num text-[18px] font-bold ${remaining<0?"text-[#A93A5C]":"text-[#123524]"}`}>{formatRupiah(remaining)}</span></div></div>
   </div>;
 }
