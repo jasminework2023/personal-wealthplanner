@@ -80,19 +80,20 @@ async function getSheetsClient() {
 // One batchGet instead of 3 separate values.get calls: this alone cuts the
 // Google Sheets API "read requests per minute" quota this endpoint consumes
 // by roughly two thirds on every dashboard load / poll cycle.
-async function fetchAllRanges(spreadsheetId: string) {
+async function fetchAllRanges(spreadsheetId: string, transactionsOnly = false) {
   const sheets = await getSheetsClient();
+  const ranges = transactionsOnly
+    ? ["Transaction!B10:I"]
+    : ["Transaction!B10:I", "Budgeting!B1:N40", "Asset Tracker!B1:N45"];
   const res = await sheets.spreadsheets.values.batchGet({
     spreadsheetId,
-    ranges: ["Transaction!B10:I", "Budgeting!B1:N40", "Asset Tracker!B1:N45"],
+    ranges,
   });
-  const [transactionRows, budgetRows, assetRows] = (res.data.valueRanges || []).map(
-    (r) => r.values || []
-  );
+  const values = (res.data.valueRanges || []).map((r) => r.values || []);
   return {
-    transactionRows: transactionRows || [],
-    budgetRows: budgetRows || [],
-    assetRows: assetRows || [],
+    transactionRows: values[0] || [],
+    budgetRows: transactionsOnly ? [] : (values[1] || []),
+    assetRows: transactionsOnly ? [] : (values[2] || []),
   };
 }
 
@@ -313,8 +314,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       : new Date().toLocaleString("en-US", { month: "long" });
     const requestedYear = Number(req.query.year) || new Date().getFullYear();
     const allYears = String(req.query.allYears || "") === "1";
+    const transactionsOnly = String(req.query.transactionsOnly || "") === "1";
 
-    const { transactionRows, budgetRows, assetRows } = await fetchAllRanges(user.spreadsheet_id);
+    const { transactionRows, budgetRows, assetRows } = await fetchAllRanges(user.spreadsheet_id, transactionsOnly);
 
     const transactions = getTransactions(transactionRows, allYears ? undefined : requestedYear);
     let budgetByCategory: Record<string, number> = {};
