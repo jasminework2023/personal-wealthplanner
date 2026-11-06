@@ -8,7 +8,24 @@ function sheetsClient() {
   return google.sheets({ version: "v4", auth });
 }
 const norm = (v: unknown) => String(v ?? "").trim().replace(/\s+/g, " ").toLowerCase();
-const display = (v: unknown) => String(v ?? "").trim().replace(/\s+/g, " ");
+const display = (v: unknown) => String(v ?? "").trim().replace(/\\s+/g, " ");
+function normalizeInputDate(value: unknown) {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+  // The app may send an Indonesian locale date such as 07/11/2026.
+  // Convert it explicitly to ISO so Google Sheets cannot reinterpret it
+  // as US-style MM/DD/YYYY when using USER_ENTERED.
+  const match = raw.match(/^(\\d{1,2})[\\/\\-.](\\d{1,2})[\\/\\-.](\\d{4})$/);
+  if (match) {
+    const [, day, month, year] = match;
+    const d = Number(day);
+    const m = Number(month);
+    if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
+      return year + "-" + month.padStart(2, "0") + "-" + day.padStart(2, "0");
+    }
+  }
+  return raw;
+}
 const TYPE_MAP: Record<string, string> = { income:"Income", expense:"Expense", saving:"Saving", transfer:"Transfer" };
 
 async function activeWallets(sheets: ReturnType<typeof sheetsClient>, spreadsheetId: string) {
@@ -49,7 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!token || !transaction) return res.status(400).json({ error: "Data transaksi tidak lengkap" });
   const type = TYPE_MAP[String(transaction.type || "").trim().toLowerCase()];
   const amount = Number(transaction.amount);
-  const date = String(transaction.date || "").trim();
+  const date = normalizeInputDate(transaction.date);
   const month = String(transaction.month || "").trim();
   let category = String(transaction.category || "").trim();
   let description = String(transaction.description || "").trim();
