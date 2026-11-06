@@ -61,6 +61,7 @@ function formatTransactionDate(value: string, monthValue?: string): string {
 export function Transaction() {
   const navigate = useNavigate();
   const { loading, error, isRealData, username, transactions } = useFinanceData(undefined, true, undefined, true);
+  const [recentlyAdded, setRecentlyAdded] = useState<TransactionItem[]>([]);
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const txText = language === "id" ? { title: "Transaksi", intro: "Kelola dan telusuri semua transaksi keuanganmu.", all: "Semua Transaksi", allMonths: "Semua bulan", add: "Tambah Transaksi", list: "Daftar Transaksi", search: "Cari transaksi...", filter: "Filter transaksi", month: "Bulan", year: "Tahun", allYears: "Semua tahun", apply: "Terapkan filter", loading: "Memuat transaksi...", empty: "Belum ada transaksi", emptyHint: "Coba ubah filter atau tambahkan transaksi baru.", close: "Tutup filter", newestToOldest: "Urutkan dari terbaru ke terlama", oldestToNewest: "Urutkan dari terlama ke terbaru", edit: "Edit transaksi" } : { title: "Transaction", intro: "Manage and review all your financial transactions.", all: "All Transactions", allMonths: "All months", add: "Add Transaction", list: "Transaction List", search: "Search transactions...", filter: "Filter transactions", month: "Month", year: "Year", allYears: "All years", apply: "Apply filters", loading: "Loading transactions...", empty: "No transactions yet", emptyHint: "Try changing the filters or add a new transaction.", close: "Close filter", newestToOldest: "Sort newest to oldest", oldestToNewest: "Sort oldest to newest", edit: "Edit transaction" };
@@ -79,7 +80,14 @@ export function Transaction() {
     return parts.year ? String(parts.year) : "";
   }).filter(Boolean))).sort((a, b) => Number(b) - Number(a)), [transactions]);
 
-  const filteredTransactions = useMemo(() => transactions
+  const displayedTransactions = useMemo(() => {
+    const sameTransaction = (a: TransactionItem, b: TransactionItem) =>
+      a.date === b.date && a.type === b.type && a.category === b.category &&
+      a.description === b.description && Number(a.amount) === Number(b.amount);
+    return [...recentlyAdded.filter((local) => !transactions.some((remote) => sameTransaction(local, remote))), ...transactions];
+  }, [transactions, recentlyAdded]);
+
+  const filteredTransactions = useMemo(() => displayedTransactions
     .filter((t) => filter === "All" || t.type === filter)
     .filter((t) => {
       const parts = transactionParts(t.date, t.month);
@@ -154,7 +162,11 @@ export function Transaction() {
           )}
         </div>
       </Card>
-      <AddTransactionModal open={modalOpen} onClose={() => setModalOpen(false)} onAdd={(_transaction: TransactionItem) => {}} />
+      <AddTransactionModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onAdd={(transaction: TransactionItem) => setRecentlyAdded((current) => [transaction, ...current])}
+      />
       <EditTransactionModal
         open={editingTransaction !== null}
         transaction={editingTransaction}
