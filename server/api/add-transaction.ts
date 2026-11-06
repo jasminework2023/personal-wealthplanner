@@ -8,14 +8,14 @@ function sheetsClient() {
   return google.sheets({ version: "v4", auth });
 }
 const norm = (v: unknown) => String(v ?? "").trim().replace(/\s+/g, " ").toLowerCase();
-const display = (v: unknown) => String(v ?? "").trim().replace(/\\s+/g, " ");
+const display = (v: unknown) => String(v ?? "").trim().replace(/\s+/g, " ");
 function normalizeInputDate(value: unknown) {
   const raw = String(value ?? "").trim();
   if (!raw) return "";
   // The app may send an Indonesian locale date such as 07/11/2026.
   // Convert it explicitly to ISO so Google Sheets cannot reinterpret it
   // as US-style MM/DD/YYYY when using USER_ENTERED.
-  const match = raw.match(/^(\\d{1,2})[\\/\\-.](\\d{1,2})[\\/\\-.](\\d{4})$/);
+  const match = raw.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
   if (match) {
     const [, day, month, year] = match;
     const d = Number(day);
