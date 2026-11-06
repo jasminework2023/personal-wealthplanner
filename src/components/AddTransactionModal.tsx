@@ -216,8 +216,12 @@ export function AddTransactionModal({
       return;
     }
     const now = new Date();
+    const isoDate = todayIso();
     await persistTransaction({
-      date: now.toLocaleDateString("id-ID"),
+      // Store the date in ISO format for every transaction type
+      // (Income, Expense, Saving, and Transfer). Google Sheets can then
+      // keep the value as a real date and display it as dd/mm/yyyy.
+      date: isoDate,
       month: now.toLocaleString("en-US", { month: "long" }),
       year: now.getFullYear(),
       type: form.type,
