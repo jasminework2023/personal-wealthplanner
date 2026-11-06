@@ -191,9 +191,10 @@ export function AddTransactionModal({
         throw new Error(data.error || "Transaksi belum berhasil disimpan. Coba lagi.");
       }
       onAdd(transaction);
-      window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added", { detail: transaction }));
-      window.setTimeout(() => window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added")), 2500);
+      // Close first so this modal's own data hooks are unmounted before the
+      // refresh event fires. Then trigger exactly one shared refresh.
       handleClose();
+      window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added", { detail: transaction }));
     } catch (err) {
       const message = err instanceof Error ? err.message : "Gagal menyimpan transaksi";
       setFormError(message);
