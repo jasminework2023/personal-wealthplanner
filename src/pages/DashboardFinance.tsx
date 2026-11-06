@@ -8,6 +8,7 @@ import { BudgetProgressBar, StatusBadge } from "../components/ProgressBar";
 import { formatRupiah, formatCompact, formatPercent, getAppLanguage } from "../lib/format";
 import { usagePercentage, budgetStatus } from "../data/types";
 import { useFinanceData, getStoredToken } from "../lib/useFinanceData";
+import { useWallets } from "../lib/useWallets";
 import { AddItemForm } from "../components/AddItemForm";
 import { AddTransactionModal } from "../components/AddTransactionModal";
 import { usdRate } from "../data/assets";
@@ -212,6 +213,7 @@ export function DashboardFinance() {
   const [draftYear, setDraftYear] = useState(now.getFullYear());
   const [assetValuesHidden, setAssetValuesHidden] = useState(false);
   const { loading, error, isRealData, username, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData(selectedMonth, false, selectedYear);
+  const { wallets } = useWallets();
   const historyData = useFinanceData(selectedMonth, true, selectedYear);
   const [manualStocks, setManualStocks] = useState<ManualStock[]>(() => loadManualStocks());
   const [editingAssetTarget, setEditingAssetTarget] = useState(false);
@@ -225,7 +227,13 @@ export function DashboardFinance() {
     localStorage.setItem(MANUAL_STOCKS_KEY, JSON.stringify(manualStocks));
   }, [manualStocks]);
 
-  const assetProgress = assets.target > 0 ? (assets.totalAssets / assets.target) * 100 : 0;
+  // Liquid assets are derived from the Wallet module so the same balance is not entered twice.
+  // Wallet is the source of truth for cash/bank/e-wallet balances; Asset Tracker only aggregates it.
+  const liquidAssetsFromWallets = wallets.map((wallet) => ({ name: wallet.name, value: wallet.balance }));
+  const integratedLiquidTotal = liquidAssetsFromWallets.reduce((sum, item) => sum + item.value, 0);
+  const integratedInvestmentTotal = assets.investmentAssets.reduce((sum, item) => sum + item.value, 0);
+  const integratedTotalAssets = integratedLiquidTotal + integratedInvestmentTotal;
+  const integratedAssetProgress = assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0;
   const allStocksID = [...assets.stocksID, ...manualStocks.filter((s) => s.market === "ID").map((s) => ({ ...s, value: s.currentPrice * s.shares, pl: (s.currentPrice - s.avgPrice) * s.shares }))];
   const allStocksUS = [...assets.stocksUS, ...manualStocks.filter((s) => s.market === "US").map((s) => ({ ...s, value: s.currentPrice * s.shares, pl: (s.currentPrice - s.avgPrice) * s.shares }))];
   const idValue = allStocksID.reduce((s, x) => s + x.value, 0);
@@ -233,7 +241,7 @@ export function DashboardFinance() {
   const totalPortfolio = idValue + usValueIDR;
 
   const assetChartData = [
-    ...assets.liquidAssets.map((i) => ({ name: i.name, value: i.value })),
+    ...liquidAssetsFromWallets.map((i) => ({ name: i.name, value: i.value })),
     ...assets.investmentAssets.map((i) => ({ name: i.name, value: i.value })),
   ];
   const assetCompositionTotal = assetChartData.reduce((sum, item) => sum + Math.max(0, Number(item.value) || 0), 0);
@@ -349,10 +357,10 @@ export function DashboardFinance() {
         {/* Asset Tracker: two reference cards only */}
         <div className="mb-4 rounded-[28px] bg-[linear-gradient(145deg,#29FBA3_0%,#09C679_45%,#009D5E_100%)] p-4 text-[#03140C] shadow-[0_12px_32px_rgba(12,203,125,0.30)] dark:shadow-[0_0_38px_rgba(12,203,125,0.28),0_12px_32px_rgba(12,203,125,0.32)]">
           <p className="text-[13px] font-bold text-[#03140C]/90">Total aset</p>
-          <p className="asset-tracker-total-value mt-1 whitespace-nowrap font-extrabold leading-[1.1] tracking-[-0.02em] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.totalAssets)}</p>
-          <p className="mt-1 text-[13px] font-normal text-[#03140C]/75">{assets.target > 0 ? `${formatPercent(assetProgress)} dari target aset` : "Target aset belum diatur"}</p>
+          <p className="asset-tracker-total-value mt-1 whitespace-nowrap font-extrabold leading-[1.1] tracking-[-0.02em] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(integratedTotalAssets)}</p>
+          <p className="mt-1 text-[13px] font-normal text-[#03140C]/75">{assets.target > 0 ? `${formatPercent(integratedAssetProgress)} dari target aset` : "Target aset belum diatur"}</p>
           <div className="mt-2 h-[6px] w-full overflow-hidden rounded-full bg-[#03140C]/15">
-            <div className="h-full rounded-full bg-[#03140C]" style={{ width: `${Math.min(Math.max(assetProgress, 0), 100)}%` }} />
+            <div className="h-full rounded-full bg-[#03140C]" style={{ width: `${Math.min(Math.max(integratedAssetProgress, 0), 100)}%` }} />
           </div>
           <div className="mt-3 flex min-h-[56px] items-center justify-between gap-3 rounded-[20px] bg-[linear-gradient(90deg,#10BC76_0%,#008E55_100%)] px-4 py-3">
             <div className="min-w-0">
@@ -407,16 +415,16 @@ export function DashboardFinance() {
           <Card>
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-[14px] font-semibold text-forest-900">Detail Aset</p>
-              {(assets.liquidAssets.length > 2 || assets.investmentAssets.length > 2) && <button type="button" onClick={() => setShowAllAssets((v) => !v)} className="text-[12px] font-semibold text-forest-700">{showAllAssets ? "Sembunyikan" : "Lihat semua"} <ChevronRight size={14} className={showAllAssets ? "rotate-90 inline" : "inline"}/></button>}
+              {(liquidAssetsFromWallets.length > 2 || assets.investmentAssets.length > 2) && <button type="button" onClick={() => setShowAllAssets((v) => !v)} className="text-[12px] font-semibold text-forest-700">{showAllAssets ? "Sembunyikan" : "Lihat semua"} <ChevronRight size={14} className={showAllAssets ? "rotate-90 inline" : "inline"}/></button>}
             </div>
-            {(assets.liquidAssets.length > 0 || isRealData) && <div className="mb-3">
+            {(liquidAssetsFromWallets.length > 0 || isRealData) && <div className="mb-3">
               <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Liquid Assets</p>
-              {assets.liquidAssets.slice(0, showAllAssets ? assets.liquidAssets.length : 2).map((item) => <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assetCompositionTotal > 0 ? item.value / assetCompositionTotal * 100 : 0} section="liquid" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={() => window.location.reload()} />)}
-              {isRealData && <AddItemForm placeholder="Tambah liquid asset baru" onSubmit={async (name, amount) => { const token = getStoredToken(); const res = await fetch(`${API_BASE}/add-asset-item`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, section: "liquid", name, value: amount }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || "Gagal menambah item"); window.location.reload(); }} />}
+              {liquidAssetsFromWallets.slice(0, showAllAssets ? liquidAssetsFromWallets.length : 2).map((item) => <EditableAssetItem key={item.name} name={item.name} value={item.value} percentage={assetCompositionTotal > 0 ? item.value / assetCompositionTotal * 100 : 0} section="liquid" isRealData={isRealData} />)}
+              <p className="mt-2 text-[11px] text-charcoal/45">Saldo Liquid Asset mengikuti Wallet secara otomatis.</p>
             </div>}
             {(assets.investmentAssets.length > 0 || isRealData) && <div>
               <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Investment Assets</p>
-              {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={assets.totalAssets > 0 ? item.value / assets.totalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={() => window.location.reload()} />)}
+              {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={integratedTotalAssets > 0 ? item.value / integratedTotalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={() => window.location.reload()} />)}
               {isRealData && <AddItemForm placeholder="Tambah investment asset baru" onSubmit={async (name, amount) => { const token = getStoredToken(); const res = await fetch(`${API_BASE}/add-asset-item`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, section: "investment", name, value: amount }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || "Gagal menambah item"); window.location.reload(); }} />}
             </div>}
           </Card>
