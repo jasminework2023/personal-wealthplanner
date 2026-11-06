@@ -14,6 +14,7 @@ import { useFinanceData } from "../lib/useFinanceData";
 import { getDisplayName, greetingWord } from "../lib/settings";
 import type { Transaction } from "../data/types";
 import { loadFinancialPlans } from "../lib/financialPlans";
+import { useWallets } from "../lib/useWallets";
 
 const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 const menus = [
@@ -35,6 +36,13 @@ export function Home() {
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const id = language === "id";
   const { error, isRealData, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month, assets } = useFinanceData();
+  const { wallets } = useWallets();
+  // Keep Home and Report > Asset Tracker on the exact same asset calculation.
+  // Wallet is the source of truth for liquid assets; investment assets come from the Asset Tracker.
+  const liquidAssetsFromWallets = wallets.map((wallet) => ({ name: wallet.name, value: wallet.balance }));
+  const integratedLiquidTotal = liquidAssetsFromWallets.reduce((sum, item) => sum + item.value, 0);
+  const integratedInvestmentTotal = assets.investmentAssets.reduce((sum, item) => sum + item.value, 0);
+  const integratedTotalAssets = integratedLiquidTotal + integratedInvestmentTotal;
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [assetsVisible, setAssetsVisible] = useState(true);
   const [assetTrend, setAssetTrend] = useState<number | null>(null);
@@ -72,13 +80,13 @@ export function Home() {
   }).slice(0, 5);
   const nextStep = id ? (totalExpense > totalIncome && totalIncome > 0
     ? "Pengeluaranmu bulan ini sudah lebih besar dari pemasukan. Cek kategori pengeluaran terbesar dan tinjau kembali anggaran."
-    : assets.target > 0 && assets.totalAssets < assets.target
-      ? `Target asetmu masih ${formatRupiah(Math.max(0, assets.target - assets.totalAssets))} lagi. Tinjau Asset Tracker dan rencana investasimu.`
+    : assets.target > 0 && integratedTotalAssets < assets.target
+      ? `Target asetmu masih ${formatRupiah(Math.max(0, assets.target - integratedTotalAssets))} lagi. Tinjau Asset Tracker dan rencana investasimu.`
       : totalSaving > 0 ? "Kamu sudah menabung bulan ini. Pertahankan konsistensi dan pastikan target finansialmu punya angka yang jelas."
       : "Mulai dengan mencatat transaksi dan menetapkan satu target finansial agar dashboard bisa menyarankan langkah berikutnya.") : (totalExpense > totalIncome && totalIncome > 0
     ? "Your expenses this month are higher than your income. Review your largest expense categories and revisit your budget."
-    : assets.target > 0 && assets.totalAssets < assets.target
-      ? `You are ${formatRupiah(Math.max(0, assets.target - assets.totalAssets))} away from your asset goal. Review your Asset Tracker and investment plan.`
+    : assets.target > 0 && integratedTotalAssets < assets.target
+      ? `You are ${formatRupiah(Math.max(0, assets.target - integratedTotalAssets))} away from your asset goal. Review your Asset Tracker and investment plan.`
       : totalSaving > 0 ? "You have saved money this month. Stay consistent and make sure your financial goals have clear targets."
       : "Start by recording transactions and setting one financial goal to get actionable guidance from your dashboard.");
   const cashFlowData = [{ name: id ? "Pemasukan" : "Income", value: totalIncome }, { name: id ? "Pengeluaran" : "Expense", value: totalExpense }, { name: id ? "Tabungan" : "Saving", value: totalSaving }];
@@ -91,10 +99,10 @@ export function Home() {
     const previousDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     try {
       const previousAssets = Number(localStorage.getItem(prefix + "_" + key(previousDate)));
-      setAssetTrend(Number.isFinite(previousAssets) && previousAssets > 0 ? ((assets.totalAssets - previousAssets) / previousAssets) * 100 : null);
-      localStorage.setItem(prefix + "_" + key(now), String(assets.totalAssets));
+      setAssetTrend(Number.isFinite(previousAssets) && previousAssets > 0 ? ((integratedTotalAssets - previousAssets) / previousAssets) * 100 : null);
+      localStorage.setItem(prefix + "_" + key(now), String(integratedTotalAssets));
     } catch { setAssetTrend(null); }
-  }, [assets.totalAssets, isRealData]);
+  }, [integratedTotalAssets, isRealData]);
 
   return (
     <div className="flex flex-col gap-4 pb-4">
@@ -111,7 +119,7 @@ export function Home() {
         <div className="mt-1 flex min-w-0 items-center gap-2">
           <span className="shrink-0 text-[clamp(22px,5.8vw,30px)] font-semibold leading-none tracking-[-0.6px] text-black" style={{ color: "#000000" }}>Rp</span>
           <span style={{ fontSize: "clamp(28px, 8.1vw, 42px)", color: "#000000" }} className="asset-total-value min-w-0 flex-1 font-bold leading-tight tracking-[-1px] tabular-nums text-black">
-            {assetsVisible ? new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(assets.totalAssets) : "••••••••"}
+            {assetsVisible ? new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(integratedTotalAssets) : "••••••••"}
           </span>
           <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#006B48]/15 text-[#064A34] transition hover:bg-[#006B48]/25">
             {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
@@ -119,7 +127,7 @@ export function Home() {
         </div>
         <div className="mt-3 flex items-center justify-between gap-3">
           <span className="inline-flex items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[12px] sm:text-[13px] font-bold text-[#042F21]">
-            <TrendingUp size={15} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (assets.totalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
+            <TrendingUp size={15} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
           </span>
           {assets.target > 0 && <span className="text-right text-[12px] sm:text-[14px] font-medium text-[#075B40]/90">Target {formatRupiah(assets.target)}</span>}
         </div>
