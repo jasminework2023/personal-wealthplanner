@@ -163,7 +163,7 @@ function sharedFetch(url: string, ttlMs: number, force = false): Promise<{ ok: b
   return entry.p;
 }
 
-export function useFinanceData(monthOverride?: string, includeAllMonths = false, yearOverride?: number): FinanceData {
+export function useFinanceData(monthOverride?: string, includeAllMonths = false, yearOverride?: number, transactionsOnly = false): FinanceData {
   const initialMonth = monthOverride || CURRENT_MONTH_NAME;
   const currentYear = new Date().getFullYear();
   const initialYear = yearOverride || currentYear;
@@ -207,7 +207,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
       }
 
       setState((s) => ({ ...s, loading: true, error: null, month: requestedMonth }));
-      const dashboardUrl = `${API_BASE}/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}`;
+      const dashboardUrl = `${API_BASE}/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}${transactionsOnly ? "&transactionsOnly=1" : ""}`;
       const setupUrl = `${API_BASE}/setup?token=${encodeURIComponent(token)}`;
       // A successful write must refresh from Sheets. The shared fetch layer
       // coalesces this forced refresh across all mounted listeners.
