@@ -30,9 +30,6 @@ const menus = [
   { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
   { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
 ];
-  { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
-  { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
-];
 
 export function Home() {
   const navigate = useNavigate();
