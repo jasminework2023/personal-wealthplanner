@@ -179,6 +179,7 @@ export function Settings() {
       <div>
         <h1 className="page-title">{id ? "Profil & Pengaturan" : "Profile & Settings"}</h1>
         <p className="page-sub">{id ? "Atur profil dan baseline keuanganmu. Perubahan setup akan disimpan ke spreadsheet." : "Aktifkan baseline keuanganmu. Perubahan di sini akan ditulis ke spreadsheet."}</p>
+        <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "main", route: "/" } }))} className="mt-2 inline-flex min-h-10 items-center rounded-full border border-forest-100 bg-forest-50 px-4 py-2 text-[12px] font-semibold text-forest-700">Mulai panduan interaktif</button>
       </div>
 
       <Card className="!p-4 sm:!p-4">
