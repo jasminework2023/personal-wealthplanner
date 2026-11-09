@@ -170,7 +170,7 @@ function findStockRow(rs: any[][], ticker: string, market: "ID" | "US") {
       break;
     }
     if (k !== norm(label) && STOCK_STOP_LABELS.has(k)) break;
-    if (k === norm(ticker) && isValidStockRow(r)) return { start, row: i, subtotal };
+    if (k === norm(ticker)) return { start, row: i, subtotal };
   }
 
   return { start, row: -1, subtotal };
