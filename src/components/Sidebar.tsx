@@ -6,6 +6,7 @@ import {
   BarChart3,
   Receipt,
   CalendarRange,
+  PieChart,
   Calculator,
   Shield,
   Settings,
@@ -20,7 +21,7 @@ const mainLinks = [
   { to: "/", label: "Home", icon: Home },
   { to: "/finance", label: "Report", icon: BarChart3 },
   { to: "/transactions", label: "Community", icon: UsersRound },
-  { to: "/budgeting", label: "Monthly Budget", icon: CalendarRange },
+  { to: "/budgeting", label: "Monthly Budget", icon: PieChart },
 ];
 
 const toolLinks = [
