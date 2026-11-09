@@ -45,11 +45,11 @@ function NavItem({ to, label, icon: Icon, onNavigate }: { to: string; label: str
     >
       {({ isActive }) => (
         <>
-          {isActive && <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#6EE7A8]" />}
+          {isActive && <span className="sidebar-active-indicator absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#6EE7A8]" />}
           <Icon
             size={18}
             strokeWidth={2}
-            className={isActive ? "text-[#6EE7A8]" : "text-white/75 group-hover:text-[#6EE7A8]"}
+            className={isActive ? "sidebar-icon-active" : "sidebar-icon"}
           />
           {label}
         </>
@@ -88,11 +88,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           {mainLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/finance" ? labels.report : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.label} onNavigate={onNavigate} />)}
         </nav>
 
-        <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-white/50 mt-2 mb-1.5">{labels.tools}</p>
+        <p className="px-3.5 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-white/50 mt-2 mb-1.5">{labels.tools}</p>
         <nav className="flex flex-col gap-0.5">
           {toolLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/wallets" ? labels.wallet : l.to === "/calculator" ? labels.calculator : labels.protection} onNavigate={onNavigate} />)}
-          <a href="https://www.wealthplanner.id"  onClick={onNavigate} className="group flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] text-charcoal/60 hover:bg-charcoal/[0.04] hover:text-forest-900 transition-all">
-            <ExternalLink size={18} strokeWidth={2} className="text-charcoal/45 group-hover:text-forest-700" />
+          <a href="https://www.wealthplanner.id"  onClick={onNavigate} className="sidebar-item group flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all">
+            <ExternalLink size={18} strokeWidth={2} className="sidebar-icon" />
             {labels.website}
           </a>
         </nav>
