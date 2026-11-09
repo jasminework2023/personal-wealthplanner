@@ -13,7 +13,7 @@ export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () 
       </button>
       <div className="min-w-0 flex-1 leading-none">
         <p className="truncate text-[10.5px] font-semibold tracking-[0.02em] text-charcoal/45">wealthplanner.id</p>
-        <p className="mt-1 truncate text-[17px] font-bold tracking-[-0.025em] text-forest-900">{title}</p>
+        <p className="mt-1 truncate font-display font-normal text-[26px] leading-[1.1] tracking-[-0.02em] text-forest-900">{title}</p>
       </div>
       <ThemeToggle variant="compact" />
     </header>
