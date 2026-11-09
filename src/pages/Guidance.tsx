@@ -134,6 +134,7 @@ export function Guidance() {
           <BookOpen size={14} /> Guidance
         </div>
         <h1 className="mt-3 text-[26px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900 sm:text-3xl">{id ? "Mulai Perjalanan Finansialmu Bersama Wealthplanner" : "Start Your Financial Journey with Wealthplanner"}</h1>
+        <div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "main", route: "/" } }))} className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-[#123524] px-4 py-2.5 text-[12.5px] font-semibold text-white">Mulai panduan interaktif</button></div>
         <p className="mt-2 max-w-3xl text-[14px] leading-6 text-charcoal/60">
           Ikuti alur berikut untuk membangun data keuangan, memahami kondisi saat ini, menyusun tujuan, dan mempersiapkan perlindungan secara lebih terstruktur.
         </p>
