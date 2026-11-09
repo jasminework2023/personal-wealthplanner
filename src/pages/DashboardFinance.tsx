@@ -237,18 +237,17 @@ function StockTracker({
         <div className="mt-2 overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-[10px]">
             <thead className="border-b border-charcoal/8 text-[9px] uppercase tracking-wide text-charcoal/40">
-              <tr><th className="px-1.5 py-1.5">Ticker</th><th className="px-1.5 py-1.5 text-right">Qty</th><th className="px-1.5 py-1.5 text-right">Buy</th><th className="px-1.5 py-1.5 text-right">Current</th><th className="px-1.5 py-1.5 text-right">Value</th><th className="px-1.5 py-1.5 text-right">P/L</th><th className="px-1.5 py-1.5 text-right">P/L %</th></tr>
+              <tr><th className="px-1.5 py-1.5">Ticker</th><th className="px-1.5 py-1.5 text-right">Current Price</th><th className="px-1.5 py-1.5 text-right">Avg Price</th><th className="px-1.5 py-1.5 text-right">Qty</th><th className="px-1.5 py-1.5 text-right">Total Investasi</th><th className="px-1.5 py-1.5 text-right">Market Value</th></tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={market + row.ticker} className="border-b border-charcoal/6 last:border-0">
                   <td className="px-1.5 py-2 font-semibold text-forest-900">{row.ticker}<span className="ml-1 text-[8px] font-normal text-charcoal/40">{market === "ID" ? "IDX" : "US"}</span></td>
-                  <td className="px-1.5 py-2 text-right tabular-nums">{row.shares}</td>
-                  <td className="px-1.5 py-2 text-right tabular-nums">{market === "ID" ? formatRupiah(row.avgPrice) : "$" + row.avgPrice.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
                   <td className="px-1.5 py-2 text-right tabular-nums">{market === "ID" ? formatRupiah(row.currentPrice) : "$" + row.currentPrice.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
+                  <td className="px-1.5 py-2 text-right tabular-nums">{market === "ID" ? formatRupiah(row.avgPrice) : "$" + row.avgPrice.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
+                  <td className="px-1.5 py-2 text-right tabular-nums">{market === "ID" ? (row.shares / 100).toLocaleString("id-ID") + " lot" : row.shares.toLocaleString("en-US") + " saham"}</td>
+                  <td className="px-1.5 py-2 text-right font-semibold tabular-nums">{market === "ID" ? formatRupiah(row.avgPrice * row.shares) : "$" + (row.avgPrice * row.shares).toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
                   <td className="px-1.5 py-2 text-right font-semibold tabular-nums">{market === "ID" ? formatRupiah(row.value) : "$" + row.value.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
-                  <td className={"px-1.5 py-2 text-right font-semibold tabular-nums " + (row.pl >= 0 ? "text-forest-700" : "text-rose-600")}>{row.pl >= 0 ? "+" : "−"}{market === "ID" ? formatRupiah(Math.abs(row.pl)) : "$" + Math.abs(row.pl).toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
-                  <td className={"px-1.5 py-2 text-right font-semibold tabular-nums " + (row.pl >= 0 ? "text-forest-700" : "text-rose-600")}>{row.avgPrice > 0 ? ((row.pl / (row.avgPrice * row.shares)) * 100).toFixed(2) : "0.00"}%</td>
                 </tr>
               ))}
             </tbody>
