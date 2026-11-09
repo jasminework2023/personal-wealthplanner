@@ -4,8 +4,9 @@ import {
   Wallet, CircleDollarSign, TrendingUp, TrendingDown, PiggyBank, Plus, Sparkles,
   ArrowLeftRight, Landmark, Calculator, Target, ShieldCheck,
   ChartNoAxesCombined, Bot, BookOpen, ChevronRight, X, Eye, EyeOff, ArrowDownLeft, ArrowUpRight,
+  PieChart,
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Legend } from "recharts";
 import { Card, ChartCard } from "../components/Card";
 import { TransactionBadge } from "../components/TransactionBadge";
 import { AddTransactionModal } from "../components/AddTransactionModal";
@@ -20,7 +21,7 @@ const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(-
 const menus = [
   { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
   { key: "wallets", label: "Wallet", icon: Wallet, to: "/wallets", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
-  { key: "budget", label: "Budget", icon: Wallet, to: "/budgeting", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
+  { key: "budget", label: "Budget", icon: PieChart, to: "/budgeting", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
   { key: "report", label: "Report", icon: Landmark, to: "/finance", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
   { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
   { key: "goals", label: "Goals", icon: Target, to: "/goals", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
@@ -203,7 +204,7 @@ export function Home() {
           <ResponsiveContainer width="100%" height={210}><BarChart data={cashFlowData}><XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false}/><YAxis tickFormatter={(v) => formatCompact(v)} tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} width={45}/><Tooltip formatter={(v: number) => formatRupiah(v)}/><Bar dataKey="value" radius={[6, 6, 0, 0]}>{cashFlowData.map((_, i) => <Cell key={i} fill={["var(--chart-income)", "var(--chart-expense)", "var(--chart-saving)"][i]}/>)}</Bar></BarChart></ResponsiveContainer>
         </ChartCard>
         <ChartCard title={id ? "Pengeluaran per Kategori" : "Expenses by Category"} subtitle={id ? "Distribusi pengeluaran yang tercatat" : "Breakdown of recorded expenses"}>
-          {spendingByCategory.length ? <ResponsiveContainer width="100%" height={210}><PieChart><Pie data={spendingByCategory} dataKey="value" nameKey="name" innerRadius={48} outerRadius={76} paddingAngle={2}>{spendingByCategory.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]}/>)}</Pie><Tooltip formatter={(v: number) => formatRupiah(v)}/><Legend wrapperStyle={{ fontSize: 10 }}/></PieChart></ResponsiveContainer> : <p className="py-16 text-center text-[12px] text-charcoal/45">{id ? "Belum ada data pengeluaran untuk ditampilkan." : "No expense data to display yet."}</p>}
+          {spendingByCategory.length ? <ResponsiveContainer width="100%" height={210}><RechartsPieChart><Pie data={spendingByCategory} dataKey="value" nameKey="name" innerRadius={48} outerRadius={76} paddingAngle={2}>{spendingByCategory.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]}/>)}</Pie><Tooltip formatter={(v: number) => formatRupiah(v)}/><Legend wrapperStyle={{ fontSize: 10 }}/></RechartsPieChart></ResponsiveContainer> : <p className="py-16 text-center text-[12px] text-charcoal/45">{id ? "Belum ada data pengeluaran untuk ditampilkan." : "No expense data to display yet."}</p>}
         </ChartCard>
       </div>
 
