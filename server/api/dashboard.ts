@@ -267,7 +267,7 @@ function getAssetTracker(rows: unknown[][]) {
     target = parseRupiah(valueRow[colIdx] ?? lastNumericValue(valueRow));
   }
 
-  const totalAssets = liquid.total + investment.total;
+  const totalAssets = liquid.total + investment.total + stocksID.subtotalValue + stocksUS.subtotalValue * 16300;
 
   return {
     totalAssets,
