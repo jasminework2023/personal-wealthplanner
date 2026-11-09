@@ -172,7 +172,7 @@ html.dark {
 
 html,
 body {
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: "Geist", "Inter", system-ui, sans-serif;
 }
 
 body {
@@ -451,6 +451,21 @@ html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: 
 
 
 /* ============================================================
+   COMPACT DESIGN TOKENS — Stage 1
+   Dipakai bertahap oleh shared components pada tahap berikutnya.
+   Tidak mengubah warna brand atau hero gradient existing.
+   ============================================================ */
+:root {
+  --wp-radius-card: 16px;
+  --wp-radius-control: 10px;
+  --wp-card-padding: 16px;
+  --wp-grid-gap: 12px;
+  --wp-section-gap: 20px;
+  --wp-row-height: 38px;
+  --wp-control-height: 36px;
+}
+
+/* ============================================================
    DESIGN LAYER v2 — rapi & eye-catching (mobile first)
    Hanya tampilan. Tidak menyentuh data, rumus, atau struktur.
    Bahasa visual mengikuti Cashflow Tracker: Inter medium, angka
@@ -469,7 +484,14 @@ button:not(:disabled):active { transform: scale(0.98); }
 button { transition: transform .12s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease; }
 
 /* Shared hero surfaces — colors and contrast follow DESIGN.md. */
-.num { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  font-size: inherit;
+  white-space: nowrap;
+}
 
 .hero-neon {
   background: linear-gradient(150deg, #2BFFA6, #00B86E 60%, #009A5C);
