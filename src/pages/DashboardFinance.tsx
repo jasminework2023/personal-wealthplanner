@@ -307,7 +307,7 @@ function StockTracker({
   }
 
   return (
-    <div className="mt-3 rounded-[14px] border border-forest-100/70 bg-forest-50/30 p-3 sm:p-4">
+    <div id="stock-portfolio" className="mt-3 rounded-[14px] border border-forest-100/70 bg-forest-50/30 p-3 sm:p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[15px] font-semibold text-forest-900">Stock Portfolio</p>
@@ -514,7 +514,7 @@ export function DashboardFinance() {
   // Wallet is the source of truth for cash/bank/e-wallet balances; Asset Tracker only aggregates it.
   const liquidAssetsFromWallets = wallets.map((wallet) => ({ name: wallet.name, value: wallet.balance }));
   const integratedLiquidTotal = liquidAssetsFromWallets.reduce((sum, item) => sum + item.value, 0);
-  const [usdIdrRate, setUsdIdrRate] = useState<number | null>(null);
+  const [usdIdrRate, setUsdIdrRate] = useState<number>(16300);
   const [usdIdrUpdatedAt, setUsdIdrUpdatedAt] = useState<string | null>(null);
 
   useEffect(() => {
@@ -540,7 +540,7 @@ export function DashboardFinance() {
 
   const stockIDTotal = assets.stocksID.reduce((sum, item) => sum + item.value, 0);
   const stockUSTotalUSD = assets.stocksUS.reduce((sum, item) => sum + item.value, 0);
-  const stockUSTotalIDR = usdIdrRate ? stockUSTotalUSD * usdIdrRate : 0;
+  const stockUSTotalIDR = stockUSTotalUSD * usdIdrRate;
   const integratedInvestmentTotal = assets.investmentAssets.reduce((sum, item) => sum + item.value, 0) + stockIDTotal + stockUSTotalIDR;
   const integratedTotalAssets = integratedLiquidTotal + integratedInvestmentTotal;
   const integratedAssetProgress = assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0;
