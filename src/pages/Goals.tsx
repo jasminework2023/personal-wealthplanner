@@ -184,7 +184,7 @@ export function Goals() {
   }
 
   return (
-    <div className="goals-page flex flex-col gap-4 pb-6">      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="goals-page flex flex-col gap-3 pb-6">      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="goal-list-heading text-[16px] font-bold text-[#111815] dark:text-white">{id ? "Daftar target" : "Your goals"}</p>
         <button type="button" onClick={() => setShowManualGoal((open) => !open)} className="goal-add-button inline-flex h-[36px] items-center gap-2 rounded-[14px] bg-[#00B86E] px-4 text-[14px] font-bold text-[#03140C] shadow-sm dark:bg-[#00E08A]"><Plus size={15}/>{id ? "Tambah target" : "Add goal"}</button>
       </div>
@@ -204,7 +204,7 @@ export function Goals() {
         const progress = target > 0 ? Math.min(100, allocated / target * 100) : 0;
         return (
           <div key={plan.id} draggable onDragStart={() => setDraggedPlanId(plan.id)} onDragOver={(event) => event.preventDefault()} onDrop={() => reorderPlan(plan.id)} onDragEnd={() => setDraggedPlanId(null)} className={`goal-card-wrap ${draggedPlanId === plan.id ? "cursor-grabbing opacity-50" : "cursor-grab"}`}>
-          <div className="goal-card rounded-[24px] border border-[#D3E6E1] bg-white p-[14px] dark:border-[#223333] dark:bg-[#131316] dark:shadow-[0_8px_28px_rgba(0,224,138,0.06)]">
+          <div className="goal-card rounded-[16px] border border-[#D3E6E1] bg-white p-[14px] dark:border-[#223333] dark:bg-[#131316] dark:shadow-[0_8px_28px_rgba(0,224,138,0.06)]">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
                 <span className="goal-icon-tile flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D6F4E8] text-[#00794A] dark:bg-[#103428] dark:text-[#4DF0A8]"><Target size={21}/></span>
@@ -216,7 +216,7 @@ export function Goals() {
               <button onClick={() => deletePlan(plan.id)} aria-label={`Hapus ${plan.name}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-transparent p-0 text-[#9CA3AF] hover:bg-transparent hover:text-[#6B7280]"><Trash2 size={20}/></button>
             </div>
 
-            <div className="goal-plan-box mt-3 rounded-[20px] px-4 py-[14px]">
+            <div className="goal-plan-box mt-3 rounded-[14px] px-4 py-[14px]">
               <p className="text-[12px] font-normal opacity-75">{id ? "Target rencana" : "Planned target"}</p>
               <p className="goal-target-amount num mt-0.5 text-[22px] font-extrabold leading-[1.1] tracking-[-0.02em] text-[#03140C]">{formatGoalCurrency(target)}</p>
               <div className="mt-2 flex items-center justify-between gap-2"><span className="text-[12px] font-normal opacity-75">{id ? "Aset dialokasikan" : "Allocated assets"}</span><span className="num text-right text-[12px] font-bold">{formatGoalCurrency(allocated)}{target > 0 ? ` · ${Math.round(progress)}%` : ""}</span></div>
@@ -240,7 +240,7 @@ export function Goals() {
           </div>
           </div>
         );
-      })}</div> : <Card className="border border-dashed border-rose-200 bg-rose-50/40 py-10 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-[20px] bg-[#FBD3E0] text-[#B83A62]"><Target size={26}/></span><h2 className="mt-4 text-[16px] font-bold tracking-[-0.02em] text-forest-900">Belum ada goal tersimpan</h2><p className="mx-auto mt-1 max-w-sm text-[12px] leading-5 text-charcoal/55">Mulai dari Calculator, pilih simulasi yang kamu butuhkan, lalu simpan hasilnya sebagai rencana keuangan.</p><button onClick={() => navigate("/calculator")} className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#123524] px-5 py-3 text-[12.5px] font-semibold text-white shadow-sm"><Calculator size={15}/> Buka Calculator</button></Card>}
+      })}</div> : <Card className="border border-dashed border-rose-200 bg-rose-50/40 py-10 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#FBD3E0] text-[#B83A62]"><Target size={26}/></span><h2 className="mt-4 text-[16px] font-bold tracking-[-0.02em] text-forest-900">Belum ada goal tersimpan</h2><p className="mx-auto mt-1 max-w-sm text-[12px] leading-5 text-charcoal/55">Mulai dari Calculator, pilih simulasi yang kamu butuhkan, lalu simpan hasilnya sebagai rencana keuangan.</p><button onClick={() => navigate("/calculator")} className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#123524] px-5 py-3 text-[12.5px] font-semibold text-white shadow-sm"><Calculator size={15}/> Buka Calculator</button></Card>}
     </div>
   );
 }

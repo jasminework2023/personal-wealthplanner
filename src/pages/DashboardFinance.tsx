@@ -255,7 +255,7 @@ export function DashboardFinance() {
   const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <select aria-label="Pilih laporan" value={activeReportTab} onChange={(e) => setActiveReportTab(e.target.value as typeof activeReportTab)} className="min-w-0 flex-1 appearance-none rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-forest-900 shadow-sm outline-none">
           <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="cashflow">Cashflow Tracker</option>
@@ -265,7 +265,7 @@ export function DashboardFinance() {
         </button>
       </div>
       {periodOpen && <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setPeriodOpen(false); }}>
-        <div role="dialog" aria-modal="true" aria-labelledby="finance-period-title" className="w-full max-w-md rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-3xl">
+        <div role="dialog" aria-modal="true" aria-labelledby="finance-period-title" className="w-full max-w-md rounded-t-3xl bg-white p-4 shadow-2xl sm:rounded-3xl">
           <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-charcoal/15 sm:hidden" />
           <div className="flex items-center justify-between">
             <h3 id="finance-period-title" className="text-[17px] font-semibold text-forest-900">Pilih periode</h3>
@@ -299,7 +299,7 @@ export function DashboardFinance() {
         const expenseChange = previousExpense > 0 ? ((totalExpense - previousExpense) / previousExpense) * 100 : null;
         const surplus = totalIncome - totalExpense;
         const surplusDigits = String(Math.round(Math.abs(surplus))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        return <section className="report-summary-card rounded-[22px] bg-gradient-to-br from-[#0B4D38] to-[#063526] p-4 text-white shadow-float dark:from-[#0B4D38] dark:to-[#063526]">
+        return <section className="report-summary-card rounded-[14px] bg-gradient-to-br from-[#0B4D38] to-[#063526] p-4 text-white shadow-float dark:from-[#0B4D38] dark:to-[#063526]">
           <p className="text-[14px] font-semibold text-white/75">{surplus >= 0 ? "Total Surplus" : "Total Defisit"}</p>
           <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
             <span className="shrink-0 text-[14px] font-semibold leading-tight text-white/75">Rp</span>
@@ -323,7 +323,7 @@ export function DashboardFinance() {
         </section>;
       })()}
       {activeReportTab === "income" && <>
-        <div className="grid items-start gap-4 lg:grid-cols-2">
+        <div className="grid items-start gap-3 lg:grid-cols-2">
           <ChartCard title={id ? "Tren Pemasukan & Pengeluaran" : "Income & Expense Trends"} subtitle={id ? "Perubahan dari bulan ke bulan pada tahun terpilih." : "Month-to-month changes for the selected year."}>
             <div className="w-full">
               <ResponsiveContainer width="100%" height={250}><LineChart data={monthNames.map((month) => {
@@ -355,14 +355,14 @@ export function DashboardFinance() {
       
       {activeReportTab === "assets" && <>
         {/* Asset Tracker: two reference cards only */}
-        <div className="mb-4 rounded-[28px] bg-[linear-gradient(145deg,#29FBA3_0%,#09C679_45%,#009D5E_100%)] p-4 text-[#03140C] shadow-[0_12px_32px_rgba(12,203,125,0.30)] dark:shadow-[0_0_38px_rgba(12,203,125,0.28),0_12px_32px_rgba(12,203,125,0.32)]">
+        <div className="mb-4 rounded-[16px] bg-[linear-gradient(145deg,#29FBA3_0%,#09C679_45%,#009D5E_100%)] p-4 text-[#03140C] shadow-[0_12px_32px_rgba(12,203,125,0.30)] dark:shadow-[0_0_38px_rgba(12,203,125,0.28),0_12px_32px_rgba(12,203,125,0.32)]">
           <p className="text-[13px] font-bold text-[#03140C]/90">Total aset</p>
           <p className="asset-tracker-total-value mt-1 whitespace-nowrap font-extrabold leading-[1.1] tracking-[-0.02em] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(integratedTotalAssets)}</p>
           <p className="mt-1 text-[13px] font-normal text-[#03140C]/75">{assets.target > 0 ? `${formatPercent(integratedAssetProgress)} dari target aset` : "Target aset belum diatur"}</p>
           <div className="mt-2 h-[6px] w-full overflow-hidden rounded-full bg-[#03140C]/15">
             <div className="h-full rounded-full bg-[#03140C]" style={{ width: `${Math.min(Math.max(integratedAssetProgress, 0), 100)}%` }} />
           </div>
-          <div className="mt-3 flex min-h-[56px] items-center justify-between gap-3 rounded-[20px] bg-[linear-gradient(90deg,#10BC76_0%,#008E55_100%)] px-4 py-3">
+          <div className="mt-3 flex min-h-[56px] items-center justify-between gap-3 rounded-[14px] bg-[linear-gradient(90deg,#10BC76_0%,#008E55_100%)] px-4 py-3">
             <div className="min-w-0">
               <p className="text-[13px] font-normal text-[#03140C]/75">Target aset</p>
               {editingAssetTarget ? (
@@ -378,7 +378,7 @@ export function DashboardFinance() {
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-[#E4E6E8] bg-white p-4 text-[#111815] shadow-[0_2px_8px_rgba(17,24,21,0.025)] dark:border-[#25252C] dark:bg-[#131316] dark:text-white dark:shadow-none">
+        <div className="rounded-[16px] border border-[#E4E6E8] bg-white p-4 text-[#111815] shadow-[0_2px_8px_rgba(17,24,21,0.025)] dark:border-[#25252C] dark:bg-[#131316] dark:text-white dark:shadow-none">
           <p className="text-[17px] font-bold leading-tight">Komposisi Aset</p>
           {assetChartData.length > 0 ? (
             <div className="mt-3 flex flex-col items-center">
@@ -448,7 +448,7 @@ export function DashboardFinance() {
             ? ((netCashflow - previousNetCashflow) / Math.abs(previousNetCashflow)) * 100
             : null;
           const netDigits = String(Math.round(Math.abs(netCashflow))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-          return <div className="report-summary-card rounded-[22px] bg-gradient-to-br from-[#BDF7DF] to-[#61E5AC] p-4 text-[#071B12] dark:from-[#BDF7DF] dark:to-[#61E5AC]">
+          return <div className="report-summary-card rounded-[14px] bg-gradient-to-br from-[#BDF7DF] to-[#61E5AC] p-4 text-[#071B12] dark:from-[#BDF7DF] dark:to-[#61E5AC]">
             <p className="text-[14px] font-semibold text-[#53697A]">Net cashflow</p>
             <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
               <span className="shrink-0 text-[14px] font-semibold leading-tight text-[#53697A]">Rp</span>
@@ -467,7 +467,7 @@ export function DashboardFinance() {
             </div>
           </div>;
         })()}
-        <div className="grid items-start gap-4 lg:grid-cols-2">
+        <div className="grid items-start gap-3 lg:grid-cols-2">
           <ChartCard title={id ? "Pelacak Arus Kas" : "Cashflow Tracker"} subtitle={id ? "Arus kas keluar mencakup pengeluaran dan tabungan." : "Cash out includes expenses and savings."}>
             <ResponsiveContainer width="100%" height={250}><LineChart data={monthNames.map((month) => {
               const rows = historyData.transactions.filter((t) => String(t.month || "").toLowerCase() === month.toLowerCase() && Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear)) === selectedYear);

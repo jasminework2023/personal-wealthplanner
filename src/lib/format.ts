@@ -22,7 +22,7 @@ export function setAppLanguage(language: AppLanguage): void {
 
 export function formatRupiah(n: number): string {
   const rounded = Math.round(n);
-  return "Rp" + rounded.toLocaleString(getAppLanguage() === "id" ? "id-ID" : "en-US");
+  return "Rp " + rounded.toLocaleString(getAppLanguage() === "id" ? "id-ID" : "en-US");
 }
 
 export function formatCompact(n: number): string {

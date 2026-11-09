@@ -476,7 +476,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
-  font-feature-settings: "cv11", "ss03";
+  
 }
 h1, h2, h3 { letter-spacing: -0.02em; }
 button { -webkit-tap-highlight-color: transparent; }
@@ -522,7 +522,7 @@ button { transition: transform .12s ease, background-color .15s ease, border-col
 }
 
 /* Kartu & judul halaman */
-.page-title { font-size: 26px; line-height: 1.1; font-weight: 700; letter-spacing: -0.03em; color: rgb(var(--c-forest-900)); }
+.page-title { color: rgb(var(--c-forest-900)); }
 .page-sub { margin-top: 6px; font-size: 13px; line-height: 1.45; color: rgb(var(--c-charcoal) / 0.6); }
 .section-title { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: rgb(var(--c-forest-900)); }
 
@@ -840,4 +840,95 @@ html.dark .home-asset-summary {
 html.dark .wallet-stack-card {
   background-color: var(--wallet-stack-color) !important;
   box-shadow: 0 -4px 12px rgb(0 0 0 / 0.38), inset 0 1px 0 rgb(255 255 255 / 0.18) !important;
+}
+
+
+/* DESIGN LAYER v3 — font + compact */
+.page-title {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.num,
+.tabular-nums {
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-asset-summary .asset-total-value {
+  font-size: clamp(26px, 7.5vw, 32px) !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.rounded-\\[28px\\] { border-radius: 16px; }
+.rounded-\\[22px\\] { border-radius: 14px; }
+
+
+/* DESIGN LAYER v3 — desktop sidebar */
+.desktop-sidebar .sidebar-item {
+  color: rgb(var(--c-charcoal) / 0.62);
+}
+.desktop-sidebar .sidebar-item:hover {
+  background: rgb(var(--c-charcoal) / 0.04);
+  color: rgb(var(--c-forest-800));
+}
+.desktop-sidebar .sidebar-item-active {
+  background: rgb(var(--c-accent) / 0.12);
+  color: rgb(var(--c-accent-text));
+  font-weight: 600;
+}
+.desktop-sidebar .sidebar-icon {
+  color: rgb(var(--c-charcoal) / 0.45);
+}
+.desktop-sidebar .sidebar-item:hover .sidebar-icon {
+  color: rgb(var(--c-accent-text));
+}
+.desktop-sidebar .sidebar-icon-active {
+  color: rgb(var(--c-accent-text));
+}
+.desktop-sidebar .sidebar-active-indicator {
+  display: none;
+}
+.desktop-sidebar .sidebar-group-label {
+  color: rgb(var(--c-charcoal) / 0.42);
+}
+html.dark .desktop-sidebar {
+  background: #171c19 !important;
+  border-right-color: rgb(255 255 255 / 0.08) !important;
+}
+html.dark .desktop-sidebar .sidebar-item {
+  color: rgb(242 242 244 / 0.68);
+}
+html.dark .desktop-sidebar .sidebar-item:hover {
+  background: rgb(255 255 255 / 0.06);
+  color: rgb(var(--c-charcoal));
+}
+html.dark .desktop-sidebar .sidebar-item-active {
+  background: rgb(var(--c-accent) / 0.14);
+  color: rgb(var(--c-accent-text));
+}
+html.dark .desktop-sidebar .sidebar-icon,
+html.dark .desktop-sidebar .sidebar-group-label {
+  color: rgb(242 242 244 / 0.45);
+}
+html.dark .desktop-sidebar .sidebar-icon-active {
+  color: rgb(var(--c-accent-text));
+}
+
+/* Compact controls / rows */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
