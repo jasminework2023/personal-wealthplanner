@@ -232,8 +232,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!user.is_active) {
     return res.status(403).json({ error: "Akun belum aktif." });
   }
-  const authenticatedUserId = user.user_id;
-  const authenticatedUsername = user.username;
+  const authenticatedUserId = String(user.user_id || "");
+  const authenticatedUsername = String(user.username || "");
+  if (!authenticatedUserId || !authenticatedUsername) {
+    return res.status(401).json({ error: "Sesi tidak valid. Muat ulang dashboard lalu coba lagi." });
+  }
 
   const providers = resolveProvider(req.body?.provider === "openai" ? "openai" : undefined);
   if (providers.length === 0) {
