@@ -5,6 +5,7 @@ import { Card } from "../components/Card";
 import { getDisplayName, setDisplayName } from "../lib/settings";
 import { getAppLanguage, setAppLanguage, type AppLanguage } from "../lib/format";
 import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
+import { SpouseSharing } from "./SpouseSharing";
 
 type SectionKey = "income" | "expense" | "saving" | "bank";
 type SetupItem = { name: string; active: boolean };
@@ -209,6 +210,8 @@ export function Settings() {
           </div>
         }
       </Card>
+
+      <SpouseSharing />
 
       <Card className="max-w-2xl">
         <div className="flex items-center gap-2 mb-4"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FBD3E0] text-[#B83A62]"><UserIcon size={19}/></span><h3 className="text-[15px] font-semibold text-forest-900">{id ? "Profil" : "Profile"}</h3></div>
