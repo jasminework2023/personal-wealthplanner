@@ -8,9 +8,9 @@ export type TourStep = {
 };
 
 export const mainTourSteps: TourStep[] = [
-  { id: "home-assets", route: "/", selectorDesktop: '[data-tour="home-assets"]', selectorMobile: '[data-tour="home-assets"]', title: "Asset Tracker", description: "Total seluruh asetmu dan progres menuju target." },
-  { id: "home-eye", route: "/", selectorDesktop: '[data-tour="home-eye"]', selectorMobile: '[data-tour="home-eye"]', title: "Sembunyikan nominal", description: "Sembunyikan semua nominal kalau ada orang di dekatmu." },
-  { id: "home-budget", route: "/", selectorDesktop: '[data-tour="home-budget"]', selectorMobile: '[data-tour="home-budget"]', title: "Budget Tracker", description: "Sisa anggaran bulan ini, plus penghasilan dan pengeluaran." },
+  { id: "home-assets", route: "/", selectorDesktop: '[data-tour="home-assets-desktop"]', selectorMobile: '[data-tour="home-assets-mobile"]', title: "Asset Tracker", description: "Total seluruh asetmu dan progres menuju target." },
+  { id: "home-eye", route: "/", selectorDesktop: '[data-tour="home-eye-desktop"]', selectorMobile: '[data-tour="home-eye-mobile"]', title: "Sembunyikan nominal", description: "Sembunyikan semua nominal kalau ada orang di dekatmu." },
+  { id: "home-budget", route: "/", selectorDesktop: '[data-tour="home-budget-desktop"]', selectorMobile: '[data-tour="home-budget-mobile"]', title: "Budget Tracker", description: "Sisa anggaran bulan ini, plus penghasilan dan pengeluaran." },
   { id: "main-menu", route: "/", selectorDesktop: '[data-tour="main-menu"]', selectorMobile: '[data-tour="main-menu"]', title: "Menu Utama", description: "Pintasan ke semua fitur." },
   { id: "home-fab", route: "/", selectorDesktop: '[data-tour="home-fab"]', selectorMobile: '[data-tour="home-fab"]', title: "Tambah transaksi", description: "Catat pemasukan, pengeluaran, atau tabungan di sini. Makin rutin dicatat, makin akurat laporannya." },
   { id: "main-navigation", route: "/", selectorDesktop: '[data-tour="desktop-sidebar"]', selectorMobile: '[data-tour="mobile-bottom-nav"]', title: "Navigasi", description: "Pindah antar Beranda, Transaksi, Target, dan Profil." },
