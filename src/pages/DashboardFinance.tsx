@@ -307,7 +307,7 @@ function StockTracker({
   }
 
   return (
-    <div id="stock-portfolio" className="mt-3 rounded-[14px] border border-forest-100/70 bg-forest-50/30 p-3 sm:p-4">
+    <div id="stock-portfolio" data-tour="report-stock" className="mt-3 rounded-[14px] border border-forest-100/70 bg-forest-50/30 p-3 sm:p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[15px] font-semibold text-forest-900">Stock Portfolio</p>
@@ -606,7 +606,7 @@ export function DashboardFinance() {
         const expenseChange = previousExpense > 0 ? ((totalExpense - previousExpense) / previousExpense) * 100 : null;
         const surplus = totalIncome - totalExpense;
         const surplusDigits = String(Math.round(Math.abs(surplus))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        return <section className="report-summary-card rounded-[14px] bg-gradient-to-br from-[#0B4D38] to-[#063526] p-4 text-white shadow-float dark:from-[#0B4D38] dark:to-[#063526]">
+        return <section data-tour="report-summary" className="report-summary-card rounded-[14px] bg-gradient-to-br from-[#0B4D38] to-[#063526] p-4 text-white shadow-float dark:from-[#0B4D38] dark:to-[#063526]">
           <p className="text-[14px] font-semibold text-white/75">{surplus >= 0 ? "Total Surplus" : "Total Defisit"}</p>
           <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
             <span className="shrink-0 text-[14px] font-semibold leading-tight text-white/75">Rp</span>
@@ -662,7 +662,7 @@ export function DashboardFinance() {
       
       {activeReportTab === "assets" && <>
         {/* Asset Tracker: two reference cards only */}
-        <div className="mb-4 rounded-[16px] bg-[linear-gradient(145deg,#29FBA3_0%,#09C679_45%,#009D5E_100%)] p-4 text-[#03140C] shadow-[0_12px_32px_rgba(12,203,125,0.30)] dark:shadow-[0_0_38px_rgba(12,203,125,0.28),0_12px_32px_rgba(12,203,125,0.32)]">
+        <div data-tour="report-assets" className="mb-4 rounded-[16px] bg-[linear-gradient(145deg,#29FBA3_0%,#09C679_45%,#009D5E_100%)] p-4 text-[#03140C] shadow-[0_12px_32px_rgba(12,203,125,0.30)] dark:shadow-[0_0_38px_rgba(12,203,125,0.28),0_12px_32px_rgba(12,203,125,0.32)]">
           <p className="text-[13px] font-bold text-[#03140C]/90">Total aset</p>
           <p className="asset-tracker-total-value mt-1 whitespace-nowrap font-extrabold leading-[1.1] tracking-[-0.02em] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(integratedTotalAssets)}</p>
           <p className="mt-1 text-[13px] font-normal text-[#03140C]/75">{assets.target > 0 ? `${formatPercent(integratedAssetProgress)} dari target aset` : "Target aset belum diatur"}</p>
