@@ -224,7 +224,7 @@ export function Settings() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="rounded-2xl border border-charcoal/10 p-3.5">
             <p className="text-[13px] font-semibold text-charcoal">AI PRO+ Bulanan</p>
-            <p className="text-[20px] font-bold text-forest-900 mt-1">Rp20.000 <span className="text-[11px] font-medium text-charcoal/50">/ 30 hari</span></p>
+            <p className="num text-[20px] font-medium text-forest-900 mt-1">Rp 20.000 <span className="text-[11px] font-medium text-charcoal/50">/ 30 hari</span></p>
             <p className="text-[11px] text-charcoal/55 mt-1 mb-3">300 kredit AI setiap 30 hari.</p>
             <button onClick={() => purchaseAIMembership("ai_pro_monthly")} disabled={paymentLoading !== null} className="w-full rounded-full bg-[#123524] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-50">{paymentLoading === "ai_pro_monthly" ? "Menyiapkan..." : "Pilih Bulanan"}</button>
           </div>
