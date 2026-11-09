@@ -872,3 +872,63 @@ html.dark .wallet-stack-card {
 
 .rounded-\\[28px\\] { border-radius: 16px; }
 .rounded-\\[22px\\] { border-radius: 14px; }
+
+
+/* DESIGN LAYER v3 — desktop sidebar */
+.desktop-sidebar .sidebar-item {
+  color: rgb(var(--c-charcoal) / 0.62);
+}
+.desktop-sidebar .sidebar-item:hover {
+  background: rgb(var(--c-charcoal) / 0.04);
+  color: rgb(var(--c-forest-800));
+}
+.desktop-sidebar .sidebar-item-active {
+  background: rgb(var(--c-accent) / 0.12);
+  color: rgb(var(--c-accent-text));
+  font-weight: 600;
+}
+.desktop-sidebar .sidebar-icon {
+  color: rgb(var(--c-charcoal) / 0.45);
+}
+.desktop-sidebar .sidebar-item:hover .sidebar-icon {
+  color: rgb(var(--c-accent-text));
+}
+.desktop-sidebar .sidebar-icon-active {
+  color: rgb(var(--c-accent-text));
+}
+.desktop-sidebar .sidebar-active-indicator {
+  display: none;
+}
+.desktop-sidebar .sidebar-group-label {
+  color: rgb(var(--c-charcoal) / 0.42);
+}
+html.dark .desktop-sidebar {
+  background: #171c19 !important;
+  border-right-color: rgb(255 255 255 / 0.08) !important;
+}
+html.dark .desktop-sidebar .sidebar-item {
+  color: rgb(242 242 244 / 0.68);
+}
+html.dark .desktop-sidebar .sidebar-item:hover {
+  background: rgb(255 255 255 / 0.06);
+  color: rgb(var(--c-charcoal));
+}
+html.dark .desktop-sidebar .sidebar-item-active {
+  background: rgb(var(--c-accent) / 0.14);
+  color: rgb(var(--c-accent-text));
+}
+html.dark .desktop-sidebar .sidebar-icon,
+html.dark .desktop-sidebar .sidebar-group-label {
+  color: rgb(242 242 244 / 0.45);
+}
+html.dark .desktop-sidebar .sidebar-icon-active {
+  color: rgb(var(--c-accent-text));
+}
+
+/* Compact controls / rows */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
