@@ -107,12 +107,12 @@ export function Transaction() {
   const colorFor = (type: TransactionType) => type === "Income" ? "bg-[#DFF3E7] text-[#0B6B47]" : type === "Expense" ? "bg-[#FDE3EA] text-[#C23A5B]" : type === "Transfer" ? "bg-[#DCEBFF] text-[#1A5FD0]" : "bg-[#E8DDFA] text-[#6F46B0]";
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 rounded-2xl bg-charcoal/[0.05] p-1">
         <button type="button" onClick={() => setActiveTab("transactions")} className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${activeTab === "transactions" ? "bg-white text-[#123524] shadow-sm" : "text-charcoal/55"}`}>Transaction List</button>
         <button type="button" onClick={() => setActiveTab("wallets")} className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${activeTab === "wallets" ? "bg-[#123524] text-white shadow-sm" : "text-charcoal/55"}`}>Dompet</button>
       </div>
-      {activeTab === "wallets" ? <WalletsPage embedded /> : <div className="flex flex-col gap-5">
+      {activeTab === "wallets" ? <WalletsPage embedded /> : <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-start justify-center gap-3">
         <div>
 
@@ -124,7 +124,7 @@ export function Transaction() {
       </div>
 
       <Card className="!p-0">
-        <div className="flex flex-col gap-4 p-4 sm:p-5">
+        <div className="flex flex-col gap-3 p-4 sm:p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="section-title">{txText.list}</h2>
             <div className="flex items-center gap-2 sm:w-72"><label className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-charcoal/10 bg-white px-4 py-2.5">
