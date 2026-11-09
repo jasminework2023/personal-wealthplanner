@@ -144,23 +144,150 @@ function StockTracker({
   isRealData,
   investmentAccounts,
 }: {
-  stocksID: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number }[];
-  stocksUS: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number }[];
+  stocksID: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number; account?: string }[];
+  stocksUS: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number; account?: string }[];
   isRealData: boolean;
   investmentAccounts: { name: string; balance: number }[];
 }) {
   const [market, setMarket] = useState<"ID" | "US">("ID");
   const [refreshing, setRefreshing] = useState(false);
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<{ ticker: string; market: "ID" | "US" } | null>(null);
   const [ticker, setTicker] = useState("");
   const [quantity, setQuantity] = useState("");
   const [avgPrice, setAvgPrice] = useState("");
   const [account, setAccount] = useState("");
+  const [saveMode, setSaveMode] = useState<"set" | "buy" | null>(null);
   const [error, setError] = useState("");
 
   const rows = market === "ID" ? stocksID : stocksUS;
   const total = rows.reduce((sum, row) => sum + row.value, 0);
   const pl = rows.reduce((sum, row) => sum + row.pl, 0);
+  const totalInvestment = rows.reduce((sum, row) => sum + row.avgPrice * row.shares, 0);
+  const plPct = totalInvestment > 0 ? (pl / totalInvestment) * 100 : 0;
+
+  const formatStockPrice = (value: number) =>
+    market === "ID"
+      ? formatRupiah(value)
+      : "$" + value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+
+  const formatStockMoney = (value: number) =>
+    market === "ID"
+      ? formatRupiah(value)
+      : "$" + Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 2 });
+
+  const formatPL = (value: number) =>
+    (value >= 0 ? "+" : "−") + formatStockMoney(value);
+
+  const quantityLabel = (shares: number) =>
+    market === "ID"
+      ? (shares / 100).toLocaleString("id-ID") + " lot"
+      : shares.toLocaleString("en-US") + " saham";
+
+  function resetForm() {
+    setTicker("");
+    setQuantity("");
+    setAvgPrice("");
+    setAccount("");
+    setSaveMode(null);
+    setEditing(null);
+    setOpen(false);
+  }
+
+  function openAdd() {
+    setError("");
+    setEditing(null);
+    setTicker("");
+    setQuantity("");
+    setAvgPrice("");
+    setAccount("");
+    setSaveMode(null);
+    setOpen(true);
+  }
+
+  function openEdit(row: { ticker: string; shares: number; avgPrice: number; account?: string }) {
+    setError("");
+    setEditing({ ticker: row.ticker, market });
+    setTicker(row.ticker);
+    setQuantity(String(market === "ID" ? row.shares / 100 : row.shares));
+    setAvgPrice(String(row.avgPrice));
+    setAccount(row.account || "");
+    setSaveMode("set");
+    setOpen(true);
+  }
+
+  function findExistingTicker() {
+    const normalized = ticker.trim().toUpperCase();
+    return rows.find((row) => row.ticker.trim().toUpperCase() === normalized);
+  }
+
+  async function saveStock(mode: "set" | "buy") {
+    const token = getStoredToken();
+    const enteredQuantity = Number(quantity);
+    const shares = market === "ID" ? enteredQuantity * 100 : enteredQuantity;
+    const p = Number(avgPrice);
+    const t = ticker.trim().toUpperCase();
+
+    if (!token) return setError("Sesi dashboard tidak ditemukan.");
+    if (!t || enteredQuantity <= 0 || !Number.isFinite(p) || p < 0) {
+      return setError("Ticker, jumlah, dan harga beli wajib diisi.");
+    }
+    if (!account.trim()) return setError("Pilih investment account.");
+    if (editing && (t !== editing.ticker || market !== editing.market)) {
+      return setError("Ticker dan market tidak dapat diubah saat edit.");
+    }
+
+    setRefreshing(true);
+    setError("");
+    try {
+      const res = await fetch("/api/asset-tracker-stocks", {
+        method: editing ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          ticker: t,
+          market,
+          shares,
+          avgPrice: p,
+          account: account.trim(),
+          ...(editing ? {} : { mode }),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Gagal menyimpan saham.");
+      resetForm();
+      window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menyimpan saham.");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  async function deleteStock(row: { ticker: string }) {
+    if (!window.confirm(`Hapus saham ${row.ticker} dari portfolio?`)) return;
+    const token = getStoredToken();
+    if (!token) {
+      setError("Sesi dashboard tidak ditemukan.");
+      return;
+    }
+    setRefreshing(true);
+    setError("");
+    try {
+      const res = await fetch("/api/asset-tracker-stocks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, ticker: row.ticker, market }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Gagal menghapus saham.");
+      window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menghapus saham.");
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   async function refreshPrices() {
     const token = getStoredToken();
@@ -179,103 +306,187 @@ function StockTracker({
     }
   }
 
-  async function addStock() {
-    const token = getStoredToken();
-    const enteredQuantity = Number(quantity);
-    const q = market === "ID" ? enteredQuantity * 100 : enteredQuantity;
-    const p = Number(avgPrice);
-    const t = ticker.trim().toUpperCase();
-    if (!token) return setError("Sesi dashboard tidak ditemukan.");
-    if (!t || enteredQuantity <= 0 || p < 0) return setError("Ticker, quantity, dan harga beli wajib diisi.");
-    setRefreshing(true);
-    setError("");
-    try {
-      const res = await fetch("/api/asset-tracker-stocks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, ticker: t, market, shares: q, avgPrice: p, account: account.trim() }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal menyimpan saham.");
-      setTicker(""); setQuantity(""); setAvgPrice(""); setAccount(""); setOpen(false);
-      window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal menyimpan saham.");
-    } finally {
-      setRefreshing(false);
-    }
-  }
-
   return (
-    <div className="mt-3 rounded-xl border border-forest-100/70 bg-forest-50/30 p-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="text-[13px] font-semibold text-forest-900">Stock Portfolio</p>
-          <p className="text-[10px] text-charcoal/45">Investment Asset · harga pasar · unrealized P/L</p>
+    <div className="mt-3 rounded-[14px] border border-forest-100/70 bg-forest-50/30 p-3 sm:p-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[15px] font-semibold text-forest-900">Stock Portfolio</p>
+          <p className="text-[11px] text-charcoal/45">Investment Asset · harga pasar · unrealized P/L</p>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center justify-end gap-1.5">
           <div className="flex rounded-full bg-white p-0.5 border border-charcoal/8">
-            <button type="button" onClick={() => setMarket("ID")} className={market === "ID" ? "rounded-full bg-[#0B4D38] px-2.5 py-1.5 text-[10px] font-semibold text-white" : "rounded-full px-2.5 py-1.5 text-[10px] font-semibold text-charcoal/55"}>🇮🇩 ID</button>
-            <button type="button" onClick={() => setMarket("US")} className={market === "US" ? "rounded-full bg-[#0B4D38] px-2.5 py-1.5 text-[10px] font-semibold text-white" : "rounded-full px-2.5 py-1.5 text-[10px] font-semibold text-charcoal/55"}>🇺🇸 US</button>
+            <button type="button" onClick={() => setMarket("ID")} className={`min-h-9 rounded-full px-3 text-[11px] font-semibold ${market === "ID" ? "bg-[#0B4D38] text-white" : "text-charcoal/55"}`}>🇮🇩 ID</button>
+            <button type="button" onClick={() => setMarket("US")} className={`min-h-9 rounded-full px-3 text-[11px] font-semibold ${market === "US" ? "bg-[#0B4D38] text-white" : "text-charcoal/55"}`}>🇺🇸 US</button>
           </div>
-          {isRealData && <button type="button" onClick={() => void refreshPrices()} disabled={refreshing} className="inline-flex items-center gap-1.5 rounded-full border border-charcoal/10 bg-white px-2.5 py-1.5 text-[10px] font-semibold text-forest-700 disabled:opacity-50"><RefreshCw size={12} className={refreshing ? "animate-spin" : ""}/> Update</button>}
-          {isRealData && <button type="button" onClick={() => { setError(""); setOpen(true); }} className="inline-flex items-center gap-1.5 rounded-full bg-[#DDF7E8] px-2.5 py-1.5 text-[10px] font-bold text-[#0B6B47]"><Plus size={12}/> Tambah</button>}
+          {isRealData && <button type="button" onClick={() => void refreshPrices()} disabled={refreshing} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-charcoal/10 bg-white px-3 text-[11px] font-semibold text-forest-700 disabled:opacity-50"><RefreshCw size={13} className={refreshing ? "animate-spin" : ""}/> Update</button>}
+          {isRealData && <button type="button" onClick={openAdd} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-[#DDF7E8] px-3 text-[11px] font-bold text-[#0B6B47]"><Plus size={13}/> Tambah</button>}
         </div>
       </div>
-      {error && <p className="mt-2 rounded-lg bg-rose-50 px-2.5 py-2 text-[10px] text-rose-700">{error}</p>}
+
+      {error && <p className="mt-2 rounded-lg bg-rose-50 px-2.5 py-2 text-[11px] text-rose-700">{error}</p>}
+
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <div className="rounded-lg bg-white px-2.5 py-2 border border-charcoal/6">
-          <p className="text-[9px] text-charcoal/45">Market Value</p>
-          <p className="mt-0.5 text-[13px] font-semibold tabular-nums text-forest-900">{market === "ID" ? formatRupiah(total) : "$" + total.toLocaleString("en-US", { maximumFractionDigits: 2 })}</p>
+        <div className="rounded-[10px] border border-charcoal/6 bg-white px-3 py-2.5">
+          <p className="text-[10px] text-charcoal/45">Market value</p>
+          <p className="mt-0.5 text-[17px] font-medium tabular-nums text-forest-900">{formatStockMoney(total)}</p>
         </div>
-        <div className="rounded-lg bg-white px-2.5 py-2 border border-charcoal/6">
-          <p className="text-[9px] text-charcoal/45">Unrealized P/L</p>
-          <p className={"mt-0.5 text-[13px] font-semibold tabular-nums " + (pl >= 0 ? "text-forest-700" : "text-rose-600")}>{pl >= 0 ? "+" : "−"}{market === "ID" ? formatRupiah(Math.abs(pl)) : "$" + Math.abs(pl).toLocaleString("en-US", { maximumFractionDigits: 2 })}</p>
+        <div className="rounded-[10px] border border-charcoal/6 bg-white px-3 py-2.5">
+          <p className="text-[10px] text-charcoal/45">Unrealized P/L</p>
+          <p className={`mt-0.5 text-[17px] font-medium tabular-nums ${pl >= 0 ? "text-forest-700" : "text-rose-600"}`}>{formatPL(pl)}</p>
         </div>
       </div>
+
       {rows.length ? (
-        <div className="mt-2 overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-[10px]">
-            <thead className="border-b border-charcoal/8 text-[9px] uppercase tracking-wide text-charcoal/40">
-              <tr><th className="px-1.5 py-1.5">Ticker</th><th className="px-1.5 py-1.5 text-right">Current Price</th><th className="px-1.5 py-1.5 text-right">Avg Price</th><th className="px-1.5 py-1.5 text-right">Qty</th><th className="px-1.5 py-1.5 text-right">Total Investasi</th><th className="px-1.5 py-1.5 text-right">Market Value</th></tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={market + row.ticker} className="border-b border-charcoal/6 last:border-0">
-                  <td className="px-1.5 py-2 font-semibold text-forest-900">{row.ticker}<span className="ml-1 text-[8px] font-normal text-charcoal/40">{market === "ID" ? "IDX" : "US"}</span></td>
-                  <td className="px-1.5 py-2 text-right tabular-nums">{market === "ID" ? formatRupiah(row.currentPrice) : "$" + row.currentPrice.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
-                  <td className="px-1.5 py-2 text-right tabular-nums">{market === "ID" ? formatRupiah(row.avgPrice) : "$" + row.avgPrice.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
-                  <td className="px-1.5 py-2 text-right tabular-nums">{market === "ID" ? (row.shares / 100).toLocaleString("id-ID") + " lot" : row.shares.toLocaleString("en-US") + " saham"}</td>
-                  <td className="px-1.5 py-2 text-right font-semibold tabular-nums">{market === "ID" ? formatRupiah(row.avgPrice * row.shares) : "$" + (row.avgPrice * row.shares).toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
-                  <td className="px-1.5 py-2 text-right font-semibold tabular-nums">{market === "ID" ? formatRupiah(row.value) : "$" + row.value.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
+        <>
+          <div className="mt-2 space-y-2 md:hidden">
+            {rows.map((row) => {
+              const pct = row.avgPrice * row.shares > 0 ? (row.pl / (row.avgPrice * row.shares)) * 100 : 0;
+              return (
+                <div key={market + row.ticker} className="rounded-[14px] border border-charcoal/10 bg-white p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <span className="text-[16px] font-semibold leading-tight text-forest-900">{row.ticker}</span>
+                        <span className="truncate text-[11px] text-charcoal/45">{market === "ID" ? "IDX" : "US"} · {row.account || "Investment account"}</span>
+                      </div>
+                      <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${pct >= 0 ? "bg-[#DFF3E7] text-[#0B6B47]" : "bg-[#FDE3EA] text-[#C23A5B]"}`}>
+                        {pct >= 0 ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%
+                      </span>
+                    </div>
+                    {isRealData && (
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        <button type="button" aria-label={`Edit ${row.ticker}`} onClick={() => openEdit(row)} className="flex h-10 w-10 items-center justify-center rounded-full text-charcoal/45 hover:bg-charcoal/5 hover:text-forest-700"><Pencil size={16}/></button>
+                        <button type="button" aria-label={`Hapus ${row.ticker}`} onClick={() => void deleteStock(row)} className="flex h-10 w-10 items-center justify-center rounded-full text-charcoal/45 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16}/></button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-1.5 text-right">
+                    <p className="text-[11px] text-charcoal/45">Market value</p>
+                    <p className="text-[16px] font-medium tabular-nums text-forest-900">{formatStockMoney(row.value)}</p>
+                    <p className={`text-[12px] tabular-nums ${row.pl >= 0 ? "text-forest-700" : "text-rose-600"}`}>{formatPL(row.pl)}</p>
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-2 gap-1.5">
+                    <div className="rounded-[10px] bg-charcoal/[0.045] px-[9px] py-1.5">
+                      <p className="text-[11px] text-charcoal/45">Qty</p>
+                      <p className="text-[13px] font-medium tabular-nums">{quantityLabel(row.shares)}</p>
+                    </div>
+                    <div className="rounded-[10px] bg-charcoal/[0.045] px-[9px] py-1.5">
+                      <p className="text-[11px] text-charcoal/45">Total investasi</p>
+                      <p className="text-[13px] font-medium tabular-nums">{formatStockMoney(row.avgPrice * row.shares)}</p>
+                    </div>
+                    <div className="rounded-[10px] bg-charcoal/[0.045] px-[9px] py-1.5">
+                      <p className="text-[11px] text-charcoal/45">Avg price</p>
+                      <p className="text-[13px] font-medium tabular-nums">{formatStockPrice(row.avgPrice)}</p>
+                    </div>
+                    <div className="rounded-[10px] bg-charcoal/[0.045] px-[9px] py-1.5">
+                      <p className="text-[11px] text-charcoal/45">Harga sekarang</p>
+                      <p className="text-[13px] font-medium tabular-nums">{formatStockPrice(row.currentPrice)}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-2 hidden md:block">
+            <table className="w-full table-fixed text-[12px]">
+              <thead className="border-b border-charcoal/8 text-[11px] uppercase tracking-wide text-charcoal/40">
+                <tr>
+                  <th className="w-[12%] px-2 py-2 text-left">Ticker</th>
+                  <th className="w-[14%] px-2 py-2 text-right">Current Price</th>
+                  <th className="w-[14%] px-2 py-2 text-right">Avg Price</th>
+                  <th className="w-[12%] px-2 py-2 text-right">Qty</th>
+                  <th className="w-[16%] px-2 py-2 text-right">Total Investasi</th>
+                  <th className="w-[16%] px-2 py-2 text-right">Market Value</th>
+                  <th className="w-[10%] px-2 py-2 text-right">P/L</th>
+                  <th className="w-[6%] px-2 py-2 text-right">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : <p className="py-5 text-center text-[11px] text-charcoal/40">Belum ada saham {market === "ID" ? "Indonesia" : "US"}.</p>}
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={market + row.ticker} className="border-b border-charcoal/6 last:border-0">
+                    <td className="px-2 py-2 font-semibold text-forest-900">{row.ticker}<span className="ml-1 text-[9px] font-normal text-charcoal/40">{market === "ID" ? "IDX" : "US"} · {row.account || "Investment"}</span></td>
+                    <td className="px-2 py-2 text-right tabular-nums">{formatStockPrice(row.currentPrice)}</td>
+                    <td className="px-2 py-2 text-right tabular-nums">{formatStockPrice(row.avgPrice)}</td>
+                    <td className="px-2 py-2 text-right tabular-nums">{quantityLabel(row.shares)}</td>
+                    <td className="px-2 py-2 text-right font-medium tabular-nums">{formatStockMoney(row.avgPrice * row.shares)}</td>
+                    <td className="px-2 py-2 text-right font-medium tabular-nums">{formatStockMoney(row.value)}</td>
+                    <td className={`px-2 py-2 text-right font-medium tabular-nums ${row.pl >= 0 ? "text-forest-700" : "text-rose-600"}`}>{formatPL(row.pl)}</td>
+                    <td className="px-1 py-2">
+                      {isRealData && <div className="flex justify-end gap-0.5">
+                        <button type="button" aria-label={`Edit ${row.ticker}`} onClick={() => openEdit(row)} className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal/45 hover:bg-charcoal/5 hover:text-forest-700"><Pencil size={16}/></button>
+                        <button type="button" aria-label={`Hapus ${row.ticker}`} onClick={() => void deleteStock(row)} className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal/45 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16}/></button>
+                      </div>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : (
+        <p className="py-5 text-center text-[11px] text-charcoal/40">Belum ada saham {market === "ID" ? "Indonesia" : "US"}.</p>
+      )}
+
       {open && (
-        <div className="mt-3 rounded-xl border border-forest-100 bg-white p-3">
+        <div className="mt-3 rounded-[14px] border border-forest-100 bg-white p-3">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[12px] font-semibold text-forest-900">Tambah {market === "ID" ? "Saham Indonesia" : "Saham US"}</p>
-            <button type="button" onClick={() => setOpen(false)} className="text-charcoal/40">×</button>
+            <p className="text-[13px] font-semibold text-forest-900">{editing ? `Edit ${editing.ticker}` : `Tambah ${market === "ID" ? "Saham Indonesia" : "Saham US"}`}</p>
+            <button type="button" aria-label="Tutup" onClick={resetForm} className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal/40 hover:bg-charcoal/5">×</button>
           </div>
+
+          {!editing && <p className="mt-1 text-[10px] text-charcoal/45">Untuk saham yang sudah kamu miliki sebelumnya. Pembelian baru lebih baik dicatat lewat Transaksi.</p>}
+
           <div className="mt-2 grid gap-2 sm:grid-cols-4">
-            <input value={ticker} onChange={(e) => setTicker(e.target.value)} placeholder={market === "ID" ? "BBCA" : "AAPL"} className="rounded-lg border border-charcoal/12 px-2.5 py-2 text-[11px] outline-none"/>
-            <input value={quantity} onChange={(e) => setQuantity(e.target.value.replace(/[^0-9.]/g, ""))} placeholder={market === "ID" ? "Jumlah lot" : "Jumlah saham"} inputMode="decimal" className="rounded-lg border border-charcoal/12 px-2.5 py-2 text-[11px] outline-none"/>
-            <input value={avgPrice} onChange={(e) => setAvgPrice(e.target.value.replace(/[^0-9.]/g, ""))} placeholder={market === "ID" ? "Harga beli (Rp)" : "Buy price (USD)"} inputMode="decimal" className="rounded-lg border border-charcoal/12 px-2.5 py-2 text-[11px] outline-none"/>
-            <select value={account} onChange={(e) => setAccount(e.target.value)} className="rounded-lg border border-charcoal/12 bg-white px-2.5 py-2 text-[11px] outline-none"><option value="">Pilih investment account</option>{investmentAccounts.map((item) => <option key={item.name} value={item.name}>{item.name}</option>)}</select>
+            <label className="text-[10px] text-charcoal/55">
+              Ticker
+              <input disabled={!!editing} value={ticker} onChange={(e) => setTicker(e.target.value)} placeholder={market === "ID" ? "BBCA" : "AAPL"} className="mt-1 w-full rounded-lg border border-charcoal/12 px-2.5 py-2 text-[12px] outline-none disabled:bg-charcoal/[0.04]"/>
+            </label>
+            <label className="text-[10px] text-charcoal/55">
+              Jumlah {market === "ID" ? "(lot)" : "(saham)"}
+              <input value={quantity} onChange={(e) => setQuantity(e.target.value.replace(/[^0-9.]/g, ""))} placeholder={market === "ID" ? "5" : "10"} inputMode="decimal" className="mt-1 w-full rounded-lg border border-charcoal/12 px-2.5 py-2 text-[12px] outline-none"/>
+            </label>
+            <label className="text-[10px] text-charcoal/55">
+              Harga beli {market === "ID" ? "(Rp)" : "(USD)"}
+              <input value={avgPrice} onChange={(e) => setAvgPrice(e.target.value.replace(/[^0-9.]/g, ""))} placeholder={market === "ID" ? "9200" : "195.20"} inputMode="decimal" className="mt-1 w-full rounded-lg border border-charcoal/12 px-2.5 py-2 text-[12px] outline-none"/>
+            </label>
+            <label className="text-[10px] text-charcoal/55">
+              Investment account
+              <select value={account} onChange={(e) => setAccount(e.target.value)} className="mt-1 w-full rounded-lg border border-charcoal/12 bg-white px-2.5 py-2 text-[12px] outline-none">
+                <option value="">Pilih akun investment</option>
+                {investmentAccounts.map((item) => <option key={item.name} value={item.name}>{item.name}</option>)}
+              </select>
+            </label>
           </div>
-          <p className="mt-1.5 text-[9px] text-charcoal/40">{market === "ID" ? "1 lot = 100 saham. Nilai IDX dihitung otomatis berdasarkan jumlah lot." : "US menggunakan shares. Nilai portfolio tetap dalam USD dan dikonversi ke IDR di Total Aset."}</p>
-          <div className="mt-2 flex justify-end">
-            <button type="button" onClick={() => void addStock()} disabled={refreshing} className="rounded-full bg-[#0B4D38] px-3.5 py-2 text-[10px] font-semibold text-white disabled:opacity-50">{refreshing ? "Menyimpan…" : "Simpan saham"}</button>
-          </div>
+
+          {!editing && findExistingTicker() && saveMode === null && (
+            <div className="mt-2 rounded-lg bg-charcoal/[0.035] p-2.5">
+              <p className="text-[11px] font-medium text-charcoal/70">Ticker {ticker.trim().toUpperCase()} sudah ada.</p>
+              <p className="mt-0.5 text-[10px] text-charcoal/45">Pilih cara menyimpan data ini:</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                <button type="button" onClick={() => setSaveMode("buy")} className="rounded-full bg-[#DDF7E8] px-3 py-1.5 text-[10px] font-semibold text-[#0B6B47]">Tambah ke posisi yang ada</button>
+                <button type="button" onClick={() => setSaveMode("set")} className="rounded-full border border-charcoal/12 px-3 py-1.5 text-[10px] font-semibold text-charcoal/65">Timpa data</button>
+              </div>
+            </div>
+          )}
+
+          {(!findExistingTicker() || saveMode !== null || editing) && (
+            <>
+              <p className="mt-1.5 text-[10px] text-charcoal/40">{market === "ID" ? "1 lot = 100 saham. Nilai portfolio dihitung dari harga pasar × jumlah saham." : "US menggunakan shares. Nilai portfolio dalam USD dan dikonversi ke IDR di Total Aset."}</p>
+              <div className="mt-2 flex justify-end">
+                <button type="button" onClick={() => void saveStock(editing ? "set" : (saveMode || "set"))} disabled={refreshing} className="rounded-full bg-[#0B4D38] px-4 py-2 text-[11px] font-semibold text-white disabled:opacity-50">
+                  {refreshing ? "Menyimpan…" : editing ? "Simpan perubahan" : saveMode === "buy" ? "Tambah ke posisi" : "Simpan saham"}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
   );
 }
-
 export function DashboardFinance() {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
@@ -523,7 +734,7 @@ export function DashboardFinance() {
                <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Investment Assets</p>
                {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={integratedTotalAssets > 0 ? item.value / integratedTotalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={() => window.location.reload()} />)}
                {isRealData && <AddItemForm placeholder="Tambah investment asset baru" onSubmit={async (name, amount) => { const token = getStoredToken(); const res = await fetch(`${API_BASE}/add-asset-item`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, section: "investment", name, value: amount }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || "Gagal menambah item"); window.location.reload(); }} />}
-               <StockTracker stocksID={assets.stocksID} stocksUS={assets.stocksUS} isRealData={isRealData} investmentAccounts={wallets.map((wallet) => ({ name: wallet.name, balance: wallet.balance }))} />
+               <StockTracker stocksID={assets.stocksID} stocksUS={assets.stocksUS} isRealData={isRealData} investmentAccounts={wallets.filter((wallet) => wallet.type === "investment").map((wallet) => ({ name: wallet.name, balance: wallet.balance }))} />
              </div>}
           </Card>
         </div>
