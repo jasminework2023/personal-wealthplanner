@@ -60,14 +60,14 @@ function NavItem({ to, label, icon: Icon, onNavigate }: { to: string; label: str
 
 function Brand() {
   return (
-    <div className="px-4 pt-5 pb-5">
+    <div className="px-4 pt-4 pb-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-12 shrink-0 items-center justify-center" aria-hidden>
-          <img src={logoMark} alt="Wealthplanner" className="h-auto w-full object-contain" />
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0B6B47]" aria-hidden>
+          <img src={logoMark} alt="Wealthplanner" className="h-6 w-6 object-contain" />
         </div>
         <div className="min-w-0">
-          <p className="text-[15px] font-semibold text-white tracking-tight">wealthplanner.id</p>
-          <p className="text-[12px] text-white/65">{getAppLanguage() === "id" ? "Keuangan Pribadi" : "Personal Finance"}</p>
+          <p className="text-[15px] font-semibold text-forest-900 tracking-tight">wealthplanner.id</p>
+          <p className="text-[12px] text-charcoal/55">{getAppLanguage() === "id" ? "Keuangan Pribadi" : "Personal Finance"}</p>
         </div>
       </div>
     </div>
@@ -83,7 +83,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <Brand />
 
       <div className="px-2 flex-1 overflow-y-auto">
-        <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-white/50 mt-2 mb-1.5">{labels.main}</p>
+        <p className="px-3 text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.main}</p>
         <nav className="flex flex-col gap-0.5 mb-4">
           {mainLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/finance" ? labels.report : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.label} onNavigate={onNavigate} />)}
         </nav>
@@ -91,14 +91,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <p className="px-3.5 text-[11px] font-medium uppercase tracking-wider text-white/50 mt-2 mb-1.5">{labels.tools}</p>
         <nav className="flex flex-col gap-0.5">
           {toolLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/wallets" ? labels.wallet : l.to === "/calculator" ? labels.calculator : labels.protection} onNavigate={onNavigate} />)}
-          <a href="https://www.wealthplanner.id"  onClick={onNavigate} className="group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] text-white hover:bg-white/10 hover:text-white transition-all">
-            <ExternalLink size={18} strokeWidth={2} className="text-white/75 group-hover:text-[#6EE7A8]" />
+          <a href="https://www.wealthplanner.id"  onClick={onNavigate} className="group flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] text-charcoal/60 hover:bg-charcoal/[0.04] hover:text-forest-900 transition-all">
+            <ExternalLink size={18} strokeWidth={2} className="text-charcoal/45 group-hover:text-forest-700" />
             {labels.website}
           </a>
         </nav>
       </div>
 
-      <div className="px-2 pb-4 pt-2 border-t border-white/12 flex flex-col gap-0.5">
+      <div className="mx-2 mb-3 rounded-xl border border-[#E4E6E8] bg-white p-1 flex flex-col gap-0.5">
         <NavItem to="/settings" label={labels.profile} icon={Settings} onNavigate={onNavigate} />
       </div>
     </div>
@@ -107,7 +107,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function DesktopSidebar() {
   return (
-    <aside className="hidden lg:flex lg:flex-col w-64 shrink-0 h-screen sticky top-0 bg-forest-700 border-r border-white/10">
+    <aside className="desktop-sidebar hidden lg:flex lg:flex-col w-[232px] shrink-0 h-screen sticky top-0 bg-[#F4F5F6] border-r border-[#E4E6E8]">
       <SidebarContent />
     </aside>
   );
