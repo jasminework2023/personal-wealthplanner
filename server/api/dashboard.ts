@@ -361,7 +361,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } catch {
       budgetByCategory = {};
     }
-    let assets = null as ReturnType<typeof getAssetTracker> | null;
+    let assets = null as Awaited<ReturnType<typeof getAssetTracker>> | null;
     try {
       assets = await getAssetTracker(assetRows);
     } catch {
