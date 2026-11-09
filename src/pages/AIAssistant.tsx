@@ -13,10 +13,26 @@ export function AIAssistant() {
   const [loading, setLoading] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [error, setError] = useState("");
+  const [aiAccess, setAiAccess] = useState<"active" | "expired" | "loading">("loading");
   const token = getStoredToken();
+
+  async function checkAIAccess() {
+    if (!token) { setAiAccess("expired"); return false; }
+    try {
+      const response = await fetch(`/api/ai-membership?token=${encodeURIComponent(token)}&t=${Date.now()}`, { cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      const active = response.ok && data.aiAccess === "active";
+      setAiAccess(active ? "active" : "expired");
+      return active;
+    } catch {
+      setAiAccess("expired");
+      return false;
+    }
+  }
 
   async function loadConversations() {
     if (!token) return;
+    if (!(await checkAIAccess())) return;
     const response = await fetch(`/api/ai-assistant?token=${encodeURIComponent(token)}`);
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Gagal memuat riwayat.");
@@ -24,6 +40,7 @@ export function AIAssistant() {
   }
   async function openConversation(id: string) {
     if (!token) return;
+    if (!(await checkAIAccess())) { setError("Akses AI PRO+ kamu tidak aktif."); return; }
     setLoading(true); setError("");
     try {
       const response = await fetch(`/api/ai-assistant?token=${encodeURIComponent(token)}&conversationId=${encodeURIComponent(id)}`);
@@ -36,7 +53,8 @@ export function AIAssistant() {
   function newChat() { setConversationId(""); setMessages([]); setDraft(""); setHistoryOpen(false); setError(""); }
   async function sendMessage() {
     const message = draft.trim();
-    if (!message || loading || !token) return;
+    if (!message || loading || !token || aiAccess !== "active") return;
+    if (!(await checkAIAccess())) { setError("Akses AI PRO+ kamu tidak aktif. Aktifkan membership untuk melanjutkan."); return; }
     setDraft(""); setMessages((old) => [...old, { role: "user", content: message }]); setLoading(true); setError("");
     try {
       const response = await fetch("/api/ai-assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, conversationId: conversationId || undefined, message }) });
@@ -50,11 +68,12 @@ export function AIAssistant() {
       setDraft(message); setError(e instanceof Error ? e.message : "Terjadi kesalahan.");
     } finally { setLoading(false); }
   }
-  useEffect(() => { loadConversations().catch((e) => setError(e.message)); }, []);
+  useEffect(() => { checkAIAccess().then((active) => { if (active) loadConversations().catch((e) => setError(e.message)); }); }, []);
 
   return <div className="mx-auto flex min-h-[calc(100dvh-150px)] max-w-3xl flex-col pb-28 lg:min-h-[calc(100dvh-170px)] lg:pb-4">
     <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-forest-100 bg-white shadow-sm">
       <div className="min-h-[300px] flex-1 space-y-3 overflow-y-auto overscroll-contain p-4">
+        {aiAccess === "expired" && <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">Akses AI PRO+ kamu tidak aktif. Aktifkan membership di <b>Profile & Settings</b> untuk menggunakan AI.</div>}
         {messages.length === 0 && <div className="mx-auto max-w-md py-10 text-center"><span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47]"><SparkleIcon/></span><h2 className="text-base font-bold text-forest-900">Apa yang ingin kamu pahami?</h2><p className="mt-2 text-sm leading-relaxed text-charcoal/60">Tanyakan tentang cash flow, pengeluaran, aset, anggaran, atau tujuan finansialmu. Aku akan menggunakan data dashboard yang terhubung.</p><div className="mt-5 flex flex-wrap justify-center gap-2">{["Bagaimana kondisi cash flow-ku?","Kategori pengeluaran terbesarku apa?","Apa yang perlu aku perbaiki bulan ini?"].map((q) => <button key={q} onClick={() => setDraft(q)} className="rounded-full border border-forest-100 px-3 py-2 text-xs text-forest-800 hover:bg-forest-50">{q}</button>)}</div></div>}
         {messages.map((m, i) => <div key={m.id || i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}><div className={m.role === "user" ? "max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-[#0B6B47] px-4 py-3 text-sm leading-relaxed text-white" : "max-w-[90%] whitespace-pre-wrap rounded-2xl rounded-bl-md bg-[#F1F8F4] px-4 py-3 text-sm leading-relaxed text-forest-900"}><MarkdownContent content={m.content}/></div></div>)}
         {loading && <div className="flex items-center gap-2 text-xs text-charcoal/50"><Loader2 size={15} className="animate-spin"/>Sedang menyiapkan jawaban...</div>}
@@ -62,9 +81,9 @@ export function AIAssistant() {
       </div>
     </section>
     <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="fixed inset-x-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 mx-auto flex max-w-3xl items-end gap-2 rounded-2xl border border-forest-100 bg-white p-2 shadow-lg lg:sticky lg:bottom-0 lg:mt-3 lg:w-full">
-      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder="Tanya Wealth Planner AI" rows={1} className="max-h-32 min-h-11 flex-1 resize-y bg-transparent px-3 py-3 text-sm outline-none"/>
+      <textarea disabled={aiAccess !== "active"} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder="Tanya Wealth Planner AI" rows={1} className="max-h-32 min-h-11 flex-1 resize-y bg-transparent px-3 py-3 text-sm outline-none"/>
       <button type="button" onClick={() => setHistoryOpen(true)} aria-label="Riwayat pesan" title="Riwayat pesan" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[#0B6B47] hover:bg-[#E8F5ED]"><History size={19}/></button>
-      <button disabled={!draft.trim() || loading || !token} aria-label="Kirim pesan" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0B6B47] text-white disabled:opacity-40"><Send size={18}/></button>
+      <button disabled={!draft.trim() || loading || !token || aiAccess !== "active"} aria-label="Kirim pesan" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0B6B47] text-white disabled:opacity-40"><Send size={18}/></button>
     </form>
     {!token && <p className="mt-2 text-center text-xs text-amber-700">Buka dashboard melalui tautan akunmu untuk menggunakan AI Assistant.</p>}
     {historyOpen && <div className="fixed inset-0 z-[70]">
