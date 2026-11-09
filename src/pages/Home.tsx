@@ -93,11 +93,13 @@ export function Home() {
       : "Start by recording transactions and setting one financial goal to get actionable guidance from your dashboard.");
   const cashFlowData = [{ name: id ? "Pemasukan" : "Income", value: totalIncome }, { name: id ? "Pengeluaran" : "Expense", value: totalExpense }, { name: id ? "Tabungan" : "Saving", value: totalSaving }];
   const spendingByCategory = byCategory("Expense").filter((c) => c.realization > 0).map((c) => ({ name: c.category, value: c.realization }));
-  const incomeBudget = byCategory("Income").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
-  const expenseBudget = byCategory("Expense").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
-  const savingBudget = byCategory("Saving").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
-  const hasBudget = incomeBudget > 0 || expenseBudget > 0 || savingBudget > 0;
-  const remainingBudget = hasBudget ? incomeBudget - expenseBudget - savingBudget : 0;
+  // Home shows the actual remaining cash for the current period, not planned allocation.
+  // Allocation stays on the Budget page as the planning target.
+  const realizedIncome = totalIncome;
+  const realizedExpense = totalExpense;
+  const realizedSaving = totalSaving;
+  const hasRealization = realizedIncome > 0 || realizedExpense > 0 || realizedSaving > 0;
+  const remainingBudget = hasRealization ? realizedIncome - realizedExpense - realizedSaving : 0;
 
   const renderMoney = (value: number, visible: boolean, amountClassName: string, fontSize?: number) => {
     if (!visible) return <span className={amountClassName} style={fontSize ? { fontSize: `${fontSize}px` } : undefined}>Rp ••••••</span>;
