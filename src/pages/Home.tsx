@@ -177,45 +177,49 @@ export function Home() {
         <div role="button" tabIndex={0}
           onClick={() => navigate("/finance")}
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }}
-          className="home-asset-summary min-w-0 cursor-pointer p-3.5 text-[#062D20]"
-          style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)" }}>
+          className="home-asset-summary min-w-0 cursor-pointer p-[14px] text-[#03140C]"
+          style={{ background: "#12C77F" }}>
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[13px] font-medium text-[#075B40]/85">Asset Tracker</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-[#03140C]/70">Asset Tracker</p>
             <button type="button"
               onClick={(event) => { event.stopPropagation(); setAssetsVisible((visible) => !visible); }}
               aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#064A34] transition hover:bg-[#006B48]/15">
-              {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#03140C] transition hover:bg-black/10">
+              {assetsVisible ? <Eye size={18} strokeWidth={2}/> : <EyeOff size={18} strokeWidth={2}/>}
             </button>
           </div>
-          <p className="mt-1.5 text-[12px] font-medium text-[#075B40]/80">{id ? "Total Aset" : "Total Assets"}</p>
-          <p className="mt-0.5 min-w-0 break-words text-[clamp(25px,8vw,32px)] font-medium leading-tight tracking-[-1px] tabular-nums text-black">
+          <p className="mt-0.5 text-[12px] font-medium text-[#03140C]/70">{id ? "Total Aset" : "Total Assets"}</p>
+          <p className="mt-0.5 min-w-0 break-words text-[28px] font-medium leading-[1.15] tracking-[-1px] tabular-nums text-[#03140C]">
             {assetsVisible ? formatRupiah(integratedTotalAssets) : "Rp ••••••"}
           </p>
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[11.5px] font-bold text-[#042F21]">
-              <TrendingUp size={14} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
+          <div className="mt-1.5 flex items-center justify-between gap-3">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-black/10 px-2.5 py-1 text-[11px] font-medium text-[#03140C]">
+              <TrendingUp size={13} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
             </span>
-            <span className="min-w-0 truncate text-right text-[11.5px] font-medium text-[#075B40]/90">Target {assetsVisible ? formatRupiah(assets.target) : "Rp ••••••"}</span>
+            <span className="min-w-0 truncate text-right text-[11px] font-medium text-[#03140C]/70">Target {assetsVisible ? formatRupiah(assets.target) : "Rp ••••••"}</span>
           </div>
         </div>
+
         <div role="button" tabIndex={0}
           onClick={() => navigate("/budgeting")}
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }}
-          className="hero-forest min-w-0 cursor-pointer p-3.5 text-white">
-          <p className="text-[13px] font-medium text-white/70">Budget Tracker</p>
-          <p className="mt-1.5 text-[12px] font-medium text-white/70">{id ? "Sisa anggaran" : "Remaining budget"}</p>
-          <p className="mt-0.5 min-w-0 break-words text-[clamp(25px,8vw,32px)] font-medium leading-tight tracking-[-1px] tabular-nums">
+          className="hero-forest min-w-0 cursor-pointer p-[12px_14px_14px] text-white"
+          style={{ background: "#0A6B47" }}>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/70">Budget Tracker</p>
+            <span className="text-[11px] text-white/70">{id ? "Sisa anggaran" : "Remaining budget"}</span>
+          </div>
+          <p className="mt-0.5 min-w-0 break-words text-[22px] font-medium leading-[1.15] tracking-[-0.5px] tabular-nums">
             {hasBudget ? (assetsVisible ? formatRupiah(remainingBudget) : "Rp ••••••") : (assetsVisible ? "Rp0" : "Rp ••••••")}
           </p>
           {!hasBudget && <p className="mt-1 text-[11px] text-white/55">{id ? "Atur anggaran" : "Set a budget"}</p>}
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <div className="min-w-0 rounded-[13px] bg-white/10 px-3 py-2">
-              <span className="text-[11px] font-medium text-white/60">{id ? "Penghasilan" : "Income"}</span>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="min-w-0 rounded-[12px] bg-white/14 px-2.5 py-1.5">
+              <span className="text-[11px] font-medium text-white/70">{id ? "Penghasilan" : "Income"}</span>
               <p className="mt-0.5 min-w-0 truncate text-[13px] font-medium tabular-nums">{assetsVisible ? formatRupiah(totalIncome) : "Rp ••••••"}</p>
             </div>
-            <div className="min-w-0 rounded-[13px] bg-white/10 px-3 py-2">
-              <span className="text-[11px] font-medium text-white/60">{id ? "Pengeluaran" : "Expense"}</span>
+            <div className="min-w-0 rounded-[12px] bg-white/14 px-2.5 py-1.5">
+              <span className="text-[11px] font-medium text-white/70">{id ? "Pengeluaran" : "Expense"}</span>
               <p className="mt-0.5 min-w-0 truncate text-[13px] font-medium tabular-nums">{assetsVisible ? formatRupiah(totalExpense) : "Rp ••••••"}</p>
             </div>
           </div>
