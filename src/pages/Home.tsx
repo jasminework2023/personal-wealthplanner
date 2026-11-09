@@ -112,7 +112,7 @@ export function Home() {
         <p className="text-[13.5px] text-charcoal/60">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
       </div>
 
-      <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[14px] p-3.5 sm:p-4 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)]" style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)", color: "#062D20" }}>
+      <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[20px] p-3.5 sm:p-4 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)]" style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)", color: "#062D20" }}>
         <div className="flex items-center justify-between">
           <p className="text-[14px] sm:text-[16px] font-medium text-[#075B40]/85">{id ? "Total Aset" : "Total Assets"}</p>
         </div>
