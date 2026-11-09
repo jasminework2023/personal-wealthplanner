@@ -313,7 +313,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   async function settleCredit(success: boolean) {
     const { data, error } = await supabase.rpc("settle_ai_credit", {
-      p_user_id: user.user_id,
+      p_user_id: authenticatedUserId,
       p_request_id: requestId,
       p_success: success,
     });
