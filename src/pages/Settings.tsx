@@ -99,7 +99,24 @@ export function Settings() {
     } finally { setLoading(false); }
   }
 
-  useEffect(() => { loadSetup(); loadMembership(); }, []);
+  useEffect(() => {
+    loadSetup();
+    loadMembership();
+
+    // After returning from Xendit, the webhook may still be processing.
+    // Poll briefly so a successful payment appears as active without
+    // requiring the user to manually refresh the page.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("membership") === "success") {
+      let attempts = 0;
+      const poll = window.setInterval(async () => {
+        attempts += 1;
+        await loadMembership();
+        if (attempts >= 5) window.clearInterval(poll);
+      }, 2500);
+      return () => window.clearInterval(poll);
+    }
+  }, []);
 
   const changed = useMemo(() => JSON.stringify(setup) !== JSON.stringify(original), [setup, original]);
 
@@ -215,8 +232,21 @@ export function Settings() {
               <div><p className="text-[11px] text-charcoal/50">Sisa kredit AI</p><p className="text-[22px] font-bold text-forest-900">{Number(membership.creditsRemaining || 0).toLocaleString("id-ID")} <span className="text-[11px] font-medium text-charcoal/50">credits</span></p></div>
               <div><p className="text-[11px] text-charcoal/50">Lifetime Personal</p><p className="text-[14px] font-semibold text-charcoal mt-1">{membership.lifetimePro ? "Aktif" : "Belum aktif"}</p></div>
             </div>
-            {membership.aiTrialExpiresAt && <p className="mt-3 text-[11px] text-charcoal/55">Trial AI sampai {new Date(membership.aiTrialExpiresAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}.</p>}
-            {membership.aiMembershipExpiresAt && <p className="mt-1 text-[11px] text-charcoal/55">AI PRO+ sampai {new Date(membership.aiMembershipExpiresAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}.</p>}
+            {membership.aiMembershipPlan && membership.aiMembershipStartedAt && membership.aiMembershipExpiresAt && (
+              <div className="mt-4 rounded-xl border border-forest-100 bg-forest-50/50 px-3 py-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] text-charcoal/50">AI PRO+ {membership.aiMembershipPlan === "ai_pro_annual" ? "Tahunan" : "Bulanan"}</span>
+                  <span className="text-[11px] font-semibold text-forest-700">Aktif</span>
+                </div>
+                <p className="mt-1 text-[12px] font-medium text-forest-900">
+                  {new Date(membership.aiMembershipStartedAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                  {" → "}
+                  {new Date(membership.aiMembershipExpiresAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                </p>
+              </div>
+            )}
+            {membership.aiTrialExpiresAt && !membership.aiMembershipStartedAt && <p className="mt-3 text-[11px] text-charcoal/55">Trial AI sampai {new Date(membership.aiTrialExpiresAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}.</p>}
+            {membership.aiMembershipExpiresAt && !membership.aiMembershipStartedAt && <p className="mt-1 text-[11px] text-charcoal/55">AI PRO+ sampai {new Date(membership.aiMembershipExpiresAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}.</p>}
           </div>
         ) : null}
         {membershipError && <p className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-[12px] text-rose-700">{membershipError}</p>}
