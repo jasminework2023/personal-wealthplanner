@@ -71,7 +71,14 @@ async function rows(s: any, id: string) {
 }
 
 function section(rs: any[][], label: string) {
-  return rs.findIndex((r) => norm(r?.[0]) === norm(label));
+  const target = norm(label);
+  // Asset Tracker section labels are not required to live in column A.
+  // Match the normalized label anywhere in the row so minor sheet layout
+  // changes (merged cells / shifted label columns) do not make the section
+  // appear "missing".
+  return rs.findIndex((r) =>
+    (r || []).some((cell: unknown) => norm(cell) === target),
+  );
 }
 
 function isValidStockRow(r: any[]): boolean {
