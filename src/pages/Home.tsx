@@ -141,7 +141,7 @@ export function Home() {
             <span className="text-[12px] sm:text-[14px] font-medium text-[#064A34]/80">{id ? "Pemasukan" : "Income"}</span>
             <p className="mt-0.5 break-words text-[clamp(13px,3.8vw,16px)] font-medium leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalIncome)}</p>
           </div>
-          <div className="flex min-w-0 flex-col rounded-[18px] bg-[#007E51]/35 px-3.5 py-3">
+          <div className="flex min-w-0 flex-col rounded-[14px] bg-[#007E51]/35 px-3 py-2">
             <span className="text-[12px] sm:text-[14px] font-medium text-[#064A34]/80">{id ? "Pengeluaran" : "Expense"}</span>
             <p className="mt-0.5 break-words text-[clamp(13px,3.8vw,16px)] font-medium leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalExpense)}</p>
           </div>
