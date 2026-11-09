@@ -92,6 +92,11 @@ export function Home() {
       : "Start by recording transactions and setting one financial goal to get actionable guidance from your dashboard.");
   const cashFlowData = [{ name: id ? "Pemasukan" : "Income", value: totalIncome }, { name: id ? "Pengeluaran" : "Expense", value: totalExpense }, { name: id ? "Tabungan" : "Saving", value: totalSaving }];
   const spendingByCategory = byCategory("Expense").filter((c) => c.realization > 0).map((c) => ({ name: c.category, value: c.realization }));
+  const incomeBudget = byCategory("Income").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
+  const expenseBudget = byCategory("Expense").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
+  const savingBudget = byCategory("Saving").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
+  const hasBudget = incomeBudget > 0 || expenseBudget > 0 || savingBudget > 0;
+  const remainingBudget = hasBudget ? incomeBudget - expenseBudget - savingBudget : 0;
   const today = new Date().toLocaleDateString(id ? "id-ID" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   useEffect(() => {
     const now = new Date();
@@ -113,41 +118,128 @@ export function Home() {
         <p className="text-[13.5px] text-charcoal/60">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
       </div>
 
-      <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[20px] p-3.5 sm:p-4 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)]" style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)", color: "#062D20" }}>
-        <div className="flex items-center justify-between">
-          <p className="text-[14px] sm:text-[16px] font-medium text-[#075B40]/85">{id ? "Total Aset" : "Total Assets"}</p>
-        </div>
-        <div className="mt-1 flex min-w-0 items-center gap-2">
-          <span className="shrink-0 text-[clamp(22px,5.8vw,30px)] font-semibold leading-none tracking-[-0.6px] text-black" style={{ color: "#000000" }}>Rp</span>
-          <span style={{ fontSize: "clamp(26px, 7.5vw, 32px)", color: "#000000" }} className="asset-total-value min-w-0 flex-1 font-medium leading-tight tracking-[-1px] tabular-nums text-black">
-            {assetsVisible ? new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(integratedTotalAssets) : "••••••••"}
-          </span>
-          <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#006B48]/15 text-[#064A34] transition hover:bg-[#006B48]/25">
-            {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
-          </button>
-        </div>
-        <div className="mt-3 flex items-center justify-between gap-3">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[12px] sm:text-[13px] font-bold text-[#042F21]">
-            <TrendingUp size={15} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
-          </span>
-          {assets.target > 0 && <span className="text-right text-[12px] sm:text-[14px] font-medium text-[#075B40]/90">Target {formatRupiah(assets.target)}</span>}
-        </div>
-        <div className="mt-3 h-[40px] sm:h-[48px] w-full" aria-label={id ? "Grafik tren aset" : "Asset trend chart"} role="img">
-          <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
-            <polyline points="8,48 46,41 84,45 122,27 160,33 198,14 246,18 312,0" fill="none" stroke="#063D2A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
-          </svg>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="flex min-w-0 flex-col rounded-[14px] bg-[#007E51]/35 px-3 py-2">
-            <span className="text-[12px] sm:text-[14px] font-medium text-[#064A34]/80">{id ? "Pemasukan" : "Income"}</span>
-            <p className="mt-0.5 break-words text-[clamp(13px,3.8vw,16px)] font-medium leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalIncome)}</p>
+      <div className="hidden md:grid grid-cols-2 gap-3 items-stretch">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate("/finance")}
+          onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }}
+          className="home-asset-summary h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] border-0 p-4 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)] transition hover:-translate-y-0.5"
+          style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)" }}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[13px] font-medium text-[#075B40]/85">Asset Tracker</p>
+            <button
+              type="button"
+              onClick={(event) => { event.stopPropagation(); setAssetsVisible((visible) => !visible); }}
+              aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
+              title={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#064A34] transition hover:bg-[#006B48]/15"
+            >
+              {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
+            </button>
           </div>
-          <div className="flex min-w-0 flex-col rounded-[14px] bg-[#007E51]/35 px-3 py-2">
-            <span className="text-[12px] sm:text-[14px] font-medium text-[#064A34]/80">{id ? "Pengeluaran" : "Expense"}</span>
-            <p className="mt-0.5 break-words text-[clamp(13px,3.8vw,16px)] font-medium leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalExpense)}</p>
+          <p className="mt-2 text-[12px] font-medium text-[#075B40]/80">{id ? "Total Aset" : "Total Assets"}</p>
+          <p className="mt-0.5 min-w-0 break-words text-[clamp(26px,3vw,34px)] font-medium leading-tight tracking-[-1px] tabular-nums text-black">
+            {assetsVisible ? formatRupiah(integratedTotalAssets) : "Rp ••••••"}
+          </p>
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[12px] font-bold text-[#042F21]">
+              <TrendingUp size={14} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
+            </span>
+            <span className="min-w-0 truncate text-right text-[12px] font-medium text-[#075B40]/90">Target {assetsVisible ? formatRupiah(assets.target) : "Rp ••••••"}</span>
+          </div>
+          <div className="mt-3 h-[40px] w-full" aria-label={id ? "Grafik tren aset" : "Asset trend chart"} role="img">
+            <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
+              <polyline points="8,48 46,41 84,45 122,27 160,33 198,14 246,18 312,0" fill="none" stroke="#063D2A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+            </svg>
           </div>
         </div>
-      </Card>
+
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate("/budgeting")}
+          onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }}
+          className="hero-forest h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] p-4 text-white shadow-float transition hover:-translate-y-0.5"
+        >
+          <p className="text-[13px] font-medium text-white/70">Budget Tracker</p>
+          <p className="mt-2 text-[12px] font-medium text-white/70">{id ? "Sisa anggaran" : "Remaining budget"}</p>
+          <p className="mt-0.5 min-w-0 break-words text-[clamp(26px,3vw,34px)] font-medium leading-tight tracking-[-1px] tabular-nums">
+            {hasBudget ? (assetsVisible ? formatRupiah(remainingBudget) : "Rp ••••••") : "Rp0"}
+          </p>
+          {!hasBudget && <p className="mt-1 text-[11px] text-white/55">{id ? "Atur anggaran" : "Set a budget"}</p>}
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="min-w-0 rounded-[14px] bg-white/10 px-3 py-2">
+              <span className="text-[11px] font-medium text-white/60">{id ? "Penghasilan" : "Income"}</span>
+              <p className="mt-0.5 min-w-0 truncate text-[14px] font-medium tabular-nums">{assetsVisible ? formatRupiah(totalIncome) : "Rp ••••••"}</p>
+            </div>
+            <div className="min-w-0 rounded-[14px] bg-white/10 px-3 py-2">
+              <span className="text-[11px] font-medium text-white/60">{id ? "Pengeluaran" : "Expense"}</span>
+              <p className="mt-0.5 min-w-0 truncate text-[14px] font-medium tabular-nums">{assetsVisible ? formatRupiah(totalExpense) : "Rp ••••••"}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="md:hidden overflow-hidden rounded-[20px]">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate("/finance")}
+          onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }}
+          className="home-asset-summary min-w-0 cursor-pointer p-3.5 text-[#062D20]"
+          style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)" }}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[13px] font-medium text-[#075B40]/85">Asset Tracker</p>
+            <button
+              type="button"
+              onClick={(event) => { event.stopPropagation(); setAssetsVisible((visible) => !visible); }}
+              aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
+              title={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#064A34] transition hover:bg-[#006B48]/15"
+            >
+              {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
+            </button>
+          </div>
+          <p className="mt-1.5 text-[12px] font-medium text-[#075B40]/80">{id ? "Total Aset" : "Total Assets"}</p>
+          <p className="mt-0.5 min-w-0 break-words text-[clamp(25px,8vw,32px)] font-medium leading-tight tracking-[-1px] tabular-nums text-black">
+            {assetsVisible ? formatRupiah(integratedTotalAssets) : "Rp ••••••"}
+          </p>
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[11.5px] font-bold text-[#042F21]">
+              <TrendingUp size={14} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
+            </span>
+            <span className="min-w-0 truncate text-right text-[11.5px] font-medium text-[#075B40]/90">Target {assetsVisible ? formatRupiah(assets.target) : "Rp ••••••"}</span>
+          </div>
+        </div>
+
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate("/budgeting")}
+          onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }}
+          className="hero-forest min-w-0 cursor-pointer p-3.5 text-white"
+        >
+          <p className="text-[13px] font-medium text-white/70">Budget Tracker</p>
+          <p className="mt-1.5 text-[12px] font-medium text-white/70">{id ? "Sisa anggaran" : "Remaining budget"}</p>
+          <p className="mt-0.5 min-w-0 break-words text-[clamp(25px,8vw,32px)] font-medium leading-tight tracking-[-1px] tabular-nums">
+            {hasBudget ? (assetsVisible ? formatRupiah(remainingBudget) : "Rp ••••••") : "Rp0"}
+          </p>
+          {!hasBudget && <p className="mt-1 text-[11px] text-white/55">{id ? "Atur anggaran" : "Set a budget"}</p>}
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="min-w-0 rounded-[13px] bg-white/10 px-3 py-2">
+              <span className="text-[11px] font-medium text-white/60">{id ? "Penghasilan" : "Income"}</span>
+              <p className="mt-0.5 min-w-0 truncate text-[13px] font-medium tabular-nums">{assetsVisible ? formatRupiah(totalIncome) : "Rp ••••••"}</p>
+            </div>
+            <div className="min-w-0 rounded-[13px] bg-white/10 px-3 py-2">
+              <span className="text-[11px] font-medium text-white/60">{id ? "Pengeluaran" : "Expense"}</span>
+              <p className="mt-0.5 min-w-0 truncate text-[13px] font-medium tabular-nums">{assetsVisible ? formatRupiah(totalExpense) : "Rp ••••••"}</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <section>
         <div className="mb-2 flex items-center justify-between">
