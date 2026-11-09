@@ -36,10 +36,8 @@ function NavItem({ to, label, icon: Icon, onNavigate }: { to: string; label: str
       end={to === "/"}
       onClick={onNavigate}
       className={({ isActive }) =>
-        `group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14px] transition-all ${
-          isActive
-            ? "bg-[#0B6B47]/35 text-[#B8F5D8] font-semibold"
-            : "text-white hover:bg-white/10 hover:text-white"
+        `group relative flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all ${
+          isActive ? "sidebar-item-active" : "sidebar-item"
         }`
       }
     >
@@ -88,7 +86,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           {mainLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/finance" ? labels.report : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.label} onNavigate={onNavigate} />)}
         </nav>
 
-        <p className="px-3.5 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-white/50 mt-2 mb-1.5">{labels.tools}</p>
+        <p className="px-3 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-white/50 mt-2 mb-1.5">{labels.tools}</p>
         <nav className="flex flex-col gap-0.5">
           {toolLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/wallets" ? labels.wallet : l.to === "/calculator" ? labels.calculator : labels.protection} onNavigate={onNavigate} />)}
           <a href="https://www.wealthplanner.id"  onClick={onNavigate} className="sidebar-item group flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all">
