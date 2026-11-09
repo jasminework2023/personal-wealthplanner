@@ -1951,7 +1951,7 @@ export function CalculatorDetail({ id, onBack, onSaveResult, onNavigate }) {
       }
     `}</style>
     <button type="button" onClick={onBack} style={{width:"fit-content",border:0,background:"transparent",color:"rgb(var(--c-forest-800))",fontSize:13,cursor:"pointer",padding:0}}>{isId ? "← Semua kalkulator" : "← All calculators"}</button>
-    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgb(var(--c-muted))"}}>FINANCIAL CALCULATOR</div><h1 style={{fontSize:28,lineHeight:1.15,color:"rgb(var(--c-charcoal))",margin:"7px 0 6px"}}>{!isId && meta.titleEn ? meta.titleEn : meta.title}</h1><p style={{margin:0,fontSize:13,color:"rgb(var(--c-forest-800))"}}>{!isId && meta.descEn ? meta.descEn : meta.desc}</p></div>
+    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgb(var(--c-muted))"}}>FINANCIAL CALCULATOR</div><h1 style={{fontSize:26,lineHeight:1.1,color:"rgb(var(--c-charcoal))",margin:"7px 0 6px"}}>{!isId && meta.titleEn ? meta.titleEn : meta.title}</h1><p style={{margin:0,fontSize:13,color:"rgb(var(--c-forest-800))"}}>{!isId && meta.descEn ? meta.descEn : meta.desc}</p></div>
     <CalculatorBody id={id} onSaveResult={onSaveResult} onNavigate={onNavigate}/>
   </div>;
 }
