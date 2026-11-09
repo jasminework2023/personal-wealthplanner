@@ -23,8 +23,8 @@ export const mainTourSteps: TourStep[] = [
 export const pageTourSteps: Record<string, TourStep[]> = {
   "/finance": [
     { id: "report-summary", route: "/finance", selectorDesktop: '[data-tour="report-summary"]', selectorMobile: '[data-tour="report-summary"]', title: "Ringkasan Laporan", description: "Lihat gambaran pemasukan, pengeluaran, dan posisi keuanganmu." },
-    { id: "report-assets", route: "/finance", selectorDesktop: '[data-tour="report-assets"]', selectorMobile: '[data-tour="report-assets"]', title: "Asset Tracker", description: "Pantau liquid asset, investment asset, dan aset lainnya." },
-    { id: "report-stock", route: "/finance", selectorDesktop: '[data-tour="report-stock"]', selectorMobile: '[data-tour="report-stock"]', title: "Stock Portfolio", description: "Pantau saham Indonesia dan US beserta nilai pasar dan unrealized P/L." },
+    { id: "report-trends", route: "/finance", selectorDesktop: '[data-tour="report-trends"]', selectorMobile: '[data-tour="report-trends"]', title: "Tren Keuangan", description: "Lihat perubahan pemasukan dan pengeluaran dari waktu ke waktu." },
+    { id: "report-categories", route: "/finance", selectorDesktop: '[data-tour="report-categories"]', selectorMobile: '[data-tour="report-categories"]', title: "Detail Kategori", description: "Cek kategori yang paling banyak membentuk pemasukan dan pengeluaranmu." },
   ],
   "/budgeting": [
     { id: "budget-summary", route: "/budgeting", selectorDesktop: '[data-tour="budget-summary"]', selectorMobile: '[data-tour="budget-summary"]', title: "Ringkasan Anggaran", description: "Lihat batas anggaran dan realisasi bulan ini." },
