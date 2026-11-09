@@ -12,6 +12,7 @@ import {
   Settings,
   UsersRound,
   Wallet,
+  TrendingUp,
   X,
   ExternalLink,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const mainLinks = [
 
 const toolLinks = [
   { to: "/wallets", label: "Wallet", icon: Wallet },
+  { to: "/investments", label: "Live Investment", icon: TrendingUp },
   { to: "/calculator", label: "Financial Calculator", icon: Calculator },
   { to: "/protection", label: "Financial Protection", icon: Shield },
 ];
@@ -76,7 +78,7 @@ function Brand() {
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
-  const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", guidance: "Panduan", profile: "Profil & Pengaturan", wallet: "Wallet", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", wallet: "Wallet", guidance: "Guidance", profile: "Profile & Settings", website: "Website", personalFinance: "Personal Finance" };
+  const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", guidance: "Panduan", investment: "Live Investment", profile: "Profil & Pengaturan", wallet: "Wallet", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", wallet: "Wallet", guidance: "Guidance", profile: "Profile & Settings", website: "Website", personalFinance: "Personal Finance" };
   return (
     <div className="flex flex-col h-full">
       <Brand />
@@ -89,7 +91,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
         <p className="px-3 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.tools}</p>
         <nav className="flex flex-col gap-0.5">
-          {toolLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/wallets" ? labels.wallet : l.to === "/calculator" ? labels.calculator : labels.protection} onNavigate={onNavigate} />)}
+          {toolLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/wallets" ? labels.wallet : l.to === "/investments" ? labels.investment : l.to === "/calculator" ? labels.calculator : labels.protection} onNavigate={onNavigate} />)}
           <a href="https://www.wealthplanner.id"  onClick={onNavigate} className="sidebar-item group flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all">
             <ExternalLink size={18} strokeWidth={2} className="sidebar-icon" />
             {labels.website}
