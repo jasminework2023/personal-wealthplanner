@@ -217,40 +217,75 @@ function parseAssetSection(rows: unknown[][], sectionLabel: string) {
   return { items, total };
 }
 
+const STOCK_TICKER_RE = /^[A-Za-z]{1,6}([.-][A-Za-z]{1,2})?$/;
+const STOCK_STOP_LABELS = new Set([
+  "total",
+  "last update",
+  "assets account",
+  "descriptions",
+  "cash in hand",
+  ...SECTION_LABELS,
+]);
+
+function normalizeSectionLabel(value: unknown): string {
+  return String(value ?? "").trim().toLowerCase().replace(/:$/, "").trim();
+}
+
 function parseStockSection(rows: unknown[][], sectionLabel: string) {
   const startIdx = findRowIndex(rows, sectionLabel);
   if (startIdx === -1) return { stocks: [] as any[], subtotalValue: 0 };
 
   const stocks: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number }[] = [];
   let subtotalValue = 0;
+  let blankRows = 0;
 
-  // Beda dari asset table: baris label section INI JUGA baris header kolom,
-  // jadi data mulai langsung di baris berikutnya (+1, bukan +2).
+  // Section row is also the stock table header, so data starts at +1.
   for (let i = startIdx + 1; i < rows.length; i++) {
     const row = rows[i] || [];
-    const ticker = String(row[0] || "").trim();
-    if (!ticker) continue;
-    const lowerTicker = ticker.toLowerCase();
-    if (lowerTicker.includes("subtotal") || lowerTicker === "total") {
-      const nums = row.map((c) => parseRupiah(c)).filter((n) => n > 0);
-      subtotalValue = nums[nums.length - 2] ?? nums[nums.length - 1] ?? 0;
-      break;
+    const rawTicker = String(row[0] || "").trim();
+    const label = normalizeSectionLabel(rawTicker);
+
+    if (!rawTicker) {
+      blankRows += 1;
+      if (blankRows >= 2) break;
+      continue;
     }
-    if (SECTION_LABELS.includes(lowerTicker) && lowerTicker !== sectionLabel.toLowerCase()) break;
-    const nums = row.slice(1).map((c) => parseRupiah(c));
-    stocks.push({
-      ticker,
-      currentPrice: nums[0] || 0,
-      shares: nums[1] || 0,
-      avgPrice: nums[2] || 0,
-      value: nums[3] || 0,
-      pl: nums[4] || 0,
-    });
+    blankRows = 0;
+
+    if (label === "total" || label.includes("subtotal")) break;
+    if (label !== normalizeSectionLabel(sectionLabel) && STOCK_STOP_LABELS.has(label)) break;
+
+    const currentPrice = parseRupiah(row[1]);
+    const shares = parseRupiah(row[2]);
+    const avgPrice = parseRupiah(row[3]);
+
+    // A row is a stock only when its ticker and core position data are valid.
+    // Value/P&L are always derived from prices and shares, never trusted from
+    // the sheet because those cells may be blank or stale.
+    if (!STOCK_TICKER_RE.test(rawTicker) || shares <= 0 || (currentPrice <= 0 && avgPrice <= 0)) continue;
+
+    const value = currentPrice * shares;
+    const pl = (currentPrice - avgPrice) * shares;
+    subtotalValue += value;
+    stocks.push({ ticker: rawTicker, currentPrice, shares, avgPrice, value, pl });
   }
+
   return { stocks, subtotalValue };
 }
 
-function getAssetTracker(rows: unknown[][]) {
+async function getUsdIdrRate(): Promise<number> {
+  try {
+    const response = await fetch("https://open.er-api.com/v6/latest/USD", {
+      headers: { Accept: "application/json" },
+    });
+    const data: any = await response.json();
+    const rate = Number(data?.rates?.IDR);
+    if (response.ok && Number.isFinite(rate) && rate > 0) return rate;
+  } catch {}
+  return 16300;
+}
+
+async function getAssetTracker(rows: unknown[][]) {
   const liquid = parseAssetSection(rows, "Liquid Assets");
   const investment = parseAssetSection(rows, "Investment Assets");
   const stocksID = parseStockSection(rows, "Indonesia Stock");
@@ -267,7 +302,8 @@ function getAssetTracker(rows: unknown[][]) {
     target = parseRupiah(valueRow[colIdx] ?? lastNumericValue(valueRow));
   }
 
-  const totalAssets = liquid.total + investment.total + stocksID.subtotalValue + stocksUS.subtotalValue * 16300;
+  const usdIdrRate = await getUsdIdrRate();
+  const totalAssets = liquid.total + investment.total + stocksID.subtotalValue + stocksUS.subtotalValue * usdIdrRate;
 
   return {
     totalAssets,
@@ -327,7 +363,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     let assets = null as ReturnType<typeof getAssetTracker> | null;
     try {
-      assets = getAssetTracker(assetRows);
+      assets = await getAssetTracker(assetRows);
     } catch {
       assets = null;
     }
