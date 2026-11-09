@@ -108,6 +108,19 @@ export function AddTransactionModal({
   const { wallets } = useWallets();
   const [wallet, setWallet] = useState("");
   const [toWallet, setToWallet] = useState("");
+  const [stockPurchase, setStockPurchase] = useState(false);
+  const [stockMarket, setStockMarket] = useState<"ID" | "US">("ID");
+  const [stockTicker, setStockTicker] = useState("");
+  const [stockQuantity, setStockQuantity] = useState("");
+  const [stockBuyPrice, setStockBuyPrice] = useState("");
+  const [stockAmountAuto, setStockAmountAuto] = useState(true);
+  const [pendingStockPurchase, setPendingStockPurchase] = useState<{
+    ticker: string;
+    market: "ID" | "US";
+    shares: number;
+    avgPrice: number;
+    account: string;
+  } | null>(null);
 
   useEffect(() => {
     return () => {
@@ -164,6 +177,13 @@ export function AddTransactionModal({
     setReceiptLoading(false);
     setFormError("");
     setWallet(""); setToWallet("");
+    setStockPurchase(false);
+    setStockMarket("ID");
+    setStockTicker("");
+    setStockQuantity("");
+    setStockBuyPrice("");
+    setStockAmountAuto(true);
+    setPendingStockPurchase(null);
     setForm({ type: "Expense", category: activeCategories.Expense[0] || fallbackCategories[9], description: "", amount: "" });
   }
 
@@ -172,7 +192,10 @@ export function AddTransactionModal({
     onClose();
   }
 
-  async function persistTransaction(transaction: Transaction) {
+  async function persistTransaction(
+    transaction: Transaction,
+    stockToAdd?: { ticker: string; market: "ID" | "US"; shares: number; avgPrice: number; account: string },
+  ) {
     const token = getStoredToken();
     setSaving(true);
     setFormError("");
@@ -181,6 +204,7 @@ export function AddTransactionModal({
       if (!token) {
         throw new Error("Sesi akun tidak ditemukan. Buka kembali dashboard dari link akunmu, lalu coba simpan transaksi lagi.");
       }
+
       const response = await fetch(`${API_BASE}/add-transaction`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -190,15 +214,65 @@ export function AddTransactionModal({
       if (!response.ok || data.success !== true) {
         throw new Error(data.error || "Transaksi belum berhasil disimpan. Coba lagi.");
       }
+
+      // The transaction is saved exactly once. From here on, only the optional
+      // stock-portfolio step may be retried.
       onAdd(transaction);
-      // Close first so this modal's own data hooks are unmounted before the
-      // refresh event fires. Then trigger exactly one shared refresh.
-      handleClose();
       window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added", { detail: transaction }));
+
+      if (stockToAdd) {
+        try {
+          const stockResponse = await fetch(`${API_BASE}/asset-tracker-stocks`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token, ...stockToAdd, mode: "buy" }),
+          });
+          const stockData = await stockResponse.json().catch(() => ({}));
+          if (!stockResponse.ok || stockData.success !== true) {
+            throw new Error(stockData.error || "Portfolio belum diperbarui.");
+          }
+          setPendingStockPurchase(null);
+          window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
+        } catch (stockError) {
+          setPendingStockPurchase(stockToAdd);
+          setFormError("Transaksi tersimpan, tapi portfolio belum diperbarui.");
+          setAiError(stockError instanceof Error ? stockError.message : "Portfolio belum diperbarui.");
+          return;
+        }
+      }
+
+      handleClose();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Gagal menyimpan transaksi";
       setFormError(message);
       setAiError(message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function retryStockPurchase() {
+    const token = getStoredToken();
+    if (!token || !pendingStockPurchase) return;
+    setSaving(true);
+    setFormError("");
+    setAiError("");
+    try {
+      const response = await fetch(`${API_BASE}/asset-tracker-stocks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, ...pendingStockPurchase, mode: "buy" }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.success !== true) {
+        throw new Error(data.error || "Portfolio belum diperbarui.");
+      }
+      setPendingStockPurchase(null);
+      window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
+      handleClose();
+    } catch (err) {
+      setFormError("Transaksi tersimpan, tapi portfolio belum diperbarui.");
+      setAiError(err instanceof Error ? err.message : "Portfolio belum diperbarui.");
     } finally {
       setSaving(false);
     }
@@ -209,18 +283,47 @@ export function AddTransactionModal({
       setFormError("Masukkan jumlah yang valid.");
       return;
     }
-    if (form.type === "Transfer" && (!wallet || !toWallet || wallet.trim().toLowerCase() === toWallet.trim().toLowerCase())) { setFormError("Pilih wallet asal dan tujuan yang berbeda untuk transfer."); return; }
-    if (form.type === "Saving" && toWallet && (!wallet || wallet.trim().toLowerCase() === toWallet.trim().toLowerCase())) { setFormError("Pilih wallet asal dan tujuan yang berbeda."); return; }
+    if (form.type === "Transfer" && (!wallet || !toWallet || wallet.trim().toLowerCase() === toWallet.trim().toLowerCase())) {
+      setFormError("Pilih wallet asal dan tujuan yang berbeda untuk transfer.");
+      return;
+    }
+    if (form.type === "Saving" && toWallet && (!wallet || wallet.trim().toLowerCase() === toWallet.trim().toLowerCase())) {
+      setFormError("Pilih wallet asal dan tujuan yang berbeda.");
+      return;
+    }
     if (!form.description.trim()) {
       setFormError("Isi deskripsi transaksi dulu.");
       return;
     }
+
+    let stockToAdd: { ticker: string; market: "ID" | "US"; shares: number; avgPrice: number; account: string } | undefined;
+    if (form.type === "Saving" && stockPurchase) {
+      const enteredQuantity = Number(stockQuantity);
+      const buyPrice = Number(stockBuyPrice);
+      const shares = stockMarket === "ID" ? enteredQuantity * 100 : enteredQuantity;
+      const selectedWallet = wallets.find((item) => item.name === wallet);
+
+      if (!wallet || selectedWallet?.type !== "investment") {
+        setFormError("Pilih wallet investment, misalnya RDN Stockbit.");
+        return;
+      }
+      if (!stockTicker.trim() || enteredQuantity <= 0 || !Number.isFinite(buyPrice) || buyPrice < 0) {
+        setFormError("Ticker, jumlah, dan harga beli wajib diisi.");
+        return;
+      }
+
+      stockToAdd = {
+        ticker: stockTicker.trim().toUpperCase(),
+        market: stockMarket,
+        shares,
+        avgPrice: buyPrice,
+        account: wallet,
+      };
+    }
+
     const now = new Date();
     const isoDate = todayIso();
     await persistTransaction({
-      // Store the date in ISO format for every transaction type
-      // (Income, Expense, Saving, and Transfer). Google Sheets can then
-      // keep the value as a real date and display it as dd/mm/yyyy.
       date: isoDate,
       month: now.toLocaleString("en-US", { month: "long" }),
       year: now.getFullYear(),
@@ -230,7 +333,7 @@ export function AddTransactionModal({
       amount: parseAmountInput(form.amount),
       ...(wallet ? { wallet } : {}),
       ...(form.type === "Transfer" || (form.type === "Saving" && toWallet) ? { toWallet } : {}),
-    });
+    }, stockToAdd);
   }
 
   function handleReceiptPick(e: ChangeEvent<HTMLInputElement>) {
@@ -319,7 +422,13 @@ export function AddTransactionModal({
             {(["Income", "Expense", "Saving", "Transfer"] as TransactionType[]).map((t) => (
               <button
                 key={t}
-                onClick={() => setForm((f) => ({ ...f, type: t, category: t === "Transfer" ? "Transfer" : activeCategories[t][0] || f.category }))}
+                onClick={() => {
+                  setForm((f) => ({ ...f, type: t, category: t === "Transfer" ? "Transfer" : activeCategories[t][0] || f.category }));
+                  if (t !== "Saving") {
+                    setStockPurchase(false);
+                    setPendingStockPurchase(null);
+                  }
+                }}
                 className={`flex-1 text-[13px] font-semibold py-2.5 rounded-xl border ${
                   form.type === t
                     ? "border-forest-600 bg-forest-50 text-forest-700 font-medium"
@@ -331,6 +440,107 @@ export function AddTransactionModal({
             ))}
           </div>
           <div className="grid gap-2 sm:grid-cols-2"><label className="text-xs">Dari wallet<select value={wallet} onChange={e=>setWallet(e.target.value)} className="mt-1 w-full rounded-xl border bg-white px-3 py-3 text-sm"><option value="">Tidak ditentukan</option>{wallets.map(w=><option key={w.id} value={w.name}>{w.name}</option>)}</select></label>{(form.type==="Transfer" || form.type==="Saving") && <label className="text-xs">Ke wallet<select value={toWallet} onChange={e=>setToWallet(e.target.value)} className="mt-1 w-full rounded-xl border bg-white px-3 py-3 text-sm"><option value="">Tidak ditentukan</option>{wallets.map(w=><option key={w.id} value={w.name}>{w.name}</option>)}</select></label>}</div>{wallets.length===0 && <p className="text-xs text-amber-700">Belum ada wallet aktif. Tambahkan rekening/dompet di Pengaturan agar bisa memilih wallet dan melakukan transfer.</p>}
+          {form.type === "Saving" && (
+            <div className="rounded-xl border border-forest-100 bg-forest-50/50 p-3">
+              <label className="flex items-center justify-between gap-3 text-[12px] font-semibold text-forest-900">
+                <span>Ini pembelian saham</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={stockPurchase}
+                  onClick={() => {
+                    const next = !stockPurchase;
+                    setStockPurchase(next);
+                    setFormError("");
+                    if (next) {
+                      setStockAmountAuto(true);
+                      const lotsOrShares = Number(stockQuantity);
+                      const buyPrice = Number(stockBuyPrice);
+                      if (stockMarket === "ID" && lotsOrShares > 0 && buyPrice >= 0) {
+                        setForm((f) => ({ ...f, amount: formatAmountInput(String(Math.round(lotsOrShares * 100 * buyPrice))) }));
+                      }
+                    }
+                  }}
+                  className={`relative h-6 w-11 rounded-full transition-colors ${stockPurchase ? "bg-forest-600" : "bg-charcoal/20"}`}
+                >
+                  <span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-transform ${stockPurchase ? "left-6" : "left-1"}`} />
+                </button>
+              </label>
+
+              {stockPurchase && (
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <label className="text-[11px] text-charcoal/60">
+                    Market
+                    <select
+                      value={stockMarket}
+                      onChange={(e) => {
+                        const next = e.target.value as "ID" | "US";
+                        setStockMarket(next);
+                        setStockAmountAuto(next === "ID");
+                        if (next === "US") setForm((f) => ({ ...f, amount: "" }));
+                      }}
+                      className="mt-1 w-full rounded-lg border border-charcoal/15 bg-white px-3 py-2.5 text-[13px]"
+                    >
+                      <option value="ID">Indonesia (IDX)</option>
+                      <option value="US">US</option>
+                    </select>
+                  </label>
+
+                  <label className="text-[11px] text-charcoal/60">
+                    Ticker
+                    <input
+                      value={stockTicker}
+                      onChange={(e) => setStockTicker(e.target.value.toUpperCase())}
+                      placeholder={stockMarket === "ID" ? "BBCA" : "AAPL"}
+                      className="mt-1 w-full rounded-lg border border-charcoal/15 px-3 py-2.5 text-[13px] uppercase"
+                    />
+                  </label>
+
+                  <label className="text-[11px] text-charcoal/60">
+                    Jumlah ({stockMarket === "ID" ? "lot" : "saham"})
+                    <input
+                      inputMode="decimal"
+                      value={stockQuantity}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9.]/g, "");
+                        setStockQuantity(value);
+                        if (stockAmountAuto && stockMarket === "ID") {
+                          const qty = Number(value);
+                          const price = Number(stockBuyPrice);
+                          if (qty > 0 && price >= 0) setForm((f) => ({ ...f, amount: formatAmountInput(String(Math.round(qty * 100 * price))) }));
+                        }
+                      }}
+                      placeholder={stockMarket === "ID" ? "5" : "10"}
+                      className="mt-1 w-full rounded-lg border border-charcoal/15 px-3 py-2.5 text-[13px]"
+                    />
+                  </label>
+
+                  <label className="text-[11px] text-charcoal/60">
+                    Harga beli per saham ({stockMarket === "ID" ? "Rp" : "USD"})
+                    <input
+                      inputMode="decimal"
+                      value={stockBuyPrice}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9.]/g, "");
+                        setStockBuyPrice(value);
+                        if (stockAmountAuto && stockMarket === "ID") {
+                          const qty = Number(stockQuantity);
+                          const price = Number(value);
+                          if (qty > 0 && price >= 0) setForm((f) => ({ ...f, amount: formatAmountInput(String(Math.round(qty * 100 * price))) }));
+                        }
+                      }}
+                      placeholder={stockMarket === "ID" ? "9200" : "195.20"}
+                      className="mt-1 w-full rounded-lg border border-charcoal/15 px-3 py-2.5 text-[13px]"
+                    />
+                  </label>
+
+                  <p className="sm:col-span-2 text-[10px] text-charcoal/45">
+                    Akun investment mengikuti wallet yang dipilih di atas. Untuk IDX, 1 lot = 100 saham.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
           <select
             value={form.type === "Transfer" ? "Transfer" : form.category}
             disabled={form.type === "Transfer"}
@@ -348,13 +558,30 @@ export function AddTransactionModal({
             className="w-full border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px]"
           />
           <input
-            placeholder="Jumlah (Rp)"
+            placeholder={form.type === "Saving" && stockPurchase && stockMarket === "US" ? "Jumlah transaksi (Rp)" : "Jumlah (Rp)"}
             inputMode="numeric"
             value={form.amount}
-            onChange={(e) => setForm((f) => ({ ...f, amount: formatAmountInput(e.target.value) }))}
+            onChange={(e) => {
+              setStockAmountAuto(false);
+              setForm((f) => ({ ...f, amount: formatAmountInput(e.target.value) }));
+            }}
             className="w-full border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px]"
           />
           {formError && <p className="text-[13px] text-rose-600">{formError}</p>}
+          {pendingStockPurchase && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+              <p className="text-[12px] font-semibold text-amber-800">Transaksi tersimpan, tapi portfolio belum diperbarui</p>
+              <p className="mt-1 text-[11px] text-amber-700">Coba ulangi update portfolio. Transaksi tidak akan disimpan lagi.</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <button type="button" disabled={saving} onClick={() => void retryStockPurchase()} className="rounded-full bg-[#0B4D38] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-50">
+                  {saving ? "Mencoba…" : "Coba lagi"}
+                </button>
+                <a href="#stock-portfolio" onClick={handleClose} className="text-[11px] font-semibold text-forest-700 underline">
+                  Tambah manual di Stock Portfolio
+                </a>
+              </div>
+            </div>
+          )}
           <button
             onClick={handleManualSubmit}
             className="w-full bg-[#123524] text-white rounded-full py-3.5 text-[14px] font-semibold hover:bg-forest-800"
