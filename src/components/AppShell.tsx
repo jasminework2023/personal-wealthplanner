@@ -40,7 +40,7 @@ export function AppShell() {
       <MobileSidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
       <div className="flex-1 min-w-0">
         <Topbar title={title} onMenuClick={() => setMobileOpen(true)} />
-        <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-32 lg:py-8">
+        <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-6 pt-2 pb-32 lg:py-5">
           <div className="hidden lg:flex items-center justify-end gap-3 mb-2">
             <DateHeader />
             <ThemeToggle variant="compact" />
@@ -48,7 +48,7 @@ export function AppShell() {
           <Outlet />
         </main>
         <nav aria-label={language === "id" ? "Navigasi utama" : "Main navigation"} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[env(safe-area-inset-bottom)] lg:hidden">
-          <div className="wp-nav pointer-events-auto mx-auto grid h-16 max-w-md grid-cols-5 items-center rounded-[22px] px-2">
+          <div className="wp-nav pointer-events-auto mx-auto grid h-16 max-w-md grid-cols-5 items-center rounded-2xl px-2">
             {([
               { to: "/", label: navLabels.home, Icon: Wallet },
               { to: "/transaction", label: language === "id" ? "Transaksi" : "Transaction", Icon: ArrowLeftRight },
@@ -74,7 +74,7 @@ export function AppShell() {
         </nav>
         {quickAddOpen && <div className="fixed inset-0 z-[60] flex items-end justify-center p-3 sm:items-center">
           <div className="wp-backdrop absolute inset-0 bg-[#0F2A20]/45 backdrop-blur-[2px]" onClick={() => setQuickAddOpen(false)} />
-          <div className="wp-sheet relative w-full max-w-sm rounded-[28px] bg-white p-5 pb-[max(20px,env(safe-area-inset-bottom))] shadow-float" onClick={(e) => e.stopPropagation()}>
+          <div className="wp-sheet relative w-full max-w-sm rounded-2xl bg-white p-4 pb-[max(20px,env(safe-area-inset-bottom))] shadow-float" onClick={(e) => e.stopPropagation()}>
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-charcoal/15" />
             <div className="mb-4 flex items-center justify-between"><h3 className="text-[17px] font-bold tracking-[-0.02em] text-forest-900">{language === "id" ? "Tambah Transaksi" : "Add Transaction"}</h3><button onClick={() => setQuickAddOpen(false)} aria-label={navLabels.close} className="flex h-9 w-9 items-center justify-center rounded-full bg-charcoal/[0.06] text-charcoal/60"><X size={18}/></button></div>
             <button onClick={() => { setTransactionMode("manual"); setTransactionModalOpen(true); setQuickAddOpen(false); }} className="mb-2.5 flex w-full items-center gap-3.5 rounded-2xl bg-accent/20 p-3.5 text-left"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-ink"><Plus size={21} strokeWidth={2.4}/></span><span><span className="block text-[14px] font-bold text-forest-900">{language === "id" ? "Tambah Transaksi Manual" : "Add Transaction Manually"}</span><span className="mt-0.5 block text-[12px] text-charcoal/55">{language === "id" ? "Isi pemasukan, pengeluaran, atau tabungan" : "Enter income, expenses, or savings"}</span></span></button>
