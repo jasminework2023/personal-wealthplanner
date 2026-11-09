@@ -858,12 +858,6 @@ html.dark .wallet-stack-card {
   font-variant-numeric: tabular-nums;
 }
 
-.home-asset-summary .asset-total-value {
-  font-size: clamp(26px, 7.5vw, 32px) !important;
-  font-weight: 500 !important;
-  letter-spacing: -0.02em !important;
-}
-
 .rounded-\\[28px\\] { border-radius: 16px; }
 .rounded-\\[22px\\] { border-radius: 14px; }
 
