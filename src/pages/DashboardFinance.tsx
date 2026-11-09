@@ -295,8 +295,33 @@ export function DashboardFinance() {
   // Wallet is the source of truth for cash/bank/e-wallet balances; Asset Tracker only aggregates it.
   const liquidAssetsFromWallets = wallets.map((wallet) => ({ name: wallet.name, value: wallet.balance }));
   const integratedLiquidTotal = liquidAssetsFromWallets.reduce((sum, item) => sum + item.value, 0);
+  const [usdIdrRate, setUsdIdrRate] = useState<number | null>(null);
+  const [usdIdrUpdatedAt, setUsdIdrUpdatedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadUsdIdrRate() {
+      try {
+        const res = await fetch("/api/exchange-rate?from=USD&to=IDR", { cache: "no-store" });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !Number.isFinite(Number(data.rate)) || Number(data.rate) <= 0) return;
+        if (!cancelled) {
+          setUsdIdrRate(Number(data.rate));
+          setUsdIdrUpdatedAt(data.updatedAt || null);
+        }
+      } catch {}
+    }
+    void loadUsdIdrRate();
+    const interval = window.setInterval(loadUsdIdrRate, 15 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
   const stockIDTotal = assets.stocksID.reduce((sum, item) => sum + item.value, 0);
-  const stockUSTotalIDR = assets.stocksUS.reduce((sum, item) => sum + item.value, 0) * 16300;
+  const stockUSTotalUSD = assets.stocksUS.reduce((sum, item) => sum + item.value, 0);
+  const stockUSTotalIDR = usdIdrRate ? stockUSTotalUSD * usdIdrRate : 0;
   const integratedInvestmentTotal = assets.investmentAssets.reduce((sum, item) => sum + item.value, 0) + stockIDTotal + stockUSTotalIDR;
   const integratedTotalAssets = integratedLiquidTotal + integratedInvestmentTotal;
   const integratedAssetProgress = assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0;
@@ -422,6 +447,7 @@ export function DashboardFinance() {
           <p className="text-[13px] font-bold text-[#03140C]/90">Total aset</p>
           <p className="asset-tracker-total-value mt-1 whitespace-nowrap font-extrabold leading-[1.1] tracking-[-0.02em] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(integratedTotalAssets)}</p>
           <p className="mt-1 text-[13px] font-normal text-[#03140C]/75">{assets.target > 0 ? `${formatPercent(integratedAssetProgress)} dari target aset` : "Target aset belum diatur"}</p>
+          {stockUSTotalUSD > 0 && <p className="mt-1 text-[10px] font-medium text-[#03140C]/60">{usdIdrRate ? "Kurs USD/IDR: Rp " + Math.round(usdIdrRate).toLocaleString("id-ID") + (usdIdrUpdatedAt ? " · update " + new Date(usdIdrUpdatedAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : "") : "Kurs USD/IDR sedang diperbarui…"}</p>}
           <div className="mt-2 h-[6px] w-full overflow-hidden rounded-full bg-[#03140C]/15">
             <div className="h-full rounded-full bg-[#03140C]" style={{ width: `${Math.min(Math.max(integratedAssetProgress, 0), 100)}%` }} />
           </div>
