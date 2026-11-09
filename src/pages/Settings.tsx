@@ -158,14 +158,14 @@ export function Settings() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-3">
       <div>
         <h1 className="page-title">{id ? "Profil & Pengaturan" : "Profile & Settings"}</h1>
         <p className="page-sub">{id ? "Atur profil dan baseline keuanganmu. Perubahan setup akan disimpan ke spreadsheet." : "Aktifkan baseline keuanganmu. Perubahan di sini akan ditulis ke spreadsheet."}</p>
       </div>
 
-      <Card className="!p-4 sm:!p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <Card className="!p-4 sm:!p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#CFEFDD] text-[#0B6B47]"><Settings2 size={19} /></span>
             <div><h3 className="text-[15px] font-semibold text-forest-900">{id ? "Pengaturan Baseline Keuangan" : "Financial Baseline Setup"}</h3><p className="text-[12px] text-charcoal/50 mt-0.5">{id ? "Pilih kategori yang ingin digunakan. Klik + untuk menambahkan kategori sendiri." : "Centang kategori yang ingin dipakai. Klik + untuk menambah kategori sendiri."}</p></div>
@@ -183,7 +183,7 @@ export function Settings() {
 
         {loading ? <div className="py-12 flex justify-center text-charcoal/40"><Loader2 className="animate-spin"/></div> :
           <div className="mt-6 overflow-x-auto pb-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {SECTION_META.map((section) => (
                 <SetupSection key={section.key} meta={section} items={setup[section.key]} onAdd={() => addItem(section.key)} onRemove={(i) => removeItem(section.key, i)} onUpdate={(i, patch) => updateItem(section.key, i, patch)} />
               ))}
@@ -249,7 +249,7 @@ function SetupSection({ meta, items, onAdd, onRemove, onUpdate }: { meta: typeof
   const title = id ? ({ income: "Pemasukan", expense: "Pengeluaran", saving: "Tabungan & Investasi", bank: "Akun Bank" } as Record<SectionKey,string>)[meta.key] : meta.title;
   const subtitle = id ? ({ income: "Sumber pemasukan", expense: "Pengeluaran & anggaran", saving: "Tabungan & investasi", bank: "Akun kas & bank" } as Record<SectionKey,string>)[meta.key] : ({ income: "Income sources", expense: "Expenses & budget", saving: "Savings & investments", bank: "Cash & bank accounts" } as Record<SectionKey,string>)[meta.key];
   return (
-    <div className="rounded-[20px] border border-charcoal/8 bg-white overflow-hidden">
+    <div className="rounded-[14px] border border-charcoal/8 bg-white overflow-hidden">
       <div className={`${meta.tone} px-4 py-3.5 text-white`}><div className="flex items-center justify-between"><p className="text-[14.5px] font-bold tracking-[-0.01em]">{title}</p><span className="rounded-full bg-white/20 px-2 py-0.5 text-[10.5px] font-semibold text-white">{items.filter(i => i.active).length} {id ? "aktif" : "active"}</span></div><p className="text-[11.5px] text-white/80 mt-0.5">{subtitle}</p></div>
       <div className="px-3.5 py-2 bg-charcoal/[0.03] border-b border-charcoal/8 flex items-center justify-between text-[11px] font-semibold text-charcoal/50"><span>{id ? "Kategori" : "Category"}</span><span>{id ? "Status" : "Status"}</span></div>
       <div className="p-1.5 max-h-[420px] overflow-y-auto">
