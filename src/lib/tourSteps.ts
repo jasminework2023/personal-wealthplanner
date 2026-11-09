@@ -14,10 +14,10 @@ export const mainTourSteps: TourStep[] = [
   { id: "main-menu", route: "/", selectorDesktop: '[data-tour="main-menu"]', selectorMobile: '[data-tour="main-menu"]', title: "Menu Utama", description: "Pintasan ke semua fitur." },
   { id: "home-fab", route: "/", selectorDesktop: '[data-tour="home-fab"]', selectorMobile: '[data-tour="home-fab"]', title: "Tambah transaksi", description: "Catat pemasukan, pengeluaran, atau tabungan di sini. Makin rutin dicatat, makin akurat laporannya." },
   { id: "main-navigation", route: "/", selectorDesktop: '[data-tour="desktop-sidebar"]', selectorMobile: '[data-tour="mobile-bottom-nav"]', title: "Navigasi", description: "Pindah antar Beranda, Transaksi, Target, dan Profil." },
-  { id: "report-menu", route: "/finance", selectorDesktop: '[data-tour="menu-report"]', selectorMobile: '[data-tour="menu-report"]', title: "Laporan", description: "Income statement, cashflow, dan Asset Tracker (termasuk Stock Portfolio)." },
-  { id: "budget-menu", route: "/budgeting", selectorDesktop: '[data-tour="menu-budget"]', selectorMobile: '[data-tour="menu-budget"]', title: "Anggaran", description: "Atur batas per kategori dan pantau statusnya." },
-  { id: "calculator-menu", route: "/calculator", selectorDesktop: '[data-tour="menu-calculator"]', selectorMobile: '[data-tour="menu-calculator"]', title: "Kalkulator", description: "Hitung dana haji, pendidikan, pensiun, dan lainnya." },
-  { id: "protection-menu", route: "/protection", selectorDesktop: '[data-tour="menu-protection"]', selectorMobile: '[data-tour="menu-protection"]', title: "Proteksi", description: "Cek kecukupan perlindungan keluarga dan rekomendasi produk." },
+  { id: "report-menu", route: "/finance", selectorDesktop: '[data-tour="menu-report"]', selectorMobile: '[data-tour="report-summary"]', title: "Laporan", description: "Income statement, cashflow, dan Asset Tracker (termasuk Stock Portfolio)." },
+  { id: "budget-menu", route: "/budgeting", selectorDesktop: '[data-tour="menu-budget"]', selectorMobile: '[data-tour="budget-summary"]', title: "Anggaran", description: "Atur batas per kategori dan pantau statusnya." },
+  { id: "calculator-menu", route: "/calculator", selectorDesktop: '[data-tour="menu-calculator"]', selectorMobile: '[data-tour="calculator-header"]', title: "Kalkulator", description: "Hitung dana haji, pendidikan, pensiun, dan lainnya." },
+  { id: "protection-menu", route: "/protection", selectorDesktop: '[data-tour="menu-protection"]', selectorMobile: '[data-tour="protection-hero"]', title: "Proteksi", description: "Cek kecukupan perlindungan keluarga dan rekomendasi produk." },
 ];
 
 export const pageTourSteps: Record<string, TourStep[]> = {
