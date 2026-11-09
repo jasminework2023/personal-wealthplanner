@@ -289,6 +289,11 @@ export function DashboardFinance() {
   const { wallets } = useWallets();
   const historyData = useFinanceData(selectedMonth, true, selectedYear);
   const [activeReportTab, setActiveReportTab] = useState<"income" | "assets" | "cashflow">("income");
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [showAllAssets, setShowAllAssets] = useState(false);
+  const [editingAssetTarget, setEditingAssetTarget] = useState(false);
+  const [assetTargetInput, setAssetTargetInput] = useState("");
+  const [savingAssetTarget, setSavingAssetTarget] = useState(false);
 
 
   // Liquid assets are derived from the Wallet module so the same balance is not entered twice.
