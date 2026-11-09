@@ -3,6 +3,7 @@ import { getAppLanguage } from "../lib/format";
 import { AddTransactionModal } from "./AddTransactionModal";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { DesktopSidebar, MobileSidebar } from "./Sidebar";
+import { GuidedTour } from "./GuidedTour";
 import { Topbar } from "./Topbar";
 import { DateHeader } from "./DateHeader";
 import { ThemeToggle } from "./ThemeToggle";
@@ -46,8 +47,9 @@ export function AppShell() {
             <ThemeToggle variant="compact" />
           </div>
           <Outlet />
+          <GuidedTour />
         </main>
-        <nav aria-label={language === "id" ? "Navigasi utama" : "Main navigation"} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <nav data-tour="mobile-bottom-nav" aria-label={language === "id" ? "Navigasi utama" : "Main navigation"} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[env(safe-area-inset-bottom)] lg:hidden">
           <div className="wp-nav pointer-events-auto mx-auto grid h-16 max-w-md grid-cols-5 items-center rounded-2xl px-2">
             {([
               { to: "/", label: navLabels.home, Icon: Wallet },
@@ -59,7 +61,7 @@ export function AppShell() {
                 <span className={`text-[10px] font-semibold ${active ? "text-accent-text" : "text-muted"}`}>{label}</span>
               </button>;
             })}
-            <button onClick={() => setQuickAddOpen(true)} aria-label={language === "id" ? "Tambah transaksi" : "Add transaction"} className="relative -mt-7 mx-auto flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-accent-ink shadow-pop ring-[5px] ring-[rgb(var(--c-cream))]"><Plus size={28} strokeWidth={2.6}/></button>
+            <button data-tour="home-fab" onClick={() => setQuickAddOpen(true)} aria-label={language === "id" ? "Tambah transaksi" : "Add transaction"} className="relative -mt-7 mx-auto flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-accent-ink shadow-pop ring-[5px] ring-[rgb(var(--c-cream))]"><Plus size={28} strokeWidth={2.6}/></button>
             {([
               { to: "/goals", label: navLabels.goals, Icon: Target },
               { to: "/settings", label: language === "id" ? "Profil" : "Profile", Icon: UserRound },
