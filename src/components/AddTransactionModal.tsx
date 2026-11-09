@@ -583,8 +583,9 @@ export function AddTransactionModal({
             </div>
           )}
           <button
+            disabled={saving || !!pendingStockPurchase}
             onClick={handleManualSubmit}
-            className="w-full bg-[#123524] text-white rounded-full py-3.5 text-[14px] font-semibold hover:bg-forest-800"
+            className="w-full bg-[#123524] text-white rounded-full py-3.5 text-[14px] font-semibold hover:bg-forest-800 disabled:opacity-50"
           >
             Simpan transaksi
           </button>
