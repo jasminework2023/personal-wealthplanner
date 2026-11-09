@@ -115,6 +115,18 @@ function mockAssetData(): AssetData {
   };
 }
 
+function normalizeAssetData(value: any): AssetData {
+  const fallback = mockAssetData();
+  return {
+    totalAssets: Number(value?.totalAssets) || 0,
+    target: Number(value?.target) || 0,
+    liquidAssets: Array.isArray(value?.liquidAssets) ? value.liquidAssets : fallback.liquidAssets,
+    investmentAssets: Array.isArray(value?.investmentAssets) ? value.investmentAssets : fallback.investmentAssets,
+    stocksID: Array.isArray(value?.stocksID) ? value.stocksID : [],
+    stocksUS: Array.isArray(value?.stocksUS) ? value.stocksUS : [],
+  };
+}
+
 function mockAllocationMap(): Record<string, number> {
   const map: Record<string, number> = {};
   for (const c of [...incomeCategories, ...expenseCategories, ...savingCategories]) {
@@ -236,7 +248,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
                   year: cachedData.year || requestedYear,
                   transactions: includeAllMonths ? (cachedData.transactions || []) : (cachedData.transactions || []).filter((t: Transaction) => String(t.month || "").toLowerCase() === String(cachedData.month || requestedMonth).toLowerCase()),
                   budgetByCategory: cachedData.budgetByCategory || {},
-                  assets: cachedData.assets || s.assets,
+                  assets: normalizeAssetData(cachedData.assets || s.assets),
                   setup: cached.setup?.sections || s.setup,
                 }));
                 return;
@@ -257,7 +269,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
                 ? (data.transactions || [])
                 : (data.transactions || []).filter((t: Transaction) => String(t.month || "").toLowerCase() === String(data.month || requestedMonth).toLowerCase()),
               budgetByCategory: data.budgetByCategory || {},
-              assets: data.assets || mockAssetData(),
+              assets: normalizeAssetData(data.assets),
               setup: setup.ok && setup.data?.sections ? setup.data.sections : s.setup,
             }));
           }
