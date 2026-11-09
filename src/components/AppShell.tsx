@@ -7,7 +7,7 @@ import { GuidedTour } from "./GuidedTour";
 import { Topbar } from "./Topbar";
 import { DateHeader } from "./DateHeader";
 import { ThemeToggle } from "./ThemeToggle";
-import { Wallet, ArrowLeftRight, Target, UserRound, Plus, Sparkles, X, ChartNoAxesCombined } from "lucide-react";
+import { Wallet, ArrowLeftRight, Target, UserRound, Plus, Sparkles, X, ChartNoAxesCombined, HelpCircle } from "lucide-react";
 
 const titles: Record<string, string> = { "/wallets": "Wallet",
   "/": "Home",
@@ -20,6 +20,7 @@ const titles: Record<string, string> = { "/wallets": "Wallet",
   "/settings": "Profile & Settings",
   "/ai-assistant": "AI Assistant",
   "/goals": "Goals",
+  "/guidance": "Guidance",
 };
 
 export function AppShell() {
@@ -32,7 +33,7 @@ export function AppShell() {
   const navLabels = language === "id" ? { home: "Beranda", goals: "Target", close: "Tutup", quickAdd: "Tulis transaksi atau unggah foto struk" } : { home: "Home", goals: "Goals", close: "Close", quickAdd: "Enter a transaction or upload a receipt photo" };
   const location = useLocation();
   const navigate = useNavigate();
-  const titleId: Record<string, string> = { "/wallets": "Dompet", "/": "Home", "/finance": "Finance Report", "/transactions": "Komunitas", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/goals": "Target", "/ai-assistant": "Asisten AI" };
+  const titleId: Record<string, string> = { "/wallets": "Dompet", "/": "Home", "/finance": "Finance Report", "/transactions": "Komunitas", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/goals": "Target", "/ai-assistant": "Asisten AI", "/guidance": "Panduan" };
   const title = language === "en" ? (location.pathname.startsWith("/calculator/") ? "Financial Calculator" : (titles[location.pathname] ?? "Wealthplanner")) : (location.pathname.startsWith("/calculator/") ? "Kalkulator Keuangan" : (titleId[location.pathname] ?? "Wealthplanner"));
 
   return (
@@ -44,6 +45,7 @@ export function AppShell() {
         <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-6 pt-2 pb-32 lg:py-5">
           <div className="hidden lg:flex items-center justify-end gap-3 mb-2">
             <DateHeader />
+            <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "page", route: location.pathname.startsWith("/calculator") ? "/calculator" : location.pathname } }))} aria-label="Mulai panduan interaktif" className="flex h-9 w-9 items-center justify-center rounded-full border border-forest-100 bg-surface text-forest-800 shadow-sm"><HelpCircle size={17}/></button>
             <ThemeToggle variant="compact" />
           </div>
           <Outlet />
