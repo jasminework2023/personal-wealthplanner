@@ -73,7 +73,7 @@ export default {
       },
       fontFamily: {
         sans: ["Geist", "Inter", "system-ui", "sans-serif"],
-        display: ["Instrument Serif", "Newsreader", "Georgia", "serif"],
+        display: ["Instrument Serif", "Georgia", "serif"],
       },
       boxShadow: {
         card: "0 1px 2px rgba(15, 42, 32, 0.05), 0 6px 20px -8px rgba(15, 42, 32, 0.10)",
