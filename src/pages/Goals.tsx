@@ -218,7 +218,7 @@ export function Goals() {
 
             <div className="goal-plan-box mt-3 rounded-[14px] px-4 py-[14px]">
               <p className="text-[12px] font-normal opacity-75">{id ? "Target rencana" : "Planned target"}</p>
-              <p className="goal-target-amount num mt-0.5 text-[22px] font-extrabold leading-[1.1] tracking-[-0.02em] text-[#03140C]">{formatGoalCurrency(target)}</p>
+              <p className="goal-target-amount num mt-0.5 text-[22px] font-medium leading-[1.1] tracking-[-0.02em] text-[#03140C]">{formatGoalCurrency(target)}</p>
               <div className="mt-2 flex items-center justify-between gap-2"><span className="text-[12px] font-normal opacity-75">{id ? "Aset dialokasikan" : "Allocated assets"}</span><span className="num text-right text-[12px] font-bold">{formatGoalCurrency(allocated)}{target > 0 ? ` · ${Math.round(progress)}%` : ""}</span></div>
               <div className="goal-progress-track mt-[10px] h-[6px] overflow-hidden rounded-full"><div className="goal-progress-fill h-full rounded-full transition-all" style={{ width: progress + "%" }}/></div>
             </div>
