@@ -1895,7 +1895,7 @@ export function FinancialCalculator({ onOpen }: { onOpen: (id: string) => void }
     : { label: "FINANCIAL CALCULATOR", title: "Financial Calculator", subtitle: "Pick the simulation you need. Results can be saved as a plan." };
 
   return (
-    <div className="wp-calculator wp-calculator-hub" style={{ width: "100%", maxWidth: 560, margin: "0 auto", display: "grid", gap: 22, boxSizing: "border-box", paddingBottom: 16 }}>
+    <div data-tour="calculator-header" className="wp-calculator wp-calculator-hub" style={{ width: "100%", maxWidth: 560, margin: "0 auto", display: "grid", gap: 22, boxSizing: "border-box", paddingBottom: 16 }}>
       <style>{`
         .wp-calculator-hub button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
         .wp-calculator-hub .hub-calculator-row:focus-visible { outline: 3px solid rgb(var(--c-accent-text)); outline-offset: -3px; position: relative; z-index: 1; }
@@ -1905,7 +1905,7 @@ export function FinancialCalculator({ onOpen }: { onOpen: (id: string) => void }
       `}</style>
 
       {HUB_SECTIONS.map((section) => (
-        <section key={section.key} style={{ minWidth: 0 }}>
+        <section key={section.key} data-tour={section.key === HUB_SECTIONS[0]?.key ? "calculator-list" : undefined} style={{ minWidth: 0 }}>
           <h2 style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".09em", color: "rgb(var(--c-muted))", margin: "0 0 9px" }}>{section.title[isId ? "id" : "en"]}</h2>
           <div style={{ background: "rgb(var(--c-surface))", border: "1px solid rgb(var(--c-border))", borderRadius: 20, padding: "4px 15px", overflow: "hidden", boxSizing: "border-box" }}>
             {section.items.map((item, index) => {
@@ -1913,7 +1913,7 @@ export function FinancialCalculator({ onOpen }: { onOpen: (id: string) => void }
               const itemCopy = item.text[isId ? "id" : "en"];
               const isLast = index === section.items.length - 1;
               return (
-                <button key={item.id} type="button" className="hub-calculator-row" onClick={() => onOpen(item.id)} aria-label={`${itemCopy.title}: ${itemCopy.desc}`} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", minWidth: 0, minHeight: 64, padding: "9px 0", textAlign: "left", border: 0, borderBottom: isLast ? "none" : "1px solid rgb(var(--c-border))", borderRadius: 0, background: "transparent", color: "rgb(var(--c-charcoal))", cursor: "pointer", transition: "background .15s ease, opacity .15s ease" }}>
+                <button key={item.id} type="button" data-tour={section.key === HUB_SECTIONS[0]?.key && index === 0 ? "calculator-first-item" : undefined} className="hub-calculator-row" onClick={() => onOpen(item.id)} aria-label={`${itemCopy.title}: ${itemCopy.desc}`} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", minWidth: 0, minHeight: 64, padding: "9px 0", textAlign: "left", border: 0, borderBottom: isLast ? "none" : "1px solid rgb(var(--c-border))", borderRadius: 0, background: "transparent", color: "rgb(var(--c-charcoal))", cursor: "pointer", transition: "background .15s ease, opacity .15s ease" }}>
                   <span aria-hidden="true" style={{ display: "flex", alignItems: "center", justifyContent: "center", flex: "0 0 40px", width: 40, height: 40, borderRadius: 12, background: "rgb(var(--c-forest-50))", color: "rgb(var(--c-accent-text))" }}><Icon size={21} strokeWidth={1.9} /></span>
                   <span style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: "1 1 auto", minWidth: 0, gap: 2 }}>
                     <span style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.25, color: "rgb(var(--c-charcoal))", overflowWrap: "anywhere" }}>{itemCopy.title}</span>

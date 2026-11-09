@@ -30,9 +30,10 @@ const toolLinks = [
   { to: "/protection", label: "Financial Protection", icon: Shield },
 ];
 
-function NavItem({ to, label, icon: Icon, onNavigate }: { to: string; label: string; icon: any; onNavigate?: () => void }) {
+function NavItem({ to, label, icon: Icon, onNavigate, dataTour }: { to: string; label: string; icon: any; onNavigate?: () => void; dataTour?: string }) {
   return (
     <NavLink
+      data-tour={dataTour}
       to={to}
       end={to === "/"}
       onClick={onNavigate}
@@ -84,12 +85,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="px-2 flex-1 overflow-y-auto">
         <p className="px-3 text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.main}</p>
         <nav className="flex flex-col gap-0.5 mb-4">
-          {mainLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/finance" ? labels.report : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.label} onNavigate={onNavigate} />)}
+          {mainLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/finance" ? "menu-report" : l.to === "/budgeting" ? "menu-budget" : undefined} label={l.to === "/finance" ? labels.report : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.label} onNavigate={onNavigate} />)}
         </nav>
 
         <p className="px-3 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.tools}</p>
         <nav className="flex flex-col gap-0.5">
-          {toolLinks.map((l) => <NavItem key={l.to} {...l} label={l.to === "/wallets" ? labels.wallet : l.to === "/calculator" ? labels.calculator : labels.protection} onNavigate={onNavigate} />)}
+          {toolLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/calculator" ? "menu-calculator" : l.to === "/protection" ? "menu-protection" : undefined} label={l.to === "/wallets" ? labels.wallet : l.to === "/calculator" ? labels.calculator : labels.protection} onNavigate={onNavigate} />)}
           <a href="https://www.wealthplanner.id"  onClick={onNavigate} className="sidebar-item group flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all">
             <ExternalLink size={18} strokeWidth={2} className="sidebar-icon" />
             {labels.website}
@@ -106,7 +107,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function DesktopSidebar() {
   return (
-    <aside className="desktop-sidebar hidden lg:flex lg:flex-col w-[232px] shrink-0 h-screen sticky top-0 bg-[#F4F5F6] border-r border-[#E4E6E8]">
+    <aside data-tour="desktop-sidebar" className="desktop-sidebar hidden lg:flex lg:flex-col w-[232px] shrink-0 h-screen sticky top-0 bg-[#F4F5F6] border-r border-[#E4E6E8]">
       <SidebarContent />
     </aside>
   );

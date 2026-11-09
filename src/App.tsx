@@ -13,6 +13,7 @@ import { saveFinancialPlan } from "./lib/financialPlans";
 import { Goals } from "./pages/Goals";
 import { WalletsPage } from "./pages/WalletsPage";
 import { AIAssistant } from "./pages/AIAssistant";
+import { Guidance } from "./pages/Guidance";
 
 function CalculatorRoute() {
   const navigate = useNavigate();
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/protection" element={<FinancialProtection />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/guidance" element={<Guidance />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -36,7 +36,7 @@ export function Home() {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const id = language === "id";
-  const { error, isRealData, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month, assets } = useFinanceData();
+  const { error, isRealData, loading, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month, assets } = useFinanceData();
   const { wallets } = useWallets();
   // Keep Home and Report > Asset Tracker on the exact same asset calculation.
   // Wallet is the source of truth for liquid assets; investment assets come from the Asset Tracker.
@@ -124,7 +124,7 @@ export function Home() {
   }, [integratedTotalAssets, isRealData]);
 
   return (
-    <div className="flex flex-col gap-3 pb-4">
+    <div className="flex flex-col gap-3 pb-4" data-tour-loading={loading ? "true" : "false">
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/50">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
         <h1 className="font-display font-normal text-[26px] leading-[1.1] tracking-[-0.02em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
@@ -135,14 +135,14 @@ export function Home() {
         <div role="button" tabIndex={0}
           onClick={() => navigate("/finance")}
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }}
-          className="home-asset-summary h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] border-0 p-4 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)]"
+          data-tour="home-assets-desktop" className="home-asset-summary h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] border-0 p-4 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)]"
           style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)" }}>
           <div className="flex items-center justify-between gap-2">
             <p className="text-[11px] font-medium uppercase tracking-[-0.02em] text-[#075B40]/85">Asset Tracker</p>
             <button type="button"
               onClick={(event) => { event.stopPropagation(); setAssetsVisible((visible) => !visible); }}
               aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#064A34] transition hover:bg-[#006B48]/15">
+              data-tour="home-eye-desktop" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#064A34] transition hover:bg-[#006B48]/15">
               {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
             </button>
           </div>
@@ -166,7 +166,7 @@ export function Home() {
         <div role="button" tabIndex={0}
           onClick={() => navigate("/budgeting")}
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }}
-          className="hero-forest h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] p-4 text-white transition hover:-translate-y-0.5">
+          data-tour="home-budget-desktop" className="hero-forest h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] p-4 text-white transition hover:-translate-y-0.5">
           <p className="text-[11px] font-medium uppercase tracking-[-0.02em] text-white/70">Budget Tracker</p>
           <p className="mt-1.5 text-[12px] font-medium tracking-[-0.02em] text-white/70">{id ? "Sisa anggaran" : "Remaining budget"}</p>
           <div className="mt-0.5 min-w-0 break-words text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums" style={{ fontSize: "34px" }}>
@@ -186,7 +186,7 @@ export function Home() {
         </div>
       </div>
 
-      <div className="md:hidden rounded-[20px] p-3.5 text-[#03140C]"
+      <div data-tour="home-assets-mobile" className="md:hidden rounded-[20px] p-3.5 text-[#03140C]"
         style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)" }}>
         <div className="flex items-center gap-2">
           <div className="flex min-w-0 flex-1 rounded-full bg-[rgba(3,20,12,.12)] p-[3px]">
@@ -202,7 +202,7 @@ export function Home() {
           <button type="button"
             onClick={() => setAssetsVisible((visible) => !visible)}
             aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#03140C] transition hover:bg-black/10">
+            data-tour="home-eye-mobile" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#03140C] transition hover:bg-black/10">
             {assetsVisible ? <Eye size={18} strokeWidth={2}/> : <EyeOff size={18} strokeWidth={2}/>}
           </button>
         </div>
@@ -233,7 +233,7 @@ export function Home() {
           <div role="button" tabIndex={0}
             onClick={() => navigate("/budgeting")}
             onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }}
-            className="mt-2 min-h-[150px] min-w-0 cursor-pointer px-0.5 pb-0.5 pt-1">
+            className="mt-2 min-h-[150px] min-w-0 cursor-pointer px-0.5 pb-0.5 pt-1" data-tour="home-budget-mobile">
             <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#03140C]/70">Budget Tracker</p>
             <p className="mt-1.5 text-[12px] font-medium text-[#03140C]/75">{id ? "Sisa anggaran" : "Remaining budget"}</p>
             <div className="mt-0.5 min-w-0 max-w-full break-words text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums" style={{ fontSize: "30px" }}>
@@ -254,7 +254,7 @@ export function Home() {
         )}
       </div>
 
-      <section>
+      <section data-tour="main-menu">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="section-title">{id ? "Menu Utama" : "Main Menu"}</h2>
           <span className="text-[11px] text-charcoal/45">Pilih fitur</span>

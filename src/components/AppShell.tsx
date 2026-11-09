@@ -3,10 +3,11 @@ import { getAppLanguage } from "../lib/format";
 import { AddTransactionModal } from "./AddTransactionModal";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { DesktopSidebar, MobileSidebar } from "./Sidebar";
+import { GuidedTour } from "./GuidedTour";
 import { Topbar } from "./Topbar";
 import { DateHeader } from "./DateHeader";
 import { ThemeToggle } from "./ThemeToggle";
-import { Wallet, ArrowLeftRight, Target, UserRound, Plus, Sparkles, X, ChartNoAxesCombined } from "lucide-react";
+import { Wallet, ArrowLeftRight, Target, UserRound, Plus, Sparkles, X, ChartNoAxesCombined, HelpCircle } from "lucide-react";
 
 const titles: Record<string, string> = { "/wallets": "Wallet",
   "/": "Home",
@@ -19,6 +20,7 @@ const titles: Record<string, string> = { "/wallets": "Wallet",
   "/settings": "Profile & Settings",
   "/ai-assistant": "AI Assistant",
   "/goals": "Goals",
+  "/guidance": "Guidance",
 };
 
 export function AppShell() {
@@ -31,7 +33,7 @@ export function AppShell() {
   const navLabels = language === "id" ? { home: "Beranda", goals: "Target", close: "Tutup", quickAdd: "Tulis transaksi atau unggah foto struk" } : { home: "Home", goals: "Goals", close: "Close", quickAdd: "Enter a transaction or upload a receipt photo" };
   const location = useLocation();
   const navigate = useNavigate();
-  const titleId: Record<string, string> = { "/wallets": "Dompet", "/": "Home", "/finance": "Finance Report", "/transactions": "Komunitas", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/goals": "Target", "/ai-assistant": "Asisten AI" };
+  const titleId: Record<string, string> = { "/wallets": "Dompet", "/": "Home", "/finance": "Finance Report", "/transactions": "Komunitas", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/goals": "Target", "/ai-assistant": "Asisten AI", "/guidance": "Panduan" };
   const title = language === "en" ? (location.pathname.startsWith("/calculator/") ? "Financial Calculator" : (titles[location.pathname] ?? "Wealthplanner")) : (location.pathname.startsWith("/calculator/") ? "Kalkulator Keuangan" : (titleId[location.pathname] ?? "Wealthplanner"));
 
   return (
@@ -43,11 +45,13 @@ export function AppShell() {
         <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-6 pt-2 pb-32 lg:py-5">
           <div className="hidden lg:flex items-center justify-end gap-3 mb-2">
             <DateHeader />
+            <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "page", route: location.pathname.startsWith("/calculator") ? "/calculator" : location.pathname } }))} aria-label="Mulai panduan interaktif" className="flex h-9 w-9 items-center justify-center rounded-full border border-forest-100 bg-surface text-forest-800 shadow-sm"><HelpCircle size={17}/></button>
             <ThemeToggle variant="compact" />
           </div>
           <Outlet />
+          <GuidedTour />
         </main>
-        <nav aria-label={language === "id" ? "Navigasi utama" : "Main navigation"} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <nav data-tour="mobile-bottom-nav" aria-label={language === "id" ? "Navigasi utama" : "Main navigation"} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[env(safe-area-inset-bottom)] lg:hidden">
           <div className="wp-nav pointer-events-auto mx-auto grid h-16 max-w-md grid-cols-5 items-center rounded-2xl px-2">
             {([
               { to: "/", label: navLabels.home, Icon: Wallet },
@@ -59,7 +63,7 @@ export function AppShell() {
                 <span className={`text-[10px] font-semibold ${active ? "text-accent-text" : "text-muted"}`}>{label}</span>
               </button>;
             })}
-            <button onClick={() => setQuickAddOpen(true)} aria-label={language === "id" ? "Tambah transaksi" : "Add transaction"} className="relative -mt-7 mx-auto flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-accent-ink shadow-pop ring-[5px] ring-[rgb(var(--c-cream))]"><Plus size={28} strokeWidth={2.6}/></button>
+            <button data-tour="home-fab" onClick={() => setQuickAddOpen(true)} aria-label={language === "id" ? "Tambah transaksi" : "Add transaction"} className="relative -mt-7 mx-auto flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-accent-ink shadow-pop ring-[5px] ring-[rgb(var(--c-cream))]"><Plus size={28} strokeWidth={2.6}/></button>
             {([
               { to: "/goals", label: navLabels.goals, Icon: Target },
               { to: "/settings", label: language === "id" ? "Profil" : "Profile", Icon: UserRound },
