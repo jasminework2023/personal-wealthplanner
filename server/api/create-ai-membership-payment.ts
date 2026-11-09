@@ -72,8 +72,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         amount: selected.amount,
         payer_email: payerEmail,
         description: selected.description,
-        success_redirect_url: "https://wealthplanner.id/dashboard?membership=success",
-        failure_redirect_url: "https://wealthplanner.id/dashboard?membership=failed",
+        success_redirect_url: "https://app.wealthplanner.id/dashboard?membership=success",
+        failure_redirect_url: "https://app.wealthplanner.id/dashboard?membership=failed",
       }),
     });
 
