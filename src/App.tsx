@@ -13,6 +13,7 @@ import { saveFinancialPlan } from "./lib/financialPlans";
 import { Goals } from "./pages/Goals";
 import { WalletsPage } from "./pages/WalletsPage";
 import { AIAssistant } from "./pages/AIAssistant";
+import { Investments } from "./pages/Investments";
 
 function CalculatorRoute() {
   const navigate = useNavigate();
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/transactions" element={<TransactionReport />} />
           <Route path="/transaction" element={<Transaction />} />
           <Route path="/wallets" element={<WalletsPage />} />
+          <Route path="/investments" element={<Investments />} />
           <Route path="/budgeting" element={<MonthlyBudgeting />} />
           <Route path="/calculator" element={<CalculatorRoute />} />
           <Route path="/calculator/:id" element={<CalculatorRoute />} />
