@@ -108,17 +108,17 @@ export function Home() {
     <div className="flex flex-col gap-4 pb-4">
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/50">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
-        <h1 className="text-[20px] sm:text-[24px] font-bold leading-[1.1] tracking-[-0.03em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
+        <h1 className="font-display font-normal text-[26px] leading-[1.1] tracking-[-0.02em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
         <p className="text-[13.5px] text-charcoal/60">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
       </div>
 
-      <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[28px] p-4 sm:p-5 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)]" style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)", color: "#062D20" }}>
+      <Card className="home-asset-summary w-full overflow-hidden border-0 !rounded-[20px] p-3.5 sm:p-4 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)]" style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)", color: "#062D20" }}>
         <div className="flex items-center justify-between">
           <p className="text-[14px] sm:text-[16px] font-medium text-[#075B40]/85">{id ? "Total Aset" : "Total Assets"}</p>
         </div>
         <div className="mt-1 flex min-w-0 items-center gap-2">
           <span className="shrink-0 text-[clamp(22px,5.8vw,30px)] font-semibold leading-none tracking-[-0.6px] text-black" style={{ color: "#000000" }}>Rp</span>
-          <span style={{ fontSize: "clamp(28px, 8.1vw, 42px)", color: "#000000" }} className="asset-total-value min-w-0 flex-1 font-bold leading-tight tracking-[-1px] tabular-nums text-black">
+          <span style={{ fontSize: "clamp(26px, 7.5vw, 32px)", color: "#000000" }} className="asset-total-value min-w-0 flex-1 font-medium leading-tight tracking-[-1px] tabular-nums text-black">
             {assetsVisible ? new Intl.NumberFormat(id ? "id-ID" : "en-US", { maximumFractionDigits: 0 }).format(integratedTotalAssets) : "••••••••"}
           </span>
           <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} title={assetsVisible ? "Sembunyikan total aset" : "Tampilkan total aset"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#006B48]/15 text-[#064A34] transition hover:bg-[#006B48]/25">
@@ -131,15 +131,15 @@ export function Home() {
           </span>
           {assets.target > 0 && <span className="text-right text-[12px] sm:text-[14px] font-medium text-[#075B40]/90">Target {formatRupiah(assets.target)}</span>}
         </div>
-        <div className="mt-3 h-[54px] sm:h-[62px] w-full" aria-label={id ? "Grafik tren aset" : "Asset trend chart"} role="img">
+        <div className="mt-3 h-[40px] sm:h-[48px] w-full" aria-label={id ? "Grafik tren aset" : "Asset trend chart"} role="img">
           <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
             <polyline points="8,48 46,41 84,45 122,27 160,33 198,14 246,18 312,0" fill="none" stroke="#063D2A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
           </svg>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="flex min-w-0 flex-col rounded-[18px] bg-[#007E51]/35 px-3.5 py-3">
+          <div className="flex min-w-0 flex-col rounded-[14px] bg-[#007E51]/35 px-3 py-2">
             <span className="text-[12px] sm:text-[14px] font-medium text-[#064A34]/80">{id ? "Pemasukan" : "Income"}</span>
-            <p className="mt-0.5 break-words text-[clamp(15px,4.1vw,19px)] font-bold leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalIncome)}</p>
+            <p className="mt-0.5 break-words text-[clamp(13px,3.8vw,16px)] font-medium leading-tight tracking-[-0.3px] tabular-nums">{formatRupiah(totalIncome)}</p>
           </div>
           <div className="flex min-w-0 flex-col rounded-[18px] bg-[#007E51]/35 px-3.5 py-3">
             <span className="text-[12px] sm:text-[14px] font-medium text-[#064A34]/80">{id ? "Pengeluaran" : "Expense"}</span>
@@ -153,21 +153,21 @@ export function Home() {
           <h2 className="section-title">{id ? "Menu Utama" : "Main Menu"}</h2>
           <span className="text-[11.5px] text-charcoal/45">Pilih fitur</span>
         </div>
-        <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-4 gap-2 sm:gap-3">
           {menus.map(({ label, icon: Icon, to, soon, tone }) => (
             <button key={label} type="button" disabled={Boolean(soon)} onClick={() => to && navigate(to)}
-              className={`relative flex min-h-[82px] flex-col items-center justify-center gap-1.5 rounded-[16px] border border-forest-100/50 bg-white px-1 py-2 text-center shadow-card transition sm:min-h-[96px] ${soon ? "cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-float"}`}>
-              <span className={`flex h-9 w-9 items-center justify-center rounded-[12px] ${tone} ${soon ? "opacity-60" : ""}`}>
+              className={`relative flex min-h-[68px] flex-col items-center justify-center gap-1.5 rounded-[14px] border border-forest-100/50 bg-white px-1 py-2 text-center shadow-card transition sm:min-h-[78px] ${soon ? "cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-float"}`}>
+              <span className={`flex h-8 w-8 items-center justify-center rounded-[12px] ${tone} ${soon ? "opacity-60" : ""}`}>
                 <Icon size={19} strokeWidth={2.1}/>
               </span>
-              <span className={`text-[11.5px] font-semibold leading-tight text-forest-900 ${soon ? "opacity-70" : ""}`}>{label}</span>
+              <span className={`text-[11px] font-semibold leading-tight text-forest-900 ${soon ? "opacity-70" : ""}`}>{label}</span>
               {soon && <span className="absolute right-2 top-2 rounded-full bg-[#DDF7E8] px-1.5 py-0.5 text-[8.5px] font-bold leading-none text-[#0B6B47]">Soon</span>}
             </button>
           ))}
         </div>
       </section>
 
-      <div className="rounded-[22px] border border-forest-100 bg-forest-50 p-4">
+      <div className="rounded-[14px] border border-forest-100 bg-forest-50 p-3">
         <div className="flex items-start gap-3.5">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-[20px]">💡</div>
           <div className="min-w-0"><p className="text-[14px] font-bold tracking-[-0.01em] text-forest-900">{id ? "Langkah Berikutnya" : "Next Step"}</p><p className="mt-1 text-[13px] leading-[1.55] text-charcoal/70">{nextStep}</p></div>
@@ -186,7 +186,7 @@ export function Home() {
           const allocated = Object.values(goalSettings.allocations?.[plan.id] || {}).reduce((sum, value) => sum + Number(value || 0), 0);
           const progress = target > 0 ? Math.min(100, Math.max(0, allocated / target * 100)) : 0;
           const goalName = goalSettings.names?.[plan.id] || plan.name;
-          return <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-[22px] border border-forest-100/50 bg-white p-4 text-left shadow-card transition hover:shadow-float">
+          return <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-[14px] border border-forest-100/50 bg-white p-3 text-left shadow-card transition hover:shadow-float">
             <div className="flex items-center gap-3">
               <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full" style={{ background: "conic-gradient(#0B6B47 " + progress + "%, #DDF7E8 " + progress + "%)" }}>
                 <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-white dark:bg-[#13271D]"><span className="text-[15px] font-bold tabular-nums text-forest-800">{Math.round(progress)}%</span></div>
@@ -195,7 +195,7 @@ export function Home() {
             </div>
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-forest-100"><div className="h-full rounded-full bg-forest-600 transition-all" style={{ width: progress + "%" }}/></div>
           </button>;
-        })}</div> : <div className="rounded-[22px] border border-dashed border-forest-200 bg-forest-50/50 px-4 py-6 text-center"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47]"><Target size={21}/></span><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-full bg-[#123524] px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm">Buka Calculator</button></div>}
+        })}</div> : <div className="rounded-[14px] border border-dashed border-forest-200 bg-forest-50/50 px-3 py-5 text-center"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47]"><Target size={21}/></span><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-full bg-[#123524] px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm">Buka Calculator</button></div>}
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
