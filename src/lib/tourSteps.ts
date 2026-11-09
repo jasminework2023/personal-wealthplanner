@@ -39,7 +39,7 @@ export const pageTourSteps: Record<string, TourStep[]> = {
   "/calculator": [
     { id: "calculator-header", route: "/calculator", selectorDesktop: '[data-tour="calculator-header"]', selectorMobile: '[data-tour="calculator-header"]', title: "Financial Calculator", description: "Pilih kebutuhan finansial yang ingin kamu hitung." },
     { id: "calculator-list", route: "/calculator", selectorDesktop: '[data-tour="calculator-list"]', selectorMobile: '[data-tour="calculator-list"]', title: "Pilihan Kalkulator", description: "Hitung kebutuhan seperti pendidikan, Haji, pensiun, KPR, dan lainnya." },
-    { id: "calculator-result", route: "/calculator", selectorDesktop: '[data-tour="calculator-result"]', selectorMobile: '[data-tour="calculator-result"]', title: "Simpan Hasil", description: "Hasil simulasi dapat kamu simpan untuk dipakai dalam perencanaan berikutnya." },
+    { id: "calculator-first-item", route: "/calculator", selectorDesktop: '[data-tour="calculator-first-item"]', selectorMobile: '[data-tour="calculator-first-item"]', title: "Mulai Simulasi", description: "Pilih salah satu kalkulator untuk mulai menghitung kebutuhanmu." },
   ],
 };
 
