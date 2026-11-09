@@ -166,7 +166,7 @@ export function Home() {
           <p className="text-[13px] font-medium text-white/70">Budget Tracker</p>
           <p className="mt-2 text-[12px] font-medium text-white/70">{id ? "Sisa anggaran" : "Remaining budget"}</p>
           <p className="mt-0.5 min-w-0 break-words text-[clamp(26px,3vw,34px)] font-medium leading-tight tracking-[-1px] tabular-nums">
-            {hasBudget ? (assetsVisible ? formatRupiah(remainingBudget) : "Rp ••••••") : "Rp0"}
+            {hasBudget ? (assetsVisible ? formatRupiah(remainingBudget) : "Rp ••••••") : (assetsVisible ? "Rp0" : "Rp ••••••")}
           </p>
           {!hasBudget && <p className="mt-1 text-[11px] text-white/55">{id ? "Atur anggaran" : "Set a budget"}</p>}
           <div className="mt-3 grid grid-cols-2 gap-2">
