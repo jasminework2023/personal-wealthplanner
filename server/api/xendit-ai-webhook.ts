@@ -15,7 +15,10 @@ function addDays(iso: string, days: number) {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
-  const callbackToken = process.env.XENDIT_CALLBACK_TOKEN;
+  // Keep compatibility with the existing Xendit production webhook secret.
+  // XENDIT_CALLBACK_TOKEN is preferred for the new AI-only endpoint, while
+  // XENDIT_WEBHOOK_TOKEN is the legacy production secret already configured.
+  const callbackToken = process.env.XENDIT_CALLBACK_TOKEN || process.env.XENDIT_WEBHOOK_TOKEN;
   const suppliedToken = String(req.headers["x-callback-token"] || "").trim();
   if (!callbackToken || suppliedToken !== callbackToken) {
     return res.status(401).json({ error: "Callback tidak valid." });
