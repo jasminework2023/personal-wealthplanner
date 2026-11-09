@@ -53,11 +53,16 @@ export function GuidedTour() {
     if (active) return;
     if (location.pathname !== "/") return;
     if (storageDone()) return;
-    const timer = window.setTimeout(() => {
-      if (document.querySelector('[role="dialog"]:not([data-tour-dialog="true"])')) return;
+    let timer: number | undefined;
+    const tryStart = () => {
+      if (document.querySelector('[role="dialog"]:not([data-tour-dialog="true"])') || document.querySelector('[data-tour-loading="true"]')) {
+        timer = window.setTimeout(tryStart, 400);
+        return;
+      }
       start({ type: "main", route: "/" });
-    }, 800);
-    return () => window.clearTimeout(timer);
+    };
+    timer = window.setTimeout(tryStart, 800);
+    return () => { if (timer) window.clearTimeout(timer); };
   }, [active, location.pathname]);
 
   useEffect(() => {
