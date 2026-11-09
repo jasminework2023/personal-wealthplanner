@@ -23,6 +23,7 @@ export function GuidedTour() {
   const location = useLocation();
   const navigate = useNavigate();
   const [steps, setSteps] = useState<TourStep[]>([]);
+  const [tourType, setTourType] = useState<"main" | "page">("main");
   const [index, setIndex] = useState(0);
   const [active, setActive] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
@@ -39,6 +40,7 @@ export function GuidedTour() {
     if (!nextSteps.length) return;
     startRequestRef.current = { type: nextType, route: nextRoute };
     setSteps(nextSteps);
+    setTourType(nextType);
     setIndex(0);
     setActive(true);
   };
@@ -141,11 +143,12 @@ export function GuidedTour() {
   }, [active, waiting, index]);
 
   function finish(markDone: boolean) {
-    if (markDone) storageSetDone();
+    if (markDone && tourType === "main") storageSetDone();
     setActive(false);
     setTarget(null);
     setRect(null);
     setSteps([]);
+    setTourType("main");
     setIndex(0);
   }
 
