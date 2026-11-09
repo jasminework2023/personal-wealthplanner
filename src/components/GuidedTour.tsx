@@ -34,7 +34,8 @@ export function GuidedTour() {
   const start = (detail: StartDetail = { type: "main" }) => {
     const nextType = detail.type || "main";
     const nextRoute = detail.route || location.pathname;
-    const nextSteps = getTourSteps(nextType, nextRoute);
+    let nextSteps = getTourSteps(nextType, nextRoute);
+    if (!nextSteps.length && nextType === "page") nextSteps = getTourSteps("main", "/");
     if (!nextSteps.length) return;
     startRequestRef.current = { type: nextType, route: nextRoute };
     setSteps(nextSteps);
@@ -90,7 +91,8 @@ export function GuidedTour() {
       }
       if (elapsed >= 2000) {
         setWaiting(false);
-        setIndex((value) => Math.min(value + 1, steps.length - 1));
+        if (index >= steps.length - 1) finish(true);
+        else setIndex((value) => value + 1);
         return;
       }
       elapsed += 100;
@@ -187,9 +189,10 @@ export function GuidedTour() {
 
   return (
     <div className="fixed inset-0 z-[9999] pointer-events-none" aria-hidden={false}>
-      <div className="absolute inset-0 bg-black/55" />
+      <style>{`@keyframes wp-tour-fade{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.wp-tour-fade{animation:none!important}}`}</style>
+      <div className="absolute inset-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />
       {highlight && <div
-        className="absolute rounded-[14px] outline outline-2 outline-[#6EE7A8] shadow-[0_0_0_9999px_rgba(0,0,0,.55)]"
+        className="absolute rounded-[14px] outline outline-2 outline-[#6EE7A8] shadow-[0_0_0_9999px_rgba(0,0,0,.55)] wp-tour-fade" style={{ left: highlight.left, top: highlight.top, width: highlight.width, height: highlight.height, animation: "wp-tour-fade 180ms ease-out" }}
         style={{ left: highlight.left, top: highlight.top, width: highlight.width, height: highlight.height }}
       />}
       <div
