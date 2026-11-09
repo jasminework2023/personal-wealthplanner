@@ -142,16 +142,18 @@ function StockTracker({
   stocksID,
   stocksUS,
   isRealData,
+  investmentAccounts,
 }: {
   stocksID: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number }[];
   stocksUS: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number }[];
   isRealData: boolean;
+  investmentAccounts: { name: string; balance: number }[];
 }) {
   const [market, setMarket] = useState<"ID" | "US">("ID");
   const [refreshing, setRefreshing] = useState(false);
   const [open, setOpen] = useState(false);
   const [ticker, setTicker] = useState("");
-  const [shares, setShares] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [avgPrice, setAvgPrice] = useState("");
   const [account, setAccount] = useState("");
   const [error, setError] = useState("");
@@ -179,11 +181,12 @@ function StockTracker({
 
   async function addStock() {
     const token = getStoredToken();
-    const q = Number(shares);
+    const enteredQuantity = Number(quantity);
+    const q = market === "ID" ? enteredQuantity * 100 : enteredQuantity;
     const p = Number(avgPrice);
     const t = ticker.trim().toUpperCase();
     if (!token) return setError("Sesi dashboard tidak ditemukan.");
-    if (!t || q <= 0 || p < 0) return setError("Ticker, quantity, dan harga beli wajib diisi.");
+    if (!t || enteredQuantity <= 0 || p < 0) return setError("Ticker, quantity, dan harga beli wajib diisi.");
     setRefreshing(true);
     setError("");
     try {
@@ -194,7 +197,7 @@ function StockTracker({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan saham.");
-      setTicker(""); setShares(""); setAvgPrice(""); setAccount(""); setOpen(false);
+      setTicker(""); setQuantity(""); setAvgPrice(""); setAccount(""); setOpen(false);
       window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal menyimpan saham.");
@@ -207,8 +210,8 @@ function StockTracker({
     <div className="mt-3 rounded-xl border border-forest-100/70 bg-forest-50/30 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-[13px] font-semibold text-forest-900">Stock</p>
-          <p className="text-[10px] text-charcoal/45">Live price · harga beli · unrealized P/L</p>
+          <p className="text-[13px] font-semibold text-forest-900">Stock Portfolio</p>
+          <p className="text-[10px] text-charcoal/45">Investment Asset · harga pasar · unrealized P/L</p>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="flex rounded-full bg-white p-0.5 border border-charcoal/8">
@@ -234,7 +237,7 @@ function StockTracker({
         <div className="mt-2 overflow-x-auto">
           <table className="w-full min-w-[640px] text-left text-[10px]">
             <thead className="border-b border-charcoal/8 text-[9px] uppercase tracking-wide text-charcoal/40">
-              <tr><th className="px-1.5 py-1.5">Ticker</th><th className="px-1.5 py-1.5 text-right">Qty</th><th className="px-1.5 py-1.5 text-right">Buy</th><th className="px-1.5 py-1.5 text-right">Current</th><th className="px-1.5 py-1.5 text-right">Value</th><th className="px-1.5 py-1.5 text-right">P/L</th></tr>
+              <tr><th className="px-1.5 py-1.5">Ticker</th><th className="px-1.5 py-1.5 text-right">Qty</th><th className="px-1.5 py-1.5 text-right">Buy</th><th className="px-1.5 py-1.5 text-right">Current</th><th className="px-1.5 py-1.5 text-right">Value</th><th className="px-1.5 py-1.5 text-right">P/L</th><th className="px-1.5 py-1.5 text-right">P/L %</th></tr>
             </thead>
             <tbody>
               {rows.map((row) => (
@@ -245,6 +248,7 @@ function StockTracker({
                   <td className="px-1.5 py-2 text-right tabular-nums">{market === "ID" ? formatRupiah(row.currentPrice) : "$" + row.currentPrice.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
                   <td className="px-1.5 py-2 text-right font-semibold tabular-nums">{market === "ID" ? formatRupiah(row.value) : "$" + row.value.toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
                   <td className={"px-1.5 py-2 text-right font-semibold tabular-nums " + (row.pl >= 0 ? "text-forest-700" : "text-rose-600")}>{row.pl >= 0 ? "+" : "−"}{market === "ID" ? formatRupiah(Math.abs(row.pl)) : "$" + Math.abs(row.pl).toLocaleString("en-US", { maximumFractionDigits: 2 })}</td>
+                  <td className={"px-1.5 py-2 text-right font-semibold tabular-nums " + (row.pl >= 0 ? "text-forest-700" : "text-rose-600")}>{row.avgPrice > 0 ? ((row.pl / (row.avgPrice * row.shares)) * 100).toFixed(2) : "0.00"}%</td>
                 </tr>
               ))}
             </tbody>
@@ -259,11 +263,11 @@ function StockTracker({
           </div>
           <div className="mt-2 grid gap-2 sm:grid-cols-4">
             <input value={ticker} onChange={(e) => setTicker(e.target.value)} placeholder={market === "ID" ? "BBCA" : "AAPL"} className="rounded-lg border border-charcoal/12 px-2.5 py-2 text-[11px] outline-none"/>
-            <input value={shares} onChange={(e) => setShares(e.target.value.replace(/[^0-9.]/g, ""))} placeholder={market === "ID" ? "Lot / shares" : "Shares"} inputMode="decimal" className="rounded-lg border border-charcoal/12 px-2.5 py-2 text-[11px] outline-none"/>
+            <input value={quantity} onChange={(e) => setQuantity(e.target.value.replace(/[^0-9.]/g, ""))} placeholder={market === "ID" ? "Jumlah lot" : "Jumlah saham"} inputMode="decimal" className="rounded-lg border border-charcoal/12 px-2.5 py-2 text-[11px] outline-none"/>
             <input value={avgPrice} onChange={(e) => setAvgPrice(e.target.value.replace(/[^0-9.]/g, ""))} placeholder={market === "ID" ? "Harga beli (Rp)" : "Buy price (USD)"} inputMode="decimal" className="rounded-lg border border-charcoal/12 px-2.5 py-2 text-[11px] outline-none"/>
-            <input value={account} onChange={(e) => setAccount(e.target.value)} placeholder="Investment account" className="rounded-lg border border-charcoal/12 px-2.5 py-2 text-[11px] outline-none"/>
+            <select value={account} onChange={(e) => setAccount(e.target.value)} className="rounded-lg border border-charcoal/12 bg-white px-2.5 py-2 text-[11px] outline-none"><option value="">Pilih investment account</option>{investmentAccounts.map((item) => <option key={item.name} value={item.name}>{item.name}</option>)}</select>
           </div>
-          <p className="mt-1.5 text-[9px] text-charcoal/40">{market === "ID" ? "Untuk IDX, quantity saat ini disimpan sebagai jumlah saham. Lot → 100 saham akan kita kunci di tahap berikutnya." : "USD dipisahkan dari IDR agar nilai portfolio tidak salah."}</p>
+          <p className="mt-1.5 text-[9px] text-charcoal/40">{market === "ID" ? "1 lot = 100 saham. Nilai IDX dihitung otomatis berdasarkan jumlah lot." : "US menggunakan shares. Nilai portfolio tetap dalam USD dan dikonversi ke IDR di Total Aset."}</p>
           <div className="mt-2 flex justify-end">
             <button type="button" onClick={() => void addStock()} disabled={refreshing} className="rounded-full bg-[#0B4D38] px-3.5 py-2 text-[10px] font-semibold text-white disabled:opacity-50">{refreshing ? "Menyimpan…" : "Simpan saham"}</button>
           </div>
@@ -520,7 +524,7 @@ export function DashboardFinance() {
                <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Investment Assets</p>
                {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={integratedTotalAssets > 0 ? item.value / integratedTotalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={() => window.location.reload()} />)}
                {isRealData && <AddItemForm placeholder="Tambah investment asset baru" onSubmit={async (name, amount) => { const token = getStoredToken(); const res = await fetch(`${API_BASE}/add-asset-item`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, section: "investment", name, value: amount }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || "Gagal menambah item"); window.location.reload(); }} />}
-               <StockTracker stocksID={assets.stocksID} stocksUS={assets.stocksUS} isRealData={isRealData} />
+               <StockTracker stocksID={assets.stocksID} stocksUS={assets.stocksUS} isRealData={isRealData} investmentAccounts={wallets.map((wallet) => ({ name: wallet.name, balance: wallet.balance }))} />
              </div>}
           </Card>
         </div>
