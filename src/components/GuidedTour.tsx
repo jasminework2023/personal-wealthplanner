@@ -5,7 +5,7 @@ import { getTourSteps } from "../lib/tourSteps";
 
 type StartDetail = { type?: "main" | "page" | "usage"; route?: string };
 
-const DONE_KEY = "wp_tour_done_v3";
+const DONE_KEY = "wp_tour_done_v4";
 
 function storageDone() {
   try { return localStorage.getItem(DONE_KEY) === "1"; } catch { return false; }
@@ -49,7 +49,16 @@ export function GuidedTour() {
   };
 
   useEffect(() => {
-    const handler = (event: Event) => start((event as CustomEvent<StartDetail>).detail || { type: "main" });
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<StartDetail>).detail || { type: "main" };
+      if (detail.type === "main") {
+        setUsagePrompt(false);
+        setCompletionPrompt(false);
+        setWelcomePrompt(true);
+        return;
+      }
+      start(detail);
+    };
     window.addEventListener("wealthplanner:start-tour", handler);
     return () => window.removeEventListener("wealthplanner:start-tour", handler);
   }, [location.pathname]);
