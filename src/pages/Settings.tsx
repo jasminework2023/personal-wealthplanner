@@ -41,7 +41,6 @@ export function Settings() {
   const [membershipLoading, setMembershipLoading] = useState(true);
   const [membershipError, setMembershipError] = useState("");
   const [paymentLoading, setPaymentLoading] = useState<"ai_pro_monthly" | "ai_pro_annual" | null>(null);
-  const [paymentEmail, setPaymentEmail] = useState("");
 
   async function loadMembership() {
     const token = getStoredToken();
@@ -69,7 +68,7 @@ export function Settings() {
       const response = await fetch(`${API_BASE}/create-ai-membership-payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, plan, email: paymentEmail }),
+        body: JSON.stringify({ token, plan }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.paymentLink) throw new Error(data.error || "Gagal membuat pembayaran AI PRO+.");
@@ -251,19 +250,21 @@ export function Settings() {
           </div>
         ) : null}
         {membershipError && <p className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-[12px] text-rose-700">{membershipError}</p>}
-        <div className="mb-3"><label className="mb-1 block text-[12px] font-medium text-charcoal/70">Email untuk invoice Xendit</label><input type="email" value={paymentEmail} onChange={(e) => setPaymentEmail(e.target.value)} placeholder="nama@email.com" className="w-full rounded-xl border border-charcoal/15 px-3.5 py-3 text-[13px] outline-none focus:border-forest-400" /></div>
+        <div className="mb-4 rounded-2xl border border-charcoal/10 bg-white px-4 py-3.5">
+          <p className="text-[17px] font-bold text-forest-900">300 Kredit per 30 Hari</p>
+          <p className="mt-0.5 text-[10.5px] text-charcoal/45">1 penggunaan AI = 1 kredit</p>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="rounded-2xl border border-charcoal/10 p-3.5">
             <p className="text-[13px] font-semibold text-charcoal">AI PRO+ Bulanan</p>
-            <p className="num text-[20px] font-medium text-forest-900 mt-1">Rp 20.000 <span className="text-[11px] font-medium text-charcoal/50">/ 30 hari</span></p>
-            <p className="text-[11px] text-charcoal/55 mt-1 mb-3">300 kredit AI setiap 30 hari.</p>
-            <button onClick={() => purchaseAIMembership("ai_pro_monthly")} disabled={paymentLoading !== null} className="w-full rounded-full bg-[#123524] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-50">{paymentLoading === "ai_pro_monthly" ? "Menyiapkan..." : "Pilih Bulanan"}</button>
+            <p className="num text-[20px] font-medium text-forest-900 mt-1">Rp 20.000 <span className="text-[11px] font-medium text-charcoal/50">/ bulan</span></p>
+            <button onClick={() => purchaseAIMembership("ai_pro_monthly")} disabled={paymentLoading !== null} className="mt-3 w-full rounded-full bg-[#123524] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-50">{paymentLoading === "ai_pro_monthly" ? "Menyiapkan..." : "Pilih Bulanan"}</button>
           </div>
-          <div className="rounded-2xl border border-forest-200 bg-forest-50/40 p-3.5">
+          <div className="rounded-2xl border border-charcoal/10 p-3.5">
             <p className="text-[13px] font-semibold text-charcoal">AI PRO+ Tahunan</p>
-            <p className="text-[20px] font-bold text-forest-900 mt-1">Rp199.000 <span className="text-[11px] font-medium text-charcoal/50">/ tahun</span></p>
-            <p className="text-[11px] text-charcoal/55 mt-1 mb-3">300 kredit AI diperbarui setiap 30 hari.</p>
-            <button onClick={() => purchaseAIMembership("ai_pro_annual")} disabled={paymentLoading !== null} className="w-full rounded-full bg-[#123524] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-50">{paymentLoading === "ai_pro_annual" ? "Menyiapkan..." : "Pilih Tahunan"}</button>
+            <p className="mt-1"><span className="text-[11px] text-charcoal/35 line-through">Rp 20.000 / bulan</span> <span className="text-[20px] font-bold text-forest-900">Rp16.583 <span className="text-[11px] font-medium text-charcoal/50">/ bulan</span></span></p>
+            <p className="text-[11px] font-medium text-charcoal/50 mt-0.5">Rp199.000 / tahun</p>
+            <button onClick={() => purchaseAIMembership("ai_pro_annual")} disabled={paymentLoading !== null} className="mt-3 w-full rounded-full bg-[#123524] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-50">{paymentLoading === "ai_pro_annual" ? "Menyiapkan..." : "Pilih Tahunan"}</button>
           </div>
         </div>
         <p className="mt-3 text-[10.5px] leading-relaxed text-charcoal/45">Pembayaran melalui Xendit. Perpanjangan dilakukan manual dan tidak menggunakan auto-debit.</p>
