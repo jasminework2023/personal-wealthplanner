@@ -172,7 +172,8 @@ function findStockRow(rs: any[][], ticker: string, market: "ID" | "US") {
     }
     blankRows = 0;
 
-    if (k === "total" || k.includes("subtotal")) {
+    const rowLabels = r.map((cell: unknown) => norm(cell)).filter(Boolean);
+    if (rowLabels.some((cell) => cell === "total" || cell === "subtotal" || cell.includes("subtotal"))) {
       subtotal = i;
       break;
     }
@@ -214,7 +215,7 @@ async function writePosition(
     return;
   }
 
-  if (found.subtotal < 0) throw new Error("Subtotal tidak ditemukan di Asset Tracker.");
+  if (found.subtotal < 0) throw new Error("Baris Total/Subtotal tidak ditemukan di Asset Tracker.");
 
   const meta = await s.spreadsheets.get({
     spreadsheetId: id,
