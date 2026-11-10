@@ -13,7 +13,7 @@ export const mainTourSteps: TourStep[] = [
     route: "/",
     selectorDesktop: '[data-tour="desktop-sidebar"]',
     selectorMobile: '[data-tour="mobile-menu-button"]',
-    title: "Kenali Navigasi",
+    title: "1. Kenali Navigasi",
     description: "Gunakan sidebar di desktop atau tombol ☰ di mobile untuk berpindah halaman dan membuka Profil.",
   },
   {
@@ -21,7 +21,7 @@ export const mainTourSteps: TourStep[] = [
     route: "/",
     selectorDesktop: '[data-tour="theme-toggle"]',
     selectorMobile: '[data-tour="theme-toggle"]',
-    title: "Atur Tampilan",
+    title: "2. Atur Tampilan",
     description: "Ganti Mode Gelap atau Mode Terang kapan saja sesuai kenyamananmu.",
   },
   {
@@ -29,7 +29,7 @@ export const mainTourSteps: TourStep[] = [
     route: "/",
     selectorDesktop: '[data-tour="home-assets-desktop"]',
     selectorMobile: '[data-tour="home-assets-mobile"]',
-    title: "Asset & Budget Tracker",
+    title: "3. Asset & Budget Tracker",
     description: "Geser kartu di mobile untuk melihat Asset atau Budget. Di sini kamu bisa memantau kondisi aset dan sisa anggaran.",
   },
   {
@@ -37,7 +37,7 @@ export const mainTourSteps: TourStep[] = [
     route: "/",
     selectorDesktop: '[data-tour="main-menu"]',
     selectorMobile: '[data-tour="main-menu"]',
-    title: "Menu Utama",
+    title: "4. Menu Utama",
     description: "Semua fitur utama ada di sini: Transaction, Wallet, Budget, Asset, Calculator, Goals, Protection, Report, Community, AI Assistant, dan Guide.",
   },
   {
@@ -45,7 +45,7 @@ export const mainTourSteps: TourStep[] = [
     route: "/",
     selectorDesktop: '[data-tour="main-menu"]',
     selectorMobile: '[data-tour="mobile-bottom-nav"]',
-    title: "Akses Cepat",
+    title: "5. Akses Cepat",
     description: "Di mobile, navigasi bawah memberi akses cepat ke Beranda, Transaksi, Target, Profil, dan tombol +. Di desktop, fitur utama bisa diakses dari Menu Utama.",
   },
 ];
