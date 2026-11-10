@@ -405,6 +405,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { transactionRows, budgetRows, assetRows } = await fetchAllRanges(user.spreadsheet_id, transactionsOnly);
 
     const transactions = getTransactions(transactionRows, allYears ? undefined : requestedYear);
+    const walletTransactions = getTransactions(transactionRows);
     let walletRows: any[] = [];
     try {
       const { data: wallets, error: walletError } = await supabase
@@ -427,7 +428,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     let assets = null as Awaited<ReturnType<typeof getAssetTracker>> | null;
     try {
-      assets = await getAssetTracker(assetRows, walletRows, transactions);
+      assets = await getAssetTracker(assetRows, walletRows, walletTransactions);
     } catch {
       assets = null;
     }
