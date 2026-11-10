@@ -226,12 +226,12 @@ export function Settings() {
         {membershipLoading ? <div className="py-6 flex justify-center text-charcoal/40"><Loader2 className="animate-spin"/></div> : membership ? (
           <div className="rounded-2xl border border-charcoal/10 bg-charcoal/[0.025] p-4 mb-4">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[13px] font-semibold text-charcoal">Status akses AI</span>
-              <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${membership.aiAccess === "active" ? "bg-forest-100 text-forest-700" : "bg-charcoal/10 text-charcoal/60"}`}>{membership.aiAccess === "active" ? "Aktif" : "Tidak aktif"}</span>
+              <span className="text-[13px] font-semibold text-charcoal">Status akses AI PRO+</span>
+              <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${membership.aiAccess === "active" ? "bg-forest-100 text-forest-700" : "bg-charcoal/10 text-charcoal/60"}`}>{membership.aiAccess === "active" ? (membership.aiAccessSource === "ai_pro" ? "Aktif" : "Aktif — Trial") : "Tidak aktif"}</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <div><p className="text-[11px] text-charcoal/50">Sisa kredit AI</p><p className="text-[22px] font-bold text-forest-900">{Number(membership.creditsRemaining || 0).toLocaleString("id-ID")} <span className="text-[11px] font-medium text-charcoal/50">credits</span></p></div>
-              <div><p className="text-[11px] text-charcoal/50">Lifetime Personal</p><p className="text-[14px] font-semibold text-charcoal mt-1">{membership.lifetimePro ? "Aktif" : "Belum aktif"}</p></div>
+            <div className="mt-4">
+              <p className="text-[11px] text-charcoal/50">Sisa kredit AI</p>
+              <p className="text-[22px] font-bold text-forest-900">{Number(membership.creditsRemaining || 0).toLocaleString("id-ID")} <span className="text-[11px] font-medium text-charcoal/50">credits</span></p>
             </div>
             {membership.aiMembershipPlan && membership.aiMembershipStartedAt && membership.aiMembershipExpiresAt && (
               <div className="mt-4 rounded-xl border border-forest-100 bg-forest-50/50 px-3 py-2.5">
