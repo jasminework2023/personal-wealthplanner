@@ -56,6 +56,7 @@ export default function App() {
         <Route element={<AppShell />}>
           <Route path="/" element={<Home />} />
           <Route path="/finance" element={<DashboardFinance />} />
+          <Route path="/assets" element={<DashboardFinance initialTab="assets" />} />
           <Route path="/ai-assistant" element={<AIAssistant />} />
           <Route path="/transactions" element={<TransactionReport />} />
           <Route path="/transaction" element={<Transaction />} />
