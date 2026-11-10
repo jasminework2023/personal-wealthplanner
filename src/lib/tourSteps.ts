@@ -8,16 +8,54 @@ export type TourStep = {
 };
 
 export const mainTourSteps: TourStep[] = [
-  { id: "home-assets", route: "/", selectorDesktop: '[data-tour="home-assets-desktop"]', selectorMobile: '[data-tour="home-assets-mobile"]', title: "Asset Tracker", description: "Total seluruh asetmu dan progres menuju target." },
-  { id: "home-eye", route: "/", selectorDesktop: '[data-tour="home-eye-desktop"]', selectorMobile: '[data-tour="home-eye-mobile"]', title: "Sembunyikan nominal", description: "Sembunyikan semua nominal kalau ada orang di dekatmu." },
-  { id: "home-budget", route: "/", selectorDesktop: '[data-tour="home-budget-desktop"]', selectorMobile: '[data-tour="home-budget-mobile"]', title: "Budget Tracker", description: "Sisa anggaran bulan ini, plus penghasilan dan pengeluaran." },
-  { id: "main-menu", route: "/", selectorDesktop: '[data-tour="main-menu"]', selectorMobile: '[data-tour="main-menu"]', title: "Menu Utama", description: "Pintasan ke semua fitur." },
-  { id: "home-fab", route: "/", selectorDesktop: '[data-tour="home-fab"]', selectorMobile: '[data-tour="home-fab"]', title: "Tambah transaksi", description: "Catat pemasukan, pengeluaran, atau tabungan di sini. Makin rutin dicatat, makin akurat laporannya." },
-  { id: "main-navigation", route: "/", selectorDesktop: '[data-tour="desktop-sidebar"]', selectorMobile: '[data-tour="mobile-bottom-nav"]', title: "Navigasi", description: "Pindah antar Beranda, Transaksi, Target, dan Profil." },
-  { id: "report-menu", route: "/finance", selectorDesktop: '[data-tour="menu-report"]', selectorMobile: '[data-tour="report-summary"]', title: "Laporan", description: "Income statement, cashflow, dan Asset Tracker (termasuk Stock Portfolio)." },
-  { id: "budget-menu", route: "/budgeting", selectorDesktop: '[data-tour="menu-budget"]', selectorMobile: '[data-tour="budget-summary"]', title: "Anggaran", description: "Atur batas per kategori dan pantau statusnya." },
-  { id: "calculator-menu", route: "/calculator", selectorDesktop: '[data-tour="menu-calculator"]', selectorMobile: '[data-tour="calculator-header"]', title: "Kalkulator", description: "Hitung dana haji, pendidikan, pensiun, dan lainnya." },
-  { id: "protection-menu", route: "/protection", selectorDesktop: '[data-tour="menu-protection"]', selectorMobile: '[data-tour="protection-hero"]', title: "Proteksi", description: "Cek kecukupan perlindungan keluarga dan rekomendasi produk." },
+  {
+    id: "navigation",
+    route: "/",
+    selectorDesktop: '[data-tour="desktop-sidebar"]',
+    selectorMobile: '[data-tour="mobile-menu-button"]',
+    title: "Kenali Navigasi",
+    description: "Gunakan sidebar di desktop atau tombol ☰ di mobile untuk berpindah halaman dan membuka Profil.",
+  },
+  {
+    id: "theme",
+    route: "/",
+    selectorDesktop: '[data-tour="theme-toggle"]',
+    selectorMobile: '[data-tour="theme-toggle"]',
+    title: "Atur Tampilan",
+    description: "Ganti Mode Gelap atau Mode Terang kapan saja sesuai kenyamananmu.",
+  },
+  {
+    id: "asset-budget",
+    route: "/",
+    selectorDesktop: '[data-tour="home-assets-desktop"]',
+    selectorMobile: '[data-tour="home-assets-mobile"]',
+    title: "Asset & Budget Tracker",
+    description: "Geser kartu di mobile untuk melihat Asset atau Budget. Di sini kamu bisa memantau kondisi aset dan sisa anggaran.",
+  },
+  {
+    id: "main-menu",
+    route: "/",
+    selectorDesktop: '[data-tour="main-menu"]',
+    selectorMobile: '[data-tour="main-menu"]',
+    title: "Menu Utama",
+    description: "Semua fitur utama ada di sini: Transaction, Wallet, Budget, Asset, Calculator, Goals, Protection, Report, Community, AI Assistant, dan Guide.",
+  },
+  {
+    id: "quick-add",
+    route: "/",
+    selectorDesktop: '[data-tour="home-fab-desktop"]',
+    selectorMobile: '[data-tour="home-fab"]',
+    title: "Catat Transaksi",
+    description: "Gunakan tombol + untuk mencatat pemasukan, pengeluaran, atau tabungan. Kamu juga bisa menggunakan AI untuk membantu pencatatan.",
+  },
+  {
+    id: "mobile-navigation",
+    route: "/",
+    selectorDesktop: '[data-tour="desktop-sidebar"]',
+    selectorMobile: '[data-tour="mobile-bottom-nav"]',
+    title: "Akses Cepat",
+    description: "Di mobile, navigasi bawah memberi akses cepat ke Beranda, Transaksi, Target, Profil, dan tombol +.",
+  },
 ];
 
 export const pageTourSteps: Record<string, TourStep[]> = {
