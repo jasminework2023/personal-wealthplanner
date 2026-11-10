@@ -297,8 +297,46 @@ async function getUsdIdrRate(): Promise<number> {
   return 16300;
 }
 
-async function getAssetTracker(rows: unknown[][]) {
-  const liquid = parseAssetSection(rows, "Liquid Assets");
+async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transactions: any[] = []) {
+  // Liquid Assets are the user's actual wallet balances. This keeps the
+  // Asset Tracker from maintaining a second, potentially stale cash total.
+  // Wallets represent cash accounts (including bank accounts/RDN); the
+  // investment itself is tracked separately under Investment Assets.
+  const walletSums = new Map<string, { inflow: number; outflow: number }>();
+  for (const tx of transactions) {
+    const type = String(tx.type || "").trim().toLowerCase();
+    const amount = Number(tx.amount) || 0;
+    const from = String(tx.wallet || "").trim().toLowerCase();
+    const to = String(tx.toWallet || "").trim().toLowerCase();
+    const add = (key: string, field: "inflow" | "outflow") => {
+      if (!key) return;
+      const current = walletSums.get(key) || { inflow: 0, outflow: 0 };
+      current[field] += amount;
+      walletSums.set(key, current);
+    };
+    if (type === "income") add(from, "inflow");
+    if (type === "expense") add(from, "outflow");
+    if (type === "transfer") {
+      add(from, "outflow");
+      add(to, "inflow");
+    }
+    if (type === "saving" && from && to) {
+      add(from, "outflow");
+      add(to, "inflow");
+    }
+  }
+
+  const liquid = {
+    items: walletRows.map((wallet: any) => {
+      const key = String(wallet.name_key || wallet.name || "").trim().toLowerCase();
+      const sums = walletSums.get(key) || { inflow: 0, outflow: 0 };
+      const balance = (Number(wallet.opening_balance) || 0) + sums.inflow - sums.outflow;
+      return { name: String(wallet.name || "").trim(), value: balance };
+    }).filter((item: any) => item.name && Number.isFinite(item.value)),
+    total: 0,
+  };
+  liquid.total = liquid.items.reduce((sum: number, item: any) => sum + item.value, 0);
+
   const investment = parseAssetSection(rows, "Investment Assets", new Set(["saham", "stocks", "stock"]));
   const stocksID = parseStockSection(rows, "Indonesia Stock");
   const stocksUS = parseStockSection(rows, "US Stock");
@@ -367,6 +405,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { transactionRows, budgetRows, assetRows } = await fetchAllRanges(user.spreadsheet_id, transactionsOnly);
 
     const transactions = getTransactions(transactionRows, allYears ? undefined : requestedYear);
+    let walletRows: any[] = [];
+    try {
+      const { data: wallets, error: walletError } = await supabase
+        .from("wallets")
+        .select("name,name_key,opening_balance")
+        .eq("username", user.username)
+        .is("archived_at", null)
+        .order("sort_order")
+        .order("created_at");
+      if (walletError) throw walletError;
+      walletRows = wallets || [];
+    } catch (walletError) {
+      console.error("Dashboard wallet read error:", (walletError as Error).message);
+    }
     let budgetByCategory: Record<string, number> = {};
     try {
       budgetByCategory = getBudgetByCategory(budgetRows, requestedMonth);
@@ -375,7 +427,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     let assets = null as Awaited<ReturnType<typeof getAssetTracker>> | null;
     try {
-      assets = await getAssetTracker(assetRows);
+      assets = await getAssetTracker(assetRows, walletRows, transactions);
     } catch {
       assets = null;
     }
