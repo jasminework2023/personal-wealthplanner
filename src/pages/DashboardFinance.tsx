@@ -726,14 +726,14 @@ export function DashboardFinance() {
               {(liquidAssetsFromWallets.length > 2 || assets.investmentAssets.length > 2) && <button type="button" onClick={() => setShowAllAssets((v) => !v)} className="text-[12px] font-semibold text-forest-700">{showAllAssets ? "Sembunyikan" : "Lihat semua"} <ChevronRight size={14} className={showAllAssets ? "rotate-90 inline" : "inline"}/></button>}
             </div>
             {(liquidAssetsFromWallets.length > 0 || isRealData) && <div className="mb-3">
-              <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Liquid Assets</p>
+              <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Liquid Assets</p><p className="mb-2 text-[11px] leading-relaxed text-charcoal/45">Termasuk saldo RDN / Investment Account yang masih berupa cash.</p>
               {liquidAssetsFromWallets.slice(0, showAllAssets ? liquidAssetsFromWallets.length : 2).map((item) => <EditableAssetItem key={item.name} name={item.name} value={item.value} percentage={assetCompositionTotal > 0 ? item.value / assetCompositionTotal * 100 : 0} section="liquid" isRealData={isRealData} />)}
               <p className="mt-2 text-[11px] text-charcoal/45">Saldo Liquid Asset mengikuti Wallet secara otomatis.</p>
             </div>}
             {(assets.investmentAssets.length > 0 || isRealData) && <div>
-               <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Investment Assets</p>
+               <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Investment Assets</p><p className="mb-2 text-[11px] leading-relaxed text-charcoal/45">Aset yang sudah dibeli: saham, deposito, obligasi/SBN, emas, reksa dana, dan investasi lainnya.</p>
                {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={integratedTotalAssets > 0 ? item.value / integratedTotalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={() => window.location.reload()} />)}
-               {isRealData && <AddItemForm placeholder="Tambah investment asset baru" onSubmit={async (name, amount) => { const token = getStoredToken(); const res = await fetch(`${API_BASE}/add-asset-item`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, section: "investment", name, value: amount }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || "Gagal menambah item"); window.location.reload(); }} />}
+               {isRealData && <AddItemForm placeholder="Tambah investasi (saham, deposito, emas, obligasi, dll.)" onSubmit={async (name, amount) => { const token = getStoredToken(); const res = await fetch(`${API_BASE}/add-asset-item`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, section: "investment", name, value: amount }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || "Gagal menambah item"); window.location.reload(); }} />}
                <StockTracker stocksID={assets.stocksID} stocksUS={assets.stocksUS} isRealData={isRealData} investmentAccounts={wallets.filter((wallet) => wallet.type === "investment").map((wallet) => ({ name: wallet.name, balance: wallet.balance }))} />
              </div>}
           </Card>
