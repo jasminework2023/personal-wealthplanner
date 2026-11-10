@@ -255,14 +255,14 @@ export function Settings() {
             <p className="text-[13px] font-semibold text-charcoal">AI PRO+ Bulanan</p>
             <p className="mt-3 text-[17px] font-bold text-forest-900">300 Kredit per 30 Hari</p>
             <p className="text-[10.5px] text-charcoal/45">1 penggunaan AI = 1 kredit</p>
-            <p className="num text-[28px] font-bold text-[#6EE7A8] mt-2">Rp20.000 <span className="text-[11px] font-medium text-charcoal/50">/ bulan</span></p>
+            <p className="text-[28px] font-bold text-[#00B86E] mt-2">Rp20.000 <span className="text-[11px] font-medium text-charcoal/50">/ bulan</span></p>
             <button onClick={() => purchaseAIMembership("ai_pro_monthly")} disabled={paymentLoading !== null} className="mt-3 w-full rounded-full bg-[#123524] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-50">{paymentLoading === "ai_pro_monthly" ? "Menyiapkan..." : "Pilih Bulanan"}</button>
           </div>
           <div className="rounded-2xl border border-charcoal/10 p-3.5">
             <p className="text-[13px] font-semibold text-charcoal">AI PRO+ Tahunan</p>
             <p className="mt-3 text-[17px] font-bold text-forest-900">300 Kredit per 30 Hari</p>
             <p className="text-[10.5px] text-charcoal/45">1 penggunaan AI = 1 kredit</p>
-            <p className="mt-2"><span className="text-[11px] text-charcoal/35 line-through">Rp 20.000 / bulan</span> <span className="text-[28px] font-bold text-[#6EE7A8]">Rp16.583 <span className="text-[11px] font-medium text-charcoal/50">/ bulan</span></span></p>
+            <p className="mt-2"><span className="text-[11px] text-charcoal/35 line-through">Rp 20.000 / bulan</span> <span className="text-[28px] font-bold text-[#00B86E]">Rp16.583 <span className="text-[11px] font-medium text-charcoal/50">/ bulan</span></span></p>
             <p className="text-[11px] font-medium text-charcoal/50 mt-0.5">Rp199.000 / tahun</p>
             <button onClick={() => purchaseAIMembership("ai_pro_annual")} disabled={paymentLoading !== null} className="mt-3 w-full rounded-full bg-[#123524] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-50">{paymentLoading === "ai_pro_annual" ? "Menyiapkan..." : "Pilih Tahunan"}</button>
           </div>
