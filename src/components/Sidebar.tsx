@@ -108,7 +108,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function DesktopSidebar() {
   return (
-    <aside data-tour="desktop-sidebar" className="desktop-sidebar hidden lg:flex lg:flex-col w-[232px] shrink-0 h-screen sticky top-0 bg-[#F4F5F6] border-r border-[#E4E6E8]">
+    <aside data-tour="desktop-sidebar" className="desktop-sidebar hidden lg:flex lg:flex-col w-[232px] shrink-0 h-screen sticky top-0 bg-[#F7F7F5] border-r border-[#E4E6E8]">
       <SidebarContent />
     </aside>
   );
@@ -119,8 +119,8 @@ export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () =>
   return (
     <div className="lg:hidden fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="absolute left-0 top-0 h-full w-72 bg-forest-700 shadow-xl">
-        <button onClick={onClose} aria-label="Tutup menu" className="absolute right-3 top-4 p-1.5 rounded-lg hover:bg-white/10 text-white">
+      <div className="absolute left-0 top-0 h-full w-72 bg-[#F7F7F5] border-r border-[#E4E6E8] shadow-xl">
+        <button onClick={onClose} aria-label="Tutup menu" className="absolute right-3 top-4 p-1.5 rounded-lg hover:bg-charcoal/[0.06] text-charcoal/60">
           <X size={18} />
         </button>
         <SidebarContent onNavigate={onClose} />
