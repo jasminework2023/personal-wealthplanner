@@ -282,14 +282,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  // Reserve 2 credits atomically. They are committed only after valid structured
+  // Reserve 1 credit atomically. It is committed only after valid structured
   // transaction data is returned; provider failures release the reservation.
   const requestId = randomUUID();
   const { data: creditRows, error: creditError } = await supabase.rpc("reserve_ai_credits", {
     p_user_id: authenticatedUserId,
     p_request_id: requestId,
     p_feature: "receipt_scan",
-    p_credits: 2,
+    p_credits: 1,
   });
 
   if (creditError || !Array.isArray(creditRows) || !creditRows[0]) {
