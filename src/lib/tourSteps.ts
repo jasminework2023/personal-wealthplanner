@@ -41,20 +41,12 @@ export const mainTourSteps: TourStep[] = [
     description: "Semua fitur utama ada di sini: Transaction, Wallet, Budget, Asset, Calculator, Goals, Protection, Report, Community, AI Assistant, dan Guide.",
   },
   {
-    id: "quick-add",
+    id: "quick-access",
     route: "/",
-    selectorDesktop: '[data-tour="home-fab-desktop"]',
-    selectorMobile: '[data-tour="home-fab"]',
-    title: "Catat Transaksi",
-    description: "Gunakan tombol + untuk mencatat pemasukan, pengeluaran, atau tabungan. Kamu juga bisa menggunakan AI untuk membantu pencatatan.",
-  },
-  {
-    id: "mobile-navigation",
-    route: "/",
-    selectorDesktop: '[data-tour="desktop-sidebar"]',
+    selectorDesktop: '[data-tour="main-menu"]',
     selectorMobile: '[data-tour="mobile-bottom-nav"]',
     title: "Akses Cepat",
-    description: "Di mobile, navigasi bawah memberi akses cepat ke Beranda, Transaksi, Target, Profil, dan tombol +.",
+    description: "Di mobile, navigasi bawah memberi akses cepat ke Beranda, Transaksi, Target, Profil, dan tombol +. Di desktop, fitur utama bisa diakses dari Menu Utama.",
   },
 ];
 
