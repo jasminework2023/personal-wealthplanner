@@ -181,7 +181,23 @@ export function GuidedTour() {
     if (index > 0) setIndex((value) => value - 1);
   }
 
-  if (welcomePrompt && !active) {\n    return (\n      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 px-4">\n        <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-[18px] bg-white p-5 shadow-[0_18px_60px_rgba(0,0,0,.2)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white">\n          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-xl">👋</div>\n          <h2 className="mt-3 text-[16px] font-bold">Selamat datang di Tour 1, Pengenalan Aplikasi</h2>\n          <p className="mt-1.5 text-[13px] leading-5 text-charcoal/65 dark:text-white/65">Kita kenalan dulu dengan navigasi dan bagian utama Wealthplanner. Setelah ini selesai, kamu akan ditawarkan Tour 2 untuk belajar cara menggunakan aplikasinya dari awal.</p>\n          <div className="mt-4 flex gap-2">\n            <button type="button" onClick={() => { storageSetDone(); setWelcomePrompt(false); }} className="flex-1 min-h-10 rounded-xl border border-charcoal/10 px-3 text-[12px] font-semibold text-charcoal/65 dark:border-white/10 dark:text-white/70">Nanti</button>\n            <button type="button" onClick={() => { setWelcomePrompt(false); start({ type: "main", route: "/" }); }} className="flex-1 min-h-10 rounded-xl bg-[#0B6B47] px-3 text-[12px] font-semibold text-white">Mulai Tour 1</button>\n          </div>\n        </div>\n      </div>\n    );\n  }\n\n  if (usagePrompt && !active) {
+  if (welcomePrompt && !active) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 px-4">
+        <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-[18px] bg-white p-5 shadow-[0_18px_60px_rgba(0,0,0,.2)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-xl">👋</div>
+          <h2 className="mt-3 text-[16px] font-bold">Selamat datang di Tour 1, Pengenalan Aplikasi</h2>
+          <p className="mt-1.5 text-[13px] leading-5 text-charcoal/65 dark:text-white/65">Kita kenalan dulu dengan navigasi dan bagian utama Wealthplanner. Setelah ini selesai, kamu akan ditawarkan Tour 2 untuk belajar cara menggunakan aplikasinya dari awal.</p>
+          <div className="mt-4 flex gap-2">
+            <button type="button" onClick={() => { storageSetDone(); setWelcomePrompt(false); }} className="flex-1 min-h-10 rounded-xl border border-charcoal/10 px-3 text-[12px] font-semibold text-charcoal/65 dark:border-white/10 dark:text-white/70">Nanti</button>
+            <button type="button" onClick={() => { setWelcomePrompt(false); start({ type: "main", route: "/" }); }} className="flex-1 min-h-10 rounded-xl bg-[#0B6B47] px-3 text-[12px] font-semibold text-white">Mulai Tour 1</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (usagePrompt && !active) {
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 px-4">
         <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-[18px] bg-white p-5 shadow-[0_18px_60px_rgba(0,0,0,.2)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white">
