@@ -487,7 +487,7 @@ function StockTracker({
     </div>
   );
 }
-export function DashboardFinance() {
+export function DashboardFinance({ initialTab = "income" }: { initialTab?: "income" | "assets" | "cashflow" }) {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const id = language === "id";
@@ -502,7 +502,7 @@ export function DashboardFinance() {
   const { loading, error, isRealData, username, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData(selectedMonth, false, selectedYear);
   const { wallets } = useWallets();
   const historyData = useFinanceData(selectedMonth, true, selectedYear);
-  const [activeReportTab, setActiveReportTab] = useState<"income" | "assets" | "cashflow">("income");
+  const [activeReportTab, setActiveReportTab] = useState<"income" | "assets" | "cashflow">(initialTab);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllAssets, setShowAllAssets] = useState(false);
   const [editingAssetTarget, setEditingAssetTarget] = useState(false);
