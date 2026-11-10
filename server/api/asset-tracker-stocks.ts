@@ -215,7 +215,28 @@ async function writePosition(
     return;
   }
 
-  if (found.subtotal < 0) throw new Error("Baris Total/Subtotal tidak ditemukan di Asset Tracker.");
+  // Do not require a manually maintained Total/Subtotal row. If one exists,
+  // insert before it; otherwise use the first blank row in the section, or append
+  // directly after the section's existing rows.
+  let insertAt = found.subtotal;
+  if (insertAt < 0) {
+    for (let i = found.start + 1; i < rs.length; i++) {
+      const r = rs[i] || [];
+      const first = norm(r[0]);
+      const rowLabels = r.map((cell: unknown) => norm(cell)).filter(Boolean);
+      const isStop = rowLabels.some((cell) => cell === "total" || cell === "subtotal" || cell.includes("subtotal"))
+        || (first !== norm(label) && STOCK_STOP_LABELS.has(first));
+      if (isStop) {
+        insertAt = i;
+        break;
+      }
+      if (!r.some((cell: unknown) => display(cell))) {
+        insertAt = i;
+        break;
+      }
+    }
+    if (insertAt < 0) insertAt = rs.length;
+  }
 
   const meta = await s.spreadsheets.get({
     spreadsheetId: id,
@@ -226,24 +247,28 @@ async function writePosition(
   );
   if (!sh) throw new Error("Tab Asset Tracker tidak ditemukan.");
 
-  await s.spreadsheets.batchUpdate({
-    spreadsheetId: id,
-    requestBody: {
-      requests: [{
-        insertDimension: {
-          range: {
-            sheetId: Number(sh.properties.sheetId),
-            dimension: "ROWS",
-            startIndex: found.subtotal,
-            endIndex: found.subtotal + 1,
+  // Only insert a new row when there is no reusable blank row.
+  const reusableBlank = insertAt < rs.length && !(rs[insertAt] || []).some((cell: unknown) => display(cell));
+  if (!reusableBlank) {
+    await s.spreadsheets.batchUpdate({
+      spreadsheetId: id,
+      requestBody: {
+        requests: [{
+          insertDimension: {
+            range: {
+              sheetId: Number(sh.properties.sheetId),
+              dimension: "ROWS",
+              startIndex: insertAt,
+              endIndex: insertAt + 1,
+            },
+            inheritFromBefore: true,
           },
-          inheritFromBefore: true,
-        },
-      }],
-    },
-  });
+        }],
+      },
+    });
+  }
 
-  const n = found.subtotal + 1;
+  const n = insertAt + 1;
   await s.spreadsheets.values.update({
     spreadsheetId: id,
     range: "Asset Tracker!A" + n + ":G" + n,
