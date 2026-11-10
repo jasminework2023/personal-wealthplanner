@@ -45,6 +45,13 @@ function walletTypeLabel(type: Wallet["type"], isId: boolean): string {
   if (type === "bank") return "BANK";
   return "E-WALLET";
 }
+function walletGroup(wallet: Wallet): "bank" | "investment" | "credit" | "other" {
+  const name = wallet.name.trim().toLowerCase();
+  if (/credit|kartu|card|paylater|pinjaman|loan/.test(name)) return "credit";
+  if (wallet.type === "investment") return "investment";
+  if (wallet.type === "bank" || wallet.type === "cash") return "bank";
+  return "other";
+}
 function txDate(value: string) {
   const raw = String(value || "");
   const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
@@ -150,92 +157,76 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
         <button data-tour="wallet-transfer" type="button" onClick={() => { setTransferFrom(""); setTransferTo(""); setTransferOpen(true); }} className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-[#0B6B47] transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-[rgb(var(--c-surface))] dark:text-emerald-300 dark:hover:bg-white/5"><ArrowLeftRight size={15}/> Transfer</button>
         <button data-tour="wallet-add" type="button" onClick={() => navigate("/settings")} className="min-h-9 justify-self-end rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-[#0B6B47] transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-[rgb(var(--c-surface))] dark:text-emerald-300 dark:hover:bg-white/5">+ Tambah</button>
       </div>
-      <div className="w-full min-w-0" onTouchStart={(event) => { walletTouchStartY.current = event.touches[0]?.clientY ?? null; }} onTouchEnd={(event) => { const startY = walletTouchStartY.current; const endY = event.changedTouches[0]?.clientY; walletTouchStartY.current = null; if (startY == null || endY == null) return; const delta = endY - startY; if (Math.abs(delta) > 28) setWalletStackSpacing(delta < 0 ? 0 : 100); }}>
-        {(() => {
-          const visibleHeight = 88 + (FULL_WALLET_CARD_HEIGHT + WALLET_CARD_GAP - 88) * walletStackSpacing / 100;
-          const cardStep = visibleHeight;
-          const allTransactions = finance.transactions;
-          const currentMonth = new Date().getMonth();
-          const currentYear = new Date().getFullYear();
-          const inCurrentMonth = (tx: Transaction) => {
-            const date = txDate(tx.date);
-            if (date) {
-              const d = new Date(date);
-              if (d.getMonth() !== currentMonth || d.getFullYear() !== currentYear) return false;
-            } else if (String(tx.month || "").toLowerCase() !== new Date().toLocaleString("en-US", { month: "long" }).toLowerCase() || Number(tx.year || currentYear) !== currentYear) {
-              return false;
-            }
-            return true;
-          };
-          return <div className="relative w-full min-w-0" style={{ height: Math.max(0, (wallets.length - 1) * cardStep + FULL_WALLET_CARD_HEIGHT) }}>
-            {wallets.map((wallet, index) => {
-              const walletColor = walletCardColor(wallet);
-              const foreground = textColorForBackground(walletColor);
-              const normalizedName = wallet.name.trim().toLowerCase();
-              const walletTransactions = allTransactions.filter((tx) =>
-                (String(tx.wallet || "").trim().toLowerCase() === normalizedName ||
-                  String(tx.toWallet || "").trim().toLowerCase() === normalizedName) && inCurrentMonth(tx)
-              ).sort((a, b) => txDate(b.date) - txDate(a.date) || Number(b.sheetRow || 0) - Number(a.sheetRow || 0));
-              const moneyIn = walletTransactions.filter((tx) => tx.type === "Income" || (tx.type === "Transfer" && String(tx.toWallet || "").trim().toLowerCase() === normalizedName)).reduce((sum, tx) => sum + tx.amount, 0);
-              const moneyOut = walletTransactions.filter((tx) => tx.type === "Expense" || (tx.type === "Transfer" && String(tx.wallet || "").trim().toLowerCase() === normalizedName)).reduce((sum, tx) => sum + tx.amount, 0);
-              const walletExtras = wallet as Wallet & { accountNumber?: string; account_number?: string; account?: string; maskedAccount?: string };
-              const account = walletExtras.maskedAccount || walletExtras.accountNumber || walletExtras.account_number || walletExtras.account;
-              const latest = walletTransactions[0];
-              return <button
-                key={wallet.id}
-                type="button"
-                aria-label={`${isId ? "Buka detail" : "Open details for"} ${wallet.name}`}
-                onClick={() => { setSelectedId(wallet.id); setNotice(""); }}
-                className="absolute left-0 top-0 block w-full min-w-0 rounded-t-[24px] rounded-b-[24px] text-left transition-[top,height,transform] duration-[180ms] ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 motion-reduce:transition-none"
-                style={{
-                  top: index * cardStep,
-                  zIndex: index + 1,
-                  height: FULL_WALLET_CARD_HEIGHT,
-                  backgroundColor: walletColor,
-                  color: foreground,
-                  border: "none",
-                  opacity: 1,
-                  boxShadow: "0 -6px 16px rgba(0,0,0,.18)",
-                  padding: 0,
-                  marginTop: 0,
-                  overflow: "hidden",
-                }}
-              >
-                <div className="flex h-[54px] items-center justify-between gap-2 px-4 pt-1">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[15px] font-semibold leading-5">{wallet.name}</p>
-                    <p className="mt-0.5 text-[11px] font-medium uppercase leading-3 tracking-[0.1em]" style={{ opacity: 0.85 }}>{walletTypeLabel(wallet.type, isId)}</p>
-                  </div>
-                  <span className="max-w-[56%] shrink-0 whitespace-nowrap text-right text-[clamp(12px,3.5vw,16px)] font-semibold leading-5 tabular-nums">{formatRupiah(wallet.balance)}</span>
-                </div>
-                <div className="px-4 pb-3 pt-1" style={{ color: foreground }}>
-                  {account && <p className="mb-2 text-xs tabular-nums" style={{ opacity: 0.85 }}>•••• {String(account).replace(/\s/g, "").slice(-4)}</p>}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="min-w-0 rounded-xl bg-black/[0.07] px-2.5 py-2">
-                      <p className="text-[10px] leading-4" style={{ opacity: 0.8 }}>{isId ? "Masuk bulan ini" : "Money in this month"}</p>
-                      <p className="mt-0.5 truncate text-xs font-semibold tabular-nums">{formatRupiah(moneyIn)}</p>
-                    </div>
-                    <div className="min-w-0 rounded-xl bg-black/[0.07] px-2.5 py-2">
-                      <p className="text-[10px] leading-4" style={{ opacity: 0.8 }}>{isId ? "Keluar bulan ini" : "Money out this month"}</p>
-                      <p className="mt-0.5 truncate text-xs font-semibold tabular-nums">{formatRupiah(moneyOut)}</p>
-                    </div>
-                  </div>
-                  {latest && <div className="mt-2 min-w-0">
-                    <p className="text-[10px] leading-4" style={{ opacity: 0.8 }}>{isId ? "Transaksi terakhir" : "Latest transaction"}</p>
-                    <div className="flex min-w-0 items-center justify-between gap-2">
-                      <p className="min-w-0 flex-1 truncate text-xs font-medium">{latest.description || latest.category}</p>
-                      <p className="shrink-0 text-xs font-semibold tabular-nums">{moneyText(latest.type === "Expense" ? -latest.amount : latest.amount)}</p>
-                    </div>
-                  </div>}
-                  <div className="mt-2 flex items-center justify-between gap-3">
-                    <p className="truncate text-[11px]" style={{ opacity: 0.8 }}>{wallet.txCount} {isId ? "transaksi wallet" : "wallet transactions"}</p>
-                    <span className="inline-flex min-h-8 shrink-0 items-center rounded-full bg-black/[0.08] px-3 text-xs font-semibold">{isId ? "Buka" : "Open"} <ChevronRight size={14} className="ml-1"/></span>
-                  </div>
-                </div>
-              </button>;
-            })}
-          </div>;
-        })()}
+      <div className="space-y-5">
+        {([
+          ["bank", isId ? "Rekening Bank" : "Bank Accounts"],
+          ["investment", isId ? "Investasi" : "Investments"],
+          ["credit", isId ? "Kredit" : "Credit"],
+          ["other", isId ? "Lainnya" : "Other"],
+        ] as const).map(([group, label]) => {
+          const groupWallets = wallets.filter((wallet) => walletGroup(wallet) === group);
+          if (!groupWallets.length) return null;
+          return (
+            <section key={group} className="space-y-2.5">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{label}</h3>
+                <span className="text-xs text-slate-400">{groupWallets.length}</span>
+              </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {groupWallets.map((wallet) => {
+                  const walletColor = walletCardColor(wallet);
+                  const foreground = textColorForBackground(walletColor);
+                  const normalizedName = wallet.name.trim().toLowerCase();
+                  const allTransactions = finance.transactions;
+                  const currentMonth = new Date().getMonth();
+                  const currentYear = new Date().getFullYear();
+                  const inCurrentMonth = (tx: Transaction) => {
+                    const date = txDate(tx.date);
+                    if (date) {
+                      const d = new Date(date);
+                      if (d.getMonth() !== currentMonth || d.getFullYear() !== currentYear) return false;
+                    } else if (String(tx.month || "").toLowerCase() !== new Date().toLocaleString("en-US", { month: "long" }).toLowerCase() || Number(tx.year || currentYear) !== currentYear) {
+                      return false;
+                    }
+                    return true;
+                  };
+                  const walletTransactions = allTransactions.filter((tx) =>
+                    (String(tx.wallet || "").trim().toLowerCase() === normalizedName ||
+                      String(tx.toWallet || "").trim().toLowerCase() === normalizedName) && inCurrentMonth(tx)
+                  ).sort((a, b) => txDate(b.date) - txDate(a.date) || Number(b.sheetRow || 0) - Number(a.sheetRow || 0));
+                  const moneyIn = walletTransactions.filter((tx) => tx.type === "Income" || (tx.type === "Transfer" && String(tx.toWallet || "").trim().toLowerCase() === normalizedName)).reduce((sum, tx) => sum + tx.amount, 0);
+                  const moneyOut = walletTransactions.filter((tx) => tx.type === "Expense" || (tx.type === "Transfer" && String(tx.wallet || "").trim().toLowerCase() === normalizedName)).reduce((sum, tx) => sum + tx.amount, 0);
+                  const walletExtras = wallet as Wallet & { accountNumber?: string; account_number?: string; account?: string; maskedAccount?: string };
+                  const account = walletExtras.maskedAccount || walletExtras.accountNumber || walletExtras.account_number || walletExtras.account;
+                  const latest = walletTransactions[0];
+                  return (
+                    <button key={wallet.id} type="button" aria-label={`${isId ? "Buka detail" : "Open details for"} ${wallet.name}`}
+                      onClick={() => { setSelectedId(wallet.id); setNotice(""); }}
+                      className="block w-full min-w-0 rounded-[20px] text-left transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+                      style={{ backgroundColor: walletColor, color: foreground, border: "none", boxShadow: "0 8px 24px rgba(0,0,0,.10)", padding: 0, overflow: "hidden" }}>
+                      <div className="flex min-h-[54px] items-center justify-between gap-2 px-4 pt-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[15px] font-semibold leading-5">{wallet.name}</p>
+                          <p className="mt-0.5 text-[11px] font-medium uppercase leading-3 tracking-[0.1em]" style={{ opacity: 0.85 }}>{walletGroup(wallet) === "credit" ? (isId ? "KREDIT" : "CREDIT") : walletTypeLabel(wallet.type, isId)}</p>
+                        </div>
+                        <span className="max-w-[56%] shrink-0 whitespace-nowrap text-right text-[clamp(12px,3.5vw,16px)] font-semibold leading-5 tabular-nums">{formatRupiah(wallet.balance)}</span>
+                      </div>
+                      <div className="px-4 pb-4 pt-2" style={{ color: foreground }}>
+                        {account && <p className="mb-2 text-xs tabular-nums" style={{ opacity: 0.85 }}>•••• {String(account).replace(/\s/g, "").slice(-4)}</p>}
+                        <div className="grid grid-cols-2 gap-2.5">
+                          <div className="min-w-0 rounded-xl bg-black/[0.07] px-2.5 py-2"><p className="text-[10px] leading-4" style={{ opacity: 0.8 }}>{isId ? "Masuk bulan ini" : "Money in this month"}</p><p className="mt-0.5 truncate text-xs font-semibold tabular-nums">{formatRupiah(moneyIn)}</p></div>
+                          <div className="min-w-0 rounded-xl bg-black/[0.07] px-2.5 py-2"><p className="text-[10px] leading-4" style={{ opacity: 0.8 }}>{isId ? "Keluar bulan ini" : "Money out this month"}</p><p className="mt-0.5 truncate text-xs font-semibold tabular-nums">{formatRupiah(moneyOut)}</p></div>
+                        </div>
+                        {latest && <div className="mt-2 min-w-0"><p className="text-[10px] leading-4" style={{ opacity: 0.8 }}>{isId ? "Transaksi terakhir" : "Latest transaction"}</p><div className="flex min-w-0 items-center justify-between gap-2"><p className="min-w-0 flex-1 truncate text-xs font-medium">{latest.description || latest.category}</p><p className="shrink-0 text-xs font-semibold tabular-nums">{moneyText(latest.type === "Expense" ? -latest.amount : latest.amount)}</p></div></div>}
+                        <div className="mt-2 flex items-center justify-between gap-3"><p className="truncate text-[11px]" style={{ opacity: 0.8 }}>{wallet.txCount} {isId ? "transaksi" : "transactions"}</p><span className="inline-flex min-h-8 shrink-0 items-center rounded-full bg-black/[0.08] px-3 text-xs font-semibold">{isId ? "Buka" : "Open"} <ChevronRight size={14} className="ml-1"/></span></div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
       </div>
     </section>}
     {selected && <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm"><div className="flex items-center gap-2 border-b border-slate-100 p-4 sm:p-4"><History size={18} className="text-[#0B6B47]"/><div><h2 className="font-semibold text-slate-900">Riwayat transaksi</h2><p className="text-xs text-slate-500">{history.length} transaksi terkait wallet ini</p></div></div>{finance.loading ? <p className="p-4 text-center text-sm text-slate-500">Memuat riwayat…</p> : history.length===0 ? <div className="p-8 text-center"><ReceiptIcon/><p className="mt-2 font-medium text-slate-800">Belum ada riwayat transaksi</p><p className="mt-1 text-sm text-slate-500">Transaksi baru yang memilih wallet ini akan muncul di sini.</p><button onClick={()=>navigate("/transaction")} className="mt-4 rounded-full bg-[#123524] px-4 py-2 text-sm text-white">Buka transaksi</button></div> : <div className="divide-y divide-slate-100">{history.map((tx,i)=>{const amount=signedAmount(tx);const Icon=tx.type==="Income"?ArrowDownLeft:tx.type==="Expense"?ArrowUpRight:ArrowLeftRight;return <div key={`${tx.sheetRow||"tx"}-${tx.date}-${i}`} className="flex items-center gap-3 p-4"><div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${amount<0?"bg-rose-50 text-rose-600":amount>0?"bg-emerald-50 text-emerald-700":"bg-slate-100 text-slate-500"}`}><Icon size={18}/></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-slate-900">{tx.description || tx.category}</p><p className="mt-0.5 text-xs text-slate-500">{tx.category} · {dateLabel(tx.date)}{tx.type==="Transfer"||tx.type==="Saving"?` · ${tx.wallet || "—"} → ${tx.toWallet || "—"}`:""}</p></div><p className={`shrink-0 text-right text-sm font-semibold tabular-nums ${amount<0?"text-rose-600":amount>0?"text-emerald-700":"text-slate-500"}`}>{moneyText(amount)}</p></div>})}</div>}</section>}
