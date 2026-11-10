@@ -7,6 +7,7 @@ export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () 
       <button
         onClick={onMenuClick}
         aria-label="Buka menu"
+        data-tour="mobile-menu-button"
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-surface text-forest-800 shadow-sm"
       >
         <Menu size={19} />
