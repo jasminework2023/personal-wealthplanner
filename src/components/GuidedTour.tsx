@@ -211,15 +211,26 @@ export function GuidedTour() {
   } : null;
 
   const cardWidth = Math.min(300, viewportW - 24);
+  const cardHeightEstimate = 190;
+  const gap = 14;
   let cardLeft = highlight ? highlight.left + highlight.width / 2 - cardWidth / 2 : (viewportW - cardWidth) / 2;
-  let cardTop = highlight ? highlight.top + highlight.height + 12 : 80;
-  const cardHeightEstimate = 180;
-  if (highlight && cardTop + cardHeightEstimate > viewportH - 12) {
-    cardTop = highlight.top - cardHeightEstimate - 12;
+  let cardTop = highlight ? highlight.top + highlight.height + gap : 80;
+
+  // Keep the explanation card completely outside the spotlight target.
+  // Prefer below the target, otherwise place it above. On mobile, if neither
+  // side has enough room, use the side with more available space.
+  if (highlight) {
+    const spaceBelow = viewportH - (highlight.top + highlight.height);
+    const spaceAbove = highlight.top;
+    if (spaceBelow < cardHeightEstimate + gap && spaceAbove >= cardHeightEstimate + gap) {
+      cardTop = highlight.top - cardHeightEstimate - gap;
+    } else if (spaceBelow < cardHeightEstimate + gap && spaceAbove < cardHeightEstimate + gap) {
+      cardTop = spaceBelow >= spaceAbove
+        ? Math.max(12, viewportH - cardHeightEstimate - 12)
+        : Math.max(12, highlight.top - cardHeightEstimate - gap);
+    }
   }
-  if (highlight && highlight.top > viewportH * 0.68 && viewportW < 768) {
-    cardTop = viewportH - 184;
-  }
+
   cardLeft = Math.max(12, Math.min(cardLeft, viewportW - cardWidth - 12));
   cardTop = Math.max(12, Math.min(cardTop, viewportH - 12 - cardHeightEstimate));
 
