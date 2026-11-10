@@ -217,6 +217,8 @@ export function Settings() {
         <div className="flex gap-2"><input value={name} onChange={(e) => setName(e.target.value)} placeholder={username || (id ? "Nama kamu" : "Your name")} className="min-w-0 flex-1 border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px] outline-none focus:border-forest-400 focus:ring-2 focus:ring-forest-100"/><button onClick={handleSaveName} className="flex items-center gap-1.5 bg-[#123524] text-white rounded-xl px-5 py-3 text-[13px] font-semibold hover:bg-forest-800">{savedName && <Check size={14}/>} {savedName ? (id ? "Tersimpan" : "Saved") : (id ? "Simpan" : "Save")}</button></div>
       </Card>
 
+      <SpouseSharing />
+
       <Card className="max-w-2xl">
         <div className="flex items-center gap-3 mb-4">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E9E2FF] text-[#6845A5]"><Crown size={19}/></span>
