@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import type { TourStep } from "../lib/tourSteps";
 import { getTourSteps } from "../lib/tourSteps";
 
-type StartDetail = { type?: "main" | "page"; route?: string };
+type StartDetail = { type?: "main" | "page" | "usage"; route?: string };
 
 const DONE_KEY = "wp_tour_done_v1";
 
@@ -23,12 +23,13 @@ export function GuidedTour() {
   const location = useLocation();
   const navigate = useNavigate();
   const [steps, setSteps] = useState<TourStep[]>([]);
-  const [tourType, setTourType] = useState<"main" | "page">("main");
+  const [tourType, setTourType] = useState<"main" | "page" | "usage">("main");
   const [index, setIndex] = useState(0);
   const [active, setActive] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const [waiting, setWaiting] = useState(false);
+  const [usagePrompt, setUsagePrompt] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const startRequestRef = useRef<StartDetail | null>(null);
 
@@ -158,6 +159,17 @@ export function GuidedTour() {
 
   function next() {
     if (index >= steps.length - 1) {
+      if (tourType === "main") {
+        storageSetDone();
+        setActive(false);
+        setTarget(null);
+        setRect(null);
+        setSteps([]);
+        setTourType("main");
+        setIndex(0);
+        setUsagePrompt(true);
+        return;
+      }
       finish(true);
       return;
     }
@@ -166,6 +178,22 @@ export function GuidedTour() {
 
   function back() {
     if (index > 0) setIndex((value) => value - 1);
+  }
+
+  if (usagePrompt && !active) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 px-4">
+        <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-[18px] bg-white p-5 shadow-[0_18px_60px_rgba(0,0,0,.2)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-xl">✓</div>
+          <h2 className="mt-3 text-[16px] font-bold">Tour pertama selesai 🎉</h2>
+          <p className="mt-1.5 text-[13px] leading-5 text-charcoal/65 dark:text-white/65">Sekarang kita lanjut ke tour kedua: cara menggunakan Wealthplanner dari awal sampai evaluasi.</p>
+          <div className="mt-4 flex gap-2">
+            <button type="button" onClick={() => setUsagePrompt(false)} className="flex-1 min-h-10 rounded-xl border border-charcoal/10 px-3 text-[12px] font-semibold text-charcoal/65 dark:border-white/10 dark:text-white/70">Nanti</button>
+            <button type="button" onClick={() => start({ type: "usage", route: "/settings" })} className="flex-1 min-h-10 rounded-xl bg-[#0B6B47] px-3 text-[12px] font-semibold text-white">Lanjut Tour 2</button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!active || !steps[index]) return null;
