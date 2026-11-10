@@ -63,6 +63,21 @@ function GuideCard({
   );
 }
 
+function StepList({ steps }: { steps: string[] }) {
+  return (
+    <ol className="mt-3 space-y-2">
+      {steps.map((step, index) => (
+        <li key={`${index}-${step}`} className="flex items-start gap-2.5">
+          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest-100 text-[10px] font-bold text-forest-700">
+            {index + 1}
+          </span>
+          <span>{step}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 function SectionTitle({
   number,
   title,
@@ -290,7 +305,7 @@ export function Guidance() {
             <div className="mt-3"><FeatureButton to="/finance">Buka Report</FeatureButton></div>
           </GuideCard>
 
-          <GuideCard icon={ShieldCheck} tone="bg-rose-50 text-rose-700" title="10. Lengkapi perlindungan — Protection">
+          <GuideCard icon={ShieldCheck} tone="bg-rose-50 text-rose-700" title="10. Lengkapi perlindungan & konsultasi — Protection + AI Assistant">
             <p>Protection membantu kamu mengecek kebutuhan perlindungan finansial dan berkonsultasi dengan konsultan asuransi manusia.</p>
             <StepList steps={[
               "Buka Protection.",
@@ -298,21 +313,12 @@ export function Guidance() {
               "Isi informasi yang diperlukan sesuai kondisi keuanganmu.",
               "Gunakan hasilnya sebagai bahan diskusi.",
               "Jika membutuhkan penjelasan atau rekomendasi produk, lanjutkan konsultasi dengan konsultan asuransi manusia.",
+              "Untuk konsultasi keuangan umum, buka AI Assistant dan tulis kondisi atau pertanyaanmu. Setiap penggunaan AI mengonsumsi 1 kredit selama akses AI-mu aktif.",
             ]} />
             <div className="mt-3"><FeatureButton to="/protection">Buka Protection</FeatureButton></div>
           </GuideCard>
 
-          <GuideCard icon={MessageCircle} tone="bg-forest-50 text-forest-700" title="11. Konsultasi dengan AI — AI Assistant">
-            <p>AI Assistant berfungsi sebagai financial planner untuk membantu membaca kondisi dan memberikan insight perencanaan keuangan.</p>
-            <StepList steps={[
-              "Buka AI Assistant.",
-              "Tulis pertanyaan atau kondisi keuangan yang ingin kamu konsultasikan.",
-              "Berikan konteks yang cukup agar jawabannya lebih relevan.",
-              "Baca rekomendasi dan gunakan sebagai bahan pertimbangan.",
-              "Setiap penggunaan AI mengonsumsi 1 kredit selama akses AI-mu masih aktif.",
-            ]} />
-            <div className="mt-3"><FeatureButton to="/ai-assistant">Buka AI Assistant</FeatureButton></div>
-          </GuideCard>
+
         </div>
       </section>
 
