@@ -45,7 +45,7 @@ export function AppShell() {
         <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-6 pt-2 pb-32 lg:py-5">
           <div className="hidden lg:flex items-center justify-end gap-3 mb-2">
             <DateHeader />
-            <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "page", route: location.pathname.startsWith("/calculator") ? "/calculator" : location.pathname } }))} aria-label="Mulai panduan interaktif" className="flex h-9 w-9 items-center justify-center rounded-full border border-forest-100 bg-surface text-forest-800 shadow-sm"><HelpCircle size={17}/></button>
+            <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "main", route: "/" } }))} aria-label="Mulai panduan interaktif" className="flex h-9 w-9 items-center justify-center rounded-full border border-forest-100 bg-surface text-forest-800 shadow-sm"><HelpCircle size={17}/></button>
             <ThemeToggle variant="compact" />
           </div>
           <Outlet />
