@@ -30,6 +30,7 @@ export function GuidedTour() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const [waiting, setWaiting] = useState(false);
   const [usagePrompt, setUsagePrompt] = useState(false);
+  const [completionPrompt, setCompletionPrompt] = useState(false);
   const [welcomePrompt, setWelcomePrompt] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const startRequestRef = useRef<StartDetail | null>(null);
@@ -155,6 +156,11 @@ export function GuidedTour() {
         setUsagePrompt(true);
         return;
       }
+      if (tourType === "usage") {
+        finish(false);
+        setCompletionPrompt(true);
+        return;
+      }
       finish(true);
       return;
     }
@@ -175,6 +181,22 @@ export function GuidedTour() {
           <div className="mt-4 flex gap-2">
             <button type="button" onClick={() => { storageSetDone(); setWelcomePrompt(false); }} className="flex-1 min-h-10 rounded-xl border border-charcoal/10 px-3 text-[12px] font-semibold text-charcoal/65 dark:border-white/10 dark:text-white/70">Nanti</button>
             <button type="button" onClick={() => { setWelcomePrompt(false); start({ type: "main", route: "/" }); }} className="flex-1 min-h-10 rounded-xl bg-[#0B6B47] px-3 text-[12px] font-semibold text-white">Mulai Tour 1</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (completionPrompt && !active) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 px-4">
+        <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-[18px] bg-white p-5 shadow-[0_18px_60px_rgba(0,0,0,.2)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-xl">🎉</div>
+          <h2 className="mt-3 text-[16px] font-bold">Selamat! Kamu sudah selesai 🎉</h2>
+          <p className="mt-1.5 text-[13px] leading-5 text-charcoal/65 dark:text-white/65">Sekarang kamu sudah mengenal alur utama Wealthplanner — mulai dari setup, mencatat kondisi keuangan, membuat perencanaan, sampai memantau progress.</p>
+          <p className="mt-2 text-[13px] leading-5 text-charcoal/65 dark:text-white/65">Yuk, mulai atur keuanganmu.</p>
+          <div className="mt-4">
+            <button type="button" onClick={() => setCompletionPrompt(false)} className="w-full min-h-10 rounded-xl bg-[#0B6B47] px-3 text-[12px] font-semibold text-white">Mulai Sekarang</button>
           </div>
         </div>
       </div>
