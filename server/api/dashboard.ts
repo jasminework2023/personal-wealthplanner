@@ -194,7 +194,7 @@ function getBudgetByCategory(rows: unknown[][], monthName: string): Record<strin
 // ---------- ASSET TRACKER ----------
 const SECTION_LABELS = ["liquid assets", "investment assets", "indonesia stock", "us stock"];
 
-function parseAssetSection(rows: unknown[][], sectionLabel: string) {
+function parseAssetSection(rows: unknown[][], sectionLabel: string, excludedNames = new Set<string>()) {
   const startIdx = findRowIndex(rows, sectionLabel);
   if (startIdx === -1) return { items: [] as { name: string; value: number }[], total: 0 };
 
@@ -207,14 +207,26 @@ function parseAssetSection(rows: unknown[][], sectionLabel: string) {
     if (!label) continue;
     const lower = label.toLowerCase();
     if (lower === "total") {
-      total = lastNumericValue(row);
+      total = items.reduce((sum, item) => sum + item.value, 0);
       break;
     }
     if (SECTION_LABELS.includes(lower) && lower !== sectionLabel.toLowerCase()) break; // kena section lain, stop
+    if (excludedNames.has(lower)) continue;
     const value = lastNumericValue(row);
     if (value > 0) items.push({ name: label, value, sheetRow: i + 1 });
   }
+
+  // Recalculate from the visible items so excluded/legacy rows cannot be
+  // accidentally included in the aggregate.
+  if (lowerSection(sectionLabel) === "investment assets") {
+    total = items.reduce((sum, item) => sum + item.value, 0);
+  }
+
   return { items, total };
+}
+
+function lowerSection(value: string) {
+  return String(value || "").trim().toLowerCase();
 }
 
 const STOCK_TICKER_RE = /^[A-Za-z]{1,6}([.-][A-Za-z]{1,2})?$/;
@@ -287,7 +299,7 @@ async function getUsdIdrRate(): Promise<number> {
 
 async function getAssetTracker(rows: unknown[][]) {
   const liquid = parseAssetSection(rows, "Liquid Assets");
-  const investment = parseAssetSection(rows, "Investment Assets");
+  const investment = parseAssetSection(rows, "Investment Assets", new Set(["saham", "stocks", "stock"]));
   const stocksID = parseStockSection(rows, "Indonesia Stock");
   const stocksUS = parseStockSection(rows, "US Stock");
 
