@@ -73,6 +73,6 @@ export const pageTourSteps: Record<string, TourStep[]> = {
   ],
 };
 
-export function getTourSteps(type: "main" | "page", route: string): TourStep[] {
+export function getTourSteps(type: "main" | "page" | "usage", route: string): TourStep[] {
   return type === "main" ? mainTourSteps : (pageTourSteps[route] || []);
 }
