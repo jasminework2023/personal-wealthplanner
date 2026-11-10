@@ -181,7 +181,7 @@ export function Settings() {
         <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "main", route: "/" } }))} className="mt-2 inline-flex min-h-10 items-center rounded-full border border-forest-100 bg-forest-50 px-4 py-2 text-[12px] font-semibold text-forest-700">Mulai panduan interaktif</button>
       </div>
 
-      <Card className="!p-4 sm:!p-4">
+      <Card data-tour="setup-card" className="!p-4 sm:!p-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#CFEFDD] text-[#0B6B47]"><Settings2 size={19} /></span>
@@ -209,7 +209,7 @@ export function Settings() {
         }
       </Card>
 
-      <Card className="max-w-2xl">
+      <Card data-tour="profile-card" className="max-w-2xl">
         <div className="flex items-center gap-2 mb-4"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FBD3E0] text-[#B83A62]"><UserIcon size={19}/></span><h3 className="text-[15px] font-semibold text-forest-900">{id ? "Profil" : "Profile"}</h3></div>
         <div className="mb-5"><label className="text-[13px] font-medium text-charcoal/75">{id ? "Bahasa Aplikasi" : "App Language"}</label><p className="text-[12px] text-charcoal/50 mt-0.5 mb-2">{id ? "Pilih bahasa tampilan aplikasi." : "Choose the app display language."}</p><select value={language} onChange={(e) => { const next = e.target.value as AppLanguage; setLanguage(next); setAppLanguage(next); }} className="w-full max-w-xs border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px] bg-white"><option value="id">Bahasa Indonesia</option><option value="en">{id ? "English" : "English"}</option></select></div>
         <label className="text-[13px] font-medium text-charcoal/75">{id ? "Nama Tampilan" : "Display Name"}</label>
