@@ -5,7 +5,7 @@ import { getTourSteps } from "../lib/tourSteps";
 
 type StartDetail = { type?: "main" | "page" | "usage"; route?: string };
 
-const DONE_KEY = "wp_tour_done_v1";
+const DONE_KEY = "wp_tour_done_v2";
 
 function storageDone() {
   try { return localStorage.getItem(DONE_KEY) === "1"; } catch { return false; }
