@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { google } from "googleapis";
+import { randomUUID } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 function getDb() {
@@ -71,6 +72,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const model = process.env.GROQ_API_KEY ? (process.env.GROQ_CHAT_MODEL || "openai/gpt-oss-20b") : (process.env.OPENAI_CHAT_MODEL || "gpt-4.1-mini");
     if (!apiKey) return res.status(503).json({ error: "AI belum dikonfigurasi. Hubungi administrator." });
     const history = (previous || []).reverse().map((m: any) => ({ role: m.role, content: m.content }));
+
+    // One successful AI Assistant request = one AI PRO+ credit.
+    // Reserve the credit server-side before calling the provider, then commit it
+    // only after a valid AI answer is returned. Provider failures are refunded.
+    const requestId = randomUUID();
+    const { data: creditRows, error: creditError } = await db.rpc("reserve_ai_credits", {
+      p_user_id: String(user.user_id),
+      p_request_id: requestId,
+      p_feature: "ai_assistant",
+      p_credits: 1,
+    });
+    if (creditError || !Array.isArray(creditRows) || !creditRows[0]) {
+      console.error("ai-assistant credit reservation failed:", creditError?.message || "No RPC result");
+      return res.status(503).json({ error: "Kuota AI belum dapat diverifikasi. Silakan coba lagi." });
+    }
+    if (!creditRows[0].allowed) {
+      const reason = String(creditRows[0].reason || "");
+      const status = reason === "ai_access_expired" || reason === "user_not_found" ? 403
+        : reason === "insufficient_credits" ? 402 : 409;
+      return res.status(status).json({
+        error: reason === "ai_access_expired"
+          ? "Masa akses AI kamu sudah berakhir. Perpanjang AI PRO+ untuk melanjutkan."
+          : reason === "insufficient_credits"
+            ? "Kredit AI kamu habis. Kredit akan diperbarui setiap 30 hari."
+            : "Akses AI belum dapat digunakan. Coba lagi beberapa saat.",
+        reason,
+        creditsRemaining: Number(creditRows[0].credits_remaining) || 0,
+      });
+    }
+
+    async function settleCredit(success: boolean) {
+      const { data, error } = await db.rpc("settle_ai_credit", {
+        p_user_id: String(user.user_id),
+        p_request_id: requestId,
+        p_success: success,
+      });
+      if (error || !Array.isArray(data) || !data[0]) {
+        throw new Error(error?.message || "Gagal menyelesaikan pencatatan kredit AI.");
+      }
+      return data[0];
+    }
+
     stage = "groq_request";
     const completion = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, temperature: 1, max_completion_tokens: 2400, messages: [{ role: "system", content: `Kamu adalah Wealthplanner AI, teman diskusi perencanaan keuangan pribadi yang ramah, hangat, ringkas, dan tidak menghakimi. Jawab dalam bahasa Indonesia. PENTING: jawab langsung sesuai pertanyaan, idealnya 80-140 kata dan maksimal 180 kata kecuali pengguna meminta perhitungan/penjelasan rinci. Jangan memberi kuliah atau panduan panjang sekaligus. Untuk konsultasi tujuan (pendidikan, rumah, pensiun, haji, warisan), pandu bertahap: jelaskan inti dalam 1-2 kalimat lalu ajukan HANYA SATU pertanyaan paling penting untuk langkah berikutnya. Gunakan paragraf pendek dan maksimal 3-5 bullet jika perlu. Jangan gunakan tabel Markdown, heading berulang, garis pemisah, atau menampilkan simbol Markdown mentah. Gunakan bold seperlunya. Jangan mengulang pertanyaan pengguna. ATURAN SUMBER DATA: satu-satunya sumber fakta keuangan pribadi pengguna adalah DATA KEUANGAN TERHUBUNG yang disisipkan di bawah instruksi ini, yang diambil dari spreadsheet_id milik akun yang token dashboard-nya sudah divalidasi. Jangan memakai contoh, asumsi, atau data pengguna lain sebagai fakta pengguna ini. Jangan mengarang saldo, pendapatan, pengeluaran, aset, utang, kategori, target, tanggal, atau tren. Jangan menyimpulkan data kosong sebagai nilai nol. Jika informasi tidak ada, tidak lengkap, ambigu, atau periode datanya tidak jelas, katakan terus terang dalam satu kalimat lalu ajukan SATU pertanyaan untuk melengkapi data. Saat menyebut angka, pastikan angka itu benar-benar muncul di data terhubung atau hasil hitung transparan dari angka tersebut; sebutkan periode jika tersedia. Bedakan transaksi, aset, anggaran, dan target; jangan menganggap anggaran sebagai pengeluaran aktual atau aset sebagai saldo kas. Jika pengguna bertanya tentang sesuatu yang belum tercatat di dashboard (misalnya dana pendidikan), jangan berpura-pura target itu sudah tersimpan; bantu mulai dengan menanyakan satu informasi paling penting. Jika pertanyaan tidak membutuhkan data pribadi, jawab secara umum dan jangan mengklaim sedang membaca dashboard. Berikan edukasi, bukan janji hasil investasi atau rekomendasi investasi personal. Nama pengguna: ${user.username || "Pengguna"}. Data keuangan: ${JSON.stringify(finance)}` }, ...history, { role: "user", content: message }] }) });
     stage = "groq_response";
@@ -88,6 +131,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ? rawContent.map((part: any) => typeof part?.text === "string" ? part.text : "").join("\\n")
         : "").trim();
     if (!answer) {
+      try { await settleCredit(false); } catch (settleError) {
+        console.error("ai-assistant credit refund failed:", settleError);
+        return res.status(503).json({ error: "AI gagal menjawab dan pengembalian kredit sedang diproses." });
+      }
       console.error("AI empty completion", JSON.stringify({
         model, finish_reason: choice?.finish_reason ?? null,
         usage: payload?.usage ?? null,
@@ -100,12 +147,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         error: `AI tidak mengirim teks jawaban (finish_reason: ${String(choice?.finish_reason || "tidak tersedia")}). Coba kirim ulang.`,
       });
     }
+    let settledCredit: any;
+    try {
+      settledCredit = await settleCredit(true);
+    } catch (settleError) {
+      console.error("ai-assistant credit commit failed:", settleError);
+      return res.status(503).json({ error: "Jawaban AI sudah diproses, tetapi status kredit belum tersimpan. Hubungi support sebelum mengulang." });
+    }
+
     const { error: saveUserError } = await db.from("ai_messages").insert({ conversation_id: conversationId, user_id: String(user.user_id), role: "user", content: message });
     if (saveUserError) throw saveUserError;
     const { error: saveAssistantError } = await db.from("ai_messages").insert({ conversation_id: conversationId, user_id: String(user.user_id), role: "assistant", content: answer });
     if (saveAssistantError) throw saveAssistantError;
     await db.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId).eq("user_id", String(user.user_id));
-    return res.status(200).json({ conversationId, answer });
+    return res.status(200).json({ conversationId, answer, creditsRemaining: Number(settledCredit?.credits_remaining) || 0 });
   } catch (error) {
     console.error(`AI Assistant API error at ${stage}:`, error);
     const detail = error instanceof Error ? error.message : "Unknown server error";
