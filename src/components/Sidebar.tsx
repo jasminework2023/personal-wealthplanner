@@ -20,6 +20,7 @@ import logoMark from "../assets/logo-mark-white.png";
 const mainLinks = [
   { to: "/", label: "Home", icon: Home },
   { to: "/finance", label: "Report", icon: BarChart3 },
+  { to: "/assets", label: "Asset", icon: BarChart3 },
   { to: "/transactions", label: "Community", icon: UsersRound },
   { to: "/budgeting", label: "Monthly Budget", icon: PieChart },
 ];
@@ -77,7 +78,7 @@ function Brand() {
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
-  const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", guidance: "Panduan", profile: "Profil & Pengaturan", wallet: "Wallet", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", wallet: "Wallet", guidance: "Guidance", profile: "Profile & Settings", website: "Website", personalFinance: "Personal Finance" };
+  const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", asset: "Aset", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", guidance: "Panduan", profile: "Profil & Pengaturan", wallet: "Wallet", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", asset: "Asset", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", wallet: "Wallet", guidance: "Guidance", profile: "Profile & Settings", website: "Website", personalFinance: "Personal Finance" };
   return (
     <div className="flex flex-col h-full">
       <Brand />
@@ -85,7 +86,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="px-2 flex-1 overflow-y-auto">
         <p className="px-3 text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.main}</p>
         <nav className="flex flex-col gap-0.5 mb-4">
-          {mainLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/finance" ? "menu-report" : l.to === "/budgeting" ? "menu-budget" : undefined} label={l.to === "/finance" ? labels.report : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.label} onNavigate={onNavigate} />)}
+          {mainLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/finance" ? "menu-report" : l.to === "/assets" ? "menu-asset" : l.to === "/budgeting" ? "menu-budget" : undefined} label={l.to === "/finance" ? labels.report : l.to === "/assets" ? labels.asset : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.label} onNavigate={onNavigate} />)}
         </nav>
 
         <p className="px-3 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.tools}</p>
