@@ -23,28 +23,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     stage = "database";
     const db = getDb();
     const { data: user, error } = await db.from("users").select("user_id, username, spreadsheet_id, is_active, ai_trial_expires_at, ai_membership_expires_at").eq("dashboard_token", token).single();
-    if (error || !user || !user.is_active || !user.spreadsheet_id) return res.status(403).json({ error: "Akses dashboard tidak valid atau belum aktif." });
+    if (error || !user || !currentUser.is_active || !currentUser.spreadsheet_id) return res.status(403).json({ error: "Akses dashboard tidak valid atau belum aktif." });
 
     // AI is available only while the user's trial or paid AI PRO+ access is active.
     // The server is the source of truth so a client cannot bypass membership by
     // calling this endpoint directly.
     const now = Date.now();
-    const trialActive = user.ai_trial_expires_at ? Date.parse(user.ai_trial_expires_at) > now : false;
-    const membershipActive = user.ai_membership_expires_at ? Date.parse(user.ai_membership_expires_at) > now : false;
+    const trialActive = currentUser.ai_trial_expires_at ? Date.parse(currentUser.ai_trial_expires_at) > now : false;
+    const membershipActive = currentUser.ai_membership_expires_at ? Date.parse(currentUser.ai_membership_expires_at) > now : false;
     if (!trialActive && !membershipActive) {
       return res.status(403).json({ error: "Akses AI PRO+ kamu belum aktif atau sudah berakhir. Aktifkan membership untuk melanjutkan." });
     }
+    const currentUser = user as NonNullable<typeof user>;
 
     if (req.method === "GET") {
       const requestedConversation = String(req.query.conversationId || "").trim();
       if (requestedConversation) {
-        const { data: owned } = await db.from("ai_conversations").select("id").eq("id", requestedConversation).eq("user_id", String(user.user_id)).single();
+        const { data: owned } = await db.from("ai_conversations").select("id").eq("id", requestedConversation).eq("user_id", String(currentUser.user_id)).single();
         if (!owned) return res.status(404).json({ error: "Percakapan tidak ditemukan." });
-        const { data: messages, error: messageError } = await db.from("ai_messages").select("id,role,content,created_at").eq("conversation_id", requestedConversation).eq("user_id", String(user.user_id)).order("created_at", { ascending: true }).limit(100);
+        const { data: messages, error: messageError } = await db.from("ai_messages").select("id,role,content,created_at").eq("conversation_id", requestedConversation).eq("user_id", String(currentUser.user_id)).order("created_at", { ascending: true }).limit(100);
         if (messageError) throw messageError;
         return res.status(200).json({ messages: messages || [] });
       }
-      const { data, error: listError } = await db.from("ai_conversations").select("id,title,created_at,updated_at").eq("user_id", String(user.user_id)).order("updated_at", { ascending: false }).limit(30);
+      const { data, error: listError } = await db.from("ai_conversations").select("id,title,created_at,updated_at").eq("user_id", String(currentUser.user_id)).order("updated_at", { ascending: false }).limit(30);
       if (listError) throw listError;
       return res.status(200).json({ conversations: data || [] });
     }
@@ -54,19 +55,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!message) return res.status(400).json({ error: "Tulis pertanyaan terlebih dahulu." });
     let conversation: any;
     if (conversationId) {
-      const { data, error: convError } = await db.from("ai_conversations").select("id,title").eq("id", conversationId).eq("user_id", String(user.user_id)).single();
+      const { data, error: convError } = await db.from("ai_conversations").select("id,title").eq("id", conversationId).eq("user_id", String(currentUser.user_id)).single();
       if (convError || !data) return res.status(404).json({ error: "Percakapan tidak ditemukan." });
       conversation = data;
     } else {
-      const { data, error: convError } = await db.from("ai_conversations").insert({ user_id: String(user.user_id), title: message.slice(0, sixty()) }).select("id,title").single();
+      const { data, error: convError } = await db.from("ai_conversations").insert({ user_id: String(currentUser.user_id), title: message.slice(0, sixty()) }).select("id,title").single();
       if (convError || !data) throw convError || new Error("Gagal membuat percakapan.");
       conversation = data; conversationId = data.id;
     }
     stage = "conversation_history";
-    const { data: previous, error: historyError } = await db.from("ai_messages").select("role,content").eq("conversation_id", conversationId).eq("user_id", String(user.user_id)).order("created_at", { ascending: false }).limit(12);
+    const { data: previous, error: historyError } = await db.from("ai_messages").select("role,content").eq("conversation_id", conversationId).eq("user_id", String(currentUser.user_id)).order("created_at", { ascending: false }).limit(12);
     if (historyError) throw historyError;
     stage = "google_sheets";
-    const finance = await getFinanceContext(user.spreadsheet_id);
+    const finance = await getFinanceContext(currentUser.spreadsheet_id);
     const apiKey = process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY;
     const endpoint = process.env.GROQ_API_KEY ? "https://api.groq.com/openai/v1/chat/completions" : "https://api.openai.com/v1/chat/completions";
     const model = process.env.GROQ_API_KEY ? (process.env.GROQ_CHAT_MODEL || "openai/gpt-oss-20b") : (process.env.OPENAI_CHAT_MODEL || "gpt-4.1-mini");
@@ -78,7 +79,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // only after a valid AI answer is returned. Provider failures are refunded.
     const requestId = randomUUID();
     const { data: creditRows, error: creditError } = await db.rpc("reserve_ai_credits", {
-      p_user_id: String(user.user_id),
+      p_user_id: String(currentUser.user_id),
       p_request_id: requestId,
       p_feature: "ai_assistant",
       p_credits: 1,
@@ -104,7 +105,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     async function settleCredit(success: boolean) {
       const { data, error } = await db.rpc("settle_ai_credit", {
-        p_user_id: String(user.user_id),
+        p_user_id: String(currentUser.user_id),
         p_request_id: requestId,
         p_success: success,
       });
@@ -115,7 +116,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     stage = "groq_request";
-    const completion = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, temperature: 1, max_completion_tokens: 2400, messages: [{ role: "system", content: `Kamu adalah Wealthplanner AI, teman diskusi perencanaan keuangan pribadi yang ramah, hangat, ringkas, dan tidak menghakimi. Jawab dalam bahasa Indonesia. PENTING: jawab langsung sesuai pertanyaan, idealnya 80-140 kata dan maksimal 180 kata kecuali pengguna meminta perhitungan/penjelasan rinci. Jangan memberi kuliah atau panduan panjang sekaligus. Untuk konsultasi tujuan (pendidikan, rumah, pensiun, haji, warisan), pandu bertahap: jelaskan inti dalam 1-2 kalimat lalu ajukan HANYA SATU pertanyaan paling penting untuk langkah berikutnya. Gunakan paragraf pendek dan maksimal 3-5 bullet jika perlu. Jangan gunakan tabel Markdown, heading berulang, garis pemisah, atau menampilkan simbol Markdown mentah. Gunakan bold seperlunya. Jangan mengulang pertanyaan pengguna. ATURAN SUMBER DATA: satu-satunya sumber fakta keuangan pribadi pengguna adalah DATA KEUANGAN TERHUBUNG yang disisipkan di bawah instruksi ini, yang diambil dari spreadsheet_id milik akun yang token dashboard-nya sudah divalidasi. Jangan memakai contoh, asumsi, atau data pengguna lain sebagai fakta pengguna ini. Jangan mengarang saldo, pendapatan, pengeluaran, aset, utang, kategori, target, tanggal, atau tren. Jangan menyimpulkan data kosong sebagai nilai nol. Jika informasi tidak ada, tidak lengkap, ambigu, atau periode datanya tidak jelas, katakan terus terang dalam satu kalimat lalu ajukan SATU pertanyaan untuk melengkapi data. Saat menyebut angka, pastikan angka itu benar-benar muncul di data terhubung atau hasil hitung transparan dari angka tersebut; sebutkan periode jika tersedia. Bedakan transaksi, aset, anggaran, dan target; jangan menganggap anggaran sebagai pengeluaran aktual atau aset sebagai saldo kas. Jika pengguna bertanya tentang sesuatu yang belum tercatat di dashboard (misalnya dana pendidikan), jangan berpura-pura target itu sudah tersimpan; bantu mulai dengan menanyakan satu informasi paling penting. Jika pertanyaan tidak membutuhkan data pribadi, jawab secara umum dan jangan mengklaim sedang membaca dashboard. Berikan edukasi, bukan janji hasil investasi atau rekomendasi investasi personal. Nama pengguna: ${user.username || "Pengguna"}. Data keuangan: ${JSON.stringify(finance)}` }, ...history, { role: "user", content: message }] }) });
+    const completion = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, temperature: 1, max_completion_tokens: 2400, messages: [{ role: "system", content: `Kamu adalah Wealthplanner AI, teman diskusi perencanaan keuangan pribadi yang ramah, hangat, ringkas, dan tidak menghakimi. Jawab dalam bahasa Indonesia. PENTING: jawab langsung sesuai pertanyaan, idealnya 80-140 kata dan maksimal 180 kata kecuali pengguna meminta perhitungan/penjelasan rinci. Jangan memberi kuliah atau panduan panjang sekaligus. Untuk konsultasi tujuan (pendidikan, rumah, pensiun, haji, warisan), pandu bertahap: jelaskan inti dalam 1-2 kalimat lalu ajukan HANYA SATU pertanyaan paling penting untuk langkah berikutnya. Gunakan paragraf pendek dan maksimal 3-5 bullet jika perlu. Jangan gunakan tabel Markdown, heading berulang, garis pemisah, atau menampilkan simbol Markdown mentah. Gunakan bold seperlunya. Jangan mengulang pertanyaan pengguna. ATURAN SUMBER DATA: satu-satunya sumber fakta keuangan pribadi pengguna adalah DATA KEUANGAN TERHUBUNG yang disisipkan di bawah instruksi ini, yang diambil dari spreadsheet_id milik akun yang token dashboard-nya sudah divalidasi. Jangan memakai contoh, asumsi, atau data pengguna lain sebagai fakta pengguna ini. Jangan mengarang saldo, pendapatan, pengeluaran, aset, utang, kategori, target, tanggal, atau tren. Jangan menyimpulkan data kosong sebagai nilai nol. Jika informasi tidak ada, tidak lengkap, ambigu, atau periode datanya tidak jelas, katakan terus terang dalam satu kalimat lalu ajukan SATU pertanyaan untuk melengkapi data. Saat menyebut angka, pastikan angka itu benar-benar muncul di data terhubung atau hasil hitung transparan dari angka tersebut; sebutkan periode jika tersedia. Bedakan transaksi, aset, anggaran, dan target; jangan menganggap anggaran sebagai pengeluaran aktual atau aset sebagai saldo kas. Jika pengguna bertanya tentang sesuatu yang belum tercatat di dashboard (misalnya dana pendidikan), jangan berpura-pura target itu sudah tersimpan; bantu mulai dengan menanyakan satu informasi paling penting. Jika pertanyaan tidak membutuhkan data pribadi, jawab secara umum dan jangan mengklaim sedang membaca dashboard. Berikan edukasi, bukan janji hasil investasi atau rekomendasi investasi personal. Nama pengguna: ${currentUser.username || "Pengguna"}. Data keuangan: ${JSON.stringify(finance)}` }, ...history, { role: "user", content: message }] }) });
     stage = "groq_response";
     const payload: any = await completion.json();
     if (!completion.ok) {
@@ -155,11 +156,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(503).json({ error: "Jawaban AI sudah diproses, tetapi status kredit belum tersimpan. Hubungi support sebelum mengulang." });
     }
 
-    const { error: saveUserError } = await db.from("ai_messages").insert({ conversation_id: conversationId, user_id: String(user.user_id), role: "user", content: message });
+    const { error: saveUserError } = await db.from("ai_messages").insert({ conversation_id: conversationId, user_id: String(currentUser.user_id), role: "user", content: message });
     if (saveUserError) throw saveUserError;
-    const { error: saveAssistantError } = await db.from("ai_messages").insert({ conversation_id: conversationId, user_id: String(user.user_id), role: "assistant", content: answer });
+    const { error: saveAssistantError } = await db.from("ai_messages").insert({ conversation_id: conversationId, user_id: String(currentUser.user_id), role: "assistant", content: answer });
     if (saveAssistantError) throw saveAssistantError;
-    await db.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId).eq("user_id", String(user.user_id));
+    await db.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId).eq("user_id", String(currentUser.user_id));
     return res.status(200).json({ conversationId, answer, creditsRemaining: Number(settledCredit?.credits_remaining) || 0 });
   } catch (error) {
     console.error(`AI Assistant API error at ${stage}:`, error);
