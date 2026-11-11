@@ -143,11 +143,19 @@ function StockTracker({
   stocksUS,
   isRealData,
   investmentAccounts,
+  stocksTotal,
+  totalAssets,
+  usdIdrRate,
+  assetsVisible,
 }: {
   stocksID: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number; account?: string }[];
   stocksUS: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number; account?: string }[];
   isRealData: boolean;
   investmentAccounts: { name: string; balance: number }[];
+  stocksTotal: number;
+  totalAssets: number;
+  usdIdrRate: number;
+  assetsVisible: boolean;
 }) {
   const [market, setMarket] = useState<"ID" | "US">("ID");
   const [refreshing, setRefreshing] = useState(false);
@@ -178,6 +186,9 @@ function StockTracker({
 
   const formatPL = (value: number) =>
     (value >= 0 ? "+" : "−") + formatStockMoney(value);
+  const hiddenStockMoney = "••••••";
+  const displayStockMoney = (value: number) =>
+    assetsVisible ? formatStockMoney(value) : (market === "ID" ? "Rp " + hiddenStockMoney : "$" + hiddenStockMoney);
 
   const quantityLabel = (shares: number) =>
     market === "ID"
@@ -265,7 +276,7 @@ function StockTracker({
   }
 
   async function deleteStock(row: { ticker: string }) {
-    if (!window.confirm(`Hapus saham ${row.ticker} dari portfolio?`)) return;
+    if (!window.confirm(`Hapus saham ${row.ticker} dari portfolio?\n\nTotal Aset ikut berkurang.`)) return;
     const token = getStoredToken();
     if (!token) {
       setError("Sesi dashboard tidak ditemukan.");
@@ -328,12 +339,26 @@ function StockTracker({
       <div className="mt-3 grid grid-cols-2 gap-2">
         <div className="rounded-[10px] border border-charcoal/6 bg-white px-3 py-2.5">
           <p className="text-[10px] text-charcoal/45">Market value</p>
-          <p className="mt-0.5 text-[17px] font-medium tabular-nums text-forest-900">{formatStockMoney(total)}</p>
+          <p className="mt-0.5 text-[17px] font-medium tabular-nums text-forest-900">{displayStockMoney(total)}</p>
         </div>
         <div className="rounded-[10px] border border-charcoal/6 bg-white px-3 py-2.5">
           <p className="text-[10px] text-charcoal/45">Unrealized P/L</p>
-          <p className={`mt-0.5 text-[17px] font-medium tabular-nums ${pl >= 0 ? "text-forest-700" : "text-rose-600"}`}>{formatPL(pl)}</p>
+          <p className={`mt-0.5 text-[17px] font-medium tabular-nums ${pl >= 0 ? "text-forest-700" : "text-rose-600"}`}>{assetsVisible ? formatPL(pl) : (pl >= 0 ? "+" : "−") + (market === "ID" ? "Rp " : "$") + hiddenStockMoney}</p>
         </div>
+      </div>
+
+      <div className="mt-2 rounded-[12px] bg-[#DDF7E8] px-3 py-2.5 text-[#0B6B47]">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium text-[#0B6B47]">Masuk ke Total Aset · Saham</p>
+            <p className="mt-0.5 text-[16px] font-medium tabular-nums">{assetsVisible ? formatRupiah(stocksTotal) : "Rp ••••••"}</p>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="text-[13px] font-medium tabular-nums">{totalAssets > 0 ? ((stocksTotal / totalAssets) * 100).toFixed(1).replace(".", ",") : "0,0"}%</p>
+            <p className="text-[11px] text-charcoal/45">dari Total Aset</p>
+          </div>
+        </div>
+        <p className="mt-1 text-[11px] text-charcoal/45">ID + US (kurs USD/IDR Rp {Math.round(usdIdrRate).toLocaleString("id-ID")})</p>
       </div>
 
       {rows.length ? (
@@ -355,8 +380,8 @@ function StockTracker({
                     </div>
                     {isRealData && (
                       <div className="flex shrink-0 items-center gap-0.5">
-                        <button type="button" aria-label={`Edit ${row.ticker}`} onClick={() => openEdit(row)} className="flex h-10 w-10 items-center justify-center rounded-full text-charcoal/45 hover:bg-charcoal/5 hover:text-forest-700"><Pencil size={16}/></button>
-                        <button type="button" aria-label={`Hapus ${row.ticker}`} onClick={() => void deleteStock(row)} className="flex h-10 w-10 items-center justify-center rounded-full text-charcoal/45 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16}/></button>
+                        <button type="button" aria-label={`Edit ${row.ticker}`} onClick={() => openEdit(row)} className="flex h-7 w-7 items-center justify-center rounded-full text-charcoal/45 hover:bg-charcoal/5 hover:text-forest-700"><Pencil size={15}/></button>
+                        <button type="button" aria-label={`Hapus ${row.ticker}`} onClick={() => void deleteStock(row)} className="flex h-7 w-7 items-center justify-center rounded-full text-charcoal/45 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={15}/></button>
                       </div>
                     )}
                   </div>
@@ -416,8 +441,8 @@ function StockTracker({
                     <td className={`px-2 py-2 text-right font-medium tabular-nums ${row.pl >= 0 ? "text-forest-700" : "text-rose-600"}`}>{formatPL(row.pl)}</td>
                     <td className="px-1 py-2">
                       {isRealData && <div className="flex justify-end gap-0.5">
-                        <button type="button" aria-label={`Edit ${row.ticker}`} onClick={() => openEdit(row)} className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal/45 hover:bg-charcoal/5 hover:text-forest-700"><Pencil size={16}/></button>
-                        <button type="button" aria-label={`Hapus ${row.ticker}`} onClick={() => void deleteStock(row)} className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal/45 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={16}/></button>
+                        <button type="button" aria-label={`Edit ${row.ticker}`} onClick={() => openEdit(row)} className="flex h-7 w-7 items-center justify-center rounded-full text-charcoal/45 hover:bg-charcoal/5 hover:text-forest-700"><Pencil size={15}/></button>
+                        <button type="button" aria-label={`Hapus ${row.ticker}`} onClick={() => void deleteStock(row)} className="flex h-7 w-7 items-center justify-center rounded-full text-charcoal/45 hover:bg-rose-50 hover:text-rose-600"><Trash2 size={15}/></button>
                       </div>}
                     </td>
                   </tr>
@@ -431,7 +456,8 @@ function StockTracker({
       )}
 
       {open && (
-        <div className="mt-3 rounded-[14px] border border-forest-100 bg-white p-3">
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) resetForm(); }}>
+          <div className="w-full max-w-lg rounded-t-[22px] border border-forest-100 bg-white p-4 shadow-2xl dark:border-[#2B332F] dark:bg-[#151A17] sm:rounded-[18px]">
           <div className="flex items-center justify-between gap-2">
             <p className="text-[13px] font-semibold text-forest-900">{editing ? `Edit ${editing.ticker}` : `Tambah ${market === "ID" ? "Saham Indonesia" : "Saham US"}`}</p>
             <button type="button" aria-label="Tutup" onClick={resetForm} className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal/40 hover:bg-charcoal/5">×</button>
@@ -482,6 +508,7 @@ function StockTracker({
               </div>
             </>
           )}
+          </div>
         </div>
       )}
     </div>
@@ -542,7 +569,8 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   const stockUSTotalUSD = assets.stocksUS.reduce((sum, item) => sum + item.value, 0);
   const stockUSTotalIDR = stockUSTotalUSD * usdIdrRate;
   const integratedInvestmentTotal = assets.investmentAssets.reduce((sum, item) => sum + item.value, 0) + stockIDTotal + stockUSTotalIDR;
-  const integratedTotalAssets = integratedLiquidTotal + integratedInvestmentTotal;
+  // Dashboard API is the single source of truth for Total Aset.
+  const integratedTotalAssets = assets.totalAssets;
   const integratedAssetProgress = assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0;
 
   const assetChartData = [
@@ -732,9 +760,19 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
             </div>}
             {(assets.investmentAssets.length > 0 || isRealData) && <div>
                <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Investment Assets</p><p className="mb-2 text-[11px] leading-relaxed text-charcoal/45">Aset yang sudah dibeli: saham, deposito, obligasi/SBN, emas, reksa dana, dan investasi lainnya.</p>
+               {assets.excludedInvestmentNames?.length > 0 && <p className="mb-2 rounded-lg bg-[#DDF7E8] px-2.5 py-2 text-[11px] leading-relaxed text-[#0B6B47]">Baris 'Saham' di Investment Assets tidak dihitung, karena sudah diambil dari Stock Portfolio.</p>}
                {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={integratedTotalAssets > 0 ? item.value / integratedTotalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={() => window.location.reload()} />)}
                {isRealData && <AddItemForm placeholder="Tambah investasi (saham, deposito, emas, obligasi, dll.)" onSubmit={async (name, amount) => { const token = getStoredToken(); const res = await fetch(`${API_BASE}/add-asset-item`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, section: "investment", name, value: amount }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || "Gagal menambah item"); window.location.reload(); }} />}
-               <StockTracker stocksID={assets.stocksID} stocksUS={assets.stocksUS} isRealData={isRealData} investmentAccounts={wallets.filter((wallet) => wallet.type === "investment").map((wallet) => ({ name: wallet.name, balance: wallet.balance }))} />
+               <StockTracker
+  stocksID={assets.stocksID}
+  stocksUS={assets.stocksUS}
+  isRealData={isRealData}
+  investmentAccounts={wallets.filter((wallet) => wallet.type === "investment").map((wallet) => ({ name: wallet.name, balance: wallet.balance }))}
+  stocksTotal={assets.stocksTotal}
+  totalAssets={assets.totalAssets}
+  usdIdrRate={usdIdrRate}
+  assetsVisible={!assetValuesHidden}
+/>
              </div>}
           </Card>
         </div>

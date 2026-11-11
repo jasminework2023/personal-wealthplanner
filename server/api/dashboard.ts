@@ -196,9 +196,10 @@ const SECTION_LABELS = ["liquid assets", "investment assets", "indonesia stock",
 
 function parseAssetSection(rows: unknown[][], sectionLabel: string, excludedNames = new Set<string>()) {
   const startIdx = findRowIndex(rows, sectionLabel);
-  if (startIdx === -1) return { items: [] as { name: string; value: number }[], total: 0 };
+  if (startIdx === -1) return { items: [] as { name: string; value: number; sheetRow: number }[], total: 0, excludedNames: [] as string[] };
 
   const items: { name: string; value: number; sheetRow: number }[] = [];
+  const excluded: string[] = [];
   let total = 0;
 
   for (let i = startIdx + 2; i < rows.length; i++) {
@@ -211,7 +212,10 @@ function parseAssetSection(rows: unknown[][], sectionLabel: string, excludedName
       break;
     }
     if (SECTION_LABELS.includes(lower) && lower !== sectionLabel.toLowerCase()) break; // kena section lain, stop
-    if (excludedNames.has(lower)) continue;
+    if (excludedNames.has(lower)) {
+      excluded.push(label);
+      continue;
+    }
     const value = lastNumericValue(row);
     if (value > 0) items.push({ name: label, value, sheetRow: i + 1 });
   }
@@ -222,7 +226,7 @@ function parseAssetSection(rows: unknown[][], sectionLabel: string, excludedName
     total = items.reduce((sum, item) => sum + item.value, 0);
   }
 
-  return { items, total };
+  return { items, total, excludedNames: excluded };
 }
 
 function lowerSection(value: string) {
@@ -353,13 +357,16 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
   }
 
   const usdIdrRate = await getUsdIdrRate();
-  const totalAssets = liquid.total + investment.total + stocksID.subtotalValue + stocksUS.subtotalValue * usdIdrRate;
+  const stocksTotal = stocksID.subtotalValue + stocksUS.subtotalValue * usdIdrRate;
+  const totalAssets = liquid.total + investment.total + stocksTotal;
 
   return {
     totalAssets,
+    stocksTotal,
     target,
     liquidAssets: liquid.items,
     investmentAssets: investment.items,
+    excludedInvestmentNames: investment.excludedNames,
     stocksID: stocksID.stocks,
     stocksUS: stocksUS.stocks,
   };
