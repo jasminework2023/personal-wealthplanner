@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { google } from "googleapis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
+const STOCK_SHEET = "Stock Portfolio";
 const TICKER_RE = /^[A-Za-z]{1,6}([.-][A-Za-z]{1,2})?$/;
 const SECTION_LABELS = ["liquid assets", "investment assets", "indonesia stock", "us stock"];
 const STOCK_STOP_LABELS = new Set([
@@ -63,10 +64,31 @@ function sheetsClient() {
   return google.sheets({ version: "v4", auth: a });
 }
 
+async function ensureStockSheet(s: any, id: string) {
+  const meta = await s.spreadsheets.get({
+    spreadsheetId: id,
+    fields: "sheets.properties(sheetId,title)",
+  });
+  const sheets = meta.data.sheets || [];
+  const existing = sheets.find((x: any) => norm(x.properties?.title) === norm(STOCK_SHEET));
+  if (existing) return existing;
+
+  const created = await s.spreadsheets.batchUpdate({
+    spreadsheetId: id,
+    requestBody: {
+      requests: [{ addSheet: { properties: { title: STOCK_SHEET } } }],
+    },
+  });
+  const props = created.data.replies?.[0]?.addSheet?.properties;
+  if (!props?.sheetId) throw new Error("Gagal membuat tab Stock Portfolio.");
+  return { properties: props };
+}
+
 async function rows(s: any, id: string) {
+  await ensureStockSheet(s, id);
   return (await s.spreadsheets.values.get({
     spreadsheetId: id,
-    range: "Asset Tracker!A1:N100",
+    range: STOCK_SHEET + "!A1:O100",
   })).data.values || [];
 }
 
@@ -198,7 +220,7 @@ async function writePosition(
   const label = market === "ID" ? "Indonesia Stock" : "US Stock";
   const found = findStockRow(rs, ticker, market);
   if (found.start < 0) {
-    throw new Error("Section " + (market === "ID" ? "Indonesia Stock" : "US Stock") + " tidak ditemukan di Asset Tracker.");
+    throw new Error("Section " + (market === "ID" ? "Indonesia Stock" : "US Stock") + " tidak ditemukan di Stock Portfolio.");
   }
 
   const currentPrice = current ?? await price(ticker, market);
@@ -239,14 +261,7 @@ async function writePosition(
     if (insertAt < 0) insertAt = rs.length;
   }
 
-  const meta = await s.spreadsheets.get({
-    spreadsheetId: id,
-    fields: "sheets.properties(sheetId,title)",
-  });
-  const sh = (meta.data.sheets || []).find(
-    (x: any) => norm(x.properties?.title) === "asset tracker",
-  );
-  if (!sh) throw new Error("Tab Asset Tracker tidak ditemukan.");
+  const sh = await ensureStockSheet(s, id);
 
   // Only insert a new row when there is no reusable blank row.
   const reusableBlank = insertAt < rs.length && !(rs[insertAt] || []).some((cell: unknown) => display(cell));
@@ -368,13 +383,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (mode === "buy" && found.row >= 0) {
         const existing = rs[found.row] || [];
-        const oldShares = num(existing[2]);
-        const oldAvg = num(existing[3]);
+        const oldShares = num(existing[found.columns?.shares ?? 2]);
+        const oldAvg = num(existing[found.columns?.avgPrice ?? 3]);
         const nextShares = oldShares + shares;
         const nextAvg = nextShares > 0
           ? ((oldShares * oldAvg) + (shares * avg)) / nextShares
           : avg;
-        const existingCurrent = num(existing[1]);
+        const existingCurrent = num(existing[found.columns?.currentPrice ?? 1]);
 
         await writePosition(
           s,
@@ -409,7 +424,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const found = findStockRow(rs, ticker, market);
       if (found.row < 0) return res.status(404).json({ error: "Saham tidak ditemukan" });
 
-      const current = num(rs[found.row]?.[1]);
+      const current = num(rs[found.row]?.[found.columns?.currentPrice ?? 1]);
       await writePosition(
         s,
         user.spreadsheet_id,
