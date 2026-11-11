@@ -4,7 +4,7 @@ import { Check, ExternalLink, GripVertical, Plus, Settings2, Trash2, User as Use
 import { Card } from "../components/Card";
 import { getDisplayName, setDisplayName } from "../lib/settings";
 import { getAppLanguage, setAppLanguage, type AppLanguage } from "../lib/format";
-import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
+import { getStoredToken } from "../lib/useFinanceData";
 
 type SectionKey = "income" | "expense" | "saving" | "bank";
 type SetupItem = { name: string; active: boolean };
@@ -24,7 +24,7 @@ function cloneSetup(value: SetupState): SetupState {
 }
 
 export function Settings() {
-  const { username } = useFinanceData();
+  const username = (() => {\n    try {\n      const token = getStoredToken();\n      if (!token) return null;\n      const cached = JSON.parse(localStorage.getItem(`wealthplanner_finance_cache_${token}`) || "null");\n      return cached?.dashboard?.username || null;\n    } catch {\n      return null;\n    }\n  })();
   const [name, setName] = useState(() => getDisplayName());
   const [savedName, setSavedName] = useState(false);
   const [language, setLanguage] = useState<AppLanguage>(() => getAppLanguage());
