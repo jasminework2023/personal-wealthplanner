@@ -246,6 +246,39 @@ function findStockRow(rs: any[][], ticker: string, market: "ID" | "US") {
   return { start, row: -1, subtotal, columns: layout.columns };
 }
 
+async function ensureStockSection(s: any, id: string, market: "ID" | "US") {
+  const rs = await rows(s, id);
+  const label = market === "ID" ? "Indonesia Stock" : "US Stock";
+  const existing = section(rs, label);
+  if (existing >= 0) {
+    const layout = stockTableLayout(rs, existing);
+    return { rs, start: existing, columns: layout.columns };
+  }
+
+  // Older Welcome spreadsheets predate Stock Portfolio. Create the section
+  // automatically instead of requiring the user to edit their spreadsheet.
+  // Keep the new table in the same I:O area used by the current Asset Tracker.
+  const startRow = rs.length + 1;
+  const headerRow = startRow + 1;
+  await s.spreadsheets.values.update({
+    spreadsheetId: id,
+    range: "Asset Tracker!I" + startRow + ":O" + headerRow,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [
+        [label, "", "", "", "", "", ""],
+        ["Ticker", "Current Price", "Shares", "Avg Price", "Value", "P/L", "Account"],
+      ],
+    },
+  });
+
+  const nextRows = await rows(s, id);
+  const start = section(nextRows, label);
+  if (start < 0) throw new Error("Gagal membuat section " + label + ".");
+  const layout = stockTableLayout(nextRows, start);
+  return { rs: nextRows, start, columns: layout.columns };
+}
+
 async function writePosition(
   s: any,
   id: string,
@@ -256,7 +289,8 @@ async function writePosition(
   account: string,
   current?: number,
 ) {
-  const rs = await rows(s, id);
+  const ensured = await ensureStockSection(s, id, market);
+  const rs = ensured.rs;
   const label = market === "ID" ? "Indonesia Stock" : "US Stock";
   const found = findStockRow(rs, ticker, market);
   if (found.start < 0 || !found.columns) {
