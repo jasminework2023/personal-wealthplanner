@@ -23,7 +23,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     stage = "database";
     const db = getDb();
     const { data: user, error } = await db.from("users").select("user_id, username, spreadsheet_id, is_active, ai_trial_expires_at, ai_membership_expires_at").eq("dashboard_token", token).single();
-    if (error || !user || !currentUser.is_active || !currentUser.spreadsheet_id) return res.status(403).json({ error: "Akses dashboard tidak valid atau belum aktif." });
+    const currentUser = user as NonNullable<typeof user>;
+    if (error || !currentUser || !currentUser.is_active || !currentUser.spreadsheet_id) return res.status(403).json({ error: "Akses dashboard tidak valid atau belum aktif." });
 
     // AI is available only while the user's trial or paid AI PRO+ access is active.
     // The server is the source of truth so a client cannot bypass membership by
@@ -34,7 +35,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!trialActive && !membershipActive) {
       return res.status(403).json({ error: "Akses AI PRO+ kamu belum aktif atau sudah berakhir. Aktifkan membership untuk melanjutkan." });
     }
-    const currentUser = user as NonNullable<typeof user>;
 
     if (req.method === "GET") {
       const requestedConversation = String(req.query.conversationId || "").trim();
