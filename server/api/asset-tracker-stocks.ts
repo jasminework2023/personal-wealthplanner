@@ -195,6 +195,7 @@ async function writePosition(
   current?: number,
 ) {
   const rs = await rows(s, id);
+  const label = market === "ID" ? "Indonesia Stock" : "US Stock";
   const found = findStockRow(rs, ticker, market);
   if (found.start < 0) {
     throw new Error("Section " + (market === "ID" ? "Indonesia Stock" : "US Stock") + " tidak ditemukan di Asset Tracker.");
@@ -224,7 +225,7 @@ async function writePosition(
       const r = rs[i] || [];
       const first = norm(r[0]);
       const rowLabels = r.map((cell: unknown) => norm(cell)).filter(Boolean);
-      const isStop = rowLabels.some((cell) => cell === "total" || cell === "subtotal" || cell.includes("subtotal"))
+      const isStop = rowLabels.some((cell: string) => cell === "total" || cell === "subtotal" || cell.includes("subtotal"))
         || (first !== norm(label) && STOCK_STOP_LABELS.has(first));
       if (isStop) {
         insertAt = i;
