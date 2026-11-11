@@ -11,6 +11,7 @@ const presets = ["#0B4D38","#1A5FD0","#003D79","#4C3494","#0B7A52","#B02A3F","#4
 const moneyText = (n: number) => `${n < 0 ? "−" : "+"}${formatRupiah(Math.abs(n))}`;
 const FULL_WALLET_CARD_HEIGHT = 204;
 const WALLET_CARD_GAP = 12;
+const COMPACT_WALLET_CARD_STEP = 82;
 function appLanguage(): "id" | "en" {
   try {
     const stored = localStorage.getItem("wealthplanner_language") || localStorage.getItem("app_language") || localStorage.getItem("language");
@@ -172,7 +173,7 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{label}</h3>
                 <span className="text-xs text-slate-400">{groupWallets.length}</span>
               </div>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="relative w-full" style={{ height: Math.max(204, (groupWallets.length - 1) * COMPACT_WALLET_CARD_STEP + 204) }}>
                 {groupWallets.map((wallet) => {
                   const walletColor = walletCardColor(wallet);
                   const foreground = textColorForBackground(walletColor);
@@ -202,8 +203,8 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
                   return (
                     <button key={wallet.id} type="button" aria-label={`${isId ? "Buka detail" : "Open details for"} ${wallet.name}`}
                       onClick={() => { setSelectedId(wallet.id); setNotice(""); }}
-                      className="block w-full min-w-0 rounded-[20px] text-left transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
-                      style={{ backgroundColor: walletColor, color: foreground, border: "none", boxShadow: "0 8px 24px rgba(0,0,0,.10)", padding: 0, overflow: "hidden" }}>
+                      className="absolute left-0 top-0 block w-full min-w-0 rounded-[20px] text-left transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+                      style={{ top: index * COMPACT_WALLET_CARD_STEP, zIndex: index + 1, height: 204, backgroundColor: walletColor, color: foreground, border: "none", boxShadow: "0 8px 24px rgba(0,0,0,.10)", padding: 0, overflow: "hidden" }}>
                       <div className="flex min-h-[54px] items-center justify-between gap-2 px-4 pt-3">
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-[15px] font-semibold leading-5">{wallet.name}</p>
