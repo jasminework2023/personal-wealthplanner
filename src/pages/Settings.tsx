@@ -24,7 +24,16 @@ function cloneSetup(value: SetupState): SetupState {
 }
 
 export function Settings() {
-  const username = (() => {\n    try {\n      const token = getStoredToken();\n      if (!token) return null;\n      const cached = JSON.parse(localStorage.getItem(`wealthplanner_finance_cache_${token}`) || "null");\n      return cached?.dashboard?.username || null;\n    } catch {\n      return null;\n    }\n  })();
+  const username = (() => {
+    try {
+      const token = getStoredToken();
+      if (!token) return null;
+      const cached = JSON.parse(localStorage.getItem(`wealthplanner_finance_cache_${token}`) || "null");
+      return cached?.dashboard?.username || null;
+    } catch {
+      return null;
+    }
+  })();
   const [name, setName] = useState(() => getDisplayName());
   const [savedName, setSavedName] = useState(false);
   const [language, setLanguage] = useState<AppLanguage>(() => getAppLanguage());
