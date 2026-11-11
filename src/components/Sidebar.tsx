@@ -77,6 +77,7 @@ function Brand() {
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const [language, setLanguage] = useState(getAppLanguage());
+  const [profileOpen, setProfileOpen] = useState(false);
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", asset: "Aset", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", guidance: "Panduan", profile: "Profil & Pengaturan", wallet: "Wallet", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", asset: "Asset", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", wallet: "Wallet", guidance: "Guidance", profile: "Profile & Settings", website: "Website", personalFinance: "Personal Finance" };
   return (
@@ -99,8 +100,34 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </nav>
       </div>
 
-      <div className="mx-2 mb-3 rounded-xl border border-[#E4E6E8] bg-white p-1 flex flex-col gap-0.5">
-        <NavItem to="/settings" label={labels.profile} icon={Settings} onNavigate={onNavigate} />
+      <div className="relative mx-2 mb-3">
+        <div className="rounded-xl border border-[#E4E6E8] bg-white p-1 flex flex-col gap-0.5">
+          <button
+            type="button"
+            onClick={() => setProfileOpen((open) => !open)}
+            aria-expanded={profileOpen}
+            className="sidebar-item group relative flex w-full items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all"
+          >
+            <Settings size={18} strokeWidth={2} className="sidebar-icon" />
+            {labels.profile}
+          </button>
+        </div>
+
+        {profileOpen && (
+          <div className="absolute bottom-[calc(100%+8px)] left-0 right-0 z-50 rounded-xl border border-[#E4E6E8] bg-white p-1.5 shadow-lg">
+            <NavLink
+              to="/settings"
+              onClick={() => {
+                setProfileOpen(false);
+                onNavigate?.();
+              }}
+              className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-[12.5px] font-medium text-charcoal/75 hover:bg-forest-50 hover:text-forest-800"
+            >
+              <Settings size={16} />
+              {id ? "Buka Profil & Pengaturan" : "Open Profile & Settings"}
+            </NavLink>
+          </div>
+        )}
       </div>
     </div>
   );
