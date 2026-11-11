@@ -67,6 +67,7 @@ export interface AssetData {
   target: number;
   liquidAssets: { name: string; value: number }[];
   investmentAssets: { name: string; value: number }[];
+  excludedInvestmentNames: string[];
   stocksID: StockItem[];
   stocksUS: StockItem[];
 }
@@ -98,6 +99,7 @@ function mockAssetData(): AssetData {
     target: assetTarget,
     liquidAssets: liquid,
     investmentAssets: investment,
+    excludedInvestmentNames: [],
     stocksID: mockStocksID.map((s) => ({
       ticker: s.ticker,
       currentPrice: s.currentPrice,
@@ -125,6 +127,7 @@ function normalizeAssetData(value: any): AssetData {
     target: Number(value?.target) || 0,
     liquidAssets: Array.isArray(value?.liquidAssets) ? value.liquidAssets : fallback.liquidAssets,
     investmentAssets: Array.isArray(value?.investmentAssets) ? value.investmentAssets : fallback.investmentAssets,
+    excludedInvestmentNames: Array.isArray(value?.excludedInvestmentNames) ? value.excludedInvestmentNames : [],
     stocksID: Array.isArray(value?.stocksID) ? value.stocksID : [],
     stocksUS: Array.isArray(value?.stocksUS) ? value.stocksUS : [],
   };
