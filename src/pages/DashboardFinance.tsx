@@ -397,8 +397,7 @@ function StockTracker({
                       <p className="text-[11px] text-charcoal/45">Qty</p>
                       <p className="text-[13px] font-medium tabular-nums">{quantityLabel(row.shares)}</p>
                     </div>
-                    <div className="rounded-[10px] bg-charcoal/[0.045] px-[9px] py-1.5">
-                      <p className="text-[11px] text-charcoal/45">Total investasi</p>
+                    <div className="rounded-[10px] bg-charcoal/[0.045] px-[9px] py-1.5">                      <p className="text-[11px] text-charcoal/45">Total investasi</p>
                       <p className="text-[13px] font-medium tabular-nums">{formatStockMoney(row.avgPrice * row.shares)}</p>
                     </div>
                     <div className="rounded-[10px] bg-charcoal/[0.045] px-[9px] py-1.5">
@@ -763,7 +762,13 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
                {assets.excludedInvestmentNames?.length > 0 && <p className="mb-2 rounded-lg bg-[#DDF7E8] px-2.5 py-2 text-[11px] leading-relaxed text-[#0B6B47]">Baris 'Saham' di Investment Assets tidak dihitung, karena sudah diambil dari Stock Portfolio.</p>}
                {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={integratedTotalAssets > 0 ? item.value / integratedTotalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={() => window.location.reload()} />)}
                {isRealData && <AddItemForm placeholder="Tambah investasi (saham, deposito, emas, obligasi, dll.)" onSubmit={async (name, amount) => { const token = getStoredToken(); const res = await fetch(`${API_BASE}/add-asset-item`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, section: "investment", name, value: amount }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || "Gagal menambah item"); window.location.reload(); }} />}
-               <StockTracker
+
+             </div>}
+          </Card>
+        </div>
+      </>}
+      {activeReportTab === "assets" && isRealData && <div className="mt-4">
+        <StockTracker
   stocksID={assets.stocksID}
   stocksUS={assets.stocksUS}
   isRealData={isRealData}
@@ -773,10 +778,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   usdIdrRate={usdIdrRate}
   assetsVisible={!assetValuesHidden}
 />
-             </div>}
-          </Card>
-        </div>
-      </>}
+      </div>}
       {activeReportTab === "cashflow" && <>
         {(() => {
           const monthIndex = monthNames.indexOf(selectedMonth);
@@ -797,8 +799,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
           const netDigits = String(Math.round(Math.abs(netCashflow))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
           return <div className="report-summary-card rounded-[14px] bg-gradient-to-br from-[#BDF7DF] to-[#61E5AC] p-4 text-[#071B12] dark:from-[#BDF7DF] dark:to-[#61E5AC]">
             <p className="text-[14px] font-semibold text-[#53697A]">Net cashflow</p>
-            <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
-              <span className="shrink-0 text-[14px] font-semibold leading-tight text-[#53697A]">Rp</span>
+            <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">              <span className="shrink-0 text-[14px] font-semibold leading-tight text-[#53697A]">Rp</span>
               <span className="report-headline-amount min-w-0 font-extrabold leading-tight tracking-[-0.6px] text-[#123524] tabular-nums">{netCashflow < 0 ? "-" : ""}{netDigits}</span>
             </div>
             {trend !== null && <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#123524]/[0.12] px-2.5 py-1 text-[12px] font-medium text-[#123524]"><span>{trend >= 0 ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</span><span>{trend >= 0 ? "+" : ""}{Math.round(trend)}% dari bulan lalu</span></div>}
