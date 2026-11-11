@@ -66,26 +66,61 @@ function sheetsClient() {
 async function rows(s: any, id: string) {
   return (await s.spreadsheets.values.get({
     spreadsheetId: id,
-    range: "Asset Tracker!A1:N100",
+    range: "Asset Tracker!A1:O100",
   })).data.values || [];
 }
 
 function section(rs: any[][], label: string) {
   const target = norm(label);
-  // Asset Tracker section labels are not required to live in column A.
-  // Match the normalized label anywhere in the row so minor sheet layout
-  // changes (merged cells / shifted label columns) do not make the section
-  // appear "missing".
   return rs.findIndex((r) =>
     (r || []).some((cell: unknown) => norm(cell) === target),
   );
 }
 
-function isValidStockRow(r: any[]): boolean {
-  const ticker = display(r[0]);
-  const shares = num(r[2]);
-  const currentPrice = num(r[1]);
-  const avgPrice = num(r[3]);
+function stockTableLayout(rs: any[][], start: number) {
+  const aliases: Record<string, string[]> = {
+    ticker: ["ticker", "symbol", "stock"],
+    currentPrice: ["current", "current price", "harga sekarang", "harga saat ini"],
+    shares: ["shares", "qty", "quantity", "jumlah", "lot"],
+    avgPrice: ["avg", "avg price", "average price", "harga beli", "harga rata-rata"],
+    value: ["value", "market value", "nilai"],
+    pl: ["p/l", "pl", "unrealized p/l", "unrealized"],
+    account: ["account", "investment account", "akun", "rekening"],
+  };
+  const matches = (value: unknown, list: string[]) => {
+    const label = norm(value);
+    return list.some((alias) => label === alias || label.includes(alias));
+  };
+
+  for (let row = start; row <= Math.min(start + 3, rs.length - 1); row++) {
+    const cells = rs[row] || [];
+    const columns: Record<string, number> = {};
+    for (let col = 0; col < cells.length; col++) {
+      for (const [key, list] of Object.entries(aliases)) {
+        if (columns[key] === undefined && matches(cells[col], list)) columns[key] = col;
+      }
+    }
+    if (
+      columns.ticker !== undefined &&
+      columns.currentPrice !== undefined &&
+      columns.shares !== undefined &&
+      columns.avgPrice !== undefined
+    ) {
+      return { headerRow: row, columns };
+    }
+  }
+
+  return {
+    headerRow: start,
+    columns: { ticker: 0, currentPrice: 1, shares: 2, avgPrice: 3, value: 4, pl: 5, account: 6 },
+  };
+}
+
+function isValidStockRow(r: any[], columns: Record<string, number>): boolean {
+  const ticker = display(r[columns.ticker]);
+  const shares = num(r[columns.shares]);
+  const currentPrice = num(r[columns.currentPrice]);
+  const avgPrice = num(r[columns.avgPrice]);
   return TICKER_RE.test(ticker) && shares > 0 && (currentPrice > 0 || avgPrice > 0);
 }
 
@@ -96,10 +131,11 @@ function read(rs: any[][]) {
     const start = section(rs, label);
     if (start < 0) continue;
 
+    const layout = stockTableLayout(rs, start);
     let blankRows = 0;
-    for (let i = start + 1; i < rs.length; i++) {
+    for (let i = layout.headerRow + 1; i < rs.length; i++) {
       const r = rs[i] || [];
-      const ticker = display(r[0]);
+      const ticker = display(r[layout.columns.ticker]);
       const labelNorm = norm(ticker);
 
       if (!ticker) {
@@ -111,12 +147,11 @@ function read(rs: any[][]) {
 
       if (labelNorm === "total" || labelNorm.includes("subtotal")) break;
       if (labelNorm !== norm(label) && STOCK_STOP_LABELS.has(labelNorm)) break;
+      if (!isValidStockRow(r, layout.columns)) continue;
 
-      if (!isValidStockRow(r)) continue;
-
-      const currentPrice = num(r[1]);
-      const shares = num(r[2]);
-      const avgPrice = num(r[3]);
+      const currentPrice = num(r[layout.columns.currentPrice]);
+      const shares = num(r[layout.columns.shares]);
+      const avgPrice = num(r[layout.columns.avgPrice]);
       const value = currentPrice * shares;
       const pl = (currentPrice - avgPrice) * shares;
 
@@ -128,7 +163,7 @@ function read(rs: any[][]) {
         currentPrice,
         value,
         pl,
-        account: display(r[6]),
+        account: layout.columns.account !== undefined ? display(r[layout.columns.account]) : "",
       });
     }
   }
@@ -136,33 +171,60 @@ function read(rs: any[][]) {
   return out;
 }
 
-async function price(ticker: string, market: "ID" | "US") {
-  const symbol = market === "ID" ? ticker + ".JK" : ticker;
-  const u =
-    "https://query1.finance.yahoo.com/v8/finance/chart/" +
-    encodeURIComponent(symbol) +
-    "?range=1d&interval=1m";
-  const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0" } });
-  if (!r.ok) throw new Error("Price provider HTTP " + r.status);
-  const j: any = await r.json();
-  const p = Number(
-    j?.chart?.result?.[0]?.meta?.regularMarketPrice ??
-    j?.chart?.result?.[0]?.meta?.previousClose,
-  );
-  if (!Number.isFinite(p) || p <= 0) throw new Error("Harga tidak tersedia");
-  return p;
+function columnName(index: number): string {
+  let n = index + 1;
+  let out = "";
+  while (n > 0) {
+    const rem = (n - 1) % 26;
+    out = String.fromCharCode(65 + rem) + out;
+    n = Math.floor((n - 1) / 26);
+  }
+  return out;
+}
+
+function writeStockCells(
+  s: any,
+  id: string,
+  rowNumber: number,
+  columns: Record<string, number>,
+  values: { ticker: string; current: number; shares: number; avg: number; value: number; pl: number; account: string },
+) {
+  const entries: Array<[string, unknown]> = [
+    ["ticker", values.ticker],
+    ["currentPrice", values.current],
+    ["shares", values.shares],
+    ["avgPrice", values.avg],
+    ["value", values.value],
+    ["pl", values.pl],
+    ["account", values.account],
+  ];
+  const present = entries.filter(([key]) => columns[key] !== undefined);
+  if (!present.length) throw new Error("Kolom Stock Portfolio tidak ditemukan.");
+
+  const minCol = Math.min(...present.map(([key]) => columns[key]));
+  const maxCol = Math.max(...present.map(([key]) => columns[key]));
+  const row = Array.from({ length: maxCol - minCol + 1 }, () => "");
+  for (const [key, value] of present) row[columns[key] - minCol] = value;
+
+  return s.spreadsheets.values.update({
+    spreadsheetId: id,
+    range: "Asset Tracker!" + columnName(minCol) + rowNumber + ":" + columnName(maxCol) + rowNumber,
+    valueInputOption: "USER_ENTERED",
+    requestBody: { values: [row] },
+  });
 }
 
 function findStockRow(rs: any[][], ticker: string, market: "ID" | "US") {
   const label = market === "ID" ? "Indonesia Stock" : "US Stock";
   const start = section(rs, label);
-  if (start < 0) return { start: -1, row: -1, subtotal: -1 };
+  if (start < 0) return { start: -1, row: -1, subtotal: -1, columns: null as Record<string, number> | null };
 
+  const layout = stockTableLayout(rs, start);
   let subtotal = -1;
   let blankRows = 0;
-  for (let i = start + 1; i < rs.length; i++) {
+  for (let i = layout.headerRow + 1; i < rs.length; i++) {
     const r = rs[i] || [];
-    const value = display(r[0]);
+    const value = display(r[layout.columns.ticker]);
     const k = norm(value);
 
     if (!value) {
@@ -178,10 +240,43 @@ function findStockRow(rs: any[][], ticker: string, market: "ID" | "US") {
       break;
     }
     if (k !== norm(label) && STOCK_STOP_LABELS.has(k)) break;
-    if (k === norm(ticker)) return { start, row: i, subtotal };
+    if (k === norm(ticker)) return { start, row: i, subtotal, columns: layout.columns };
   }
 
-  return { start, row: -1, subtotal };
+  return { start, row: -1, subtotal, columns: layout.columns };
+}
+
+async function ensureStockSection(s: any, id: string, market: "ID" | "US") {
+  const rs = await rows(s, id);
+  const label = market === "ID" ? "Indonesia Stock" : "US Stock";
+  const existing = section(rs, label);
+  if (existing >= 0) {
+    const layout = stockTableLayout(rs, existing);
+    return { rs, start: existing, columns: layout.columns };
+  }
+
+  // Older Welcome spreadsheets predate Stock Portfolio. Create the section
+  // automatically instead of requiring the user to edit their spreadsheet.
+  // Keep the new table in the same I:O area used by the current Asset Tracker.
+  const startRow = rs.length + 1;
+  const headerRow = startRow + 1;
+  await s.spreadsheets.values.update({
+    spreadsheetId: id,
+    range: "Asset Tracker!I" + startRow + ":O" + headerRow,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [
+        [label, "", "", "", "", "", ""],
+        ["Ticker", "Current Price", "Shares", "Avg Price", "Value", "P/L", "Account"],
+      ],
+    },
+  });
+
+  const nextRows = await rows(s, id);
+  const start = section(nextRows, label);
+  if (start < 0) throw new Error("Gagal membuat section " + label + ".");
+  const layout = stockTableLayout(nextRows, start);
+  return { rs: nextRows, start, columns: layout.columns };
 }
 
 async function writePosition(
@@ -194,11 +289,12 @@ async function writePosition(
   account: string,
   current?: number,
 ) {
-  const rs = await rows(s, id);
+  const ensured = await ensureStockSection(s, id, market);
+  const rs = ensured.rs;
   const label = market === "ID" ? "Indonesia Stock" : "US Stock";
   const found = findStockRow(rs, ticker, market);
-  if (found.start < 0) {
-    throw new Error("Section " + (market === "ID" ? "Indonesia Stock" : "US Stock") + " tidak ditemukan di Asset Tracker.");
+  if (found.start < 0 || !found.columns) {
+    throw new Error("Section " + label + " tidak ditemukan di Asset Tracker.");
   }
 
   const currentPrice = current ?? await price(ticker, market);
@@ -206,24 +302,17 @@ async function writePosition(
   const pl = (currentPrice - avg) * shares;
 
   if (found.row >= 0) {
-    const n = found.row + 1;
-    await s.spreadsheets.values.update({
-      spreadsheetId: id,
-      range: "Asset Tracker!A" + n + ":G" + n,
-      valueInputOption: "USER_ENTERED",
-      requestBody: { values: [[ticker, currentPrice, shares, avg, value, pl, account]] },
+    await writeStockCells(s, id, found.row + 1, found.columns, {
+      ticker, current: currentPrice, shares, avg, value, pl, account,
     });
     return;
   }
 
-  // Do not require a manually maintained Total/Subtotal row. If one exists,
-  // insert before it; otherwise use the first blank row in the section, or append
-  // directly after the section's existing rows.
   let insertAt = found.subtotal;
   if (insertAt < 0) {
     for (let i = found.start + 1; i < rs.length; i++) {
       const r = rs[i] || [];
-      const first = norm(r[0]);
+      const first = norm(r[found.columns.ticker]);
       const rowLabels = r.map((cell: unknown) => norm(cell)).filter(Boolean);
       const isStop = rowLabels.some((cell: string) => cell === "total" || cell === "subtotal" || cell.includes("subtotal"))
         || (first !== norm(label) && STOCK_STOP_LABELS.has(first));
@@ -248,7 +337,6 @@ async function writePosition(
   );
   if (!sh) throw new Error("Tab Asset Tracker tidak ditemukan.");
 
-  // Only insert a new row when there is no reusable blank row.
   const reusableBlank = insertAt < rs.length && !(rs[insertAt] || []).some((cell: unknown) => display(cell));
   if (!reusableBlank) {
     await s.spreadsheets.batchUpdate({
@@ -269,12 +357,8 @@ async function writePosition(
     });
   }
 
-  const n = insertAt + 1;
-  await s.spreadsheets.values.update({
-    spreadsheetId: id,
-    range: "Asset Tracker!A" + n + ":G" + n,
-    valueInputOption: "USER_ENTERED",
-    requestBody: { values: [[ticker, currentPrice, shares, avg, value, pl, account]] },
+  await writeStockCells(s, id, insertAt + 1, found.columns, {
+    ticker, current: currentPrice, shares, avg, value, pl, account,
   });
 }
 
@@ -286,10 +370,30 @@ async function deletePosition(s: any, id: string, ticker: string, market: "ID" |
   }
 
   const n = found.row + 1;
+  const columns = found.columns || { ticker: 0, currentPrice: 1, shares: 2, avgPrice: 3, value: 4, pl: 5, account: 6 };
+  const minCol = Math.min(...Object.values(columns));
+  const maxCol = Math.max(...Object.values(columns));
   await s.spreadsheets.values.clear({
     spreadsheetId: id,
-    range: "Asset Tracker!A" + n + ":N" + n,
+    range: "Asset Tracker!" + columnName(minCol) + n + ":" + columnName(maxCol) + n,
   });
+}
+
+async function price(ticker: string, market: "ID" | "US") {
+  const symbol = market === "ID" ? ticker + ".JK" : ticker;
+  const u =
+    "https://query1.finance.yahoo.com/v8/finance/chart/" +
+    encodeURIComponent(symbol) +
+    "?range=1d&interval=1m";
+  const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0" } });
+  if (!r.ok) throw new Error("Price provider HTTP " + r.status);
+  const j: any = await r.json();
+  const p = Number(
+    j?.chart?.result?.[0]?.meta?.regularMarketPrice ??
+    j?.chart?.result?.[0]?.meta?.previousClose,
+  );
+  if (!Number.isFinite(p) || p <= 0) throw new Error("Harga tidak tersedia");
+  return p;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
