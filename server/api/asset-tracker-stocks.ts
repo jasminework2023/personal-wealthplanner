@@ -231,7 +231,7 @@ async function writePosition(
     const n = found.row + 1;
     await s.spreadsheets.values.update({
       spreadsheetId: id,
-      range: "Asset Tracker!A" + n + ":G" + n,
+      range: STOCK_SHEET + "!A" + n + ":G" + n,
       valueInputOption: "USER_ENTERED",
       requestBody: { values: [[ticker, currentPrice, shares, avg, value, pl, account]] },
     });
@@ -287,7 +287,7 @@ async function writePosition(
   const n = insertAt + 1;
   await s.spreadsheets.values.update({
     spreadsheetId: id,
-    range: "Asset Tracker!A" + n + ":G" + n,
+    range: STOCK_SHEET + "!A" + n + ":G" + n,
     valueInputOption: "USER_ENTERED",
     requestBody: { values: [[ticker, currentPrice, shares, avg, value, pl, account]] },
   });
@@ -303,7 +303,7 @@ async function deletePosition(s: any, id: string, ticker: string, market: "ID" |
   const n = found.row + 1;
   await s.spreadsheets.values.clear({
     spreadsheetId: id,
-    range: "Asset Tracker!A" + n + ":N" + n,
+    range: STOCK_SHEET + "!A" + n + ":N" + n,
   });
 }
 
