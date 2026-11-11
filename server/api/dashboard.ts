@@ -84,7 +84,7 @@ async function fetchAllRanges(spreadsheetId: string, transactionsOnly = false) {
   const sheets = await getSheetsClient();
   const ranges = transactionsOnly
     ? ["Transaction!B10:I"]
-    : ["Transaction!B10:I", "Budgeting!B1:N40", "Asset Tracker!B1:N45"];
+    : ["Transaction!B10:I", "Budgeting!B1:N40", "Asset Tracker!A1:O60"];
   const res = await sheets.spreadsheets.values.batchGet({
     spreadsheetId,
     ranges,
@@ -247,18 +247,62 @@ function normalizeSectionLabel(value: unknown): string {
   return String(value ?? "").trim().toLowerCase().replace(/:$/, "").trim();
 }
 
+function findStockTableLayout(rows: unknown[][], startIdx: number) {
+  const headerAliases: Record<string, string[]> = {
+    ticker: ["ticker", "symbol", "stock"],
+    currentPrice: ["current", "current price", "harga sekarang", "harga saat ini"],
+    shares: ["shares", "qty", "quantity", "jumlah", "lot"],
+    avgPrice: ["avg", "avg price", "average price", "harga beli", "harga rata-rata"],
+    value: ["value", "market value", "nilai"],
+    pl: ["p/l", "pl", "unrealized p/l", "unrealized"],
+    account: ["account", "investment account", "akun", "rekening"],
+  };
+
+  const matches = (value: unknown, aliases: string[]) => {
+    const label = normalizeSectionLabel(value);
+    return aliases.some((alias) => label === alias || label.includes(alias));
+  };
+
+  for (let rowIndex = startIdx; rowIndex <= Math.min(startIdx + 3, rows.length - 1); rowIndex++) {
+    const row = rows[rowIndex] || [];
+    const columns: Record<string, number> = {};
+    for (let col = 0; col < row.length; col++) {
+      for (const [key, aliases] of Object.entries(headerAliases)) {
+        if (columns[key] === undefined && matches(row[col], aliases)) {
+          columns[key] = col;
+        }
+      }
+    }
+    if (
+      columns.ticker !== undefined &&
+      columns.currentPrice !== undefined &&
+      columns.shares !== undefined &&
+      columns.avgPrice !== undefined
+    ) {
+      return { headerRow: rowIndex, columns };
+    }
+  }
+
+  // Legacy fallback: stock table starts in the first four columns of the
+  // requested range. This keeps older user sheets working.
+  return {
+    headerRow: startIdx,
+    columns: { ticker: 0, currentPrice: 1, shares: 2, avgPrice: 3, value: 4, pl: 5, account: 6 },
+  };
+}
+
 function parseStockSection(rows: unknown[][], sectionLabel: string) {
   const startIdx = findRowIndex(rows, sectionLabel);
   if (startIdx === -1) return { stocks: [] as any[], subtotalValue: 0 };
 
-  const stocks: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number }[] = [];
+  const layout = findStockTableLayout(rows, startIdx);
+  const stocks: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number; account?: string }[] = [];
   let subtotalValue = 0;
   let blankRows = 0;
 
-  // Section row is also the stock table header, so data starts at +1.
-  for (let i = startIdx + 1; i < rows.length; i++) {
+  for (let i = layout.headerRow + 1; i < rows.length; i++) {
     const row = rows[i] || [];
-    const rawTicker = String(row[0] || "").trim();
+    const rawTicker = String(row[layout.columns.ticker] || "").trim();
     const label = normalizeSectionLabel(rawTicker);
 
     if (!rawTicker) {
@@ -271,19 +315,24 @@ function parseStockSection(rows: unknown[][], sectionLabel: string) {
     if (label === "total" || label.includes("subtotal")) break;
     if (label !== normalizeSectionLabel(sectionLabel) && STOCK_STOP_LABELS.has(label)) break;
 
-    const currentPrice = parseRupiah(row[1]);
-    const shares = parseRupiah(row[2]);
-    const avgPrice = parseRupiah(row[3]);
+    const currentPrice = parseRupiah(row[layout.columns.currentPrice]);
+    const shares = parseRupiah(row[layout.columns.shares]);
+    const avgPrice = parseRupiah(row[layout.columns.avgPrice]);
 
-    // A row is a stock only when its ticker and core position data are valid.
-    // Value/P&L are always derived from prices and shares, never trusted from
-    // the sheet because those cells may be blank or stale.
     if (!STOCK_TICKER_RE.test(rawTicker) || shares <= 0 || (currentPrice <= 0 && avgPrice <= 0)) continue;
 
     const value = currentPrice * shares;
     const pl = (currentPrice - avgPrice) * shares;
     subtotalValue += value;
-    stocks.push({ ticker: rawTicker, currentPrice, shares, avgPrice, value, pl });
+    stocks.push({
+      ticker: rawTicker,
+      currentPrice,
+      shares,
+      avgPrice,
+      value,
+      pl,
+      account: layout.columns.account !== undefined ? String(row[layout.columns.account] || "").trim() : "",
+    });
   }
 
   return { stocks, subtotalValue };
