@@ -5,7 +5,25 @@ import { incomeCategories, expenseCategories, savingCategories } from "../data/b
 import { assetGroups, totalAssets as mockTotalAssets, assetTarget, stocksID as mockStocksID, stocksUS as mockStocksUS } from "../data/assets";
 
 const TOKEN_KEY = "wealthplanner_token";
+const SESSION_TOKEN_KEY = "wealthplanner_session_token";
 const API_BASE = "/api";
+
+function getCookieToken(): string | null {
+  try {
+    const match = document.cookie.match(/(?:^|; )wealthplanner_token=([^;]*)/);
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistToken(token: string) {
+  try { localStorage.setItem(TOKEN_KEY, token); } catch {}
+  try { sessionStorage.setItem(SESSION_TOKEN_KEY, token); } catch {}
+  try {
+    document.cookie = "wealthplanner_token=" + encodeURIComponent(token) + "; Path=/; Max-Age=2592000; SameSite=Lax";
+  } catch {}
+}
 
 /**
  * Resolve a dashboard token synchronously.
@@ -16,26 +34,28 @@ export function getStoredToken(): string | null {
   const params = new URLSearchParams(window.location.search);
   const urlToken = (params.get("token") || params.get("ref") || "").trim();
   if (urlToken) {
-    try {
-      localStorage.setItem(TOKEN_KEY, urlToken);
-    } catch {
-      // Continue with the URL token if browser storage is unavailable.
-    }
+    persistToken(urlToken);
     return urlToken;
   }
   try {
-    return localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
-  }
+    const localToken = localStorage.getItem(TOKEN_KEY);
+    if (localToken) return localToken;
+  } catch {}
+  try {
+    const sessionToken = sessionStorage.getItem(SESSION_TOKEN_KEY);
+    if (sessionToken) return sessionToken;
+  } catch {}
+  return getCookieToken();
 }
 
 export function setStoredToken(token: string) {
-  localStorage.setItem(TOKEN_KEY, token);
+  persistToken(token);
 }
 
 export function clearStoredToken() {
-  localStorage.removeItem(TOKEN_KEY);
+  try { localStorage.removeItem(TOKEN_KEY); } catch {}
+  try { sessionStorage.removeItem(SESSION_TOKEN_KEY); } catch {}
+  try { document.cookie = "wealthplanner_token=; Path=/; Max-Age=0; SameSite=Lax"; } catch {}
 }
 
 function captureTokenFromUrl() {
