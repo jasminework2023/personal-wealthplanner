@@ -136,7 +136,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if(type==="income") add(from,"inflow");
       if(type==="expense") add(from,"outflow");
       if(type==="transfer"){add(from,"outflow");add(to,"inflow");}
-      if(type==="saving"&&from){\n        // Saving without To Wallet is still money leaving the selected wallet.\n        // This is used for investment purchases (e.g. RDN -> stock portfolio),\n        // where the purchased asset is recorded separately from the wallet cash.\n        add(from,"outflow");\n        if(to) add(to,"inflow");\n      }
+      if(type==="saving"&&from){
+        // Saving without To Wallet is still money leaving the selected wallet.
+        // This is used for investment purchases (e.g. RDN -> stock portfolio),
+        // where the purchased asset is recorded separately from the wallet cash.
+        add(from,"outflow");
+        if(to) add(to,"inflow");
+      }
     }
     const result=(wallets||[]).filter((w:any)=>activeKeys.has(w.name_key)).map((w:any)=>{
       const s=sums.get(w.name_key)||{inflow:0,outflow:0,count:0};
