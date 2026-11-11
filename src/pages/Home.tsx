@@ -42,9 +42,9 @@ export function Home() {
   // Keep Home and Report > Asset Tracker on the exact same asset calculation.
   // Wallet is the source of truth for liquid assets; investment assets come from the Asset Tracker.
   const liquidAssetsFromWallets = wallets.map((wallet) => ({ name: wallet.name, value: wallet.balance }));
-  const integratedLiquidTotal = liquidAssetsFromWallets.reduce((sum, item) => sum + item.value, 0);
-  const integratedInvestmentTotal = assets.investmentAssets.reduce((sum, item) => sum + item.value, 0);
-  const integratedTotalAssets = integratedLiquidTotal + integratedInvestmentTotal;
+  // Total Aset is sourced from the dashboard response so Home and Asset Tracker
+  // use exactly the same stock-inclusive total.
+  const integratedTotalAssets = assets.totalAssets;
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [assetsVisible, setAssetsVisible] = useState(true);
   const [summaryTab, setSummaryTab] = useState<"asset" | "budget">("asset");
