@@ -30,7 +30,7 @@ async function authUser(token: string) {
 function walletType(name: string): "cash" | "bank" | "investment" | "other" {
   const n = norm(name);
   if (/cash|tunai|dompet/.test(n)) return "cash";
-  if (/saham|stock|reksa|invest|obligasi|emas|crypto/.test(n)) return "investment";
+  if (/saham|stock|reksa|invest|obligasi|emas|crypto|gotrade|go trade/.test(n)) return "investment";
   if (/bank|bca|bni|bri|mandiri|cimb|jago|btn|danamon|permata|bsi|ovo|gopay|dana|shopeepay|linkaja/.test(n)) return "bank";
   return "other";
 }
