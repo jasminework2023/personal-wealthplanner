@@ -24,6 +24,7 @@ function cloneSetup(value: SetupState): SetupState {
 }
 
 export function Settings() {
+  // Read the cached dashboard username without loading the full finance data hook on Profile.
   const username = (() => {
     try {
       const token = getStoredToken();
