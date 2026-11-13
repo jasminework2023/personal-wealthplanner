@@ -424,9 +424,10 @@ export function GuidedTour() {
   let cardLeft = highlight ? highlight.left + highlight.width / 2 - cardWidth / 2 : (viewportW - cardWidth) / 2;
   let cardTop = highlight ? highlight.top + highlight.height + gap : 80;
 
-  // For click-to-navigate steps, keep the guidance card visually attached to
-  // the highlighted navigation item. This makes it obvious what to click.
-  if (highlight && actionStep) {
+  // Keep every guidance card visually attached to the highlighted UI.
+  // Small controls (theme/profile/menu buttons) get a side-mounted card;
+  // wide sections (Menu Utama/setup panels) get a card below/above them.
+  if (highlight && highlight.width < cardWidth * 1.35) {
     const spaceRight = viewportW - (highlight.left + highlight.width);
     const spaceLeft = highlight.left;
     if (spaceRight >= cardWidth + gap) {
@@ -441,7 +442,7 @@ export function GuidedTour() {
   // Keep the explanation card completely outside the spotlight target.
   // Prefer below the target, otherwise place it above. On mobile, if neither
   // side has enough room, use the side with more available space.
-  if (highlight && !actionStep) {
+  if (highlight && highlight.width >= cardWidth * 1.35) {
     const spaceBelow = viewportH - (highlight.top + highlight.height);
     const spaceAbove = highlight.top;
     if (spaceBelow < cardHeightEstimate + gap && spaceAbove >= cardHeightEstimate + gap) {
