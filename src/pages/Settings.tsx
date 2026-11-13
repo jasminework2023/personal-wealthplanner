@@ -294,7 +294,7 @@ function SetupSection({ meta, items, onAdd, onRemove, onUpdate }: { meta: typeof
   const title = id ? ({ income: "Pemasukan", expense: "Pengeluaran", saving: "Tabungan & Investasi", bank: "Akun Bank" } as Record<SectionKey,string>)[meta.key] : meta.title;
   const subtitle = id ? ({ income: "Sumber pemasukan", expense: "Pengeluaran & anggaran", saving: "Tabungan & investasi", bank: "Akun kas & bank" } as Record<SectionKey,string>)[meta.key] : ({ income: "Income sources", expense: "Expenses & budget", saving: "Savings & investments", bank: "Cash & bank accounts" } as Record<SectionKey,string>)[meta.key];
   return (
-    <div className="rounded-[14px] border border-charcoal/8 bg-white overflow-hidden">
+    <div data-tour={`setup-${meta.key}`} className="rounded-[14px] border border-charcoal/8 bg-white overflow-hidden">
       <div className={`${meta.tone} px-4 py-3.5 text-white`}><div className="flex items-center justify-between"><p className="text-[14.5px] font-bold tracking-[-0.01em]">{title}</p><span className="rounded-full bg-white/20 px-2 py-0.5 text-[10.5px] font-semibold text-white">{items.filter(i => i.active).length} {id ? "aktif" : "active"}</span></div><p className="text-[11.5px] text-white/80 mt-0.5">{subtitle}</p></div>
       <div className="px-3.5 py-2 bg-charcoal/[0.03] border-b border-charcoal/8 flex items-center justify-between text-[11px] font-semibold text-charcoal/50"><span>{id ? "Kategori" : "Category"}</span><span>{id ? "Status" : "Status"}</span></div>
       <div className="p-1.5 max-h-[420px] overflow-y-auto">
