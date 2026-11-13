@@ -37,6 +37,7 @@ export function GuidedTour() {
   const [waiting, setWaiting] = useState(false);
   const [usagePrompt, setUsagePrompt] = useState(false);
   const [completionPrompt, setCompletionPrompt] = useState(false);
+  const [tour1CompletePrompt, setTour1CompletePrompt] = useState(false);
   const [welcomePrompt, setWelcomePrompt] = useState(false);
   const [cardDrag, setCardDrag] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ startX: number; startY: number; originX: number; originY: number; dragging: boolean } | null>(null);
@@ -68,6 +69,7 @@ export function GuidedTour() {
       if (detail.type === "main") {
         setUsagePrompt(false);
         setCompletionPrompt(false);
+        setTour1CompletePrompt(false);
         setWelcomePrompt(true);
         return;
       }
@@ -298,6 +300,7 @@ export function GuidedTour() {
     if (markDone || tourType === "usage") storageSetDone();
     setActive(false);
     setTarget(null);
+    setTour1CompletePrompt(false);
     try { sessionStorage.removeItem(ACTIVE_TOUR_KEY); } catch {}
     setRect(null);
     setSteps([]);
@@ -326,6 +329,7 @@ export function GuidedTour() {
         try { sessionStorage.removeItem(ACTIVE_TOUR_KEY); } catch {}
         setTourType("main");
         setIndex(0);
+        setTour1CompletePrompt(true);
         return;
       }
       if (tourType === "usage") {
@@ -400,6 +404,22 @@ export function GuidedTour() {
           <div className="mt-4 flex gap-2">
             <button type="button" onClick={() => { storageSetDone(); setWelcomePrompt(false); }} className="flex-1 min-h-10 rounded-xl border border-charcoal/10 px-3 text-[12px] font-semibold text-charcoal/65 dark:border-white/10 dark:text-white/70">Nanti</button>
             <button type="button" onClick={() => { setWelcomePrompt(false); start({ type: "main", route: "/" }); }} className="flex-1 min-h-10 rounded-xl bg-[#0B6B47] px-3 text-[12px] font-semibold text-white">Mulai Tour 1</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (tour1CompletePrompt && !active) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 px-4">
+        <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-[18px] bg-white p-5 shadow-[0_18px_60px_rgba(0,0,0,.2)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-xl">🎉</div>
+          <h2 className="mt-3 text-[16px] font-bold">Tour 1 selesai!</h2>
+          <p className="mt-1.5 text-[13px] leading-5 text-charcoal/65 dark:text-white/65">Sekarang lanjut ke Tour 2 untuk belajar menggunakan Wealthplanner dari setup sampai evaluasi.</p>
+          <div className="mt-4 flex gap-2">
+            <button type="button" onClick={() => setTour1CompletePrompt(false)} className="flex-1 min-h-10 rounded-xl border border-charcoal/10 px-3 text-[12px] font-semibold text-charcoal/65 dark:border-white/10 dark:text-white/70">Nanti</button>
+            <button type="button" onClick={() => { setTour1CompletePrompt(false); start({ type: "usage", route: "/" }); }} className="flex-1 min-h-10 rounded-xl bg-[#0B6B47] px-3 text-[12px] font-semibold text-white">Mulai Tour 2</button>
           </div>
         </div>
       </div>
