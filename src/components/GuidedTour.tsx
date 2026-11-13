@@ -125,7 +125,14 @@ export function GuidedTour() {
     setRect(null);
 
     const find = () => {
-      const element = document.querySelector(selectorFor(step)) as HTMLElement | null;
+      // Action steps can point to a navigation control on the current page
+      // even when clicking it will navigate to the route of the next screen.
+      // The target must be visible first; the route change happens from the
+      // user's actual click on that highlighted control.
+      const targetMayBeOnCurrentRoute = step.advanceOnTargetClick || routeMatches;
+      const element = targetMayBeOnCurrentRoute
+        ? document.querySelector(selectorFor(step)) as HTMLElement | null
+        : null;
       const elementRect = element?.getBoundingClientRect();
       const styles = element ? window.getComputedStyle(element) : null;
       const elementVisible = !!element &&
@@ -385,13 +392,28 @@ export function GuidedTour() {
   const cardWidth = Math.min(300, viewportW - 24);
   const cardHeightEstimate = 190;
   const gap = 14;
+  const actionStep = !!step.advanceOnTargetClick;
   let cardLeft = highlight ? highlight.left + highlight.width / 2 - cardWidth / 2 : (viewportW - cardWidth) / 2;
   let cardTop = highlight ? highlight.top + highlight.height + gap : 80;
+
+  // For click-to-navigate steps, keep the guidance card visually attached to
+  // the highlighted navigation item. This makes it obvious what to click.
+  if (highlight && actionStep) {
+    const spaceRight = viewportW - (highlight.left + highlight.width);
+    const spaceLeft = highlight.left;
+    if (spaceRight >= cardWidth + gap) {
+      cardLeft = highlight.left + highlight.width + gap;
+      cardTop = highlight.top + highlight.height / 2 - cardHeightEstimate / 2;
+    } else if (spaceLeft >= cardWidth + gap) {
+      cardLeft = highlight.left - cardWidth - gap;
+      cardTop = highlight.top + highlight.height / 2 - cardHeightEstimate / 2;
+    }
+  }
 
   // Keep the explanation card completely outside the spotlight target.
   // Prefer below the target, otherwise place it above. On mobile, if neither
   // side has enough room, use the side with more available space.
-  if (highlight) {
+  if (highlight && !actionStep) {
     const spaceBelow = viewportH - (highlight.top + highlight.height);
     const spaceAbove = highlight.top;
     if (spaceBelow < cardHeightEstimate + gap && spaceAbove >= cardHeightEstimate + gap) {
@@ -405,6 +427,28 @@ export function GuidedTour() {
 
   cardLeft = Math.max(12, Math.min(cardLeft, viewportW - cardWidth - 12));
   cardTop = Math.max(12, Math.min(cardTop, viewportH - 12 - cardHeightEstimate));
+
+  // Directional pointer between the guidance card and the highlighted control.
+  let pointerLeft = highlight ? highlight.left + highlight.width / 2 - 14 : 0;
+  let pointerTop = highlight ? highlight.top + highlight.height + 4 : 0;
+  let pointerGlyph = "↓";
+  if (highlight && actionStep) {
+    const cardIsRight = cardLeft > highlight.left + highlight.width;
+    const cardIsLeft = cardLeft + cardWidth < highlight.left;
+    if (cardIsRight) {
+      pointerLeft = highlight.left + highlight.width + gap / 2 - 14;
+      pointerTop = highlight.top + highlight.height / 2 - 14;
+      pointerGlyph = "←";
+    } else if (cardIsLeft) {
+      pointerLeft = highlight.left - gap / 2 - 14;
+      pointerTop = highlight.top + highlight.height / 2 - 14;
+      pointerGlyph = "→";
+    } else if (cardTop < highlight.top) {
+      pointerLeft = highlight.left + highlight.width / 2 - 14;
+      pointerTop = highlight.top - gap / 2 - 14;
+      pointerGlyph = "↑";
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-[9999] pointer-events-none" aria-hidden={false}>
@@ -434,11 +478,11 @@ export function GuidedTour() {
           aria-hidden="true"
           className="absolute z-[25] flex h-7 w-7 items-center justify-center rounded-full bg-[#0B6B47] text-white shadow-lg wp-tour-arrow"
           style={{
-            left: Math.max(10, Math.min(highlight.left + highlight.width / 2 - 14, viewportW - 38)),
-            top: Math.max(10, Math.min(highlight.top + highlight.height + 4, viewportH - 38)),
+            left: Math.max(10, Math.min(pointerLeft, viewportW - 38)),
+            top: Math.max(10, Math.min(pointerTop, viewportH - 38)),
             animation: "wp-tour-arrow 1s ease-in-out infinite",
           }}
-        >↓</div>
+        >{pointerGlyph}</div>
       )}
       <div
         ref={dialogRef}
