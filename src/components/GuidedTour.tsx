@@ -67,7 +67,10 @@ export function GuidedTour() {
       start(detail);
     };
     window.addEventListener("wealthplanner:start-tour", handler);
+    return () => window.removeEventListener("wealthplanner:start-tour", handler);
+  }, [location.pathname]);
 
+  useEffect(() => {
     // Restore Tour 2 after a route change/remount so navigation does not restart
     // the tour from step 1.
     try {
@@ -82,8 +85,6 @@ export function GuidedTour() {
         }
       }
     } catch {}
-
-    return () => window.removeEventListener("wealthplanner:start-tour", handler);
   }, []);
 
   useEffect(() => {
