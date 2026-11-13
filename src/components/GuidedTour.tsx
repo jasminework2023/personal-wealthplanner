@@ -318,7 +318,9 @@ export function GuidedTour() {
   return (
     <div className="fixed inset-0 z-[9999] pointer-events-none" aria-hidden={false}>
       <style>{`@keyframes wp-tour-fade{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.wp-tour-fade{animation:none!important}}`}</style>
-      <div className="absolute inset-0 z-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />
+      {!highlight && (
+        <div className="absolute inset-0 z-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />
+      )}
       {highlight && <div
         className="absolute z-10 rounded-[14px] outline outline-2 outline-[#6EE7A8] shadow-[0_0_0_9999px_rgba(0,0,0,.55)] wp-tour-fade"
         style={{ left: highlight.left, top: highlight.top, width: highlight.width, height: highlight.height, animation: "wp-tour-fade 180ms ease-out" }}
