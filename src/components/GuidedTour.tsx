@@ -144,7 +144,13 @@ export function GuidedTour() {
       if (!(event.target instanceof Node) || !target.contains(event.target)) return;
 
       const nextStep = steps[index + 1];
-      if (!nextStep) return;
+      if (!nextStep) {
+        if (tourType === "usage") {
+          finish(true);
+          setCompletionPrompt(true);
+        }
+        return;
+      }
 
       // Action steps should advance only after the UI action has actually
       // produced the next target/page. This prevents the tour from jumping
@@ -217,12 +223,7 @@ export function GuidedTour() {
     return () => document.removeEventListener("keydown", onKey);
   }, [active]);
 
-  useEffect(() => {
-    if (!active) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previousOverflow; };
-  }, [active]);
+  // Keep page scrolling available during the tour so users can reach highlighted controls.
 
   useEffect(() => {
     if (active && !waiting) dialogRef.current?.focus();
@@ -364,14 +365,23 @@ export function GuidedTour() {
 
   return (
     <div className="fixed inset-0 z-[9999] pointer-events-none" aria-hidden={false}>
-      <style>{`@keyframes wp-tour-fade{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.wp-tour-fade{animation:none!important}}`}</style>
+      <style>{`
+        @keyframes wp-tour-fade{from{opacity:0}to{opacity:1}}
+        @keyframes wp-tour-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 2px #6EE7A8,0 0 0 6px rgba(110,231,168,.18)}50%{transform:scale(1.015);box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 2px #6EE7A8,0 0 0 10px rgba(110,231,168,.06)}}
+        @keyframes wp-tour-arrow{0%,100%{transform:translateY(0);opacity:.65}50%{transform:translateY(5px);opacity:1}}
+        @media(prefers-reduced-motion:reduce){.wp-tour-fade,.wp-tour-pulse,.wp-tour-arrow{animation:none!important}}
+      `}</style>
       {!highlight && (
-        <div className="absolute inset-0 z-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />
+        <div className="absolute inset-0 z-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-pulse 1.6s ease-in-out infinite" }} />
       )}
       {highlight && <div
-        className="absolute z-10 rounded-[14px] outline outline-2 outline-[#6EE7A8] shadow-[0_0_0_9999px_rgba(0,0,0,.55)] wp-tour-fade"
+        className="absolute z-10 rounded-[14px] outline outline-2 outline-[#6EE7A8] wp-tour-pulse"
         style={{ left: highlight.left, top: highlight.top, width: highlight.width, height: highlight.height, animation: "wp-tour-fade 180ms ease-out" }}
       />}
+      {highlight && (
+        <div aria-hidden="true" className="absolute z-[25] flex h-7 w-7 items-center justify-center rounded-full bg-[#0B6B47] text-white shadow-lg wp-tour-arrow"
+          style={{ left: Math.max(10, Math.min(highlight.left + highlight.width / 2 - 14, viewportW - 38)), top: Math.max(10, Math.min(highlight.top + highlight.height + 4, viewportH - 38)), animation: "wp-tour-arrow 1s ease-in-out infinite" }}>↓</div>
+      )}
       <div
         ref={dialogRef}
         role="dialog"
@@ -392,7 +402,7 @@ export function GuidedTour() {
           <button type="button" onClick={skip} className="min-h-10 rounded-lg px-2 text-[12px] font-medium text-charcoal/55 hover:text-forest-700 dark:text-[rgb(var(--c-charcoal))]/60">Lewati</button>
           <div className="flex items-center gap-1.5">
             <button type="button" onClick={back} disabled={index === 0} className="min-h-10 rounded-lg border border-charcoal/10 px-3 text-[12px] font-semibold text-charcoal/65 disabled:opacity-30 dark:border-white/10 dark:text-white/70">Kembali</button>
-            <button type="button" onClick={next} className="min-h-10 rounded-lg bg-[#0B6B47] px-3.5 text-[12px] font-semibold text-white">{index === steps.length - 1 ? "Selesai" : "Lanjut"}</button>
+            {step.advanceOnTargetClick ? <span className="min-h-10 rounded-lg bg-[#DDF7E8] px-3.5 py-2 text-[11px] font-semibold text-[#0B6B47]">Klik yang disorot untuk lanjut</span> : <button type="button" onClick={next} className="min-h-10 rounded-lg bg-[#0B6B47] px-3.5 text-[12px] font-semibold text-white">{index === steps.length - 1 ? "Selesai" : "Lanjut"}</button>}
           </div>
         </div>
       </div>
