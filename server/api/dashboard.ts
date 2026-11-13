@@ -290,7 +290,7 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
 
   const investment = parseAssetSection(rows, "Investment Assets", new Set(["saham", "stocks", "stock"]));
   // The shared resolver has already selected the single authoritative stock tab.
-  const stockSections = parseStockSections(stockRows);
+  const stockSections = parseStockSections(rows);
   const stocksID = stockSections.id;
   const stocksUS = stockSections.us;
 
