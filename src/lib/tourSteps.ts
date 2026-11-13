@@ -5,6 +5,7 @@ export type TourStep = {
   selectorMobile: string;
   title: string;
   description: string;
+  advanceOnTargetClick?: boolean;
 };
 
 export const mainTourSteps: TourStep[] = [
@@ -77,18 +78,28 @@ export const pageTourSteps: Record<string, TourStep[]> = {
 export const usageTourSteps: TourStep[] = [
   {
     id: "usage-profile",
-    route: "/settings",
-    selectorDesktop: '[data-tour="profile-card"]',
-    selectorMobile: '[data-tour="profile-card"]',
-    title: "1. Lengkapi Profil",
-    description: "Masuk ke Profil, lalu scroll ke bagian Profil. Isi Nama dan Bahasa, kemudian simpan. Data ini digunakan untuk personalisasi aplikasi.",
+    route: "/",
+    selectorDesktop: '[data-tour="sidebar-profile"]',
+    selectorMobile: '[data-tour="sidebar-profile"]',
+    title: "1. Buka Profil",
+    description: "Klik Profil & Pengaturan di sidebar. Setelah diklik, menu Profil akan terbuka.",
+    advanceOnTargetClick: true,
+  },
+  {
+    id: "usage-profile-settings",
+    route: "/",
+    selectorDesktop: '[data-tour="profile-settings-link"]',
+    selectorMobile: '[data-tour="profile-settings-link"]',
+    title: "2. Buka Profil & Pengaturan",
+    description: "Klik Buka Profil & Pengaturan untuk masuk ke halaman pengaturan akun dan setup keuangan.",
+    advanceOnTargetClick: true,
   },
   {
     id: "usage-setup",
     route: "/settings",
     selectorDesktop: '[data-tour="setup-card"]',
     selectorMobile: '[data-tour="setup-card"]',
-    title: "2. Setup Mesin Keuangan",
+    title: "3. Setup Mesin Keuangan",
     description: "Atur Pemasukan, Pengeluaran, Tabungan & Investasi, dan Akun Bank terlebih dahulu. Tambahkan kategori dengan + Add Category, centang kategori yang dipakai, lalu nonaktifkan atau hapus yang tidak diperlukan. Setup ini menjadi fondasi untuk Transaction dan Budget.",
   },
   {
@@ -96,7 +107,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/settings",
     selectorDesktop: '[data-tour="ai-membership"]',
     selectorMobile: '[data-tour="ai-membership"]',
-    title: "3. AI Membership",
+    title: "4. AI Membership",
     description: "Setelah payment, kamu mendapatkan akses gratis ke fitur AI dengan penggunaan terbatas. Untuk penggunaan lebih lanjut, kamu dapat berlangganan AI PRO+.",
   },
   {
@@ -104,7 +115,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/wallets",
     selectorDesktop: '[data-tour="wallet-add"]',
     selectorMobile: '[data-tour="wallet-add"]',
-    title: "4. Wallet",
+    title: "5. Wallet",
     description: "Tambahkan Wallet untuk mencatat saldo yang benar-benar kamu miliki. Atur nama, tipe, dan saldo awal. Gunakan Transfer untuk memindahkan saldo antar-wallet agar tidak terbaca sebagai pemasukan baru.",
   },
   {
@@ -112,7 +123,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/assets",
     selectorDesktop: '[data-tour="report-assets"]',
     selectorMobile: '[data-tour="report-assets"]',
-    title: "5. Asset",
+    title: "6. Asset",
     description: "Masukkan kondisi aset saat ini: Liquid Asset seperti cash dan rekening, Fixed Asset seperti kendaraan atau properti, serta Variable Asset/Investasi seperti saham. Jangan menggandakan saldo Wallet sebagai Liquid Asset.",
   },
   {
@@ -120,7 +131,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/budgeting",
     selectorDesktop: '[data-tour="budget-summary"]',
     selectorMobile: '[data-tour="budget-summary"]',
-    title: "6. Budget",
+    title: "7. Budget",
     description: "Atur Budget berdasarkan periode bulanan atau tahunan. Tentukan target untuk setiap pos. Kategori Budget mengikuti Setup Mesin Keuangan yang sudah kamu buat sebelumnya.",
   },
   {
@@ -128,7 +139,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/transaction",
     selectorDesktop: '[data-tour="transaction-add"]',
     selectorMobile: '[data-tour="transaction-add"]',
-    title: "7. Transaksi",
+    title: "8. Transaksi",
     description: "Catat transaksi secara Manual atau dengan AI. Pastikan tanggal, nominal, kategori, dan Wallet sudah benar sebelum disimpan. Setiap penggunaan AI menggunakan 1 kredit.",
   },
   {
@@ -136,7 +147,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/calculator",
     selectorDesktop: '[data-tour="calculator-list"]',
     selectorMobile: '[data-tour="calculator-list"]',
-    title: "8. Kalkulator",
+    title: "9. Kalkulator",
     description: "Gunakan Kalkulator untuk menghitung berbagai kebutuhan finansial berdasarkan angka dan asumsi financial planning, seperti pendidikan, pensiun, Haji, KPR, dan lainnya.",
   },
   {
@@ -144,7 +155,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/finance",
     selectorDesktop: '[data-tour="report-summary"]',
     selectorMobile: '[data-tour="report-summary"]',
-    title: "9. Report",
+    title: "10. Report",
     description: "Pantau kondisi keuangan melalui laporan yang tersedia. Report adalah tempat melihat hasil dari data yang sudah kamu input, bukan tempat utama untuk melakukan pencatatan.",
   },
   {
@@ -152,7 +163,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/goals",
     selectorDesktop: '[data-tour="goals-page"]',
     selectorMobile: '[data-tour="goals-page"]',
-    title: "10. Goals",
+    title: "11. Goals",
     description: "Goals membantu kamu membandingkan rencana finansial dari Kalkulator dengan kondisi keuangan saat ini. Kamu dapat mengalokasikan dana yang sudah dimiliki, seperti tabungan, untuk membantu mencapai target dan memantau progress.",
   },
   {
@@ -160,7 +171,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/protection",
     selectorDesktop: '[data-tour="protection-hero"]',
     selectorMobile: '[data-tour="protection-hero"]',
-    title: "11. Protection",
+    title: "12. Protection",
     description: "Isi kebutuhan proteksi untuk melihat kebutuhan perlindungan finansialmu. Gunakan hasilnya sebagai dasar diskusi dan konsultasikan kebutuhan proteksi bersama konsultan asuransi manusia.",
   },
   {
@@ -168,7 +179,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/ai-assistant",
     selectorDesktop: '[data-tour="ai-assistant-page"]',
     selectorMobile: '[data-tour="ai-assistant-page"]',
-    title: "12. AI Assistant",
+    title: "13. AI Assistant",
     description: "AI Assistant adalah financial planner berbasis AI yang membantu kamu memahami dan mendiskusikan kondisi keuangan, perencanaan, dan keputusan finansial.",
   },
 ];
