@@ -123,18 +123,10 @@ export const usageTourSteps: TourStep[] = [
   {
     id: "usage-profile-card",
     route: "/settings",
-    selectorDesktop: '[data-tour="profile-card"]',
-    selectorMobile: '[data-tour="profile-card"]',
+    selectorDesktop: '[data-tour="profile-settings-fields"]',
+    selectorMobile: '[data-tour="profile-settings-fields"]',
     title: "6. Profil",
     description: "Atur nama tampilan dan bahasa aplikasi sesuai kebutuhanmu.",
-  },
-  {
-    id: "usage-ai-membership",
-    route: "/settings",
-    selectorDesktop: '[data-tour="ai-membership"]',
-    selectorMobile: '[data-tour="ai-membership"]',
-    title: "7. AI Membership",
-    description: "Setelah payment, kamu mendapatkan akses gratis ke fitur AI dengan penggunaan terbatas. Untuk penggunaan lebih lanjut, kamu dapat berlangganan AI PRO+.",
   },
   {
     id: "usage-spouse-sharing",
@@ -143,6 +135,14 @@ export const usageTourSteps: TourStep[] = [
     selectorMobile: '[data-tour="spouse-sharing"]',
     title: "8. Spouse Sharing",
     description: "Hubungkan akun dengan pasangan tanpa berbagi password atau akun.",
+  },
+  {
+    id: "usage-ai-membership",
+    route: "/settings",
+    selectorDesktop: '[data-tour="ai-membership"]',
+    selectorMobile: '[data-tour="ai-membership"]',
+    title: "7. AI Membership",
+    description: "Setelah payment, kamu mendapatkan akses gratis ke fitur AI dengan penggunaan terbatas. Untuk penggunaan lebih lanjut, kamu dapat berlangganan AI PRO+.",
   },
   {
     id: "usage-wallet",
