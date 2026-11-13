@@ -147,6 +147,7 @@ function StockTracker({
   totalAssets,
   usdIdrRate,
   assetsVisible,
+  showInvestmentStockBanner = false,
 }: {
   stocksID: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number; account?: string }[];
   stocksUS: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number; account?: string }[];
@@ -156,6 +157,7 @@ function StockTracker({
   totalAssets: number;
   usdIdrRate: number;
   assetsVisible: boolean;
+  showInvestmentStockBanner?: boolean;
 }) {
   const [market, setMarket] = useState<"ID" | "US">("ID");
   const [refreshing, setRefreshing] = useState(false);
@@ -335,6 +337,13 @@ function StockTracker({
       </div>
 
       {error && <p className="mt-2 rounded-lg bg-rose-50 px-2.5 py-2 text-[11px] text-rose-700">{error}</p>}
+
+      {showInvestmentStockBanner && (
+        <div className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-[#BFE8CF] bg-[#F0FBF4] px-2.5 py-2">
+          <p className="text-[11px] leading-relaxed text-[#0B6B47]">Ada baris 'Saham' di Investment Assets yang tidak dihitung. Tambahkan saham satu per satu di Stock Portfolio.</p>
+          <button type="button" onClick={openAdd} className="shrink-0 rounded-full bg-[#DDF7E8] px-2.5 py-1.5 text-[10px] font-bold text-[#0B6B47]">+ Tambah</button>
+        </div>
+      )}
 
       <div className="mt-3 grid grid-cols-2 gap-2">
         <div className="rounded-[10px] border border-charcoal/6 bg-white px-3 py-2.5">
@@ -772,6 +781,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   totalAssets={assets.totalAssets}
   usdIdrRate={usdIdrRate}
   assetsVisible={!assetValuesHidden}
+  showInvestmentStockBanner={assets.excludedInvestmentNames?.length > 0 && assets.stocksID.length + assets.stocksUS.length === 0}
 />
              </div>}
           </Card>

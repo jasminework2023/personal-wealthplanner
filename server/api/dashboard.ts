@@ -6,6 +6,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { google } from "googleapis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { resolveStockSheet, parseStockSections } from "../lib/stockSheet.js";
 
 function parseRupiah(value: unknown): number {
   if (value === null || value === undefined || value === "") return 0;
@@ -84,29 +85,25 @@ async function fetchAllRanges(spreadsheetId: string, transactionsOnly = false) {
   const sheets = await getSheetsClient();
   const ranges = transactionsOnly
     ? ["Transaction!B10:I"]
-    : ["Transaction!B10:I", "Budgeting!B1:N40", "Asset Tracker!A1:O60"];
-
-  if (!transactionsOnly) {
-    const meta = await sheets.spreadsheets.get({
-      spreadsheetId,
-      fields: "sheets.properties.title",
-    });
-    const hasStockPortfolio = (meta.data.sheets || []).some(
-      (sheet: any) => String(sheet.properties?.title || "").trim().toLowerCase() === "stock portfolio",
-    );
-    if (hasStockPortfolio) ranges.push("Stock Portfolio!A1:O100");
-  }
+    : ["Transaction!B10:I", "Budgeting!B1:N40", "Asset Tracker!A1:O500"];
 
   const res = await sheets.spreadsheets.values.batchGet({
     spreadsheetId,
     ranges,
   });
   const values = (res.data.valueRanges || []).map((r) => r.values || []);
+
+  let stockRows: unknown[][] = [];
+  if (!transactionsOnly) {
+    const resolved = await resolveStockSheet(sheets, spreadsheetId, { createIfMissing: false });
+    stockRows = resolved?.rows || [];
+  }
+
   return {
     transactionRows: values[0] || [],
     budgetRows: transactionsOnly ? [] : (values[1] || []),
     assetRows: transactionsOnly ? [] : (values[2] || []),
-    stockRows: transactionsOnly ? [] : (values[3] || []),
+    stockRows: transactionsOnly ? [] : stockRows,
   };
 }
 
@@ -246,118 +243,6 @@ function lowerSection(value: string) {
   return String(value || "").trim().toLowerCase();
 }
 
-const STOCK_TICKER_RE = /^[A-Za-z]{1,6}([.-][A-Za-z]{1,2})?$/;
-const STOCK_STOP_LABELS = new Set([
-  "total",
-  "last update",
-  "assets account",
-  "descriptions",
-  "cash in hand",
-  ...SECTION_LABELS,
-]);
-
-function normalizeSectionLabel(value: unknown): string {
-  return String(value ?? "").trim().toLowerCase().replace(/:$/, "").trim();
-}
-
-function parseStockSection(rows: unknown[][], sectionLabel: string) {
-  const startIdx = findRowIndex(rows, sectionLabel);
-  if (startIdx === -1) return { stocks: [] as any[], subtotalValue: 0 };
-
-  const aliases: Record<string, string[]> = {
-    ticker: ["ticker", "symbol", "stock"],
-    currentPrice: ["current", "current price", "harga sekarang", "harga saat ini"],
-    shares: ["shares", "qty", "quantity", "jumlah", "lot"],
-    avgPrice: ["avg", "avg price", "average price", "harga beli", "harga rata-rata"],
-    account: ["account", "investment account", "akun", "rekening"],
-  };
-  const matches = (value: unknown, list: string[]) => {
-    const label = normalizeSectionLabel(value);
-    return list.some((alias) => label === alias || label.includes(alias));
-  };
-
-  let headerRow = startIdx;
-  let columns = { ticker: 0, currentPrice: 1, shares: 2, avgPrice: 3, account: 6 };
-  for (let row = startIdx; row <= Math.min(startIdx + 3, rows.length - 1); row++) {
-    const cells = rows[row] || [];
-    const found: Record<string, number> = {};
-    for (let col = 0; col < cells.length; col++) {
-      for (const [key, list] of Object.entries(aliases)) {
-        if (found[key] === undefined && matches(cells[col], list)) found[key] = col;
-      }
-    }
-    if (
-      found.ticker !== undefined &&
-      found.currentPrice !== undefined &&
-      found.shares !== undefined &&
-      found.avgPrice !== undefined
-    ) {
-      headerRow = row;
-      columns = {
-        ticker: found.ticker,
-        currentPrice: found.currentPrice,
-        shares: found.shares,
-        avgPrice: found.avgPrice,
-        account: found.account ?? 6,
-      };
-      break;
-    }
-  }
-
-  const stocks: { ticker: string; currentPrice: number; shares: number; avgPrice: number; value: number; pl: number }[] = [];
-  let subtotalValue = 0;
-  let blankRows = 0;
-
-  for (let i = headerRow + 1; i < rows.length; i++) {
-    const row = rows[i] || [];
-    const rawTicker = String(row[columns.ticker] || "").trim();
-    const label = normalizeSectionLabel(rawTicker);
-
-    if (!rawTicker) {
-      blankRows += 1;
-      if (blankRows >= 2) break;
-      continue;
-    }
-    blankRows = 0;
-
-    if (label === "total" || label.includes("subtotal")) break;
-    if (label !== normalizeSectionLabel(sectionLabel) && STOCK_STOP_LABELS.has(label)) break;
-
-    const currentPrice = parseRupiah(row[columns.currentPrice]);
-    const shares = parseRupiah(row[columns.shares]);
-    const avgPrice = parseRupiah(row[columns.avgPrice]);
-
-    if (!STOCK_TICKER_RE.test(rawTicker) || shares <= 0 || (currentPrice <= 0 && avgPrice <= 0)) continue;
-
-    const value = currentPrice * shares;
-    const pl = (currentPrice - avgPrice) * shares;
-    subtotalValue += value;
-    stocks.push({
-      ticker: rawTicker,
-      currentPrice,
-      shares,
-      avgPrice,
-      value,
-      pl,
-      account: String(row[columns.account] || "").trim(),
-    } as any);
-  }
-
-  return { stocks, subtotalValue };
-}
-
-async function getUsdIdrRate(): Promise<number> {
-  try {
-    const response = await fetch("https://open.er-api.com/v6/latest/USD", {
-      headers: { Accept: "application/json" },
-    });
-    const data: any = await response.json();
-    const rate = Number(data?.rates?.IDR);
-    if (response.ok && Number.isFinite(rate) && rate > 0) return rate;
-  } catch {}
-  return 16300;
-}
-
 async function getAssetTracker(rows: unknown[][], stockRows: unknown[][] = [], walletRows: any[] = [], transactions: any[] = []) {
   // Liquid Assets are the user's actual wallet balances. This keeps the
   // Asset Tracker from maintaining a second, potentially stale cash total.
@@ -399,12 +284,10 @@ async function getAssetTracker(rows: unknown[][], stockRows: unknown[][] = [], w
   liquid.total = liquid.items.reduce((sum: number, item: any) => sum + item.value, 0);
 
   const investment = parseAssetSection(rows, "Investment Assets", new Set(["saham", "stocks", "stock"]));
-  // Stock Portfolio is now its own dedicated tab. Keep the Asset Tracker
-  // fallback so older spreadsheets that already contain stock sections continue
-  // to work without migration.
-  const stockSource = stockRows.length ? stockRows : rows;
-  const stocksID = parseStockSection(stockSource, "Indonesia Stock");
-  const stocksUS = parseStockSection(stockSource, "US Stock");
+  // The shared resolver has already selected the single authoritative stock tab.
+  const stockSections = parseStockSections(stockRows);
+  const stocksID = stockSections.id;
+  const stocksUS = stockSections.us;
 
   // Target: cari baris yang ada kata "Target", ambil angka di baris SETELAHNYA
   // pada kolom yang sama (mengikuti pola header lalu isi di sheet aslinya).
