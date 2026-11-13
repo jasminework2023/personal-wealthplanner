@@ -333,27 +333,112 @@ export async function writeStockPosition(
   },
 ) {
   const resolved = await resolveStockSheet(sheets, spreadsheetId, { createIfMissing: true });
-  if (!resolved) throw new Error("Stock Portfolio belum tersedia.");
+  if (!resolved) throw new Error("Tab Asset Tracker tidak ditemukan");
 
   const found = findStockRow(resolved.rows, params.ticker, params.market);
   if (found.start < 0) {
-    throw Object.assign(new Error("Section " + (params.market === "ID" ? "Indonesia Stock" : "US Stock") + " tidak ditemukan di tab Asset Tracker. Tambahkan label section itu di sheet."), { status: 400 });
+    throw Object.assign(
+      new Error(
+        "Section " +
+          (params.market === "ID" ? "Indonesia Stock" : "US Stock") +
+          " tidak ditemukan di tab Asset Tracker. Tambahkan label section itu di sheet.",
+      ),
+      { status: 400 },
+    );
   }
 
   const value = params.currentPrice * params.shares;
   const pl = (params.currentPrice - params.avgPrice) * params.shares;
   const c = found.columns;
-  const rowNumber = found.row >= 0 ? found.row + 1 : (() => {
-    if (found.subtotalRow >= 0) return found.subtotalRow + 1;
-    for (let i = found.headerRow + 1; i < resolved.rows.length; i++) {
-      const row = resolved.rows[i] || [];
-      const label = norm(row[found.columns.ticker]);
-      if (label === "total" || label.includes("subtotal")) return i + 1;
-      if (!row.some((cell: unknown) => display(cell))) return i + 1;
-      if (STOCK_STOP_LABELS.has(label) && label !== norm(found.label)) return i + 1;
-    }
-    return resolved.rows.length + 1;
-  })();
+
+  const rowNumber =
+    found.row >= 0
+      ? found.row + 1
+      : (() => {
+          if (found.subtotalRow >= 0) return found.subtotalRow + 1;
+          for (let i = found.headerRow + 1; i < resolved.rows.length; i++) {
+            const row = resolved.rows[i] || [];
+            const label = norm(row[found.columns.ticker]);
+            if (label === "total" || label.includes("subtotal")) return i + 1;
+            if (!row.some((cell: unknown) => display(cell))) return i + 1;
+            if (STOCK_STOP_LABELS.has(label) && label !== norm(found.label)) return i + 1;
+          }
+          return resolved.rows.length + 1;
+        })();
+
+  const values = [...(resolved.rows[rowNumber - 1] || [])];
+  const width = Math.max(
+    7,
+    resolved.rows[found.headerRow]?.length || 7,
+    c.account + 1,
+  );
+  while (values.length < width) values.push("");
+
+  values[c.ticker] = params.ticker;
+  values[c.currentPrice] = params.currentPrice;
+  values[c.shares] = params.shares;
+  values[c.avgPrice] = params.avgPrice;
+  values[c.value] = value;
+  values[c.pl] = pl;
+  values[c.account] = params.account;
+
+  if (found.row >= 0) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range:
+        resolved.title +
+        "!A" +
+        rowNumber +
+        ":" +
+        columnLetter(width - 1) +
+        rowNumber,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [values] },
+    });
+    return resolved;
+  }
+
+  const reusableBlank =
+    rowNumber <= resolved.rows.length &&
+    !(resolved.rows[rowNumber - 1] || []).some((cell: unknown) => display(cell));
+
+  if (!reusableBlank) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            insertDimension: {
+              range: {
+                sheetId: resolved.sheetId,
+                dimension: "ROWS",
+                startIndex: rowNumber - 1,
+                endIndex: rowNumber,
+              },
+              inheritFromBefore: true,
+            },
+          },
+        ],
+      },
+    });
+  }
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range:
+      resolved.title +
+      "!A" +
+      rowNumber +
+      ":" +
+      columnLetter(width - 1) +
+      rowNumber,
+    valueInputOption: "USER_ENTERED",
+    requestBody: { values: [values] },
+  });
+
+  return resolved;
+}
+
 export async function deleteStockPosition(
   sheets: any,
   spreadsheetId: string,
