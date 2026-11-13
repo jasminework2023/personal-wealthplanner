@@ -23,6 +23,9 @@ const mainLinks = [
   { to: "/assets", label: "Asset", icon: BarChart3 },
   { to: "/transactions", label: "Community", icon: UsersRound },
   { to: "/budgeting", label: "Monthly Budget", icon: PieChart },
+  { to: "/transaction", label: "Transaction", icon: Receipt },
+  { to: "/goals", label: "Goals", icon: CalendarRange },
+  { to: "/ai-assistant", label: "AI Assistant", icon: Settings },
 ];
 
 const toolLinks = [
@@ -81,7 +84,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="px-2 flex-1 overflow-y-auto">
         <p className="px-3 text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.main}</p>
         <nav className="flex flex-col gap-0.5 mb-4">
-          {mainLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/finance" ? "menu-report" : l.to === "/assets" ? "menu-asset" : l.to === "/budgeting" ? "menu-budget" : undefined} label={l.to === "/finance" ? labels.report : l.to === "/assets" ? labels.asset : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.label} onNavigate={onNavigate} />)}
+          {mainLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/finance" ? "menu-report" : l.to === "/assets" ? "menu-asset" : l.to === "/budgeting" ? "menu-budget" : l.to === "/transaction" ? "menu-transaction" : l.to === "/goals" ? "menu-goals" : l.to === "/ai-assistant" ? "menu-ai-assistant" : undefined} label={l.to === "/finance" ? labels.report : l.to === "/assets" ? labels.asset : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.label} onNavigate={onNavigate} />)}
         </nav>
 
         <p className="px-3 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.tools}</p>
