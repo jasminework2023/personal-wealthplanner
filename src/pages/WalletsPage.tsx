@@ -173,8 +173,8 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{label}</h3>
                 <span className="text-xs text-slate-400">{groupWallets.length}</span>
               </div>
-              <div className="relative w-full" style={{ height: Math.max(204, (groupWallets.length - 1) * COMPACT_WALLET_CARD_STEP + 204) }}>
-                {groupWallets.map((wallet) => {
+              <div className="relative w-full" onClick={(event) => { const rect = event.currentTarget.getBoundingClientRect(); const clickedIndex = Math.min(Math.max(Math.floor((event.clientY - rect.top) / COMPACT_WALLET_CARD_STEP), 0), groupWallets.length - 1); const clickedWallet = groupWallets[clickedIndex]; if (clickedWallet) { setSelectedId(clickedWallet.id); setNotice(""); } }} style={{ height: Math.max(204, (groupWallets.length - 1) * COMPACT_WALLET_CARD_STEP + 204) }}>
+                {groupWallets.map((wallet, index) => {
                   const walletColor = walletCardColor(wallet);
                   const foreground = textColorForBackground(walletColor);
                   const normalizedName = wallet.name.trim().toLowerCase();
@@ -203,7 +203,7 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
                   return (
                     <button key={wallet.id} type="button" aria-label={`${isId ? "Buka detail" : "Open details for"} ${wallet.name}`}
                       onClick={() => { setSelectedId(wallet.id); setNotice(""); }}
-                      className="absolute left-0 top-0 block w-full min-w-0 rounded-[20px] text-left transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+                      className="pointer-events-none absolute left-0 top-0 block w-full min-w-0 rounded-[20px] text-left transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
                       style={{ top: index * COMPACT_WALLET_CARD_STEP, zIndex: index + 1, height: 204, backgroundColor: walletColor, color: foreground, border: "none", boxShadow: "0 8px 24px rgba(0,0,0,.10)", padding: 0, overflow: "hidden" }}>
                       <div className="flex min-h-[54px] items-center justify-between gap-2 px-4 pt-3">
                         <div className="min-w-0 flex-1">
