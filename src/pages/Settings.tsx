@@ -230,7 +230,7 @@ export function Settings() {
 
       <SpouseSharing />
 
-      <Card className="max-w-2xl">
+      <Card data-tour="ai-membership" className="max-w-2xl">
         <div className="flex items-center gap-3 mb-4">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E9E2FF] text-[#6845A5]"><Crown size={19}/></span>
           <div><h3 className="text-[15px] font-semibold text-forest-900">AI Membership</h3><p className="text-[12px] text-charcoal/50 mt-0.5">Kelola akses AI Financial Assistant dan AI Scan Struk.</p></div>
