@@ -70,7 +70,8 @@ export function GuidedTour() {
         setUsagePrompt(false);
         setCompletionPrompt(false);
         setTour1CompletePrompt(false);
-        setWelcomePrompt(true);
+        setWelcomePrompt(false);
+        start({ type: "main", route: "/" });
         return;
       }
       start(detail);
