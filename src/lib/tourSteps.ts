@@ -74,7 +74,6 @@ export const pageTourSteps: Record<string, TourStep[]> = {
   ],
 };
 
-
 export const usageTourSteps: TourStep[] = [
   {
     id: "usage-profile",
@@ -82,8 +81,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="sidebar-profile"]',
     selectorMobile: '[data-tour="sidebar-profile"]',
     title: "1. Buka Profil",
-    description: "Klik Profil & Pengaturan di sidebar. Setelah diklik, menu Profil akan terbuka.",
-    advanceOnTargetClick: true,
+    description: "Klik Profil & Pengaturan di sidebar untuk membuka menu Profil. Setelah menunya terbuka, tekan Lanjut untuk melihat pilihan Profil & Pengaturan.",
   },
   {
     id: "usage-profile-settings",
