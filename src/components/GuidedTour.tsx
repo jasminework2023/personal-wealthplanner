@@ -6,6 +6,7 @@ import { getTourSteps } from "../lib/tourSteps";
 type StartDetail = { type?: "main" | "page" | "usage"; route?: string };
 
 const DONE_KEY = "wp_tour_done_v4";
+const ACTIVE_TOUR_KEY = "wp_active_tour_v1";
 
 function storageDone() {
   try { return localStorage.getItem(DONE_KEY) === "1"; } catch { return false; }
@@ -46,6 +47,12 @@ export function GuidedTour() {
     setTourType(nextType);
     setIndex(0);
     setActive(true);
+    try {
+      sessionStorage.setItem(ACTIVE_TOUR_KEY, JSON.stringify({ type: nextType, route: nextRoute, index: 0 }));
+    } catch {}
+    if (nextType === "usage" && location.pathname !== nextRoute) {
+      navigate(nextRoute);
+    }
   };
 
   useEffect(() => {
@@ -60,8 +67,35 @@ export function GuidedTour() {
       start(detail);
     };
     window.addEventListener("wealthplanner:start-tour", handler);
+
+    // Restore Tour 2 after a route change/remount so navigation does not restart
+    // the tour from step 1.
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(ACTIVE_TOUR_KEY) || "null");
+      if (saved?.type === "usage" && Number.isInteger(saved.index)) {
+        const restoredSteps = getTourSteps("usage", saved.route || "/");
+        if (restoredSteps.length) {
+          setSteps(restoredSteps);
+          setTourType("usage");
+          setIndex(Math.min(saved.index, restoredSteps.length - 1));
+          setActive(true);
+        }
+      }
+    } catch {}
+
     return () => window.removeEventListener("wealthplanner:start-tour", handler);
-  }, [location.pathname]);
+  }, []);
+
+  useEffect(() => {
+    if (!active || tourType !== "usage") return;
+    try {
+      sessionStorage.setItem(ACTIVE_TOUR_KEY, JSON.stringify({
+        type: "usage",
+        route: steps[index]?.route || "/",
+        index,
+      }));
+    } catch {}
+  }, [active, tourType, index, steps]);
 
   useEffect(() => {
     if (!active || !steps[index]) return;
@@ -233,6 +267,7 @@ export function GuidedTour() {
     if (markDone || tourType === "usage") storageSetDone();
     setActive(false);
     setTarget(null);
+    try { sessionStorage.removeItem(ACTIVE_TOUR_KEY); } catch {}
     setRect(null);
     setSteps([]);
     setTourType("main");
@@ -257,6 +292,7 @@ export function GuidedTour() {
         setTarget(null);
         setRect(null);
         setSteps([]);
+        try { sessionStorage.removeItem(ACTIVE_TOUR_KEY); } catch {}
         setTourType("main");
         setIndex(0);
         setUsagePrompt(true);
@@ -379,7 +415,7 @@ export function GuidedTour() {
           .wp-tour-fade,.wp-tour-pulse,.wp-tour-arrow{animation:none!important}
         }
       `}</style>
-      {!highlight && (
+      {!highlight && !waiting && (
         <div className="absolute inset-0 z-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />
       )}
       {highlight && <div
