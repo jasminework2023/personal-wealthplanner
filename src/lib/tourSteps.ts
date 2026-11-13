@@ -6,6 +6,8 @@ export type TourStep = {
   title: string;
   description: string;
   advanceOnTargetClick?: boolean;
+  mobileOnly?: boolean;
+  desktopOnly?: boolean;
 };
 
 export const mainTourSteps: TourStep[] = [
@@ -97,19 +99,20 @@ export const usageTourSteps: TourStep[] = [
     id: "usage-profile-settings",
     route: "/",
     selectorDesktop: '[data-tour="profile-settings-link"]',
-    selectorMobile: '[data-tour="profile-settings-link"]',
-    title: "3. Buka Profil & Pengaturan",
-    description: "Klik Profil & Pengaturan di sidebar untuk membuka menu Profil.",
+    selectorMobile: '[data-tour="sidebar-profile"]',
+    title: "2. Buka Profil & Pengaturan",
+    description: "Klik tombol Profil & Pengaturan untuk membuka pilihan Profil.",
     advanceOnTargetClick: true,
   },
   {
-    id: "usage-profile-settings",
+    id: "usage-profile-settings-mobile",
     route: "/",
     selectorDesktop: '[data-tour="profile-settings-link"]',
     selectorMobile: '[data-tour="profile-settings-link"]',
     title: "3. Buka Profil & Pengaturan",
     description: "Klik Buka Profil & Pengaturan untuk masuk ke halaman pengaturan akun.",
     advanceOnTargetClick: true,
+    mobileOnly: true,
   },
   {
     id: "usage-setup",
