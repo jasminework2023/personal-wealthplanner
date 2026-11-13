@@ -20,6 +20,11 @@ function selectorFor(step: TourStep) {
   return window.matchMedia("(min-width: 768px)").matches ? step.selectorDesktop : step.selectorMobile;
 }
 
+function stepsForDevice(steps: TourStep[]) {
+  const mobile = window.matchMedia("(max-width: 767px)").matches;
+  return steps.filter((step) => !step.mobileOnly && !step.desktopOnly || (mobile && step.mobileOnly) || (!mobile && step.desktopOnly));
+}
+
 export function GuidedTour() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -39,7 +44,7 @@ export function GuidedTour() {
   const start = (detail: StartDetail = { type: "main" }) => {
     const nextType = detail.type || "main";
     const nextRoute = detail.route || location.pathname;
-    let nextSteps = getTourSteps(nextType, nextRoute);
+    let nextSteps = stepsForDevice(getTourSteps(nextType, nextRoute));
     if (!nextSteps.length && nextType === "page") nextSteps = getTourSteps("main", "/");
     if (!nextSteps.length) return;
     startRequestRef.current = { type: nextType, route: nextRoute };
@@ -76,7 +81,7 @@ export function GuidedTour() {
     try {
       const saved = JSON.parse(sessionStorage.getItem(ACTIVE_TOUR_KEY) || "null");
       if (saved?.type === "usage" && Number.isInteger(saved.index)) {
-        const restoredSteps = getTourSteps("usage", saved.route || "/");
+        const restoredSteps = stepsForDevice(getTourSteps("usage", saved.route || "/"));
         if (restoredSteps.length) {
           setSteps(restoredSteps);
           setTourType("usage");
