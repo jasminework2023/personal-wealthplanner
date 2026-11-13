@@ -104,6 +104,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <div className="rounded-xl border border-[#E4E6E8] bg-white p-1 flex flex-col gap-0.5">
           <button
             type="button"
+            data-tour="sidebar-profile"
             onClick={() => setProfileOpen((open) => !open)}
             aria-expanded={profileOpen}
             className="sidebar-item group relative flex w-full items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all"
@@ -116,6 +117,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         {profileOpen && (
           <div className="absolute bottom-[calc(100%+8px)] left-0 right-0 z-50 rounded-xl border border-[#E4E6E8] bg-white p-1.5 shadow-lg">
             <NavLink
+              data-tour="profile-settings-link"
               to="/settings"
               onClick={() => {
                 setProfileOpen(false);
