@@ -218,51 +218,14 @@ export function GuidedTour() {
         return;
       }
 
-      // Action steps should advance only after the UI action has actually
-      // produced the next target/page. This prevents the tour from jumping
-      // ahead before the Profile menu or Settings page is ready.
-      let elapsed = 0;
-      let poll = 0;
-
-      const waitForNextStep = () => {
-        const currentPath = window.location.pathname;
-        const routeMatches =
-          currentPath === nextStep.route ||
-          (nextStep.route === "/calculator" && currentPath.startsWith("/calculator/"));
-
-        const nextTarget = routeMatches
-          ? document.querySelector(selectorFor(nextStep)) as HTMLElement | null
-          : null;
-
-        const rect = nextTarget?.getBoundingClientRect();
-        const styles = nextTarget ? window.getComputedStyle(nextTarget) : null;
-        const visible =
-          !!nextTarget &&
-          !!rect &&
-          rect.width > 0 &&
-          rect.height > 0 &&
-          styles?.display !== "none" &&
-          styles?.visibility !== "hidden" &&
-          styles?.opacity !== "0";
-
-        if (routeMatches && visible) {
-          window.clearTimeout(poll);
-          setIndex((value) => Math.min(value + 1, steps.length - 1));
-          return;
-        }
-
-        if (elapsed >= 3000) {
-          window.clearTimeout(poll);
-          // If the next UI is still not ready, keep the current step instead
-          // of jumping to an unrelated page/slide.
-          return;
-        }
-
-        elapsed += 100;
-        poll = window.setTimeout(waitForNextStep, 100);
-      };
-
-      window.setTimeout(waitForNextStep, 50);
+      // Advance immediately after the user performs the action. The target
+      // effect below will wait for the next page/element to actually mount.
+      // This avoids losing the next step when React Router changes the route
+      // before the old target's polling callback can finish.
+      setIndex((value) => Math.min(value + 1, steps.length - 1));
+      if (nextStep.route && window.location.pathname !== nextStep.route) {
+        navigate(nextStep.route);
+      }
     };
 
     target.addEventListener("click", handleTargetClick);
