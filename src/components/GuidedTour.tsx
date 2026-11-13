@@ -138,6 +138,18 @@ export function GuidedTour() {
   }, [active, index, steps, location.pathname, navigate]);
 
   useEffect(() => {
+    if (!active || !target || !steps[index]?.advanceOnTargetClick) return;
+    const handleTargetClick = (event: MouseEvent) => {
+      if (!(event.target instanceof Node) || !target.contains(event.target)) return;
+      window.setTimeout(() => {
+        setIndex((value) => Math.min(value + 1, steps.length - 1));
+      }, 0);
+    };
+    target.addEventListener("click", handleTargetClick);
+    return () => target.removeEventListener("click", handleTargetClick);
+  }, [active, target, steps, index]);
+
+  useEffect(() => {
     if (!active || !target) return;
     const update = () => setRect(target.getBoundingClientRect());
     update();
@@ -258,7 +270,7 @@ export function GuidedTour() {
           <p className="mt-1.5 text-[13px] leading-5 text-charcoal/65 dark:text-white/65">Sekarang kita lanjut ke tour kedua: cara menggunakan Wealthplanner dari awal sampai evaluasi.</p>
           <div className="mt-4 flex gap-2">
             <button type="button" onClick={() => setUsagePrompt(false)} className="flex-1 min-h-10 rounded-xl border border-charcoal/10 px-3 text-[12px] font-semibold text-charcoal/65 dark:border-white/10 dark:text-white/70">Nanti</button>
-            <button type="button" onClick={() => start({ type: "usage", route: "/settings" })} className="flex-1 min-h-10 rounded-xl bg-[#0B6B47] px-3 text-[12px] font-semibold text-white">Lanjut Tour 2</button>
+            <button type="button" onClick={() => start({ type: "usage", route: "/" })} className="flex-1 min-h-10 rounded-xl bg-[#0B6B47] px-3 text-[12px] font-semibold text-white">Lanjut Tour 2</button>
           </div>
         </div>
       </div>
