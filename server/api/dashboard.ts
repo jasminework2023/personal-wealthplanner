@@ -284,11 +284,8 @@ async function getAssetTracker(rows: unknown[][], stockRows: unknown[][] = [], w
   liquid.total = liquid.items.reduce((sum: number, item: any) => sum + item.value, 0);
 
   const investment = parseAssetSection(rows, "Investment Assets", new Set(["saham", "stocks", "stock"]));
-  // Stock Portfolio is now its own dedicated tab. Keep the Asset Tracker
-  // fallback so older spreadsheets that already contain stock sections continue
-  // to work without migration.
-  const stockSource = stockRows.length ? stockRows : rows;
-  const stockSections = parseStockSections(stockSource);
+  // The shared resolver has already selected the single authoritative stock tab.
+  const stockSections = parseStockSections(stockRows);
   const stocksID = stockSections.id;
   const stocksUS = stockSections.us;
 
