@@ -81,7 +81,8 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="sidebar-profile"]',
     selectorMobile: '[data-tour="sidebar-profile"]',
     title: "1. Buka Profil",
-    description: "Klik Profil & Pengaturan di sidebar untuk membuka menu Profil. Setelah menunya terbuka, tekan Lanjut untuk melihat pilihan Profil & Pengaturan.",
+    description: "Klik Profil & Pengaturan di sidebar untuk membuka menu Profil.",
+    advanceOnTargetClick: true,
   },
   {
     id: "usage-profile-settings",
@@ -89,7 +90,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="profile-settings-link"]',
     selectorMobile: '[data-tour="profile-settings-link"]',
     title: "2. Buka Profil & Pengaturan",
-    description: "Klik Buka Profil & Pengaturan untuk masuk ke halaman pengaturan akun dan setup keuangan.",
+    description: "Klik Buka Profil & Pengaturan untuk masuk ke halaman pengaturan akun.",
     advanceOnTargetClick: true,
   },
   {
@@ -98,7 +99,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="setup-card"]',
     selectorMobile: '[data-tour="setup-card"]',
     title: "3. Setup Mesin Keuangan",
-    description: "Atur Pemasukan, Pengeluaran, Tabungan & Investasi, dan Akun Bank terlebih dahulu. Tambahkan kategori dengan + Add Category, centang kategori yang dipakai, lalu nonaktifkan atau hapus yang tidak diperlukan. Setup ini menjadi fondasi untuk Transaction dan Budget.",
+    description: "Atur Pemasukan, Pengeluaran, Tabungan & Investasi, dan Akun Bank terlebih dahulu. Setup ini menjadi fondasi untuk Transaction dan Budget.",
   },
   {
     id: "usage-ai-membership",
@@ -178,7 +179,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="ai-assistant-page"]',
     selectorMobile: '[data-tour="ai-assistant-page"]',
     title: "13. AI Assistant",
-    description: "AI Assistant adalah financial planner berbasis AI yang membantu kamu memahami dan mendiskusikan kondisi keuangan, perencanaan, dan keputusan finansial.",
+    description: "AI Assistant membantu kamu memahami kondisi keuangan, perencanaan, dan keputusan finansial berdasarkan data yang sudah kamu simpan di Wealthplanner.",
   },
 ];
 
