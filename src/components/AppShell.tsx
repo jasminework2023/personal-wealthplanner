@@ -57,7 +57,7 @@ export function AppShell() {
             {([
               { to: "/", label: navLabels.home, Icon: Wallet },
               { to: "/transaction", label: language === "id" ? "Transaksi" : "Transaction", Icon: ArrowLeftRight },
-            ] as const).map(({ to, label, Icon }) => {
+            ] as const).map(({ to, label, Icon, tour }) => {
               const active = location.pathname === to;
               return <button key={to} data-tour={tour ? "mobile-bottom-profile" : undefined} onClick={() => navigate(to)} aria-current={active ? "page" : undefined} className="flex flex-col items-center gap-0.5 py-0.5">
                 <span className={`flex h-8 w-12 items-center justify-center rounded-full transition-colors ${active ? "text-accent-text" : "text-muted"}`}><Icon size={19} strokeWidth={active ? 2.4 : 2}/></span>
