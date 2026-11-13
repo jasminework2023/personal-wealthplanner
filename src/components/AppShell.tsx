@@ -50,8 +50,8 @@ export function AppShell() {
             <ThemeToggle variant="compact" />
           </div>
           <Outlet />
-          <GuidedTour />
         </main>
+        <GuidedTour />
         <nav data-tour="mobile-bottom-nav" aria-label={language === "id" ? "Navigasi utama" : "Main navigation"} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[env(safe-area-inset-bottom)] lg:hidden">
           <div className="wp-nav pointer-events-auto mx-auto grid h-16 max-w-md grid-cols-5 items-center rounded-2xl px-2">
             {([
