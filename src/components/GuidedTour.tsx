@@ -38,6 +38,8 @@ export function GuidedTour() {
   const [usagePrompt, setUsagePrompt] = useState(false);
   const [completionPrompt, setCompletionPrompt] = useState(false);
   const [welcomePrompt, setWelcomePrompt] = useState(false);
+  const [cardDrag, setCardDrag] = useState({ x: 0, y: 0 });
+  const dragRef = useRef<{ startX: number; startY: number; originX: number; originY: number; dragging: boolean } | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const startRequestRef = useRef<StartDetail | null>(null);
 
@@ -91,6 +93,10 @@ export function GuidedTour() {
       }
     } catch {}
   }, []);
+
+  useEffect(() => {
+    setCardDrag({ x: 0, y: 0 });
+  }, [index, active]);
 
   useEffect(() => {
     if (!active || tourType !== "usage") return;
@@ -191,6 +197,17 @@ export function GuidedTour() {
       if (!(event.target instanceof Node) || !target.contains(event.target)) return;
 
       const nextStep = steps[index + 1];
+
+      // Desktop Profile opens a small dropdown first. The user should not get
+      // an extra "Buka Profil & Pengaturan" tour step: continue directly into
+      // Profil & Pengaturan after the Profile action.
+      if (steps[index]?.id === "usage-profile" && window.matchMedia("(min-width: 768px)").matches) {
+        window.setTimeout(() => {
+          const settingsLink = document.querySelector('[data-tour="profile-settings-link"]') as HTMLElement | null;
+          settingsLink?.click();
+        }, 80);
+      }
+
       if (!nextStep) {
         if (tourType === "usage") {
           finish(true);
@@ -352,7 +369,26 @@ export function GuidedTour() {
   }
 
   function back() {
-    if (index > 0) setIndex((value) => value - 1);
+    if (index === 0) return;
+    const previousIndex = index - 1;
+    const previousStep = steps[previousIndex];
+    const previousRoute = previousStep?.route || "/";
+    const routeMatches =
+      location.pathname === previousRoute ||
+      (previousRoute === "/calculator" && location.pathname.startsWith("/calculator/"));
+
+    setIndex(previousIndex);
+    setTarget(null);
+    setRect(null);
+    setWaiting(true);
+    try {
+      sessionStorage.setItem(ACTIVE_TOUR_KEY, JSON.stringify({
+        type: tourType,
+        route: previousRoute,
+        index: previousIndex,
+      }));
+    } catch {}
+    if (!routeMatches) navigate(previousRoute);
   }
 
   if (welcomePrompt && !active) {
@@ -519,8 +555,32 @@ export function GuidedTour() {
         aria-modal="true"
         data-tour-dialog="true"
         tabIndex={-1}
-        className="pointer-events-auto absolute z-20 rounded-[14px] bg-white p-[14px] shadow-[0_18px_60px_rgba(0,0,0,.18)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white transition-[left,top,opacity,transform] duration-300 ease-out"
-        style={{ left: cardLeft, top: cardTop, width: cardWidth }}
+        onPointerDown={(event) => {
+          const interactive = (event.target as HTMLElement).closest("button,a,input,select,textarea");
+          if (interactive) return;
+          dragRef.current = {
+            startX: event.clientX,
+            startY: event.clientY,
+            originX: cardDrag.x,
+            originY: cardDrag.y,
+            dragging: false,
+          };
+          (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+        }}
+        onPointerMove={(event) => {
+          const drag = dragRef.current;
+          if (!drag) return;
+          const dx = event.clientX - drag.startX;
+          const dy = event.clientY - drag.startY;
+          if (!drag.dragging && Math.hypot(dx, dy) > 4) drag.dragging = true;
+          if (drag.dragging) setCardDrag({ x: drag.originX + dx, y: drag.originY + dy });
+        }}
+        onPointerUp={(event) => {
+          dragRef.current = null;
+          try { (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId); } catch {}
+        }}
+        className="pointer-events-auto absolute z-20 rounded-[14px] bg-white p-[14px] shadow-[0_18px_60px_rgba(0,0,0,.18)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white transition-[left,top,opacity,transform] duration-300 ease-out cursor-grab active:cursor-grabbing"
+        style={{ left: cardLeft, top: cardTop, width: cardWidth, transform: `translate3d(${cardDrag.x}px, ${cardDrag.y}px, 0)` }}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
