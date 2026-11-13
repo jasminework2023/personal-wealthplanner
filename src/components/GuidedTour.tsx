@@ -486,8 +486,8 @@ export function GuidedTour() {
       <style>{`
         @keyframes wp-tour-fade{from{opacity:0}to{opacity:1}}
         @keyframes wp-tour-pulse{
-          0%,100%{transform:scale(1);box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 2px #6EE7A8,0 0 0 6px rgba(110,231,168,.18)}
-          50%{transform:scale(1.015);box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 2px #6EE7A8,0 0 0 10px rgba(110,231,168,.06)}
+          0%,100%{transform:scale(1);border-color:#6EE7A8;box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 2px #6EE7A8,0 0 0 6px rgba(110,231,168,.28),0 0 18px rgba(110,231,168,.35)}
+          50%{transform:scale(1.018);border-color:#A7F3C8;box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 3px #6EE7A8,0 0 0 12px rgba(110,231,168,.10),0 0 28px rgba(110,231,168,.55)}
         }
         @keyframes wp-tour-arrow{
           0%,100%{transform:translateY(0);opacity:.65}
@@ -501,7 +501,7 @@ export function GuidedTour() {
         <div className="absolute inset-0 z-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />
       )}
       {highlight && <div
-        className="absolute z-10 rounded-[14px] outline outline-2 outline-[#6EE7A8] wp-tour-pulse"
+        className="absolute z-10 rounded-[14px] border-2 border-[#6EE7A8] wp-tour-pulse"
         style={{ left: highlight.left, top: highlight.top, width: highlight.width, height: highlight.height, animation: "wp-tour-pulse 1.6s ease-in-out infinite" }}
       />}
       {highlight && (
