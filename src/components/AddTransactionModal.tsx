@@ -9,6 +9,41 @@ import { formatAmountInput, parseAmountInput } from "../lib/format";
 
 const API_BASE = "/api";
 
+function inferStockTicker(text: string): string {
+  const lower = text.toLowerCase();
+  const aliases: Record<string, string[]> = {
+    TLKM: ["telkom", "telkom indonesia", "tlkm"],
+    BBCA: ["bca", "bank central asia", "bbca"],
+    BBRI: ["bri", "bank rakyat indonesia", "bbri"],
+    BMRI: ["mandiri", "bank mandiri", "bmri"],
+    BBNI: ["bni", "bank negara indonesia", "bbni"],
+    ASII: ["astra", "astra international", "asii"],
+    ANTM: ["antam", "pt antam", "antm"],
+    GOTO: ["goto", "gojek", "goto gojek tokopedia"],
+    ICBP: ["indofood", "icbp"],
+    INDF: ["indofood sukses makmur", "indf"],
+    UNVR: ["unilever", "unvr"],
+  };
+  const explicit = text.match(/\\b([A-Z]{4})\\b/);
+  if (explicit && aliases[explicit[1]]) return explicit[1];
+  for (const [ticker, names] of Object.entries(aliases)) {
+    if (names.some((name) => lower.includes(name))) return ticker;
+  }
+  return "";
+}
+
+function inferStockDetails(text: string) {
+  const ticker = inferStockTicker(text);
+  if (!ticker) return { ticker: "", quantity: "", price: "" };
+  const lotMatch = text.match(/(\\d+(?:[.,]\\d+)?)\\s*lot\\b/i);
+  const priceMatch = text.match(/@\\s*(\\d+(?:[.,]\\d+)?)/i);
+  return {
+    ticker,
+    quantity: lotMatch ? lotMatch[1].replace(",", ".") : "",
+    price: priceMatch ? priceMatch[1].replace(",", ".") : "",
+  };
+}
+
 const fallbackCategories = [
   "Gajian", "Freelance Income", "Business Income", "Commission", "Dividend / Interest", "Side Hustle",
   "Utilities", "Internet & Phone", "Insurance Premium", "Food & Groceries", "Transport", "Entertainment", "Education", "Charity",
@@ -160,6 +195,29 @@ export function AddTransactionModal({
     amount: "",
   });
   const [formError, setFormError] = useState("");
+
+  // If a manual saving transaction clearly says "beli saham ...", automatically
+  // open the stock fields and prefill a known Indonesian ticker.
+  useEffect(() => {
+    if (form.type !== "Saving" || stockPurchase) return;
+    if (!/\\b(beli|buy|membeli|beliin)\\b.*\\b(saham|stock)\\b/i.test(form.description)) return;
+    const inferred = inferStockDetails(form.description);
+    if (!inferred.ticker) return;
+    setStockPurchase(true);
+    setStockTicker(inferred.ticker);
+    if (inferred.quantity) setStockQuantity(inferred.quantity);
+    if (inferred.price) setStockBuyPrice(inferred.price);
+    setFormError("");
+  }, [form.type, form.description, stockPurchase]);
+
+  useEffect(() => {
+    if (!stockPurchase || stockMarket !== "ID" || !stockAmountAuto) return;
+    const qty = Number(stockQuantity);
+    const price = Number(stockBuyPrice);
+    if (qty > 0 && price >= 0) {
+      setForm((f) => ({ ...f, amount: formatAmountInput(String(Math.round(qty * 100 * price))) }));
+    }
+  }, [stockPurchase, stockMarket, stockAmountAuto, stockQuantity, stockBuyPrice]);
 
   useEffect(() => {
     const options = activeCategories[form.type];
