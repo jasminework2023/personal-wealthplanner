@@ -322,14 +322,12 @@ export function GuidedTour() {
     if (index >= steps.length - 1) {
       if (tourType === "main") {
         storageSetDone();
-        setActive(false);
         setTarget(null);
         setRect(null);
-        setSteps([]);
         try { sessionStorage.removeItem(ACTIVE_TOUR_KEY); } catch {}
-        setTourType("main");
-        setIndex(0);
-        setTour1CompletePrompt(true);
+        // Tour 2 starts immediately after the final Tour 1 step.
+        // Do not stop at an intermediate completion modal.
+        start({ type: "usage", route: "/" });
         return;
       }
       if (tourType === "usage") {
