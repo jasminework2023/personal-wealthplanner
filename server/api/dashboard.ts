@@ -243,6 +243,18 @@ function lowerSection(value: string) {
   return String(value || "").trim().toLowerCase();
 }
 
+async function getUsdIdrRate(): Promise<number> {
+  try {
+    const response = await fetch("https://open.er-api.com/v6/latest/USD", {
+      headers: { Accept: "application/json" },
+    });
+    const data: any = await response.json();
+    const rate = Number(data?.rates?.IDR);
+    if (response.ok && Number.isFinite(rate) && rate > 0) return rate;
+  } catch {}
+  return 16300;
+}
+
 async function getAssetTracker(rows: unknown[][], stockRows: unknown[][] = [], walletRows: any[] = [], transactions: any[] = []) {
   // Liquid Assets are the user's actual wallet balances. This keeps the
   // Asset Tracker from maintaining a second, potentially stale cash total.
