@@ -16,7 +16,7 @@ export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () 
         <p className="truncate text-[10.5px] font-semibold tracking-[0.02em] text-charcoal/45">wealthplanner.id</p>
         <p className="mt-1 truncate font-display font-normal text-[26px] leading-[1.1] tracking-[-0.02em] text-forest-900">{title}</p>
       </div>
-      <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "page", route: window.location.pathname.startsWith("/calculator") ? "/calculator" : window.location.pathname } }))} aria-label="Mulai panduan interaktif" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-surface text-forest-800 shadow-sm"><HelpCircle size={18}/></button>
+      <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "main", route: "/" } }))} aria-label="Mulai panduan interaktif" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-surface text-forest-800 shadow-sm"><HelpCircle size={18}/></button>
       <ThemeToggle variant="compact" />
     </header>
   );
