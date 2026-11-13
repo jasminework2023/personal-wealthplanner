@@ -121,6 +121,22 @@ export function Guidance() {
             ? "Kenali tampilan aplikasinya dulu, lalu ikuti langkah sederhana untuk mulai membangun data keuanganmu."
             : "Get familiar with the app first, then follow a simple flow to start building your financial data."}
         </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "main", route: "/" } }))}
+            className="inline-flex min-h-10 items-center rounded-full border border-forest-100 bg-forest-50 px-4 py-2 text-[12px] font-semibold text-forest-700"
+          >
+            {id ? "Mulai Tour 1" : "Start Tour 1"}
+          </button>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "usage", route: "/" } }))}
+            className="inline-flex min-h-10 items-center rounded-full bg-[#0B6B47] px-4 py-2 text-[12px] font-semibold text-white"
+          >
+            {id ? "Mulai Tour 2" : "Start Tour 2"}
+          </button>
+        </div>
       </div>
 
       <Card className="overflow-hidden bg-gradient-to-br from-white via-forest-50/45 to-rose-50/30">
