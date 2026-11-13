@@ -5,6 +5,7 @@ import { Card } from "../components/Card";
 import { getDisplayName, setDisplayName } from "../lib/settings";
 import { getAppLanguage, setAppLanguage, type AppLanguage } from "../lib/format";
 import { getStoredToken } from "../lib/useFinanceData";
+import { SpouseSharing } from "./SpouseSharing";
 
 type SectionKey = "income" | "expense" | "saving" | "bank";
 type SetupItem = { name: string; active: boolean };
