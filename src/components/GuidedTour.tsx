@@ -144,7 +144,13 @@ export function GuidedTour() {
       if (!(event.target instanceof Node) || !target.contains(event.target)) return;
 
       const nextStep = steps[index + 1];
-      if (!nextStep) return;
+      if (!nextStep) {
+        if (tourType === "usage") {
+          finish(true);
+          setCompletionPrompt(true);
+        }
+        return;
+      }
 
       // Action steps should advance only after the UI action has actually
       // produced the next target/page. This prevents the tour from jumping
@@ -392,7 +398,7 @@ export function GuidedTour() {
           <button type="button" onClick={skip} className="min-h-10 rounded-lg px-2 text-[12px] font-medium text-charcoal/55 hover:text-forest-700 dark:text-[rgb(var(--c-charcoal))]/60">Lewati</button>
           <div className="flex items-center gap-1.5">
             <button type="button" onClick={back} disabled={index === 0} className="min-h-10 rounded-lg border border-charcoal/10 px-3 text-[12px] font-semibold text-charcoal/65 disabled:opacity-30 dark:border-white/10 dark:text-white/70">Kembali</button>
-            <button type="button" onClick={next} className="min-h-10 rounded-lg bg-[#0B6B47] px-3.5 text-[12px] font-semibold text-white">{index === steps.length - 1 ? "Selesai" : "Lanjut"}</button>
+            {step.advanceOnTargetClick ? <span className="min-h-10 rounded-lg bg-[#DDF7E8] px-3.5 py-2 text-[11px] font-semibold text-[#0B6B47]">Klik yang disorot untuk lanjut</span> : <button type="button" onClick={next} className="min-h-10 rounded-lg bg-[#0B6B47] px-3.5 text-[12px] font-semibold text-white">{index === steps.length - 1 ? "Selesai" : "Lanjut"}</button>}
           </div>
         </div>
       </div>
