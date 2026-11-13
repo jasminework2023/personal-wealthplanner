@@ -229,7 +229,7 @@ export function GuidedTour() {
   }, [active, waiting, index]);
 
   function finish(markDone: boolean) {
-    if (markDone && tourType === "main") storageSetDone();
+    if (markDone || tourType === "usage") storageSetDone();
     setActive(false);
     setTarget(null);
     setRect(null);
@@ -262,7 +262,7 @@ export function GuidedTour() {
         return;
       }
       if (tourType === "usage") {
-        finish(false);
+        finish(true);
         setCompletionPrompt(true);
         return;
       }
