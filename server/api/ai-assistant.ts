@@ -6,14 +6,140 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 function getDb() {
   return createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SERVICE_ROLE_KEY as string);
 }
+function parseRupiah(value: unknown): number {
+  if (value === null || value === undefined || value === "") return 0;
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  let cleaned = String(value).replace(/Rp/gi, "").replace(/IDR/gi, "").replace(/\\$/g, "").replace(/\\s/g, "").trim();
+  if (!cleaned) return 0;
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+  if (lastComma !== -1 && lastDot !== -1) {
+    cleaned = lastComma > lastDot ? cleaned.replace(/\\./g, "").replace(",", ".") : cleaned.replace(/,/g, "");
+  } else if (lastComma !== -1) {
+    cleaned = cleaned.length - lastComma - 1 === 3 ? cleaned.replace(/,/g, "") : cleaned.replace(",", ".");
+  } else if (lastDot !== -1) {
+    cleaned = cleaned.length - lastDot - 1 === 3 ? cleaned.replace(/\\./g, "") : cleaned;
+  }
+  const n = Number(cleaned.replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+
+const MONTHS: Record<string, number> = {
+  january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+  july: 7, august: 8, september: 9, october: 10, november: 11, december: 12,
+};
+
+function normalizeDate(value: unknown, monthValue: unknown): string {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "";
+  const iso = raw.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})/);
+  if (iso) return `${iso[1]}-${String(Number(iso[2])).padStart(2, "0")}-${String(Number(iso[3])).padStart(2, "0")}`;
+  const parts = raw.match(/^(\\d{1,2})[\\/. -](\\d{1,2})[\\/. -](\\d{2,4})$/);
+  if (parts) {
+    const first = Number(parts[1]), second = Number(parts[2]);
+    let year = Number(parts[3]), day = first, month = second;
+    const expectedMonth = MONTHS[String(monthValue ?? "").trim().toLowerCase()];
+    if (expectedMonth && first === expectedMonth && second !== expectedMonth) { month = first; day = second; }
+    else if (expectedMonth && second === expectedMonth && first !== expectedMonth) { day = first; month = second; }
+    else if (first <= 12 && second > 12) { day = second; month = first; }
+    if (year < 100) year += year < 50 ? 2000 : 1900;
+    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString().slice(0, 10);
+}
+
+function parseSetupExpenseCategories(rows: unknown[][]): string[] {
+  const result: string[] = [];
+  for (let r = 0; r < rows.length; r++) {
+    const category = String(rows[r]?.[3] ?? "").trim(); // Setup E column in B:L range
+    const status = String(rows[r]?.[4] ?? "").trim().toLowerCase();
+    if (!category || category.toLowerCase() === "category") continue;
+    if (category.toLowerCase() === "total") break;
+    if (["true", "yes", "1", "active", "aktif", "checked", "✓"].includes(status)) result.push(category);
+  }
+  return result;
+}
+
+function getBudgetByMonth(rows: unknown[][], expenseCategories: string[]) {
+  const normalizedExpense = new Set(expenseCategories.map((x) => x.trim().replace(/\\s+/g, " ").toLowerCase()));
+  const result: Record<string, number> = {};
+  for (const row of rows) {
+    for (let col = 0; col < row.length; col++) {
+      const month = String(row[col] || "").trim().toLowerCase();
+      if (!MONTHS[month]) continue;
+      let total = 0;
+      for (let i = rows.indexOf(row) + 1; i < rows.length; i++) {
+        const label = String(rows[i]?.[0] || "").trim().replace(/\\s+/g, " ").toLowerCase();
+        if (!label) continue;
+        if (normalizedExpense.has(label)) total += parseRupiah(rows[i]?.[col]);
+      }
+      result[month] = total;
+    }
+  }
+  return result;
+}
+
 async function getFinanceContext(spreadsheetId: string) {
   const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS as string);
   const auth = new google.auth.JWT({ email: credentials.client_email, key: credentials.private_key, scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"] });
   const sheets = google.sheets({ version: "v4", auth });
-  const result = await sheets.spreadsheets.values.batchGet({ spreadsheetId, ranges: ["Transaction!B10:I", "Asset Tracker!B1:N45", "Budgeting!B1:N40"], valueRenderOption: "FORMATTED_VALUE" });
-  const [tx = [], assets = [], budget = []] = (result.data.valueRanges || []).map((r) => r.values || []);
-  const transactions = tx.slice(-35).map((r) => ({ date: r[0], type: r[2], category: r[3], description: r[4], amount: r[5], wallet: r[6] }));
-  return { recentTransactions: transactions, assetTracker: assets.slice(0, 45), budget: budget.slice(0, 40) };
+  const result = await sheets.spreadsheets.values.batchGet({
+    spreadsheetId,
+    ranges: ["Transaction!B10:I", "Asset Tracker!A1:O500", "Budgeting!B1:N40", "Setup!B1:L200"],
+    valueRenderOption: "FORMATTED_VALUE",
+  });
+  const [tx = [], assets = [], budget = [], setup = []] = (result.data.valueRanges || []).map((r) => r.values || []);
+  const expenseCategories = parseSetupExpenseCategories(setup);
+  const budgetByMonth = getBudgetByMonth(budget, expenseCategories);
+  const transactions = tx.map((r) => {
+    const date = normalizeDate(r[0], r[1]);
+    return {
+      date, month: String(r[1] || ""), year: date ? Number(date.slice(0, 4)) : undefined,
+      type: String(r[2] || ""), category: String(r[3] || ""), description: String(r[4] || ""),
+      amount: parseRupiah(r[5]), wallet: String(r[6] || ""),
+    };
+  }).filter((t) => t.type && t.amount >= 0);
+
+  const now = new Date();
+  const currentMonth = now.toLocaleString("en-US", { month: "long" }).toLowerCase();
+  const currentYear = now.getFullYear();
+  const currentTx = transactions.filter((t) =>
+    String(t.month).trim().toLowerCase() === currentMonth &&
+    (!t.year || t.year === currentYear)
+  );
+  const currentExpense = currentTx.filter((t) => t.type.toLowerCase() === "expense").reduce((s, t) => s + t.amount, 0);
+  const currentIncome = currentTx.filter((t) => t.type.toLowerCase() === "income").reduce((s, t) => s + t.amount, 0);
+  const currentSaving = currentTx.filter((t) => t.type.toLowerCase() === "saving").reduce((s, t) => s + t.amount, 0);
+  const currentBudget = Number(budgetByMonth[currentMonth] || 0);
+
+  const monthlySummary: Record<string, any> = {};
+  for (const month of Object.keys(MONTHS)) {
+    const monthTx = transactions.filter((t) => String(t.month).trim().toLowerCase() === month && (!t.year || t.year === currentYear));
+    const expense = monthTx.filter((t) => t.type.toLowerCase() === "expense").reduce((s, t) => s + t.amount, 0);
+    const income = monthTx.filter((t) => t.type.toLowerCase() === "income").reduce((s, t) => s + t.amount, 0);
+    const saving = monthTx.filter((t) => t.type.toLowerCase() === "saving").reduce((s, t) => s + t.amount, 0);
+    const budget = Number(budgetByMonth[month] || 0);
+    if (budget || expense || income || saving) {
+      monthlySummary[month] = { budgetPengeluaran: budget, realisasiPengeluaran: expense, sisaAnggaran: budget - expense, pemasukan: income, tabungan: saving };
+    }
+  }
+
+  return {
+    recentTransactions: transactions.slice(-35),
+    assetTracker: assets.slice(0, 45),
+    budget,
+    dashboardSummary: {
+      month: currentMonth,
+      year: currentYear,
+      budgetPengeluaran: currentBudget,
+      realisasiPengeluaran: currentExpense,
+      sisaAnggaran: currentBudget - currentExpense,
+      pemasukan: currentIncome,
+      tabungan: currentSaving,
+    },
+    monthlySummary,
+  };
 }
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   let stage = "request";
@@ -116,7 +242,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     stage = "groq_request";
-    const completion = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, temperature: 1, max_completion_tokens: 2400, messages: [{ role: "system", content: `Kamu adalah Wealthplanner AI, teman diskusi perencanaan keuangan pribadi yang ramah, hangat, ringkas, dan tidak menghakimi. Jawab dalam bahasa Indonesia. PENTING: jawab langsung sesuai pertanyaan, idealnya 80-140 kata dan maksimal 180 kata kecuali pengguna meminta perhitungan/penjelasan rinci. Jangan memberi kuliah atau panduan panjang sekaligus. Untuk konsultasi tujuan (pendidikan, rumah, pensiun, haji, warisan), pandu bertahap: jelaskan inti dalam 1-2 kalimat lalu ajukan HANYA SATU pertanyaan paling penting untuk langkah berikutnya. Gunakan paragraf pendek dan maksimal 3-5 bullet jika perlu. Jangan gunakan tabel Markdown, heading berulang, garis pemisah, atau menampilkan simbol Markdown mentah. Gunakan bold seperlunya. Jangan mengulang pertanyaan pengguna. ATURAN SUMBER DATA: satu-satunya sumber fakta keuangan pribadi pengguna adalah DATA KEUANGAN TERHUBUNG yang disisipkan di bawah instruksi ini, yang diambil dari spreadsheet_id milik akun yang token dashboard-nya sudah divalidasi. Jangan memakai contoh, asumsi, atau data pengguna lain sebagai fakta pengguna ini. Jangan mengarang saldo, pendapatan, pengeluaran, aset, utang, kategori, target, tanggal, atau tren. Jangan menyimpulkan data kosong sebagai nilai nol. Jika informasi tidak ada, tidak lengkap, ambigu, atau periode datanya tidak jelas, katakan terus terang dalam satu kalimat lalu ajukan SATU pertanyaan untuk melengkapi data. Saat menyebut angka, pastikan angka itu benar-benar muncul di data terhubung atau hasil hitung transparan dari angka tersebut; sebutkan periode jika tersedia. Bedakan transaksi, aset, anggaran, dan target; jangan menganggap anggaran sebagai pengeluaran aktual atau aset sebagai saldo kas. Jika pengguna bertanya tentang sesuatu yang belum tercatat di dashboard (misalnya dana pendidikan), jangan berpura-pura target itu sudah tersimpan; bantu mulai dengan menanyakan satu informasi paling penting. Jika pertanyaan tidak membutuhkan data pribadi, jawab secara umum dan jangan mengklaim sedang membaca dashboard. Berikan edukasi, bukan janji hasil investasi atau rekomendasi investasi personal. Nama pengguna: ${currentUser.username || "Pengguna"}. Data keuangan: ${JSON.stringify(finance)}` }, ...history, { role: "user", content: message }] }) });
+    const completion = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, temperature: 1, max_completion_tokens: 2400, messages: [{ role: "system", content: `Kamu adalah Wealthplanner AI, teman diskusi perencanaan keuangan pribadi yang ramah, hangat, ringkas, dan tidak menghakimi. Jawab dalam bahasa Indonesia. PENTING: jawab langsung sesuai pertanyaan, idealnya 80-140 kata dan maksimal 180 kata kecuali pengguna meminta perhitungan/penjelasan rinci. Jangan memberi kuliah atau panduan panjang sekaligus. Untuk konsultasi tujuan (pendidikan, rumah, pensiun, haji, warisan), pandu bertahap: jelaskan inti dalam 1-2 kalimat lalu ajukan HANYA SATU pertanyaan paling penting untuk langkah berikutnya. Gunakan paragraf pendek dan maksimal 3-5 bullet jika perlu. Jangan gunakan tabel Markdown, heading berulang, garis pemisah, atau menampilkan simbol Markdown mentah. Gunakan bold seperlunya. Jangan mengulang pertanyaan pengguna. ATURAN SUMBER DATA: satu-satunya sumber fakta keuangan pribadi pengguna adalah DATA KEUANGAN TERHUBUNG yang disisipkan di bawah instruksi ini, yang diambil dari spreadsheet_id milik akun yang token dashboard-nya sudah divalidasi. Jangan memakai contoh, asumsi, atau data pengguna lain sebagai fakta pengguna ini. Jangan mengarang saldo, pendapatan, pengeluaran, aset, utang, kategori, target, tanggal, atau tren. Jangan menyimpulkan data kosong sebagai nilai nol. JIKA JAWABAN SUDAH ADA SEBAGAI NILAI DI DATA TERHUBUNG, WAJIB AMBIL NILAI TERSEBUT LANGSUNG DAN JANGAN MENGHITUNG ULANG. Contoh: jika ada sisaAnggaran/sisaAnggaran yang sudah dihitung sistem, gunakan angka itu persis. Jangan mengganti dengan hasil perhitunganmu sendiri. Hanya lakukan kalkulasi jika nilai yang diminta memang tidak tersedia langsung dan angka pembentuknya tersedia. Jika informasi tidak ada, tidak lengkap, ambigu, atau periode datanya tidak jelas, katakan terus terang dalam satu kalimat lalu ajukan SATU pertanyaan untuk melengkapi data. Jika pengguna meminta opini, analisis, atau rekomendasi, kamu boleh menganalisis berdasarkan data terhubung, tetapi bedakan jelas fakta dari opini. Saat menyebut angka, pastikan angka itu benar-benar muncul di data terhubung atau hasil hitung transparan dari angka tersebut; sebutkan periode jika tersedia. Bedakan transaksi, aset, anggaran, dan target; jangan menganggap anggaran sebagai pengeluaran aktual atau aset sebagai saldo kas. Jika pengguna bertanya tentang sesuatu yang belum tercatat di dashboard (misalnya dana pendidikan), jangan berpura-pura target itu sudah tersimpan; bantu mulai dengan menanyakan satu informasi paling penting. Jika pertanyaan tidak membutuhkan data pribadi, jawab secara umum dan jangan mengklaim sedang membaca dashboard. Berikan edukasi, bukan janji hasil investasi atau rekomendasi investasi personal. Nama pengguna: ${currentUser.username || "Pengguna"}. Data keuangan: ${JSON.stringify(finance)}` }, ...history, { role: "user", content: message }] }) });
     stage = "groq_response";
     const payload: any = await completion.json();
     if (!completion.ok) {
