@@ -98,7 +98,7 @@ export function Home() {
   const expenseBudget = byCategory("Expense").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
   const savingBudget = byCategory("Saving").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
   const hasBudget = incomeBudget > 0 || expenseBudget > 0 || savingBudget > 0;
-  const remainingBudget = hasBudget ? incomeBudget - expenseBudget - savingBudget : 0;
+  const remainingBudget = hasBudget ? expenseBudget - totalExpense : 0;
 
   const renderMoney = (value: number, visible: boolean, amountClassName: string, fontSize?: number) => {
     if (!visible) return <span className={amountClassName} style={fontSize ? { fontSize: `${fontSize}px` } : undefined}>Rp ••••••</span>;
