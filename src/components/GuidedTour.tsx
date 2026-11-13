@@ -194,9 +194,10 @@ export function GuidedTour() {
       let poll = 0;
 
       const waitForNextStep = () => {
+        const currentPath = window.location.pathname;
         const routeMatches =
-          location.pathname === nextStep.route ||
-          (nextStep.route === "/calculator" && location.pathname.startsWith("/calculator/"));
+          currentPath === nextStep.route ||
+          (nextStep.route === "/calculator" && currentPath.startsWith("/calculator/"));
 
         const nextTarget = routeMatches
           ? document.querySelector(selectorFor(nextStep)) as HTMLElement | null
