@@ -432,12 +432,26 @@ export function GuidedTour() {
   if (highlight && highlight.width < cardWidth * 1.35) {
     const spaceRight = viewportW - (highlight.left + highlight.width);
     const spaceLeft = highlight.left;
-    if (spaceRight >= cardWidth + gap) {
+    const spaceBelow = viewportH - (highlight.top + highlight.height);
+    const spaceAbove = highlight.top;
+    const isMobile = viewportW < 768;
+
+    // On mobile, bottom-nav targets (especially Profil) sit near the
+    // bottom edge. A card placed "below" them gets clamped back over the
+    // target and blocks the tap. Put the guidance card above the target
+    // whenever there is enough room, keeping the spotlight itself tappable.
+    if (isMobile && spaceAbove >= cardHeightEstimate + gap) {
+      cardLeft = highlight.left + highlight.width / 2 - cardWidth / 2;
+      cardTop = highlight.top - cardHeightEstimate - gap;
+    } else if (spaceRight >= cardWidth + gap) {
       cardLeft = highlight.left + highlight.width + gap;
       cardTop = highlight.top + highlight.height / 2 - cardHeightEstimate / 2;
     } else if (spaceLeft >= cardWidth + gap) {
       cardLeft = highlight.left - cardWidth - gap;
       cardTop = highlight.top + highlight.height / 2 - cardHeightEstimate / 2;
+    } else if (isMobile && spaceBelow >= cardHeightEstimate + gap) {
+      cardLeft = highlight.left + highlight.width / 2 - cardWidth / 2;
+      cardTop = highlight.top + highlight.height + gap;
     }
   }
 
