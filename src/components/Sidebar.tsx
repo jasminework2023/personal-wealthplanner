@@ -39,19 +39,13 @@ function NavItem({ to, label, icon: Icon, onNavigate, dataTour }: { to: string; 
       end={to === "/"}
       onClick={onNavigate}
       className={({ isActive }) =>
-        `group relative flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all ${
-          isActive ? "sidebar-item-active" : "sidebar-item"
-        }`
+        `group relative flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all ${isActive ? "sidebar-item-active" : "sidebar-item"}`
       }
     >
       {({ isActive }) => (
         <>
           {isActive && <span className="sidebar-active-indicator absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#6EE7A8]" />}
-          <Icon
-            size={18}
-            strokeWidth={2}
-            className={isActive ? "sidebar-icon-active" : "sidebar-icon"}
-          />
+          <Icon size={18} strokeWidth={2} className={isActive ? "sidebar-icon-active" : "sidebar-icon"} />
           {label}
         </>
       )}
@@ -79,7 +73,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const [language, setLanguage] = useState(getAppLanguage());
   const [profileOpen, setProfileOpen] = useState(false);
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
-  const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", asset: "Aset", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", guidance: "Panduan", profile: "Profil & Pengaturan", wallet: "Wallet", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", asset: "Asset", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", wallet: "Wallet", guidance: "Guidance", profile: "Profile & Settings", website: "Website", personalFinance: "Personal Finance" };
+  const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", asset: "Aset", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", guidance: "Panduan", profile: "Profil & Pengaturan", wallet: "Wallet", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", asset: "Asset", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", wallet: "Wallet", guidance: "Guidance", website: "Website", personalFinance: "Personal Finance" };
   return (
     <div className="flex flex-col h-full">
       <Brand />
@@ -93,7 +87,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <p className="px-3 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.tools}</p>
         <nav className="flex flex-col gap-0.5">
           {toolLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/calculator" ? "menu-calculator" : l.to === "/protection" ? "menu-protection" : undefined} label={l.to === "/wallets" ? labels.wallet : l.to === "/calculator" ? labels.calculator : labels.protection} onNavigate={onNavigate} />)}
-          <a href="https://www.wealthplanner.id"  onClick={onNavigate} className="sidebar-item group flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all">
+          <a href="https://www.wealthplanner.id" onClick={onNavigate} className="sidebar-item group flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all">
             <ExternalLink size={18} strokeWidth={2} className="sidebar-icon" />
             {labels.website}
           </a>
@@ -126,7 +120,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-[12.5px] font-medium text-charcoal/75 hover:bg-forest-50 hover:text-forest-800"
             >
               <Settings size={16} />
-              {id ? "Buka Profil & Pengaturan" : "Open Profile & Settings"}
+              {language === "id" ? "Buka Profil & Pengaturan" : "Open Profile & Settings"}
             </NavLink>
           </div>
         )}
