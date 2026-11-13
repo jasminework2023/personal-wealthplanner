@@ -102,7 +102,6 @@ export function AIAssistant() {
       .typing-dot:nth-child(2) { animation-delay: .15s; }
       .typing-dot:nth-child(3) { animation-delay: .3s; }
     `}</style>
-}
     {historyOpen && <div className="fixed inset-0 z-[70]">
       <button type="button" aria-label="Tutup riwayat" onClick={() => setHistoryOpen(false)} className="absolute inset-0 bg-black/30"/>
       <aside className="absolute inset-y-0 left-0 flex w-[min(86vw,340px)] flex-col bg-white p-4 shadow-2xl">
