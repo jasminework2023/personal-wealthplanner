@@ -133,7 +133,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/settings",
     selectorDesktop: '[data-tour="spouse-sharing"]',
     selectorMobile: '[data-tour="spouse-sharing"]',
-    title: "8. Spouse Sharing",
+    title: "7. Spouse Sharing",
     description: "Hubungkan akun dengan pasangan tanpa berbagi password atau akun.",
   },
   {
@@ -141,7 +141,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/settings",
     selectorDesktop: '[data-tour="ai-membership"]',
     selectorMobile: '[data-tour="ai-membership"]',
-    title: "7. AI Membership",
+    title: "8. AI Membership",
     description: "Setelah payment, kamu mendapatkan akses gratis ke fitur AI dengan penggunaan terbatas. Untuk penggunaan lebih lanjut, kamu dapat berlangganan AI PRO+.",
   },
   {
