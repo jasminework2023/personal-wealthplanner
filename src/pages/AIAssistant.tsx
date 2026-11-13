@@ -85,7 +85,7 @@ export function AIAssistant() {
       <button type="button" onClick={() => setHistoryOpen(true)} aria-label="Riwayat pesan" title="Riwayat pesan" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[#0B6B47] hover:bg-[#E8F5ED]"><History size={19}/></button>
       <button disabled={!draft.trim() || loading || !token || aiAccess !== "active"} aria-label="Kirim pesan" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0B6B47] text-white disabled:opacity-40"><Send size={18}/></button>
     </form>
-    {!token && <p className="mt-2 text-center text-xs text-amber-700">Buka dashboard melalui tautan akunmu untuk menggunakan AI Assistant.</p>
+    {!token && <p className="mt-2 text-center text-xs text-amber-700">Buka dashboard melalui tautan akunmu untuk menggunakan AI Assistant.</p>}
     <style>{`
       @keyframes wealthplannerTyping {
         0%, 60%, 100% { transform: translateY(0); opacity: .35; }
