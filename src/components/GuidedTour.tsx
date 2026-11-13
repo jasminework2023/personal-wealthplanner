@@ -80,22 +80,47 @@ export function GuidedTour() {
 
     const find = () => {
       const element = document.querySelector(selectorFor(step)) as HTMLElement | null;
-      const modalOpen = !!document.querySelector('[role="dialog"]:not([data-tour-dialog="true"])');
-      if (element && !modalOpen) {
+      const elementRect = element?.getBoundingClientRect();
+      const styles = element ? window.getComputedStyle(element) : null;
+      const elementVisible = !!element &&
+        !!elementRect &&
+        elementRect.width > 0 &&
+        elementRect.height > 0 &&
+        styles?.display !== "none" &&
+        styles?.visibility !== "hidden" &&
+        styles?.opacity !== "0";
+
+      // Only block the tour when a real, visible modal is open. Hidden dialogs
+      // mounted elsewhere in the app must not prevent spotlight detection.
+      const modalOpen = Array.from(document.querySelectorAll('[role="dialog"]:not([data-tour-dialog="true"])'))
+        .some((dialog) => {
+          const r = (dialog as HTMLElement).getBoundingClientRect();
+          const s = window.getComputedStyle(dialog);
+          return r.width > 0 && r.height > 0 && s.display !== "none" && s.visibility !== "hidden" && s.opacity !== "0";
+        });
+
+      if (elementVisible && !modalOpen) {
         setTarget(element);
         window.setTimeout(() => {
           element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
           window.setTimeout(() => {
-            setWaiting(false);
-            setRect(element.getBoundingClientRect());
+            const nextRect = element.getBoundingClientRect();
+            if (nextRect.width > 0 && nextRect.height > 0) {
+              setWaiting(false);
+              setRect(nextRect);
+            } else {
+              find();
+            }
           }, 260);
         }, 20);
         return;
       }
-      if (elapsed >= 2000) {
+      if (elapsed >= 5000) {
         setWaiting(false);
-        if (index >= steps.length - 1) finish(true);
-        else setIndex((value) => value + 1);
+        // Do not silently skip a step when its target is temporarily unavailable.
+        // Keep the explanation card visible so the user can still retry the step.
+        setTarget(null);
+        setRect(null);
         return;
       }
       elapsed += 100;
@@ -269,9 +294,9 @@ export function GuidedTour() {
   return (
     <div className="fixed inset-0 z-[9999] pointer-events-none" aria-hidden={false}>
       <style>{`@keyframes wp-tour-fade{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.wp-tour-fade{animation:none!important}}`}</style>
-      <div className="absolute inset-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />
+      <div className="absolute inset-0 z-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />
       {highlight && <div
-        className="absolute rounded-[14px] outline outline-2 outline-[#6EE7A8] shadow-[0_0_0_9999px_rgba(0,0,0,.55)] wp-tour-fade"
+        className="absolute z-10 rounded-[14px] outline outline-2 outline-[#6EE7A8] shadow-[0_0_0_9999px_rgba(0,0,0,.55)] wp-tour-fade"
         style={{ left: highlight.left, top: highlight.top, width: highlight.width, height: highlight.height, animation: "wp-tour-fade 180ms ease-out" }}
       />}
       <div
@@ -280,7 +305,7 @@ export function GuidedTour() {
         aria-modal="true"
         data-tour-dialog="true"
         tabIndex={-1}
-        className="pointer-events-auto absolute rounded-[14px] bg-white p-[14px] shadow-[0_18px_60px_rgba(0,0,0,.18)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white transition-opacity duration-200"
+        className="pointer-events-auto absolute z-20 rounded-[14px] bg-white p-[14px] shadow-[0_18px_60px_rgba(0,0,0,.18)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white transition-opacity duration-200"
         style={{ left: cardLeft, top: cardTop, width: cardWidth }}
       >
         <div className="flex items-start justify-between gap-3">
