@@ -14,6 +14,7 @@ import {
   Wallet,
   X,
   ExternalLink,
+  Sparkles,
 } from "lucide-react";
 import logoMark from "../assets/logo-mark-white.png";
 
@@ -25,7 +26,7 @@ const mainLinks = [
   { to: "/budgeting", label: "Monthly Budget", icon: PieChart },
   { to: "/transaction", label: "Transaction", icon: Receipt },
   { to: "/goals", label: "Goals", icon: CalendarRange },
-  { to: "/ai-assistant", label: "AI Assistant", icon: Settings },
+  { to: "/ai-assistant", label: "AI Assistant", icon: Sparkles },
 ];
 
 const toolLinks = [
