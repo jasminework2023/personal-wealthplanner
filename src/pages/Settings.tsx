@@ -222,10 +222,12 @@ export function Settings() {
 
       <Card data-tour="profile-card" className="max-w-2xl">
         <div className="flex items-center gap-2 mb-4"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FBD3E0] text-[#B83A62]"><UserIcon size={19}/></span><h3 className="text-[15px] font-semibold text-forest-900">{id ? "Profil" : "Profile"}</h3></div>
+        <div data-tour="profile-settings-fields">
         <div className="mb-5"><label className="text-[13px] font-medium text-charcoal/75">{id ? "Bahasa Aplikasi" : "App Language"}</label><p className="text-[12px] text-charcoal/50 mt-0.5 mb-2">{id ? "Pilih bahasa tampilan aplikasi." : "Choose the app display language."}</p><select value={language} onChange={(e) => { const next = e.target.value as AppLanguage; setLanguage(next); setAppLanguage(next); }} className="w-full max-w-xs border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px] bg-white"><option value="id">Bahasa Indonesia</option><option value="en">{id ? "English" : "English"}</option></select></div>
         <label className="text-[13px] font-medium text-charcoal/75">{id ? "Nama Tampilan" : "Display Name"}</label>
         <p className="text-[12px] text-charcoal/50 mt-0.5 mb-2">{id ? "Dipakai untuk sapaan di dashboard. Kalau kosong, nama akun digunakan sebagai fallback." : "Used for dashboard greetings. If blank, your account name will be used."}</p>
         <div className="flex gap-2"><input value={name} onChange={(e) => setName(e.target.value)} placeholder={username || (id ? "Nama kamu" : "Your name")} className="min-w-0 flex-1 border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px] outline-none focus:border-forest-400 focus:ring-2 focus:ring-forest-100"/><button onClick={handleSaveName} className="flex items-center gap-1.5 bg-[#123524] text-white rounded-xl px-5 py-3 text-[13px] font-semibold hover:bg-forest-800">{savedName && <Check size={14}/>} {savedName ? (id ? "Tersimpan" : "Saved") : (id ? "Simpan" : "Save")}</button></div>
+        </div>
       </Card>
 
       <div data-tour="spouse-sharing"><SpouseSharing /></div>
