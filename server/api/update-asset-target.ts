@@ -23,9 +23,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sheet = (meta.data.sheets || []).find((x) => String(x.properties?.title || "").trim().toLowerCase().replace(/\s+/g, "") === "assettracker");
     if (!sheet?.properties?.title) return res.status(404).json({ error: "Tab Asset Tracker tidak ditemukan" });
     const title = String(sheet.properties.title).replace(/'/g, "''");
-    const read = await sheets.spreadsheets.values.get({ spreadsheetId: user.spreadsheet_id, range: `'${title}'!B1:N45` });
+    const read = await sheets.spreadsheets.values.get({ spreadsheetId: user.spreadsheet_id, range: `'${title}'!A1:O500` });
     const rows = read.data.values || []; let targetRow = -1; let targetCol = -1;
-    for (let r = 0; r < rows.length; r++) for (let c = 0; c < (rows[r] || []).length; c++) if (String(rows[r][c] ?? "").trim().toLowerCase() === "target") { targetRow = r + 2; targetCol = c + 2; break; }
+    for (let r = 0; r < rows.length; r++) for (let c = 0; c < (rows[r] || []).length; c++) if (["target", "target aset"].includes(String(rows[r][c] ?? "").trim().toLowerCase())) { targetRow = r + 2; targetCol = c + 2; break; }
     if (targetRow < 0) return res.status(404).json({ error: "Target tidak ditemukan di Asset Tracker" });
     let n = targetCol, col = ""; while (n > 0) { const rem = (n - 1) % 26; col = String.fromCharCode(65 + rem) + col; n = Math.floor((n - 1) / 26); }
     await sheets.spreadsheets.values.update({ spreadsheetId: user.spreadsheet_id, range: `'${title}'!${col}${targetRow}`, valueInputOption: "USER_ENTERED", requestBody: { values: [[Number(value) || 0]] } });
