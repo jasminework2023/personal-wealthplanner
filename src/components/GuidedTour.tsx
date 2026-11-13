@@ -223,13 +223,8 @@ export function GuidedTour() {
     return () => document.removeEventListener("keydown", onKey);
   }, [active]);
 
-  useEffect(() => {
-    if (!active) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previousOverflow; };
-  }, [active]);
-
+  // The tour must not lock the page. Users need to scroll while the spotlight
+  // guides them to controls that may be below the fold.
   useEffect(() => {
     if (active && !waiting) dialogRef.current?.focus();
   }, [active, waiting, index]);
@@ -370,14 +365,38 @@ export function GuidedTour() {
 
   return (
     <div className="fixed inset-0 z-[9999] pointer-events-none" aria-hidden={false}>
-      <style>{`@keyframes wp-tour-fade{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.wp-tour-fade{animation:none!important}}`}</style>
+      <style>{`
+        @keyframes wp-tour-fade{from{opacity:0}to{opacity:1}}
+        @keyframes wp-tour-pulse{
+          0%,100%{transform:scale(1);box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 2px #6EE7A8,0 0 0 6px rgba(110,231,168,.18)}
+          50%{transform:scale(1.015);box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 2px #6EE7A8,0 0 0 10px rgba(110,231,168,.06)}
+        }
+        @keyframes wp-tour-arrow{
+          0%,100%{transform:translateY(0);opacity:.65}
+          50%{transform:translateY(5px);opacity:1}
+        }
+        @media(prefers-reduced-motion:reduce){
+          .wp-tour-fade,.wp-tour-pulse,.wp-tour-arrow{animation:none!important}
+        }
+      `}</style>
       {!highlight && (
         <div className="absolute inset-0 z-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />
       )}
       {highlight && <div
-        className="absolute z-10 rounded-[14px] outline outline-2 outline-[#6EE7A8] shadow-[0_0_0_9999px_rgba(0,0,0,.55)] wp-tour-fade"
-        style={{ left: highlight.left, top: highlight.top, width: highlight.width, height: highlight.height, animation: "wp-tour-fade 180ms ease-out" }}
+        className="absolute z-10 rounded-[14px] outline outline-2 outline-[#6EE7A8] wp-tour-pulse"
+        style={{ left: highlight.left, top: highlight.top, width: highlight.width, height: highlight.height, animation: "wp-tour-pulse 1.6s ease-in-out infinite" }}
       />}
+      {highlight && (
+        <div
+          aria-hidden="true"
+          className="absolute z-[25] flex h-7 w-7 items-center justify-center rounded-full bg-[#0B6B47] text-white shadow-lg wp-tour-arrow"
+          style={{
+            left: Math.max(10, Math.min(highlight.left + highlight.width / 2 - 14, viewportW - 38)),
+            top: Math.max(10, Math.min(highlight.top + highlight.height + 4, viewportH - 38)),
+            animation: "wp-tour-arrow 1s ease-in-out infinite",
+          }}
+        >↓</div>
+      )}
       <div
         ref={dialogRef}
         role="dialog"
