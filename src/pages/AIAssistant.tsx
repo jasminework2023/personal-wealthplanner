@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bot, Plus, Send, History, X, Loader2 } from "lucide-react";
+import { Bot, Plus, Send, History, X } from "lucide-react";
 import { getStoredToken } from "../lib/useFinanceData";
 
 type Message = { id?: string; role: "user" | "assistant"; content: string };
@@ -76,7 +76,7 @@ export function AIAssistant() {
         {aiAccess === "expired" && <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">Akses AI PRO+ kamu tidak aktif. Aktifkan membership di <b>Profile & Settings</b> untuk menggunakan AI.</div>}
         {messages.length === 0 && <div className="mx-auto max-w-md py-10 text-center"><span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47]"><SparkleIcon/></span><h2 className="text-base font-bold text-forest-900">Apa yang ingin kamu pahami?</h2><p className="mt-2 text-sm leading-relaxed text-charcoal/60">Tanyakan tentang cash flow, pengeluaran, aset, anggaran, atau tujuan finansialmu. Aku akan menggunakan data dashboard yang terhubung.</p><div className="mt-5 flex flex-wrap justify-center gap-2">{["Bagaimana kondisi cash flow-ku?","Kategori pengeluaran terbesarku apa?","Apa yang perlu aku perbaiki bulan ini?"].map((q) => <button key={q} onClick={() => setDraft(q)} className="rounded-full border border-forest-100 px-3 py-2 text-xs text-forest-800 hover:bg-forest-50">{q}</button>)}</div></div>}
         {messages.map((m, i) => <div key={m.id || i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}><div className={m.role === "user" ? "max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-[#0B6B47] px-4 py-3 text-sm leading-relaxed text-white" : "max-w-[90%] whitespace-pre-wrap rounded-2xl rounded-bl-md bg-[#F1F8F4] px-4 py-3 text-sm leading-relaxed text-forest-900"}><MarkdownContent content={m.content}/></div></div>)}
-        {loading && <div className="flex items-center gap-2 text-xs text-charcoal/50"><Loader2 size={15} className="animate-spin"/>Sedang menyiapkan jawaban...</div>}
+        {loading && <div className="flex items-center gap-1.5 px-1 py-2 text-xs text-charcoal/50" aria-label="AI sedang mengetik"><span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" /></div>}
         {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-xs text-red-700">{error}</p>}
       </div>
     </section>
@@ -85,7 +85,24 @@ export function AIAssistant() {
       <button type="button" onClick={() => setHistoryOpen(true)} aria-label="Riwayat pesan" title="Riwayat pesan" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[#0B6B47] hover:bg-[#E8F5ED]"><History size={19}/></button>
       <button disabled={!draft.trim() || loading || !token || aiAccess !== "active"} aria-label="Kirim pesan" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0B6B47] text-white disabled:opacity-40"><Send size={18}/></button>
     </form>
-    {!token && <p className="mt-2 text-center text-xs text-amber-700">Buka dashboard melalui tautan akunmu untuk menggunakan AI Assistant.</p>}
+    {!token && <p className="mt-2 text-center text-xs text-amber-700">Buka dashboard melalui tautan akunmu untuk menggunakan AI Assistant.</p>
+    <style>{`
+      @keyframes wealthplannerTyping {
+        0%, 60%, 100% { transform: translateY(0); opacity: .35; }
+        30% { transform: translateY(-3px); opacity: 1; }
+      }
+      .typing-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 9999px;
+        background: currentColor;
+        display: inline-block;
+        animation: wealthplannerTyping 1.2s ease-in-out infinite;
+      }
+      .typing-dot:nth-child(2) { animation-delay: .15s; }
+      .typing-dot:nth-child(3) { animation-delay: .3s; }
+    `}</style>
+}
     {historyOpen && <div className="fixed inset-0 z-[70]">
       <button type="button" aria-label="Tutup riwayat" onClick={() => setHistoryOpen(false)} className="absolute inset-0 bg-black/30"/>
       <aside className="absolute inset-y-0 left-0 flex w-[min(86vw,340px)] flex-col bg-white p-4 shadow-2xl">
