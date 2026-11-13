@@ -6,7 +6,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { google } from "googleapis";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { resolveStockSheet, parseStockSections } from "../lib/stockSheet.js";
+import { parseStockSections } from "../lib/stockSheet.js";
 
 function parseRupiah(value: unknown): number {
   if (value === null || value === undefined || value === "") return 0;
@@ -93,17 +93,10 @@ async function fetchAllRanges(spreadsheetId: string, transactionsOnly = false) {
   });
   const values = (res.data.valueRanges || []).map((r) => r.values || []);
 
-  let stockRows: unknown[][] = [];
-  if (!transactionsOnly) {
-    const resolved = await resolveStockSheet(sheets, spreadsheetId, { createIfMissing: false });
-    stockRows = resolved?.rows || [];
-  }
-
   return {
     transactionRows: values[0] || [],
     budgetRows: transactionsOnly ? [] : (values[1] || []),
     assetRows: transactionsOnly ? [] : (values[2] || []),
-    stockRows: transactionsOnly ? [] : stockRows,
   };
 }
 
@@ -255,7 +248,7 @@ async function getUsdIdrRate(): Promise<number> {
   return 16300;
 }
 
-async function getAssetTracker(rows: unknown[][], stockRows: unknown[][] = [], walletRows: any[] = [], transactions: any[] = []) {
+async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transactions: any[] = []) {
   // Liquid Assets are the user's actual wallet balances. This keeps the
   // Asset Tracker from maintaining a second, potentially stale cash total.
   // Wallets represent cash accounts (including bank accounts/RDN); the
@@ -365,7 +358,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const allYears = String(req.query.allYears || "") === "1";
     const transactionsOnly = String(req.query.transactionsOnly || "") === "1";
 
-    const { transactionRows, budgetRows, assetRows, stockRows } = await fetchAllRanges(user.spreadsheet_id, transactionsOnly);
+    const { transactionRows, budgetRows, assetRows } = await fetchAllRanges(user.spreadsheet_id, transactionsOnly);
 
     const transactions = getTransactions(transactionRows, allYears ? undefined : requestedYear);
     const walletTransactions = getTransactions(transactionRows);
@@ -391,7 +384,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     let assets = null as Awaited<ReturnType<typeof getAssetTracker>> | null;
     try {
-      assets = await getAssetTracker(assetRows, stockRows, walletRows, walletTransactions);
+      assets = await getAssetTracker(assetRows, walletRows, walletTransactions);
     } catch {
       assets = null;
     }

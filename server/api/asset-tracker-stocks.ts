@@ -86,6 +86,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       let result = await readStockPortfolio(sheets, user.spreadsheet_id, {
         createIfMissing: false,
       });
+      if (!result.sheet) return res.status(404).json({ error: "Tab Asset Tracker tidak ditemukan" });
       let holdings = result.holdings;
       let status = "";
 

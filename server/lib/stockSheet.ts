@@ -242,67 +242,18 @@ export async function resolveStockSheet(
     spreadsheetId,
     fields: "sheets.properties(sheetId,title)",
   });
-  const sheetMeta = meta.data.sheets || [];
-
-  const candidates = [
-    sheetMeta.find((x: any) => norm(x.properties?.title) === "stock portfolio"),
-    sheetMeta.find((x: any) => norm(x.properties?.title) === "asset tracker"),
-  ].filter(Boolean);
-
-  for (const sheet of candidates) {
-    const title = String(sheet.properties.title);
-    const values = (
-      await sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range: title + "!A1:O500",
-      })
-    ).data.values || [];
-
-    if (hasSection(values, "Indonesia Stock") || hasSection(values, "US Stock")) {
-      return {
-        title,
-        sheetId: Number(sheet.properties.sheetId),
-        rows: values,
-      };
-    }
-  }
-
-  if (!options.createIfMissing) return null;
-
-  const existingStockSheet = sheetMeta.find(
-    (x: any) => norm(x.properties?.title) === "stock portfolio",
+  const assetTracker = (meta.data.sheets || []).find(
+    (x: any) => norm(x.properties?.title) === "asset tracker",
   );
 
-  let created = existingStockSheet;
-  if (!created) {
-    const response = await sheets.spreadsheets.batchUpdate({
-      spreadsheetId,
-      requestBody: {
-        requests: [{ addSheet: { properties: { title: "Stock Portfolio" } } }],
-      },
-    });
-    created = response.data.replies?.[0]?.addSheet;
+  if (!assetTracker) {
+    if (options.createIfMissing) {
+      throw new Error("Tab Asset Tracker tidak ditemukan");
+    }
+    return null;
   }
 
-  const sheetId = Number(created?.properties?.sheetId);
-  if (!Number.isFinite(sheetId)) throw new Error("Gagal membuat tab Stock Portfolio.");
-
-  const title = String(created.properties.title || "Stock Portfolio");
-  const template = [
-    ["Indonesia Stock", "", "", "", "", "", ""],
-    ["Ticker", "Current Price", "Shares", "Avg Price", "Value", "P/L", "Investment Account"],
-    ["", "", "", "", "", "", ""],
-    ["US Stock", "", "", "", "", "", ""],
-    ["Ticker", "Current Price", "Shares", "Avg Price", "Value", "P/L", "Investment Account"],
-  ];
-
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: title + "!A1:G5",
-    valueInputOption: "USER_ENTERED",
-    requestBody: { values: template },
-  });
-
+  const title = String(assetTracker.properties.title);
   const values = (
     await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -310,7 +261,20 @@ export async function resolveStockSheet(
     })
   ).data.values || [];
 
-  return { title, sheetId, rows: values };
+  if (!hasSection(values, "Indonesia Stock") && !hasSection(values, "US Stock")) {
+    if (!options.createIfMissing) return null;
+    return {
+      title,
+      sheetId: Number(assetTracker.properties.sheetId),
+      rows: values,
+    };
+  }
+
+  return {
+    title,
+    sheetId: Number(assetTracker.properties.sheetId),
+    rows: values,
+  };
 }
 
 export function findStockRow(rs: any[][], ticker: string, market: StockMarket) {
@@ -373,7 +337,7 @@ export async function writeStockPosition(
 
   const found = findStockRow(resolved.rows, params.ticker, params.market);
   if (found.start < 0) {
-    throw new Error("Section " + (params.market === "ID" ? "Indonesia Stock" : "US Stock") + " tidak ditemukan di tab " + resolved.title + ".");
+    throw Object.assign(new Error("Section " + (params.market === "ID" ? "Indonesia Stock" : "US Stock") + " tidak ditemukan di tab Asset Tracker. Tambahkan label section itu di sheet."), { status: 400 });
   }
 
   const value = params.currentPrice * params.shares;
@@ -381,71 +345,15 @@ export async function writeStockPosition(
   const c = found.columns;
   const rowNumber = found.row >= 0 ? found.row + 1 : (() => {
     if (found.subtotalRow >= 0) return found.subtotalRow + 1;
-    let last = found.headerRow + 1;
     for (let i = found.headerRow + 1; i < resolved.rows.length; i++) {
       const row = resolved.rows[i] || [];
-      const labels = row.map((cell: unknown) => norm(cell)).filter(Boolean);
-      if (labels.some((cell) => cell === "total" || cell === "subtotal" || cell.includes("subtotal"))) return i + 1;
+      const label = norm(row[found.columns.ticker]);
+      if (label === "total" || label.includes("subtotal")) return i + 1;
       if (!row.some((cell: unknown) => display(cell))) return i + 1;
-      last = i + 1;
+      if (STOCK_STOP_LABELS.has(label) && label !== norm(found.label)) return i + 1;
     }
-    return Math.max(last, found.headerRow + 2);
+    return resolved.rows.length + 1;
   })();
-
-  const values = [...(resolved.rows[rowNumber - 1] || [])];
-  const width = Math.max(7, resolved.rows[found.headerRow]?.length || 7, c.account + 1);
-  while (values.length < width) values.push("");
-  values[c.ticker] = params.ticker;
-  values[c.currentPrice] = params.currentPrice;
-  values[c.shares] = params.shares;
-  values[c.avgPrice] = params.avgPrice;
-  values[c.value] = value;
-  values[c.pl] = pl;
-  values[c.account] = params.account;
-
-  if (found.row >= 0) {
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: resolved.title + "!A" + rowNumber + ":" + columnLetter(width) + rowNumber,
-      valueInputOption: "USER_ENTERED",
-      requestBody: { values: [values] },
-    });
-    return resolved;
-  }
-
-  const reusableBlank =
-    rowNumber <= resolved.rows.length &&
-    !(resolved.rows[rowNumber - 1] || []).some((cell: unknown) => display(cell));
-
-  if (!reusableBlank) {
-    await sheets.spreadsheets.batchUpdate({
-      spreadsheetId,
-      requestBody: {
-        requests: [{
-          insertDimension: {
-            range: {
-              sheetId: resolved.sheetId,
-              dimension: "ROWS",
-              startIndex: rowNumber - 1,
-              endIndex: rowNumber,
-            },
-            inheritFromBefore: true,
-          },
-        }],
-      },
-    });
-  }
-
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: resolved.title + "!A" + rowNumber + ":" + columnLetter(width) + rowNumber,
-    valueInputOption: "USER_ENTERED",
-    requestBody: { values: [values] },
-  });
-
-  return resolved;
-}
-
 export async function deleteStockPosition(
   sheets: any,
   spreadsheetId: string,
