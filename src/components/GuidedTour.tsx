@@ -67,8 +67,14 @@ export function GuidedTour() {
     if (!active || !steps[index]) return;
     const step = steps[index];
     const desiredRoute = step.route;
-    if (location.pathname !== desiredRoute && !(desiredRoute === "/calculator" && location.pathname.startsWith("/calculator/"))) {
-      navigate(desiredRoute);
+    const routeMatches = location.pathname === desiredRoute || (desiredRoute === "/calculator" && location.pathname.startsWith("/calculator/"));
+
+    // Never move the user to another page just because they pressed "Lanjut".
+    // A cross-page step must be opened explicitly by the user.
+    if (!routeMatches) {
+      setWaiting(false);
+      setTarget(null);
+      setRect(null);
       return;
     }
 
@@ -175,6 +181,12 @@ export function GuidedTour() {
 
   function skip() {
     finish(true);
+  }
+
+  function openStepPage() {
+    const step = steps[index];
+    if (!step || !step.route) return;
+    navigate(step.route);
   }
 
   function next() {
