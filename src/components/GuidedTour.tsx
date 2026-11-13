@@ -461,7 +461,7 @@ export function GuidedTour() {
   let pointerLeft = highlight ? highlight.left + highlight.width / 2 - 14 : 0;
   let pointerTop = highlight ? highlight.top + highlight.height + 4 : 0;
   let pointerGlyph = "↓";
-  if (highlight && actionStep) {
+  if (highlight) {
     const cardIsRight = cardLeft > highlight.left + highlight.width;
     const cardIsLeft = cardLeft + cardWidth < highlight.left;
     if (cardIsRight) {
