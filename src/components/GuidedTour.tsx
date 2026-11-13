@@ -320,7 +320,35 @@ export function GuidedTour() {
       finish(true);
       return;
     }
-    setIndex((value) => value + 1);
+
+    const nextIndex = index + 1;
+    const nextStep = steps[nextIndex];
+    const currentRoute = location.pathname;
+    const nextRouteMatches =
+      nextStep.route === currentRoute ||
+      (nextStep.route === "/calculator" && currentRoute.startsWith("/calculator/"));
+
+    // "Lanjut" is also an action: when the next guidance belongs to another
+    // page, move the user there so the next card can visibly follow the real UI.
+    // This is what makes steps like "Setup Mesin Keuangan" actually show the
+    // setup card instead of leaving the user on the previous screen.
+    if (!nextRouteMatches && nextStep.route) {
+      setIndex(nextIndex);
+      setTarget(null);
+      setRect(null);
+      setWaiting(true);
+      try {
+        sessionStorage.setItem(ACTIVE_TOUR_KEY, JSON.stringify({
+          type: tourType,
+          route: nextStep.route,
+          index: nextIndex,
+        }));
+      } catch {}
+      navigate(nextStep.route);
+      return;
+    }
+
+    setIndex(nextIndex);
   }
 
   function back() {
@@ -490,7 +518,7 @@ export function GuidedTour() {
         aria-modal="true"
         data-tour-dialog="true"
         tabIndex={-1}
-        className="pointer-events-auto absolute z-20 rounded-[14px] bg-white p-[14px] shadow-[0_18px_60px_rgba(0,0,0,.18)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white transition-opacity duration-200"
+        className="pointer-events-auto absolute z-20 rounded-[14px] bg-white p-[14px] shadow-[0_18px_60px_rgba(0,0,0,.18)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white transition-[left,top,opacity,transform] duration-300 ease-out"
         style={{ left: cardLeft, top: cardTop, width: cardWidth }}
       >
         <div className="flex items-start justify-between gap-3">
