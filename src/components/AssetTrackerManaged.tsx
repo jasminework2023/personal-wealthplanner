@@ -12,8 +12,6 @@ type Props = {
   wallets: WalletType[];
   isRealData: boolean;
   assetsVisible: boolean;
-  integratedTotalAssets: number;
-  integratedLiquidTotal: number;
   userId?: string | null;
 };
 
@@ -37,6 +35,14 @@ function assetIcon(name: string) {
   if (/mobil|car|kendaraan/.test(k)) return <Car size={17} />;
   if (/rumah|properti|property|tanah|apartemen/.test(k)) return <Building2 size={17} />;
   return <Package size={17} />;
+}
+
+function liquidSubtitle(name: string) {
+  const k = name.toLowerCase();
+  if (/cash|tunai|dompet/.test(k)) return "Tunai";
+  if (/bank|bca|bni|bri|mandiri|cimb|jago|btn|danamon|permata|bsi/.test(k)) return "Bank";
+  if (/saham|stock|reksa|invest|obligasi|emas|crypto|gotrade|go trade/.test(k)) return "Investasi";
+  return "Lainnya";
 }
 function formatCompactAssetTotal(value: number) {
   const n = Math.abs(Number(value) || 0);
@@ -443,7 +449,7 @@ export function AssetTrackerManaged({
               {liquidAssets.length ? liquidAssets.map((item) => (
                 <div key={item.name} className="flex min-h-[48px] items-center gap-3 border-b border-[rgb(var(--c-border))] last:border-0">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]"><Wallet size={15} /></span>
-                  <div className="min-w-0 flex-1"><p className="truncate text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">{item.name}</p><p className="text-[12px] text-[rgb(var(--c-muted))]">Dompet</p></div>
+                  <div className="min-w-0 flex-1"><p className="truncate text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">{item.name}</p><p className="text-[12px] text-[rgb(var(--c-muted))]">{liquidSubtitle(item.name)}</p></div>
                   <p className="w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{assetsVisible ? formatRupiah(item.value) : "Rp ••••••"}</p>
                 </div>
               )) : <p className="py-3 text-[12px] text-[rgb(var(--c-muted))]">Belum ada rekening.</p>}
