@@ -84,21 +84,21 @@ export function Home() {
             <span className="min-w-0 truncate text-right text-[11px] font-medium tracking-[-0.02em] text-[#075B40]/90">Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium tracking-[-0.02em]", 11) : "Rp ••••••"}</span>
           </div>
           <div className="mt-3">
-            <div className="flex items-center justify-between gap-2 text-[10px] font-medium text-[#075B40]/75">
+            <div className="mb-1.5 flex items-center justify-between gap-3 text-[10px] font-medium text-[#075B40]/75">
               <span>{id ? "Aset saat ini" : "Current assets"}</span>
-              <span>{assetsVisible ? renderMoney(assets.target, true, "text-[10px] font-medium", 10) : "Rp ••••••"}</span>
+              <span className="shrink-0">{id ? "Target" : "Goal"}</span>
             </div>
-            <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-[#006B48]/20" aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}>
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#006B48]/20" aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}>
               <div
                 className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
                 style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
               />
             </div>
-            <div className="mt-1 flex items-center justify-between text-[9px] text-[#075B40]/65">
-              <span>{assetsVisible ? renderMoney(integratedTotalAssets, true, "text-[9px]", 9) : "Rp ••••••"}</span>
-              <span>{assets.target > 0 ? `${Math.round((integratedTotalAssets / assets.target) * 100)}%` : "0%"}</span>
+            <div className="mt-1 flex items-center justify-between gap-3 text-[10px] font-medium text-[#075B40]/70 tabular-nums">
+              <span>{assetsVisible ? renderMoney(integratedTotalAssets, true, "text-[10px] font-medium", 10) : "Rp ••••••"}</span>
+              <span>{assetsVisible ? renderMoney(assets.target, true, "text-[10px] font-medium", 10) : "Rp ••••••"}</span>
             </div>
-          </div>
+          </div>          </div>
         </div>
 
         <div role="button" tabIndex={0}
@@ -162,22 +162,21 @@ export function Home() {
               <span className="min-w-0 truncate text-right text-[11px] font-medium text-[#03140C]/75">Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium", 11) : "Rp ••••••"}</span>
             </div>
             <div className="mt-2">
-              <div className="flex items-center justify-between gap-2 text-[9px] font-medium text-[#03140C]/65">
+              <div className="mb-1 flex items-center justify-between gap-3 text-[9px] font-medium text-[#03140C]/65">
                 <span>{id ? "Aset saat ini" : "Current assets"}</span>
-                <span>{assetsVisible ? renderMoney(assets.target, true, "text-[9px] font-medium", 9) : "Rp ••••••"}</span>
+                <span className="shrink-0">{id ? "Target" : "Goal"}</span>
               </div>
-              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-[rgba(3,20,12,.14)]" aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-[rgba(3,20,12,.14)]" aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}>
                 <div
                   className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
                   style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
                 />
               </div>
-              <div className="mt-1 flex items-center justify-between text-[8px] text-[#03140C]/50">
-                <span>{assetsVisible ? renderMoney(integratedTotalAssets, true, "text-[8px]", 8) : "Rp ••••••"}</span>
-                <span>{assets.target > 0 ? `${Math.round((integratedTotalAssets / assets.target) * 100)}%` : "0%"}</span>
+              <div className="mt-1 flex items-center justify-between gap-3 text-[9px] font-medium text-[#03140C]/60 tabular-nums">
+                <span>{assetsVisible ? renderMoney(integratedTotalAssets, true, "text-[9px] font-medium", 9) : "Rp ••••••"}</span>
+                <span>{assetsVisible ? renderMoney(assets.target, true, "text-[9px] font-medium", 9) : "Rp ••••••"}</span>
               </div>
-            </div>            </div>
-          </div>
+            </div>          </div>
         ) : (
           <div role="button" tabIndex={0}
             onClick={() => navigate("/budgeting")}
