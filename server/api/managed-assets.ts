@@ -154,7 +154,14 @@ export default async function handler(req:VercelRequest,res:VercelResponse) {
       const refreshed=await rows(sheets,user.spreadsheet_id), row=findId(refreshed,s,id);
       const values=[[id,name,initial,date,rate,note]];
       if(row<0) {
-        await sheets.spreadsheets.values.append({spreadsheetId:user.spreadsheet_id,range:"'Asset Tracker'!A:F",valueInputOption:"USER_ENTERED",insertDataOption:"INSERT_ROWS",requestBody:{values}});
+        const fresh = await rows(sheets, user.spreadsheet_id);
+        const sectionRow = section(fresh, "Real Assets");
+        let targetRow = sectionRow + 2;
+        while (display(fresh[targetRow]?.[0])) targetRow++;
+        await sheets.spreadsheets.values.update({
+          spreadsheetId:user.spreadsheet_id, range:`'Asset Tracker'!A${targetRow + 1}:F${targetRow + 1}`,
+          valueInputOption:"USER_ENTERED", requestBody:{values}
+        });
       } else await sheets.spreadsheets.values.update({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${row}:F${row}`,valueInputOption:"USER_ENTERED",requestBody:{values}});
       return res.status(200).json({success:true,asset:{id,name,initialValue:initial,acquisitionDate:date,annualChangePercent:rate,note,currentValue:realValue(initial,rate,date)}});
     }
@@ -181,8 +188,16 @@ export default async function handler(req:VercelRequest,res:VercelResponse) {
     const s=await ensureSection(sheets,user.spreadsheet_id,data,"Managed Investment Assets",["ID","Nama","Kategori","Jumlah","Unit","Harga Beli","Harga Terkini","Rekening Sumber","Tanggal Beli","Catatan","Transaction ID","Mata Uang","Kurs","Cost Basis IDR"]);
     const refreshed=await rows(sheets,user.spreadsheet_id), row=findId(refreshed,s,id);
     const values=[[id,name,category,quantity,unit,buyPrice,currentPrice,sourceAccount,purchaseDate,note,txid,currency,fxRate,costBasis]];
-    if(row<0) await sheets.spreadsheets.values.append({spreadsheetId:user.spreadsheet_id,range:"'Asset Tracker'!A:N",valueInputOption:"USER_ENTERED",insertDataOption:"INSERT_ROWS",requestBody:{values}});
-    else await sheets.spreadsheets.values.update({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${row}:N${row}`,valueInputOption:"USER_ENTERED",requestBody:{values}});
+    if(row<0) {
+      const fresh = await rows(sheets, user.spreadsheet_id);
+      const sectionRow = section(fresh, "Managed Investment Assets");
+      let targetRow = sectionRow + 2;
+      while (display(fresh[targetRow]?.[0])) targetRow++;
+      await sheets.spreadsheets.values.update({
+        spreadsheetId:user.spreadsheet_id, range:`'Asset Tracker'!A${targetRow + 1}:N${targetRow + 1}`,
+        valueInputOption:"USER_ENTERED", requestBody:{values}
+      });
+    } else await sheets.spreadsheets.values.update({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${row}:N${row}`,valueInputOption:"USER_ENTERED",requestBody:{values}});
     return res.status(200).json({success:true,asset:{id,name,category,quantity,unit,buyPrice,currentPrice,sourceAccount,purchaseDate,note,transactionId:txid,currency,fxRate,costBasis}});
   } catch(e) {
     const x=e as Error & {status?:number}; console.error("managed-assets:",x.message); return res.status(x.status||500).json({error:x.message||"Gagal memproses aset"});
