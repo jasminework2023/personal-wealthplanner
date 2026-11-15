@@ -357,9 +357,9 @@ function StockTracker({
 
       <div className="px-4 pb-3 sm:px-5">
         <div className="flex items-center justify-between gap-3 pb-3">
-          <div className="flex items-center gap-1 rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-1">
-            <button type="button" aria-pressed={market === "ID"} onClick={() => setMarket("ID")} className={`min-h-11 min-w-[56px] rounded-full px-3 text-[12px] font-semibold ${market === "ID" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>ID</button>
-            <button type="button" aria-pressed={market === "US"} onClick={() => setMarket("US")} className={`min-h-11 min-w-[56px] rounded-full px-3 text-[12px] font-semibold ${market === "US" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>US</button>
+          <div className="inline-flex min-h-11 items-center rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-1">
+            <button type="button" aria-pressed={market === "ID"} onClick={() => setMarket("ID")} className={`flex min-h-9 min-w-[64px] items-center justify-center rounded-full px-4 text-[12px] font-semibold leading-none ${market === "ID" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>ID</button>
+            <button type="button" aria-pressed={market === "US"} onClick={() => setMarket("US")} className={`flex min-h-9 min-w-[64px] items-center justify-center rounded-full px-4 text-[12px] font-semibold leading-none ${market === "US" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>US</button>
           </div>
           {isRealData && (
             <button type="button" onClick={() => void refreshPrices()} disabled={refreshing} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-[rgb(var(--c-cream))] px-3 text-[12px] font-semibold text-[rgb(var(--c-up))] disabled:opacity-50">
