@@ -516,13 +516,10 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   const stockUSTotalUSD = assets.stocksUS.reduce((sum, item) => sum + item.value, 0);
   const stockUSTotalIDR = stockUSTotalUSD * usdIdrRate;
   const integratedInvestmentTotal = assets.investmentAssets.reduce((sum, item) => sum + item.value, 0) + stockIDTotal + stockUSTotalIDR;
-  // Single display source for Asset Tracker: liquid + investments + stocks + real assets.
-  const integratedTotalAssets =
-    integratedLiquidTotal +
-    assets.investmentAssets.reduce((sum, item) => sum + (Number(item.value) || 0), 0) +
-    stockIDTotal +
-    stockUSTotalIDR +
-    (Number(assets.realAssetsTotal) || 0);
+  // The dashboard API is the single source of truth for total assets.
+  // Do not reconstruct the total in the UI: the API applies the same wallet,
+  // investment, stock and FX rules used by Asset Tracker.
+  const integratedTotalAssets = Number(assets.totalAssets) || 0;
   const integratedAssetProgress = assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0;
 
   const assetChartData = [
