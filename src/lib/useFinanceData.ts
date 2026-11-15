@@ -88,6 +88,16 @@ export interface AssetTarget {
   targetDate: string;
   currentValueSource: string;
 }
+export interface ManagedInvestmentAsset {
+  id: string; name: string; category: string; quantity: number; unit: string;
+  buyPrice: number; currentPrice: number; sourceAccount: string; purchaseDate: string;
+  note: string; transactionId: string; currency: "IDR" | "USD"; fxRate: number;
+  costBasis: number; value: number;
+}
+export interface RealAsset {
+  id: string; name: string; initialValue: number; acquisitionDate: string;
+  annualChangePercent: number; note: string; currentValue: number; changeValue: number;
+}
 
 export interface AssetData {
   totalAssets: number;
@@ -96,6 +106,9 @@ export interface AssetData {
   targets: AssetTarget[];
   liquidAssets: { name: string; value: number }[];
   investmentAssets: { name: string; value: number }[];
+  investmentDetails: ManagedInvestmentAsset[];
+  realAssets: RealAsset[];
+  realAssetsTotal: number;
   excludedInvestmentNames: string[];
   stocksID: StockItem[];
   stocksUS: StockItem[];
@@ -135,6 +148,9 @@ function mockAssetData(): AssetData {
     }] : [],
     liquidAssets: liquid,
     investmentAssets: investment,
+    investmentDetails: [],
+    realAssets: [],
+    realAssetsTotal: 0,
     excludedInvestmentNames: [],
     stocksID: mockStocksID.map((s) => ({
       ticker: s.ticker,
@@ -164,6 +180,9 @@ function normalizeAssetData(value: any): AssetData {
     targets: Array.isArray(value?.targets) ? value.targets : [],
     liquidAssets: Array.isArray(value?.liquidAssets) ? value.liquidAssets : fallback.liquidAssets,
     investmentAssets: Array.isArray(value?.investmentAssets) ? value.investmentAssets : fallback.investmentAssets,
+    investmentDetails: Array.isArray(value?.investmentDetails) ? value.investmentDetails : [],
+    realAssets: Array.isArray(value?.realAssets) ? value.realAssets : [],
+    realAssetsTotal: Number(value?.realAssetsTotal) || 0,
     excludedInvestmentNames: Array.isArray(value?.excludedInvestmentNames) ? value.excludedInvestmentNames : [],
     stocksID: Array.isArray(value?.stocksID) ? value.stocksID : [],
     stocksUS: Array.isArray(value?.stocksUS) ? value.stocksUS : [],
