@@ -467,6 +467,29 @@ export function AddTransactionModal({
     setAiError("");
   }
 
+  async function persistDebtTextPayment(debtName: string, amount: number, sourceAccount: string) {
+    const token = getStoredToken();
+    if (!token) { setAiError("Sesi akun tidak ditemukan."); return; }
+    if (!sourceAccount) { setAiError("Rekening sumber belum disebutkan. Coba: bayar cicilan motor 1,2 juta dari BCA."); return; }
+    setSaving(true);
+    try {
+      const response = await fetch("/api/debt-tracker", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, action: "textPayment", debtName, amount, wallet: sourceAccount }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Pembayaran utang belum berhasil disimpan.");
+      window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));
+      window.dispatchEvent(new CustomEvent("wealthplanner:debt-updated"));
+      handleClose();
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : "Gagal menyimpan pembayaran utang.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function handleAiParse() {
     if (!aiText.trim()) {
       setAiError("Ketik dulu transaksinya, misalnya: Tadi beli makan 35 ribu");
@@ -474,6 +497,11 @@ export function AddTransactionModal({
     }
     const stockIntent = /\\b(beli|buy|membeli|beliin)\\b/i.test(aiText) && /\\b(saham|stock|idx|bei)\\b/i.test(aiText);
     const parsed = parseTransactionText(aiText);
+    if (parsed?.debtPayment) {
+      const debt = parsed.debtPayment;
+      await persistDebtTextPayment(debt.debtName, parsed.amount, debt.sourceAccount);
+      return;
+    }
     if (parsed?.realPurchase && !stockIntent) {
       const real = parsed.realPurchase;
       setMode("manual");
