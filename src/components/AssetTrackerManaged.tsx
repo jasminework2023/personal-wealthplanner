@@ -296,22 +296,51 @@ export function AssetTrackerManaged({
     <div className="space-y-3">
       <section className="rounded-[24px] bg-[rgb(var(--c-surface))] p-4 sm:p-5">
         <p className="text-[14px] font-semibold text-[rgb(var(--c-muted))]">Total Aset</p>
-        <p className="mt-1 text-[clamp(30px,8vw,44px)] font-extrabold leading-none tracking-[-0.03em] tabular-nums">{assetsVisible ? formatRupiah(integratedTotalAssets) : "Rp ••••••••"}</p>
-        <div className="mt-2 flex items-center gap-2 text-[11px]">
-          {assetChange ? (
-            <>
-              <span className={`font-semibold tabular-nums ${assetChange.amount >= 0 ? "text-[rgb(var(--c-up))]" : "text-[rgb(var(--c-down))]"}`}>
-                {assetChange.amount >= 0 ? "↑ " : "↓ "}{assetsVisible ? formatRupiah(Math.abs(assetChange.amount)) : "Rp ••••••"}
-              </span>
-              <span className="text-[rgb(var(--c-muted))]">
-                ({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}%)
-              </span>
-              <span className="text-[rgb(var(--c-muted))]">vs bulan lalu</span>
-            </>
-          ) : (
-            <span className="text-[rgb(var(--c-muted))]">Belum ada data perubahan bulan lalu</span>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="mt-1 text-[clamp(30px,8vw,44px)] font-extrabold leading-none tracking-[-0.03em] tabular-nums">{assetsVisible ? formatRupiah(integratedTotalAssets) : "Rp ••••••••"}</p>
+            <div className="mt-2 flex items-center gap-2 text-[11px]">
+              {assetChange ? (
+                <>
+                  <span className={`font-semibold tabular-nums ${assetChange.amount >= 0 ? "text-[rgb(var(--c-up))]" : "text-[rgb(var(--c-down))]"}`}>
+                    {assetChange.amount >= 0 ? "↑ " : "↓ "}{assetsVisible ? formatRupiah(Math.abs(assetChange.amount)) : "Rp ••••••"}
+                  </span>
+                  <span className="text-[rgb(var(--c-muted))]">({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}% )</span>
+                  <span className="text-[rgb(var(--c-muted))]">vs bulan lalu</span>
+                </>
+              ) : <span className="text-[rgb(var(--c-muted))]">Belum ada data perubahan bulan lalu</span>}
+            </div>
+          </div>
+          {isRealData && (
+            <button type="button" aria-label="Edit target aset" title="Edit target aset"
+              onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }}
+              className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[rgb(var(--c-muted))] hover:bg-[rgb(var(--c-cream))] hover:text-[rgb(var(--c-up))]">
+              <Pencil size={16} />
+            </button>
           )}
         </div>
+        {editingAssetTarget && (
+          <div className="mt-3 rounded-[14px] border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-3">
+            <label className="sr-only" htmlFor="asset-target-input">Nominal target aset</label>
+            <input id="asset-target-input" inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-[14px] font-semibold text-[rgb(var(--c-charcoal))] outline-none" placeholder="Masukkan target aset" autoFocus />
+            <p className="mt-1 text-[10px] text-[rgb(var(--c-muted))]">Nominal wajib diisi dan tidak boleh negatif.</p>
+            <div className="mt-2 flex justify-end gap-2">
+              <button type="button" disabled={savingAssetTarget} onClick={() => { setEditingAssetTarget(false); setAssetTargetInput(String(Math.round(assets.target || 0))); }} className="min-h-11 rounded-full border border-[rgb(var(--c-border))] px-3 text-[11px] font-semibold">Batal</button>
+              <button type="button" disabled={savingAssetTarget} onClick={async () => {
+                const raw = assetTargetInput.trim(); const value = Number(raw);
+                if (!raw || !Number.isFinite(value) || value < 0) { alert("Nominal target wajib diisi dan tidak boleh negatif."); return; }
+                const token = getStoredToken(); if (!token) { alert("Sesi dashboard tidak ditemukan."); return; }
+                setSavingAssetTarget(true);
+                try {
+                  const res = await fetch(API_BASE + "/update-asset-target", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value }) });
+                  const data = await res.json().catch(() => ({})); if (!res.ok) throw new Error(data.error || "Gagal menyimpan target");
+                  setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
+                } catch (e) { alert(e instanceof Error ? e.message : "Gagal menyimpan target"); }
+                finally { setSavingAssetTarget(false); }
+              }} className="min-h-11 rounded-full bg-[rgb(var(--c-forest-700))] px-4 text-[11px] font-semibold text-[rgb(var(--c-surface))] disabled:opacity-50">{savingAssetTarget ? "Menyimpan…" : "Simpan"}</button>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="rounded-[24px] bg-[rgb(var(--c-surface))]">
