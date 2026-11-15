@@ -1,4 +1,4 @@
-export type TransactionType = "Income" | "Expense" | "Saving" | "Transfer";
+export type TransactionType = "Income" | "Expense" | "Saving" | "Transfer" | "DebtReceived" | "DebtPayment" | "DebtCardPayment";
 
 export interface Transaction {
   date: string; // dd/mm/yyyy
