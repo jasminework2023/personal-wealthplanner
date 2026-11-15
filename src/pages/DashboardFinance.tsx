@@ -329,16 +329,15 @@ function StockTracker({
   return (
     <AssetListSection
       title={isId ? "Portofolio Saham" : "Stock Portfolio"}
-      infoText="Memengaruhi Total Aset"
+      infoText="Pembelian saham dicatat lewat Transaction Tracker agar saldo rekening ikut berkurang."
       totalValue={assetsVisible ? formatRupiah(total) : "Rp " + hiddenStockMoney}
       totalChangePercent={plPct}
       onAdd={undefined}
       open={!collapsed}
       onToggle={() => setCollapsed((value) => !value)}
     >
-      <div className="mx-4 mt-4 flex items-center justify-between gap-3 px-0 text-[rgb(var(--c-up))] sm:mx-5">
-        <p className="min-w-0 truncate text-[12px]">Pembelian saham mengurangi saldo rekening melalui Transaction Tracker.</p>
-        <a href="/dashboard/transactions" className="shrink-0 text-[12px] font-semibold underline underline-offset-2">Buka Transaction Tracker →</a>
+      <div className="px-4 pt-4 sm:px-5">
+        <a href="/dashboard/transactions" className="text-[12px] font-semibold text-[rgb(var(--c-up))] underline underline-offset-2">Buka Transaction Tracker →</a>
       </div>
 
       <div className="px-4 pt-4 sm:px-5">
