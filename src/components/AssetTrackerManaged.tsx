@@ -379,10 +379,10 @@ export function AssetTrackerManaged({
         <div className="w-full max-w-lg rounded-t-[22px] bg-[rgb(var(--c-surface))] p-4 sm:rounded-[18px]">
           <div className="flex items-center justify-between"><p className="text-[15px] font-semibold">{realModal.id ? "Edit Aset Riil" : "Tambah Aset Riil"}</p><button type="button" onClick={() => setRealModal(null)} className="min-h-11 min-w-11 rounded-full">×</button></div>
           <div className="mt-3 space-y-3">
-            {!realModal.id && <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setRealFundingMode("owned")} className={`min-h-11 rounded-xl border px-3 text-[11px] font-semibold ${realFundingMode === "owned" ? "border-[rgb(var(--c-up))] bg-[rgb(var(--c-forest-50))] text-[rgb(var(--c-up))]" : "border-[rgb(var(--c-border))]"}`}>Aset yang sudah dimiliki</button>
               <button type="button" onClick={() => setRealFundingMode("purchase")} className={`min-h-11 rounded-xl border px-3 text-[11px] font-semibold ${realFundingMode === "purchase" ? "border-[rgb(var(--c-up))] bg-[rgb(var(--c-forest-50))] text-[rgb(var(--c-up))]" : "border-[rgb(var(--c-border))]"}`}>Beli dari rekening</button>
-            </div>}
+            </div>
             <label className="block text-[11px] text-[rgb(var(--c-muted))]">Nama aset<input value={realForm.name} onChange={e => setRealForm({ ...realForm, name: e.target.value })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
             <label className="block text-[11px] text-[rgb(var(--c-muted))]">Harga perolehan<input inputMode="numeric" value={realForm.initialValue} onChange={e => setRealForm({ ...realForm, initialValue: e.target.value.replace(/\D/g, "") })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
             {realFundingMode === "purchase" && <label className="block text-[11px] text-[rgb(var(--c-muted))]">Rekening sumber dana<select value={realFormSourceAccount} onChange={e => setRealFormSourceAccount(e.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]"><option value="">Pilih rekening</option>{wallets.map(w => <option key={w.id} value={w.name}>{w.name}</option>)}</select></label>}
