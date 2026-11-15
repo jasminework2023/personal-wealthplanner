@@ -279,10 +279,10 @@ function parseRealAssets(rows: unknown[][]) {
     const row = rows[i] || [];
     if (!String(row[0] || "").trim()) continue;
     const lower = String(row[0] || "").trim().toLowerCase();
-    if (lower === "target assets") break;
+    if (["target assets","managed investment assets"].includes(lower)) break;
     const initialValue = parseRupiah(row[2]);
-    const annualChangePercent = parseRupiah(row[4]);
     const acquisitionDate = normalizeSheetDate(row[3], "");
+    const annualChangePercent = parseRupiah(row[4]);
     const elapsedYears = yearsHeld(acquisitionDate);
     const currentValue = initialValue * Math.pow(1 + annualChangePercent / 100, elapsedYears);
     items.push({
@@ -294,6 +294,9 @@ function parseRealAssets(rows: unknown[][]) {
       note: String(row[5] || "").trim(),
       currentValue,
       changeValue: currentValue - initialValue,
+      sourceAccount: String(row[6] || "").trim(),
+      transactionId: String(row[7] || "").trim(),
+      fundingMode: String(row[8] || "").trim().toLowerCase() === "purchase" ? "purchase" : "owned",
     });
   }
   return items.filter((x) => x.name && x.initialValue >= 0);
