@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import type { Transaction } from "../data/types";
 import { incomeCategories, expenseCategories, savingCategories } from "../data/budgets";
 import { assetTarget } from "../data/assets";
+import { apiUrl } from "./apiBase";
 
 const TOKEN_KEY = "wealthplanner_token";
 const SESSION_TOKEN_KEY = "wealthplanner_session_token";
-const API_BASE = "/api";
 
 function getCookieToken(): string | null {
   try {
@@ -268,8 +268,8 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
       }
 
       setState((s) => ({ ...s, loading: true, error: null, month: requestedMonth }));
-      const dashboardUrl = `${API_BASE}/dashboard?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}${transactionsOnly ? "&transactionsOnly=1" : ""}`;
-      const setupUrl = `${API_BASE}/setup?token=${encodeURIComponent(token)}`;
+      const dashboardUrl = `${apiUrl("/dashboard")}?token=${encodeURIComponent(token)}&month=${encodeURIComponent(requestedMonth)}&year=${requestedYear}${includeAllMonths ? "&allYears=1" : ""}${transactionsOnly ? "&transactionsOnly=1" : ""}`;
+      const setupUrl = `${apiUrl("/setup")}?token=${encodeURIComponent(token)}`;
       // A successful write must refresh from Sheets. The shared fetch layer
       // coalesces this forced refresh across all mounted listeners.
       const ttl = force ? 0 : 20000;
