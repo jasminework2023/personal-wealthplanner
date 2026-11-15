@@ -105,12 +105,12 @@ export function Checkup() {
       add("credit-card-detail", "Disarankan", "Detail kartu kredit belum lengkap", "Kartu kredit terdeteksi, tetapi limit, tanggal tagihan, dan jatuh tempo belum tersedia di data aplikasi.", "/wallets");
     }
 
-    const debts = wallets.filter((w) => /utang|pinjaman|paylater|cicilan|loan|debt/i.test(w.name));
-    if (debts.length) {
+    const debtWallets = wallets.filter((w) => /utang|pinjaman|paylater|cicilan|loan|debt/i.test(w.name));
+    if (debtWallets.length) {
       add("debt-detail", "Disarankan", "Detail utang/cicilan belum lengkap", "Utang atau cicilan terdeteksi, tetapi tenor, bunga/margin, dan jatuh tempo belum tersedia.", "/wallets");
     }
 
-    const debtMissing = debts.filter((d) => d.active && (!d.dueDate || !Number.isFinite(Number(d.annualInterestRate)) || !Number.isFinite(Number(d.minimumPayment)));
+    const debtMissing = debts.filter((d) => d.active && (!d.dueDate || !Number.isFinite(Number(d.annualInterestRate)) || !Number.isFinite(Number(d.minimumPayment))));
     if (debtMissing.length) add("debt-incomplete", "Penting", "Data utang belum lengkap", debtMissing.map((d) => d.name).join(", ") + " belum memiliki jatuh tempo, bunga, atau cicilan minimum yang lengkap.", "/finance");
     const overdue = debts.filter((d) => d.active && d.dueDate && new Date(d.dueDate + "T00:00:00").getTime() < new Date().setHours(0,0,0,0));
     if (overdue.length) add("debt-overdue", "Penting", "Ada jatuh tempo utang yang terlewat", overdue.map((d) => d.name).join(", ") + " memiliki tanggal jatuh tempo yang sudah lewat.", "/finance");
