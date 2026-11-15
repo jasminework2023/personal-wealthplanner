@@ -228,7 +228,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const id = String(req.body?.targetId || "").trim();
       if (!id) return res.status(400).json({ error: "ID target tidak ditemukan." });
       const data = validateTarget(req.body || {});
-      const section = findTargetSection(rows);
+      let section = findTargetSection(rows);
+      if (!section && id === "legacy-target") {
+        const legacy = findLegacyTarget(rows);
+        if (!legacy) return res.status(404).json({ error: "Target tidak ditemukan." });
+        await ensureTargetSection(sheets, spreadsheetId, title, rows);
+        const refreshed = await readRows(sheets, spreadsheetId, title);
+        section = findTargetSection(refreshed);
+        if (!section) return res.status(500).json({ error: "Target Assets gagal dibuat." });
+        const rowNumber = section.sectionRow + 2;
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: `'${title}'!A${rowNumber}:E${rowNumber}`,
+          valueInputOption: "USER_ENTERED",
+          requestBody: { values: [[globalThis.crypto?.randomUUID?.() || `target-${Date.now()}`, data.name, data.targetAmount, data.targetDate, data.currentValueSource]] },
+        });
+        await sheets.spreadsheets.values.clear({ spreadsheetId, range: `'${title}'!${colLetter(legacy.col + 1)}${legacy.row + 1}` });
+        return res.status(200).json({ target: { id: "migrated-target", ...data } });
+      }
+
       if (!section) return res.status(404).json({ error: "Target Assets belum tersedia." });
 
       let rowNumber = -1;
@@ -253,6 +271,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const id = String(req.body?.targetId || "").trim();
       if (!id) return res.status(400).json({ error: "ID target tidak ditemukan." });
       const section = findTargetSection(rows);
+      if (!section && id === "legacy-target") {
+        const legacy = findLegacyTarget(rows);
+        if (!legacy) return res.status(404).json({ error: "Target tidak ditemukan." });
+        await sheets.spreadsheets.values.clear({
+          spreadsheetId,
+          range: `'${title}'!${colLetter(legacy.col + 1)}${legacy.row + 1}`,
+        });
+        return res.status(200).json({ success: true });
+      }
       if (!section) return res.status(404).json({ error: "Target Assets belum tersedia." });
 
       let rowNumber = -1;
