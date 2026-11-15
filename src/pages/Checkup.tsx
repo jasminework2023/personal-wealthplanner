@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, ChevronRight, CircleAlert, Info, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "../components/Card";
@@ -22,9 +22,12 @@ export function Checkup() {
   const id = getAppLanguage() === "id";
   const { loading, error, isRealData, transactions, assets } = useFinanceData(undefined, true);
   const { wallets, loading: walletsLoading } = useWallets();
+  const [debts, setDebts] = useState<any[]>([]);
+  const [debtsLoading, setDebtsLoading] = useState(true);
+  useEffect(() => { let cancelled=false; (async()=>{ try { const token=localStorage.getItem("wealthplanner_token")||sessionStorage.getItem("wealthplanner_session_token")||""; const r=await fetch("/api/debt-tracker?token="+encodeURIComponent(token)); const d=await r.json().catch(()=>({})); if(!cancelled&&r.ok)setDebts(Array.isArray(d.debts)?d.debts:[]); } finally { if(!cancelled)setDebtsLoading(false); } })(); return()=>{cancelled=true;}; }, []);
 
   const findings = useMemo<Finding[]>(() => {
-    if (loading || walletsLoading || !isRealData) return [];
+    if (loading || walletsLoading || debtsLoading || !isRealData) return [];
 
     const result: Finding[] = [];
     const add = (id: string, severity: Severity, title: string, description: string, route: string) =>
@@ -107,6 +110,13 @@ export function Checkup() {
       add("debt-detail", "Disarankan", "Detail utang/cicilan belum lengkap", "Utang atau cicilan terdeteksi, tetapi tenor, bunga/margin, dan jatuh tempo belum tersedia.", "/wallets");
     }
 
+    const debtMissing = debts.filter((d) => d.active && (!d.dueDate || !Number.isFinite(Number(d.annualInterestRate)) || !Number.isFinite(Number(d.minimumPayment)));
+    if (debtMissing.length) add("debt-incomplete", "Penting", "Data utang belum lengkap", debtMissing.map((d) => d.name).join(", ") + " belum memiliki jatuh tempo, bunga, atau cicilan minimum yang lengkap.", "/finance");
+    const overdue = debts.filter((d) => d.active && d.dueDate && new Date(d.dueDate + "T00:00:00").getTime() < new Date().setHours(0,0,0,0));
+    if (overdue.length) add("debt-overdue", "Penting", "Ada jatuh tempo utang yang terlewat", overdue.map((d) => d.name).join(", ") + " memiliki tanggal jatuh tempo yang sudah lewat.", "/finance");
+    const cardIncomplete = debts.filter((d) => d.active && d.type === "credit_card" && (!(Number(d.creditLimit) > 0) || !d.statementDate));
+    if (cardIncomplete.length) add("debt-card-incomplete", "Penting", "Detail kartu kredit belum lengkap", cardIncomplete.map((d) => d.name).join(", ") + " belum memiliki limit atau tanggal cetak tagihan.", "/finance");
+
     const insurance = transactions.filter((t) => /asuransi|insurance|langganan|subscription/i.test(`${t.category} ${t.description}`));
     if (insurance.length) {
       add("schedule-detail", "Disarankan", "Jadwal pembayaran belum terstruktur", "Ada transaksi asuransi/langganan, tetapi jadwal pembayaran belum tersimpan sebagai data terstruktur.", "/transaction");
@@ -137,7 +147,7 @@ export function Checkup() {
     }
 
     return result.sort((a, b) => SEVERITY_WEIGHT[b.severity] - SEVERITY_WEIGHT[a.severity]);
-  }, [loading, walletsLoading, isRealData, wallets, transactions, assets]);
+  }, [loading, walletsLoading, debtsLoading, isRealData, wallets, transactions, assets, debts]);
 
   const score = useMemo(() => {
     if (!isRealData) return 0;
@@ -147,7 +157,7 @@ export function Checkup() {
   const important = findings.filter((f) => f.severity === "Penting").length;
   const recommended = findings.filter((f) => f.severity === "Disarankan").length;
 
-  if (loading || walletsLoading) {
+  if (loading || walletsLoading || debtsLoading) {
     return <div className="flex min-h-[45vh] items-center justify-center"><div className="h-24 w-full max-w-xl animate-pulse rounded-3xl bg-charcoal/[0.06]" /></div>;
   }
 
