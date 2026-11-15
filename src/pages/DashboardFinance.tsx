@@ -336,7 +336,7 @@ function StockTracker({
       open={!collapsed}
       onToggle={() => setCollapsed((value) => !value)}
     >
-      <div className="px-4 pt-1 sm:px-5">
+      <div className="px-4 pt-4 sm:px-5">
         <div className="grid grid-cols-2 gap-2.5">
           <div className="min-w-0 rounded-[14px] bg-[rgb(var(--c-cream))] px-3 py-2.5">
             <p className="text-[10px] font-medium text-[rgb(var(--c-muted))]">Total modal</p>
@@ -351,11 +351,11 @@ function StockTracker({
         </div>
       </div>
 
-      <div className="px-4 pb-2 sm:px-5">
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-2">
-          <div className="flex rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-0.5">
-            <button type="button" onClick={() => setMarket("ID")} className={`min-h-8 rounded-full px-3 text-[11px] font-semibold ${market === "ID" ? "bg-[rgb(var(--c-forest-700))] text-white" : "text-[rgb(var(--c-muted))]"}`}>🇮🇩 ID</button>
-            <button type="button" onClick={() => setMarket("US")} className={`min-h-8 rounded-full px-3 text-[11px] font-semibold ${market === "US" ? "bg-[rgb(var(--c-forest-700))] text-white" : "text-[rgb(var(--c-muted))]"}`}>🇺🇸 US</button>
+      <div className="px-4 pb-3 sm:px-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3">
+          <div className="flex items-center gap-1 rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-1">
+            <button type="button" onClick={() => setMarket("ID")} className={`min-h-8 min-w-[56px] rounded-full px-3 text-[11px] font-semibold ${market === "ID" ? "bg-[rgb(var(--c-forest-700))] text-white" : "text-[rgb(var(--c-muted))]"}`}>🇮🇩 ID</button>
+            <button type="button" onClick={() => setMarket("US")} className={`min-h-8 min-w-[56px] rounded-full px-3 text-[11px] font-semibold ${market === "US" ? "bg-[rgb(var(--c-forest-700))] text-white" : "text-[rgb(var(--c-muted))]"}`}>🇺🇸 US</button>
           </div>
           {isRealData && (
             <button type="button" onClick={() => void refreshPrices()} disabled={refreshing} className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-[rgb(var(--c-cream))] px-3 text-[11px] font-semibold text-[rgb(var(--c-up))] disabled:opacity-50">
@@ -395,20 +395,6 @@ function StockTracker({
       ) : (
         <p className="px-4 pb-5 pt-3 text-center text-[11px] text-[rgb(var(--c-muted))]">Belum ada saham {market === "ID" ? "Indonesia" : "US"}.</p>
       )}
-
-      <div className="mx-4 mb-4 mt-3 rounded-[12px] bg-[rgb(var(--c-forest-50))] px-3 py-2.5 text-[rgb(var(--c-up))] sm:mx-5">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-[11px] font-medium">Masuk ke Total Aset · Saham</p>
-            <p className="mt-0.5 text-[16px] font-medium tabular-nums">{assetsVisible ? formatRupiah(stocksTotal) : "Rp ••••••"}</p>
-          </div>
-          <div className="shrink-0 text-right">
-            <p className="text-[13px] font-medium tabular-nums">{totalAssets > 0 ? ((stocksTotal / totalAssets) * 100).toFixed(1).replace(".", ",") : "0,0"}%</p>
-            <p className="text-[11px] text-[rgb(var(--c-muted))]">dari Total Aset</p>
-          </div>
-        </div>
-        <p className="mt-1 text-[11px] text-[rgb(var(--c-muted))]">ID + US (kurs USD/IDR Rp {Math.round(usdIdrRate).toLocaleString("id-ID")})</p>
-      </div>
 
       {open && (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) resetForm(); }}>
