@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { getAppLanguage } from "../lib/format";
 import {
   Home,
@@ -76,10 +76,7 @@ function Brand() {
 }
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const navigate = useNavigate();
-  const location = useLocation();
   const [language, setLanguage] = useState(getAppLanguage());
-  const [profileOpen, setProfileOpen] = useState(false);
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", asset: "Aset", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", checkup: "Konsultasi", guidance: "Panduan", profile: "Profil & Pengaturan", wallet: "Wallet", transaction: "Transaksi", goals: "Target", aiAssistant: "Asisten AI", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", asset: "Asset", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", checkup: "Consultation", wallet: "Wallet", guidance: "Guidance", transaction: "Transaction", goals: "Goals", aiAssistant: "AI Assistant", website: "Website", personalFinance: "Personal Finance" };
   return (
@@ -107,7 +104,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           <Settings size={18} strokeWidth={2} className="sidebar-icon" />
           {labels.profile}
         </NavLink>
-      </div>      </div>
+      </div>
     </div>
   );
 }
