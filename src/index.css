@@ -59,6 +59,13 @@
   --c-up: 0 122 74;
   --c-down: 214 51 79;
   --c-warn: 242 169 0;
+  /* Asset composition chart categories — never green/red because those are reserved for up/down. */
+  --asset-liquid: 37 99 235;
+  --asset-bond: 124 58 237;
+  --asset-stock: 14 165 233;
+  --asset-fund: 245 158 11;
+  --asset-gold: 234 88 12;
+  --asset-p2p: 100 116 139;
   --shadow-pop: 0 4px 16px rgba(0, 184, 110, 0.45);
   --shadow-nav: 0 6px 24px rgba(0, 0, 0, 0.08);
 
@@ -140,6 +147,13 @@ html.dark {
   --c-up: 0 224 138;
   --c-down: 255 92 122;
   --c-warn: 255 200 21;
+  /* Asset composition chart categories — tuned for dark-mode readability. */
+  --asset-liquid: 96 165 250;
+  --asset-bond: 167 139 250;
+  --asset-stock: 56 189 248;
+  --asset-fund: 251 191 36;
+  --asset-gold: 251 146 60;
+  --asset-p2p: 148 163 184;
   --shadow-pop: 0 0 24px rgba(0, 224, 138, 0.7);
   --shadow-nav: 0 12px 32px rgba(0, 0, 0, 0.45);
 
