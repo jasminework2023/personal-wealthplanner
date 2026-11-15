@@ -523,6 +523,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     return res.status(200).json({
+      user_id: user.user_id,
       username: user.username,
       transactions,
       budgetByCategory,
