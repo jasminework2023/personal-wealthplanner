@@ -189,7 +189,6 @@ export function Home() {
           data-tour="home-assets-desktop" className="home-asset-summary h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] border-0 p-4 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)]"
           style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)" }}>
           <div className="relative">
-            <p className="text-[11px] font-medium uppercase tracking-[-0.02em] text-[#075B40]/85">Asset Tracker</p>
             <button type="button"
               onClick={(event) => { event.stopPropagation(); setAssetsVisible((visible) => !visible); }}
               aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
@@ -231,7 +230,6 @@ export function Home() {
           onClick={() => navigate("/budgeting")}
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }}
           data-tour="home-budget-desktop" className="hero-forest h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] p-4 text-white transition hover:-translate-y-0.5">
-          <p className="text-[11px] font-medium uppercase tracking-[-0.02em] text-white/70">Budget Tracker</p>
           <p className="mt-1.5 text-[12px] font-medium tracking-[-0.02em] text-white/70">{id ? "Sisa anggaran" : "Remaining budget"}</p>
           <div className="mt-0.5 min-w-0 break-words text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums" style={{ fontSize: "34px" }}>
             {hasBudget ? renderMoney(remainingBudget, assetsVisible, "text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 34) : (assetsVisible ? renderMoney(0, true, "text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 34) : "Rp ••••••")}
@@ -276,7 +274,6 @@ export function Home() {
             onClick={() => navigate("/finance")}
             onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }}
             className="mt-2 min-h-[150px] min-w-0 cursor-pointer px-0.5 pb-0.5 pt-1">
-            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#03140C]/70">Asset Tracker</p>
             <p className="mt-1.5 text-[12px] font-medium text-[#03140C]/75">{id ? "Total Aset" : "Total Assets"}</p>
             <div className="mt-0.5 min-w-0 max-w-full break-words text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums" style={{ fontSize: "30px" }}>
               {renderMoney(integratedTotalAssets, assetsVisible, "text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 30)}
@@ -309,7 +306,6 @@ export function Home() {
             onClick={() => navigate("/budgeting")}
             onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }}
             className="mt-2 min-h-[150px] min-w-0 cursor-pointer px-0.5 pb-0.5 pt-1" data-tour="home-budget-mobile">
-            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#03140C]/70">Budget Tracker</p>
             <p className="mt-1.5 text-[12px] font-medium text-[#03140C]/75">{id ? "Sisa anggaran" : "Remaining budget"}</p>
             <div className="mt-0.5 min-w-0 max-w-full break-words text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums" style={{ fontSize: "30px" }}>
               {hasBudget ? renderMoney(remainingBudget, assetsVisible, "text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 30) : (assetsVisible ? renderMoney(0, true, "text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 30) : "Rp ••••••")}
