@@ -206,6 +206,7 @@ export function Home() {
               <TrendingUp size={14} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
             </span>
           </div>
+          {/* Asset goal progress: keep the bar + percentage only; redundant current/target labels are intentionally omitted. */}
           <div className="mt-3">
             <div
               className="h-2.5 w-full overflow-hidden rounded-full bg-[#006B48]/20"
