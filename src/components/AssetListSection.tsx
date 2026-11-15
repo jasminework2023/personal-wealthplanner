@@ -51,7 +51,7 @@ export function AssetListSection({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-1">
-              <p className="text-[15px] font-semibold leading-tight">{title}</p>
+              <p className="text-[16px] font-semibold leading-tight">{title}</p>
               {infoText && (
                 <div ref={infoRef} className="relative shrink-0">
                   <button
@@ -150,7 +150,7 @@ export function AssetListItem({
       </span>
 
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[15px] font-semibold leading-tight">{name}</span>
+        <span className="block truncate text-[14px] font-semibold leading-tight">{name}</span>
         <span className="mt-1 block truncate text-[12px] leading-tight text-[rgb(var(--c-muted))]">{subtitle}</span>
       </span>
 
