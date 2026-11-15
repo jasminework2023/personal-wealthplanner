@@ -150,11 +150,9 @@ export function Home() {
     const [year, month] = row.date.split("-").map(Number);
     return new Date(year, month - 1, 1) >= periodStart;
   });
-  const chartHistory = visibleAssetHistory.length >= 2
-    ? visibleAssetHistory
-    : visibleAssetHistory.length === 1
-      ? [{ date: visibleAssetHistory[0].date, value: visibleAssetHistory[0].value }, { date: visibleAssetHistory[0].date, value: visibleAssetHistory[0].value }]
-      : [];
+  const chartHistory = visibleAssetHistory;
+  const hasChartHistory = chartHistory.length >= 2;
+  const hasSingleChartPoint = chartHistory.length === 1;
   const chartMin = chartHistory.length ? Math.min(...chartHistory.map((p) => p.value)) : 0;
   const chartMax = chartHistory.length ? Math.max(...chartHistory.map((p) => p.value)) : 1;
   const chartRange = Math.max(chartMax - chartMin, chartMax * 0.02, 1);
@@ -163,10 +161,10 @@ export function Home() {
     const y = 54 - ((point.value - chartMin) / chartRange) * 48;
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(" ");
-  const chartPeriodChange = chartHistory.length >= 2
+  const chartPeriodChange = hasChartHistory
     ? chartHistory[chartHistory.length - 1].value - chartHistory[0].value
     : null;
-  const chartPeriodPercent = chartHistory.length >= 2 && chartHistory[0].value > 0
+  const chartPeriodPercent = hasChartHistory && chartHistory[0].value > 0
     ? (chartPeriodChange! / chartHistory[0].value) * 100
     : null;
   const cycleAssetPeriod = (direction: number) => {
@@ -229,18 +227,25 @@ export function Home() {
                   {assetPeriodLabels[period]}
                 </button>
               ))}
-              {chartPeriodPercent !== null && (
-                <span className="ml-auto shrink-0 text-[10px] font-medium text-[#03140C]/60">
+              {chartPeriodPercent !== null ? (
+                <span className={`ml-auto shrink-0 text-[10px] font-semibold ${chartPeriodChange! >= 0 ? "text-[#075B40]" : "text-[#8F3A45]"}`}>
                   {chartPeriodChange! >= 0 ? "↑ " : "↓ "}{Math.abs(chartPeriodPercent).toFixed(1).replace(".", ",")}%
                 </span>
-              )}
+              ) : hasSingleChartPoint ? (
+                <span className="ml-auto shrink-0 text-[9px] text-[#03140C]/45">Belum cukup histori</span>
+              ) : null}
             </div>
             <div className="mt-1 h-[42px] w-full" aria-label={id ? `Grafik tren aset ${assetPeriod}` : `Asset trend chart ${assetPeriod}`} role="img">
               <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
-                {chartHistory.length >= 2 ? (
+                {hasChartHistory ? (
                   <polyline points={chartPoints} fill="none" stroke="#03140C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+                ) : hasSingleChartPoint ? (
+                  <>
+                    <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.12" strokeWidth="1" strokeDasharray="3 5"/>
+                    <circle cx="160" cy="30" r="3.5" fill="#03140C"/>
+                  </>
                 ) : (
-                  <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.18" strokeWidth="2" strokeLinecap="round"/>
+                  <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.10" strokeWidth="1" strokeDasharray="3 5"/>
                 )}
               </svg>
             </div>
@@ -333,10 +338,15 @@ export function Home() {
               </div>
               <div className="mt-1 h-[34px] w-full" aria-label={id ? `Grafik tren aset ${assetPeriod}` : `Asset trend chart ${assetPeriod}`} role="img">
                 <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
-                  {chartHistory.length >= 2 ? (
+                  {hasChartHistory ? (
                     <polyline points={chartPoints} fill="none" stroke="#03140C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+                  ) : hasSingleChartPoint ? (
+                    <>
+                      <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.12" strokeWidth="1" strokeDasharray="3 5"/>
+                      <circle cx="160" cy="30" r="3.5" fill="#03140C"/>
+                    </>
                   ) : (
-                    <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.18" strokeWidth="2" strokeLinecap="round"/>
+                    <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.10" strokeWidth="1" strokeDasharray="3 5"/>
                   )}
                 </svg>
               </div>
