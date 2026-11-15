@@ -201,17 +201,12 @@ export function Home() {
           <div className="mt-0.5 min-w-0 break-words text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black" style={{ fontSize: "34px" }}>
             {renderMoney(integratedTotalAssets, assetsVisible, "text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black", 34)}
           </div>
-          <div className="mt-2 flex min-h-[46px] items-center justify-between gap-3">
+          <div className="mt-2 flex min-h-[46px] items-center justify-start gap-3">
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[11px] font-medium tracking-[-0.02em] text-[#042F21]">
               <TrendingUp size={14} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
             </span>
-            <span className="min-w-0 truncate text-right text-[11px] font-medium tracking-[-0.02em] text-[#075B40]/90">Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium tracking-[-0.02em]", 11) : "Rp ••••••"}</span>
           </div>
           <div className="mt-3">
-            <div className="mb-1.5 flex items-center justify-between gap-3 text-[10px] font-medium text-[#075B40]/75">
-              <span>{id ? "Aset saat ini" : "Current assets"}</span>
-              <span className="shrink-0">{id ? "Target" : "Goal"}</span>
-            </div>
             <div
               className="h-2.5 w-full overflow-hidden rounded-full bg-[#006B48]/20"
               role="progressbar"
@@ -224,10 +219,6 @@ export function Home() {
                 className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
                 style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
               />
-            </div>
-            <div className="mt-1 flex items-center justify-between gap-3 text-[10px] font-medium text-[#075B40]/70 tabular-nums">
-              <span>{assetsVisible ? renderMoney(integratedTotalAssets, true, "text-[10px] font-medium", 10) : "Rp ••••••"}</span>
-              <span>{assetsVisible ? renderMoney(assets.target, true, "text-[10px] font-medium", 10) : "Rp ••••••"}</span>
             </div>
           </div>
         </div>
@@ -286,18 +277,13 @@ export function Home() {
             <div className="mt-0.5 min-w-0 max-w-full break-words text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums" style={{ fontSize: "30px" }}>
               {renderMoney(integratedTotalAssets, assetsVisible, "text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 30)}
             </div>
-            <div className="mt-2 flex items-center justify-between gap-3">
+            <div className="mt-2 flex items-center justify-start gap-3">
               <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[rgba(3,20,12,.14)] px-2.5 py-1 text-[11px] font-medium tracking-[-0.02em] text-[#03140C]">
                 <TrendingUp size={13} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
               </span>
-              <span className="min-w-0 truncate text-right text-[11px] font-medium text-[#03140C]/75">Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium", 11) : "Rp ••••••"}</span>
             </div>
             <div className="mt-2">
               <div className="mt-2">
-                <div className="mb-1.5 flex items-center justify-between gap-3 text-[9px] font-medium text-[#03140C]/65">
-                  <span>{id ? "Aset saat ini" : "Current assets"}</span>
-                  <span>{id ? "Target" : "Goal"}</span>
-                </div>
                 <div
                   className="h-2.5 w-full overflow-hidden rounded-full bg-[rgba(3,20,12,.14)]"
                   role="progressbar"
@@ -310,10 +296,6 @@ export function Home() {
                     className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
                     style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
                   />
-                </div>
-                <div className="mt-1 flex items-center justify-between gap-3 text-[9px] font-medium text-[#03140C]/65 tabular-nums">
-                  <span>{assetsVisible ? renderMoney(integratedTotalAssets, true, "text-[9px] font-medium", 9) : "Rp ••••••"}</span>
-                  <span>{assetsVisible ? renderMoney(assets.target, true, "text-[9px] font-medium", 9) : "Rp ••••••"}</span>
                 </div>
               </div>
             </div>
