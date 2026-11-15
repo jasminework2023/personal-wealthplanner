@@ -632,19 +632,66 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
           <div className="mt-2 h-[6px] w-full overflow-hidden rounded-full bg-[#03140C]/15">
             <div className="h-full rounded-full bg-[#03140C]" style={{ width: `${Math.min(Math.max(integratedAssetProgress, 0), 100)}%` }} />
           </div>
-          <div className="mt-3 flex min-h-[56px] items-center justify-between gap-3 rounded-[14px] bg-[linear-gradient(90deg,#10BC76_0%,#008E55_100%)] px-4 py-3">
-            <div className="min-w-0">
-              <p className="text-[13px] font-normal text-[#03140C]/75">Target aset</p>
+          <div className="mt-3 flex min-h-[56px] items-center justify-between gap-3 rounded-[14px] bg-[rgb(var(--c-forest-700))] px-4 py-3 text-[rgb(var(--c-surface))]">
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-normal opacity-75">Target aset</p>
               {editingAssetTarget ? (
-                <div className="mt-1 flex gap-2">
-                  <input inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 w-full rounded-lg border border-[#03140C]/20 bg-white/80 px-2 py-1 text-[14px] text-[#03140C] outline-none" placeholder="Target aset" />
-                  <button type="button" disabled={savingAssetTarget} onClick={async () => { const token = getStoredToken(); if (!token) return; setSavingAssetTarget(true); try { const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: Number(assetTargetInput) || 0 }) }); if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.error || "Gagal menyimpan target"); } setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated")); } catch (e) { setAssetTargetInput(String(Math.round(assets.target || 0))); alert(e instanceof Error ? e.message : "Gagal menyimpan target"); } finally { setSavingAssetTarget(false); } }} className="shrink-0 rounded-lg bg-[#03140C] px-2 py-1 text-[12px] font-bold text-white disabled:opacity-50">{savingAssetTarget ? "..." : "Simpan"}</button>
+                <div className="mt-2">
+                  <label className="sr-only" htmlFor="asset-target-input">Nominal target aset</label>
+                  <input
+                    id="asset-target-input"
+                    inputMode="numeric"
+                    value={assetTargetInput}
+                    onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))}
+                    className="w-full rounded-lg border border-white/20 bg-[rgb(var(--c-surface))] px-2.5 py-2 text-[14px] font-semibold text-[rgb(var(--c-charcoal))] outline-none placeholder:text-[rgb(var(--c-muted))]"
+                    placeholder="Masukkan target aset"
+                    autoFocus
+                  />
+                  <p className="mt-1 text-[10px] opacity-70">Nominal target wajib diisi dan tidak boleh negatif.</p>
+                  <div className="mt-2 flex flex-wrap justify-end gap-2">
+                    <button type="button" disabled={savingAssetTarget} onClick={() => { setEditingAssetTarget(false); setAssetTargetInput(String(Math.round(assets.target || 0))); }} className="rounded-full border border-white/20 px-3 py-1.5 text-[11px] font-semibold opacity-90 hover:bg-white/10 disabled:opacity-50">Batal</button>
+                    <button type="button" disabled={savingAssetTarget} onClick={async () => {
+                      const raw = assetTargetInput.trim();
+                      const value = Number(raw);
+                      if (!raw || !Number.isFinite(value) || value < 0) { alert("Nominal target wajib diisi dan tidak boleh negatif."); return; }
+                      const token = getStoredToken();
+                      if (!token) { alert("Sesi dashboard tidak ditemukan."); return; }
+                      setSavingAssetTarget(true);
+                      try {
+                        const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value }) });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) throw new Error(data.error || "Gagal menyimpan target");
+                        setEditingAssetTarget(false);
+                        window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
+                      } catch (e) { alert(e instanceof Error ? e.message : "Gagal menyimpan target"); }
+                      finally { setSavingAssetTarget(false); }
+                    }} className="rounded-full bg-[rgb(var(--c-surface))] px-3 py-1.5 text-[11px] font-bold text-[rgb(var(--c-up))] disabled:opacity-50">{savingAssetTarget ? "Menyimpan…" : "Simpan"}</button>
+                  </div>
                 </div>
               ) : (
                 <p className="mt-0.5 whitespace-nowrap text-[17px] font-bold leading-tight tabular-nums">{assets.target > 0 ? (assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.target)) : "Belum diatur"}</p>
               )}
             </div>
-            {isRealData && !editingAssetTarget && <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="shrink-0 self-center text-[15px] font-bold underline underline-offset-2">Edit</button>}
+            {isRealData && !editingAssetTarget && (
+              <div className="flex shrink-0 items-center gap-1">
+                <button type="button" aria-label="Edit target aset" title="Edit target" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="flex h-9 w-9 items-center justify-center rounded-full text-[rgb(var(--c-surface))] hover:bg-white/10"><Pencil size={15} /></button>
+                {assets.target > 0 && <button type="button" aria-label="Hapus target aset" title="Hapus target" onClick={async () => {
+                  if (!window.confirm("Hapus target aset? Target akan dikosongkan dan progress kembali 0%.")) return;
+                  const token = getStoredToken();
+                  if (!token) { alert("Sesi dashboard tidak ditemukan."); return; }
+                  setSavingAssetTarget(true);
+                  try {
+                    const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: 0 }) });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) throw new Error(data.error || "Gagal menghapus target");
+                    setEditingAssetTarget(false);
+                    setAssetTargetInput("");
+                    window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
+                  } catch (e) { alert(e instanceof Error ? e.message : "Gagal menghapus target"); }
+                  finally { setSavingAssetTarget(false); }
+                }} className="flex h-9 w-9 items-center justify-center rounded-full text-[rgb(var(--c-surface))] opacity-80 hover:bg-white/10 hover:opacity-100"><Trash2 size={15} /></button>}
+              </div>
+            )}
           </div>
         </div>
 
