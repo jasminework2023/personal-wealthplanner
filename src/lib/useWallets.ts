@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getStoredToken } from "./useFinanceData";
+import { apiUrl } from "./apiBase";
 
 export interface Wallet {
   id:string; name:string; type:"cash"|"bank"|"investment"|"other";
@@ -22,7 +23,7 @@ export function useWallets() {
  const [loading,setLoading]=useState(true);const [error,setError]=useState<string|null>(null);
  const refresh=useCallback(async(force=false)=>{
   const token=getStoredToken();if(!token){setLoading(false);return;}
-  const url=`/api/wallets?token=${encodeURIComponent(token)}`;
+  const url=`${apiUrl("/wallets")}?token=${encodeURIComponent(token)}`;
   setLoading(true);
   try{const r=await sharedFetch(url,15000,force);if(!r.ok)throw new Error(r.data?.error||(r.status===404?"API wallet tidak ditemukan (HTTP 404)":r.status===504||r.status===408?"Server terlalu lama merespons (HTTP "+r.status+"), coba lagi":"Gagal memuat wallet (HTTP "+r.status+")"));setData(r.data);setError(null);}
   catch(e){setError(e instanceof Error?(e.message==="Failed to fetch"?"Tidak bisa terhubung ke server":e.message):"Gagal memuat wallet");}
