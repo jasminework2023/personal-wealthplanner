@@ -38,7 +38,6 @@ const toolLinks = [
   { to: "/calculator", label: "Financial Calculator", icon: Calculator },
   { to: "/protection", label: "Financial Protection", icon: Shield },
   { to: "/checkup", label: "Financial Checkup", icon: CircleCheck },
-  { to: "/debt", label: "Debt Tracker", icon: CreditCard },
 ];
 
 function NavItem({ to, label, icon: Icon, onNavigate, dataTour }: { to: string; label: string; icon: any; onNavigate?: () => void; dataTour?: string }) {
