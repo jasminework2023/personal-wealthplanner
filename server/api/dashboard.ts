@@ -236,6 +236,62 @@ function lowerSection(value: string) {
   return String(value || "").trim().toLowerCase();
 }
 
+function parseAssetTargets(rows: unknown[][]) {
+  const targets: {
+    id: string;
+    name: string;
+    targetAmount: number;
+    targetDate: string;
+    currentValueSource: string;
+  }[] = [];
+
+  const sectionIdx = findRowIndex(rows, "Target Assets");
+  const sectionIdxId = sectionIdx === -1 ? findRowIndex(rows, "Target Aset") : sectionIdx;
+
+  if (sectionIdxId !== -1) {
+    for (let i = sectionIdxId + 2; i < rows.length; i++) {
+      const row = rows[i] || [];
+      const id = String(row[0] ?? "").trim();
+      const name = String(row[1] ?? "").trim();
+      if (!id || !name) continue;
+      targets.push({
+        id,
+        name,
+        targetAmount: parseRupiah(row[2]),
+        targetDate: String(row[3] ?? "").trim(),
+        currentValueSource: String(row[4] ?? "Asset Tracker").trim() || "Asset Tracker",
+      });
+    }
+    return targets;
+  }
+
+  // Backward compatibility for the old single "Target Aset" value.
+  const targetLabels = ["target aset", "target asset", "target"];
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r] || [];
+    for (let c = 0; c < row.length; c++) {
+      if (!targetLabels.includes(String(row[c] ?? "").trim().toLowerCase())) continue;
+      const candidates = [row[c + 1], row[c + 2], (rows[r + 1] || [])[c], (rows[r + 1] || [])[c + 1]];
+      for (const candidate of candidates) {
+        const raw = String(candidate ?? "").trim();
+        if (!raw || !/(?:\d|rp|idr|\$)/i.test(raw)) continue;
+        const amount = parseRupiah(candidate);
+        if (amount > 0) {
+          targets.push({
+            id: "legacy-target",
+            name: "Target Aset",
+            targetAmount: amount,
+            targetDate: "",
+            currentValueSource: "Asset Tracker",
+          });
+          return targets;
+        }
+      }
+    }
+  }
+  return targets;
+}
+
 async function getUsdIdrRate(): Promise<number> {
   try {
     const response = await fetch("https://open.er-api.com/v6/latest/USD", {
@@ -297,34 +353,8 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
   // Target Asset: cari label target secara eksplisit, lalu baca nilai pada
   // cell yang sama/berdekatan. Format sheet bisa berupa label + nilai dalam
   // satu baris atau label diikuti nilai pada baris berikutnya.
-  let target = 0;
-  const targetLabels = ["target aset", "target asset", "target"];
-  outer: for (let r = 0; r < rows.length; r++) {
-    const row = rows[r] || [];
-    for (let c = 0; c < row.length; c++) {
-      const label = String(row[c] ?? "").trim().toLowerCase();
-      if (!targetLabels.includes(label)) continue;
-
-      const candidates = [
-        row[c + 1],
-        row[c + 2],
-        (rows[r + 1] || [])[c],
-        (rows[r + 1] || [])[c + 1],
-      ];
-
-      for (const candidate of candidates) {
-        const raw = String(candidate ?? "").trim();
-        if (!raw) continue;
-        const looksNumeric = /(?:\d|rp|idr|\$)/i.test(raw);
-        if (!looksNumeric) continue;
-        const parsed = parseRupiah(candidate);
-        if (Number.isFinite(parsed)) {
-          target = parsed;
-          break outer;
-        }
-      }
-    }
-  }
+  const targets = parseAssetTargets(rows);
+  const target = targets[0]?.targetAmount || 0;
 
   const usdIdrRate = await getUsdIdrRate();
   const stocksTotal = stocksID.subtotalValue + stocksUS.subtotalValue * usdIdrRate;
@@ -334,6 +364,7 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
     totalAssets,
     stocksTotal,
     target,
+    targets: targets.map((item) => ({ ...item, currentValueSource: "Asset Tracker" })),
     liquidAssets: liquid.items,
     investmentAssets: investment.items,
     excludedInvestmentNames: investment.excludedNames,
