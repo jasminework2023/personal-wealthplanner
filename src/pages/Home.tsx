@@ -201,7 +201,7 @@ export function Home() {
           <div className="mt-0.5 min-w-0 break-words text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black" style={{ fontSize: "34px" }}>
             {renderMoney(integratedTotalAssets, assetsVisible, "text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black", 34)}
           </div>
-          <div className="mt-2 flex items-center justify-between gap-3">
+          <div className="mt-2 flex min-h-[46px] items-center justify-between gap-3">
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[11px] font-medium tracking-[-0.02em] text-[#042F21]">
               <TrendingUp size={14} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
             </span>
@@ -242,7 +242,7 @@ export function Home() {
             {hasBudget ? renderMoney(remainingBudget, assetsVisible, "text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 34) : (assetsVisible ? renderMoney(0, true, "text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 34) : "Rp ••••••")}
           </div>
           {!hasBudget && <p className="mt-1 text-[11px] text-white/55">{id ? "Atur anggaran" : "Set a budget"}</p>}
-          <div className="mt-2 grid grid-cols-2 gap-2">
+          <div className="mt-2 grid min-h-[46px] grid-cols-2 gap-2">
             <div className="min-w-0 rounded-[12px] bg-white/10 px-3 py-2">
               <span className="text-[11px] font-medium text-white/60">{id ? "Penghasilan" : "Income"}</span>
               <p className="mt-0.5 min-w-0 truncate text-[16px] font-medium tracking-[-0.02em] tabular-nums">{assetsVisible ? formatRupiah(totalIncome) : "Rp ••••••"}</p>
