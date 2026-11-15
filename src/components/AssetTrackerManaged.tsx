@@ -311,7 +311,7 @@ export function AssetTrackerManaged({
                   <span className="text-[rgb(var(--c-muted))]">({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}%)</span>
                   <span className="text-[rgb(var(--c-muted))]">vs bulan lalu</span>
                 </>
-              ) : <span className="text-[rgb(var(--c-muted))]">Belum ada data perubahan bulan lalu</span>}
+              ) : null}
             </div>
           </div>
           {isRealData && (
@@ -343,7 +343,7 @@ export function AssetTrackerManaged({
                 const token = getStoredToken(); if (!token) { alert("Sesi dashboard tidak ditemukan."); return; }
                 setSavingAssetTarget(true);
                 try {
-                  const res = await fetch(API_BASE + "/update-asset-target", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(existingTarget ? { token, targetId: existingTarget.id, targetAmount: value } : { token, targetAmount: value }) });
+                  const res = await fetch(API_BASE + "/update-asset-target", { method: existingTarget ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(existingTarget ? { token, targetId: existingTarget.id, targetAmount: value } : { token, targetAmount: value }) });
                   const data = await res.json().catch(() => ({})); if (!res.ok) throw new Error(data.error || "Gagal menyimpan target");
                   setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
                 } catch (e) { alert(e instanceof Error ? e.message : "Gagal menyimpan target"); }
