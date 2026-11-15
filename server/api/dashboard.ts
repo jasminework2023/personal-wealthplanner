@@ -390,9 +390,9 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
       add(from, "outflow");
       add(to, "inflow");
     }
-    if (type === "saving" && from && to) {
+    if (type === "saving" && from) {
       add(from, "outflow");
-      add(to, "inflow");
+      if (to) add(to, "inflow");
     }
   }
 
