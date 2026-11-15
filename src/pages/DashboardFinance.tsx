@@ -487,7 +487,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllAssets, setShowAllAssets] = useState(false);
   const [editingAssetTarget, setEditingAssetTarget] = useState<AssetTarget | null>(null);
-  const [assetTargetForm, setAssetTargetForm] = useState({ name: "", targetAmount: "", targetDate: "" });
+  const [assetTargetForm, setAssetTargetForm] = useState({ targetAmount: "" });
   const [savingAssetTarget, setSavingAssetTarget] = useState(false);
   const [deletingAssetTarget, setDeletingAssetTarget] = useState(false);
   const assetTargetFormRef = useRef<HTMLDivElement>(null);
@@ -721,12 +721,12 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
                   <div key={target.id} className="rounded-[14px] bg-[rgb(var(--c-forest-50))] px-3 py-2.5 text-[rgb(var(--c-up))]">
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="truncate text-[11px] font-semibold">{target.name}</p>
-                        <p className="mt-0.5 text-[10px] text-[rgb(var(--c-muted))]">Nilai saat ini · {assetValuesHidden ? "Rp ••••••" : formatRupiah(integratedTotalAssets)} · Sumber: {target.currentValueSource}</p>
+                        <p className="truncate text-[11px] font-semibold">Target Aset</p>
+                        <p className="mt-0.5 text-[10px] text-[rgb(var(--c-muted))]">Nilai saat ini · {assetValuesHidden ? "Rp ••••••" : formatRupiah(integratedTotalAssets)}</p>
                       </div>
                       {isRealData && (
                         <div className="flex shrink-0 items-center gap-0.5">
-                          <button type="button" onClick={() => { setEditingAssetTarget(target); setAssetTargetForm({ name: target.name, targetAmount: String(Math.round(target.targetAmount)), targetDate: target.targetDate }); }} className="min-h-11 min-w-11 rounded-full hover:bg-[rgb(var(--c-surface))]" aria-label={id ? "Edit target aset" : "Edit asset target"}><Pencil size={14} className="mx-auto" /></button>
+                          <button type="button" onClick={() => { setEditingAssetTarget(target); setAssetTargetForm({ targetAmount: String(Math.round(target.targetAmount)) }); }} className="min-h-11 min-w-11 rounded-full hover:bg-[rgb(var(--c-surface))]" aria-label={id ? "Edit target aset" : "Edit asset target"}><Pencil size={14} className="mx-auto" /></button>
                           <button type="button" disabled={deletingAssetTarget} onClick={async () => {
                             if (!window.confirm(`Hapus target "${target.name}"? Target akan dihapus dari Asset Tracker.`)) return;
                             const token = getStoredToken();
@@ -747,51 +747,40 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
                     <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[rgb(var(--c-surface))]">
                       <div className="h-full rounded-full bg-[rgb(var(--c-up))]" style={{ width: Math.min(Math.max(progress, 0), 100) + "%" }} />
                     </div>
-                    {target.targetDate && <p className="mt-1 text-[10px] text-[rgb(var(--c-muted))]">Target tanggal: {new Date(target.targetDate + "T00:00:00").toLocaleDateString(id ? "id-ID" : "en-US", { day: "numeric", month: "short", year: "numeric" })}</p>}
+                    
                   </div>
                 );
               })}
               {isRealData && (
-                <button type="button" onClick={() => { setEditingAssetTarget({ id: "", name: "", targetAmount: 0, targetDate: "", currentValueSource: "Asset Tracker" }); setAssetTargetForm({ name: "", targetAmount: "", targetDate: "" }); }} className="min-h-11 w-full rounded-[14px] border border-dashed border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-left text-[11px] font-semibold text-[rgb(var(--c-up))] hover:bg-[rgb(var(--c-forest-50))]">+ Tambah Target Aset</button>
+                <button type="button" onClick={() => { setEditingAssetTarget({ id: "", name: "Target Aset", targetAmount: 0, targetDate: "", currentValueSource: "Asset Tracker" }); setAssetTargetForm({ targetAmount: "" }); }} className="min-h-11 w-full rounded-[14px] border border-dashed border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-left text-[11px] font-semibold text-[rgb(var(--c-up))] hover:bg-[rgb(var(--c-forest-50))]">+ Tambah Target Aset</button>
               )}
             </div>
 
             {editingAssetTarget && (
               <div ref={assetTargetFormRef} className="mt-3 rounded-[14px] border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-3">
-                <div className="grid gap-2.5 sm:grid-cols-2">
-                  <label className="text-[10px] font-medium text-[rgb(var(--c-muted))]">
-                    Nama target
-                    <input autoFocus value={assetTargetForm.name} onChange={(e) => setAssetTargetForm((form) => ({ ...form, name: e.target.value }))} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-[13px] font-semibold text-[rgb(var(--c-charcoal))] outline-none" placeholder="Contoh: Dana Rumah" />
-                  </label>
-                  <label className="text-[10px] font-medium text-[rgb(var(--c-muted))]">
-                    Nominal target
-                    <input inputMode="numeric" value={assetTargetForm.targetAmount} onChange={(e) => setAssetTargetForm((form) => ({ ...form, targetAmount: e.target.value.replace(/[^0-9]/g, "") }))} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-[13px] font-semibold text-[rgb(var(--c-charcoal))] outline-none" placeholder="500000000" />
-                  </label>
-                  <label className="text-[10px] font-medium text-[rgb(var(--c-muted))]">
-                    Tanggal target
-                    <input type="date" value={assetTargetForm.targetDate} onChange={(e) => setAssetTargetForm((form) => ({ ...form, targetDate: e.target.value }))} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-[13px] text-[rgb(var(--c-charcoal))] outline-none" />
-                  </label>
-                  <label className="text-[10px] font-medium text-[rgb(var(--c-muted))]">
-                    Sumber nilai saat ini
-                    <select value="Asset Tracker" disabled className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-[13px] text-[rgb(var(--c-charcoal))] outline-none disabled:opacity-80">
-                      <option>Asset Tracker</option>
-                    </select>
-                  </label>
-                </div>
-                <p className="mt-2 text-[10px] text-[rgb(var(--c-muted))]">Nilai saat ini selalu dihitung dari sumber Asset Tracker yang sama: {assetValuesHidden ? "Rp ••••••" : formatRupiah(integratedTotalAssets)}.</p>
+                <label className="block text-[10px] font-medium text-[rgb(var(--c-muted))]">
+                  Nominal target
+                  <input
+                    autoFocus
+                    inputMode="numeric"
+                    value={assetTargetForm.targetAmount}
+                    onChange={(e) => setAssetTargetForm({ targetAmount: e.target.value.replace(/[^0-9]/g, "") })}
+                    className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-[13px] font-semibold text-[rgb(var(--c-charcoal))] outline-none"
+                    placeholder="500000000"
+                  />
+                </label>
+                <p className="mt-2 text-[10px] text-[rgb(var(--c-muted))]">Nilai saat ini otomatis mengikuti Total Aset dari sumber Asset Tracker yang sama.</p>
                 <div className="mt-2 flex justify-end gap-2">
                   <button type="button" disabled={savingAssetTarget} onClick={() => setEditingAssetTarget(null)} className="min-h-11 rounded-full border border-[rgb(var(--c-border))] px-3 text-[11px] font-semibold">Batal</button>
                   <button type="button" disabled={savingAssetTarget} onClick={async () => {
-                    const name = assetTargetForm.name.trim();
                     const amount = Number(assetTargetForm.targetAmount);
-                    if (!name) { alert("Nama target wajib diisi."); return; }
                     if (!assetTargetForm.targetAmount.trim() || !Number.isFinite(amount) || amount < 0) { alert("Nominal target wajib diisi dan tidak boleh negatif."); return; }
                     const token = getStoredToken();
                     if (!token) { alert("Sesi dashboard tidak ditemukan."); return; }
                     setSavingAssetTarget(true);
                     try {
                       const method = editingAssetTarget.id ? "PUT" : "POST";
-                      const body = { token, ...(editingAssetTarget.id ? { targetId: editingAssetTarget.id } : {}), name, targetAmount: amount, targetDate: assetTargetForm.targetDate };
+                      const body = { token, ...(editingAssetTarget.id ? { targetId: editingAssetTarget.id } : {}), targetAmount: amount };
                       const res = await fetch(API_BASE + "/update-asset-target", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
                       const data = await res.json().catch(() => ({}));
                       if (!res.ok) throw new Error(data.error || "Gagal menyimpan target");
