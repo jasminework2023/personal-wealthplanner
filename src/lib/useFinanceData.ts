@@ -182,6 +182,7 @@ interface RawState {
   error: string | null;
   isRealData: boolean;
   username: string | null;
+  userId: string | null;
   month: string;
   year: number;
   transactions: Transaction[];
