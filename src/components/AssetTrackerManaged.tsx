@@ -47,9 +47,11 @@ export function AssetTrackerManaged({
   const [realOpen, setRealOpen] = useState(false);
   const [investmentModal, setInvestmentModal] = useState<ManagedInvestmentAsset | null>(null);
   const [realModal, setRealModal] = useState<RealAsset | null>(null);
+  const [realFundingMode, setRealFundingMode] = useState<"purchase" | "owned">("owned");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [realForm, setRealForm] = useState({ name: "", initialValue: "", acquisitionDate: "", annualChangePercent: "", note: "" });
+  const [realFormSourceAccount, setRealFormSourceAccount] = useState("");
   const [investmentForm, setInvestmentForm] = useState({
     name: "", category: "Obligasi", quantity: "", unit: "unit", buyPrice: "", currentPrice: "",
     sourceAccount: "", purchaseDate: "", note: "", currency: "IDR" as "IDR" | "USD", fxRate: "1",
@@ -97,10 +99,14 @@ export function AssetTrackerManaged({
         name: asset.name, initialValue: String(Math.round(asset.initialValue)),
         acquisitionDate: asset.acquisitionDate, annualChangePercent: String(asset.annualChangePercent), note: asset.note,
       });
+      setRealFundingMode(asset.fundingMode);
+      setRealFormSourceAccount(asset.sourceAccount || "");
       setRealModal(asset);
     } else {
       setRealForm({ name: "", initialValue: "", acquisitionDate: new Date().toISOString().slice(0, 10), annualChangePercent: "0", note: "" });
-      setRealModal({ id: "", name: "", initialValue: 0, acquisitionDate: "", annualChangePercent: 0, note: "", currentValue: 0, changeValue: 0 });
+      setRealFundingMode("owned");
+      setRealFormSourceAccount("");
+      setRealModal({ id: "", name: "", initialValue: 0, acquisitionDate: "", annualChangePercent: 0, note: "", currentValue: 0, changeValue: 0, sourceAccount: "", transactionId: "", fundingMode: "owned" });
     }
   }
 
@@ -132,7 +138,10 @@ export function AssetTrackerManaged({
     const initial = Number(realForm.initialValue);
     const rate = Number(realForm.annualChangePercent);
     if (!realForm.name.trim() || !realForm.acquisitionDate || !Number.isFinite(initial) || initial < 0 || !Number.isFinite(rate) || rate <= -100) {
-      return setError("Nama, nilai awal, tanggal, dan perubahan nilai wajib valid.");
+      return setError("Nama, harga perolehan, tanggal, dan perubahan nilai wajib valid.");
+    }
+    if (realFundingMode === "purchase" && !realFormSourceAccount) {
+      return setError("Pilih rekening sumber dana.");
     }
     setSaving(true); setError("");
     try {
@@ -142,6 +151,7 @@ export function AssetTrackerManaged({
           token, kind: "real", action: realModal?.id ? "update" : "create", id: realModal?.id,
           name: realForm.name.trim(), initialValue: initial, acquisitionDate: realForm.acquisitionDate,
           annualChangePercent: rate, note: realForm.note.trim(),
+          sourceAccount: realFormSourceAccount, fundingMode: realFundingMode,
         }),
       });
       const data = await response.json().catch(() => ({}));
@@ -153,19 +163,58 @@ export function AssetTrackerManaged({
   }
 
   async function deleteReal(asset: RealAsset) {
-    if (!window.confirm('Hapus aset "' + asset.name + '"? Aset ini tidak mengurangi saldo rekening, jadi penghapusannya hanya menghilangkan aset dari Total Aset.')) return;
     const token = getStoredToken(); if (!token) return;
+    if (asset.fundingMode === "owned") {
+      if (!window.confirm('Hapus aset "' + asset.name + '"? Aset ini ditambahkan sebagai "sudah dimiliki", jadi tidak ada saldo rekening yang dikembalikan.')) return;
+      setSaving(true);
+      try {
+        const response = await fetch(API_BASE + "/managed-assets", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, kind: "real", action: "delete", id: asset.id }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Gagal menghapus");
+        setRealModal(null); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Gagal menghapus");
+      } finally { setSaving(false); }
+      return;
+    }
+
+    const cancelPurchase = window.confirm('Hapus aset "' + asset.name + '"?\n\nOK = Batalkan pembelian, saldo rekening dikembalikan.\nCancel = Aset dijual/dilepas.');
+    if (cancelPurchase) {
+      setSaving(true);
+      try {
+        const response = await fetch(API_BASE + "/managed-assets", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, kind: "real", action: "delete", id: asset.id }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "Gagal membatalkan pembelian");
+        setRealModal(null); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Gagal membatalkan pembelian");
+      } finally { setSaving(false); }
+      return;
+    }
+
+    const salePrice = Number(String(window.prompt("Harga jual aset (Rp):", String(Math.round(asset.currentValue))) || "").replace(/\D/g, ""));
+    if (!salePrice || salePrice <= 0) return;
+    const destinationAccount = String(window.prompt("Rekening tujuan penerimaan:", asset.sourceAccount || "") || "").trim();
+    if (!destinationAccount) return;
     setSaving(true);
     try {
       const response = await fetch(API_BASE + "/managed-assets", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, kind: "real", action: "delete", id: asset.id }),
+        body: JSON.stringify({ token, kind: "real", action: "sell", id: asset.id, salePrice, destinationAccount }),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || "Gagal menghapus");
+      if (!response.ok) throw new Error(data.error || "Gagal mencatat penjualan");
+      const gainLoss = Number(data.gainLoss || 0);
+      window.alert(gainLoss >= 0 ? `Aset dijual. Untung ${formatRupiah(gainLoss)} masuk ke hasil penjualan.` : `Aset dijual. Rugi ${formatRupiah(Math.abs(gainLoss))} tercermin dari harga jual.`);
       setRealModal(null); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal menghapus");
+      setError(e instanceof Error ? e.message : "Gagal mencatat penjualan");
     } finally { setSaving(false); }
   }
 
@@ -330,8 +379,15 @@ export function AssetTrackerManaged({
         <div className="w-full max-w-lg rounded-t-[22px] bg-[rgb(var(--c-surface))] p-4 sm:rounded-[18px]">
           <div className="flex items-center justify-between"><p className="text-[15px] font-semibold">{realModal.id ? "Edit Aset Riil" : "Tambah Aset Riil"}</p><button type="button" onClick={() => setRealModal(null)} className="min-h-11 min-w-11 rounded-full">×</button></div>
           <div className="mt-3 space-y-3">
+            {!realModal.id && <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setRealFundingMode("owned")} className={`min-h-11 rounded-xl border px-3 text-[11px] font-semibold ${realFundingMode === "owned" ? "border-[rgb(var(--c-up))] bg-[rgb(var(--c-forest-50))] text-[rgb(var(--c-up))]" : "border-[rgb(var(--c-border))]"}`}>Aset yang sudah dimiliki</button>
+              <button type="button" onClick={() => setRealFundingMode("purchase")} className={`min-h-11 rounded-xl border px-3 text-[11px] font-semibold ${realFundingMode === "purchase" ? "border-[rgb(var(--c-up))] bg-[rgb(var(--c-forest-50))] text-[rgb(var(--c-up))]" : "border-[rgb(var(--c-border))]"}`}>Beli dari rekening</button>
+            </div>}
             <label className="block text-[11px] text-[rgb(var(--c-muted))]">Nama aset<input value={realForm.name} onChange={e => setRealForm({ ...realForm, name: e.target.value })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
-            <label className="block text-[11px] text-[rgb(var(--c-muted))]">Nilai awal<input inputMode="numeric" value={realForm.initialValue} onChange={e => setRealForm({ ...realForm, initialValue: e.target.value.replace(/\D/g, "") })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
+            <label className="block text-[11px] text-[rgb(var(--c-muted))]">Harga perolehan<input inputMode="numeric" value={realForm.initialValue} onChange={e => setRealForm({ ...realForm, initialValue: e.target.value.replace(/\D/g, "") })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
+            {realFundingMode === "purchase" && <label className="block text-[11px] text-[rgb(var(--c-muted))]">Rekening sumber dana<select value={realFormSourceAccount} onChange={e => setRealFormSourceAccount(e.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]"><option value="">Pilih rekening</option>{wallets.map(w => <option key={w.id} value={w.name}>{w.name}</option>)}</select></label>}
+            {realModal.id && <p className="rounded-xl bg-[rgb(var(--c-cream))] px-3 py-2 text-[10px] text-[rgb(var(--c-muted))]">{realModal.fundingMode === "purchase" ? "Pembelian terhubung ke Transaction Tracker. Mengubah harga atau rekening akan mengoreksi transaksi pembelian." : "Aset ini berasal dari aset yang sudah dimiliki dan tidak terhubung ke saldo rekening."}</p>}
+            <label className="block text-[11px] text-[rgb(var(--c-muted))]">Tanggal perolehan<input type="date" value={realForm.acquisitionDate} onChange={e => setRealForm({ ...realForm, acquisitionDate: e.target.value })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
             <label className="block text-[11px] text-[rgb(var(--c-muted))]">Tanggal perolehan<input type="date" value={realForm.acquisitionDate} onChange={e => setRealForm({ ...realForm, acquisitionDate: e.target.value })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
             <label className="block text-[11px] text-[rgb(var(--c-muted))]">Perubahan nilai per tahun (%)<input inputMode="decimal" value={realForm.annualChangePercent} onChange={e => setRealForm({ ...realForm, annualChangePercent: e.target.value.replace(/[^0-9.-]/g, "") })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
             <label className="block text-[11px] text-[rgb(var(--c-muted))]">Catatan (opsional)<textarea value={realForm.note} onChange={e => setRealForm({ ...realForm, note: e.target.value })} className="mt-1 min-h-20 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 py-2 text-[13px]" /></label>
