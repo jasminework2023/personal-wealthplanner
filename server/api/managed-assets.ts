@@ -186,7 +186,8 @@ export default async function handler(req:VercelRequest,res:VercelResponse) {
         if(salePrice<=0 || !destination) return res.status(400).json({error:"Harga jual dan rekening tujuan wajib diisi."});
         const gainLoss=salePrice-existing.currentValue;
         await appendSaleTransaction(sheets,user.spreadsheet_id,id,existing.name,salePrice,destination,gainLoss);
-        if(existing.fundingMode==="purchase" && existing.transactionId) await clearTransactionByMarker(sheets,user.spreadsheet_id,`[real-asset:${existing.transactionId}]`);
+        // Keep the original purchase transaction. The sale is a separate cash-in event;
+        // clearing the purchase would incorrectly restore the original source balance.
         const s=section(data,"Real Assets"), row=findId(data,s,id);
         if(row>0) await sheets.spreadsheets.values.clear({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${row}:I${row}`});
         return res.status(200).json({success:true,salePrice,gainLoss});
