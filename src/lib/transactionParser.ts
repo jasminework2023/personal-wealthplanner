@@ -139,12 +139,12 @@ function inferCategory(lower: string): { type: TransactionType; category: string
 }
 
 export function parseTransactionText(text: string): ParsedTransaction | null {
-  const amount = parseAmount(text);
-  if (amount === null || amount <= 0) return null;
-
   const lower = text.toLowerCase();
-  const { type: inferredType, category: inferredCategory } = inferCategory(lower);
   const stockPurchase = inferStockPurchase(text);
+  const amount = parseAmount(text);
+  if ((amount === null || amount <= 0) && !stockPurchase) return null;
+
+  const { type: inferredType, category: inferredCategory } = inferCategory(lower);
   const type = stockPurchase ? "Saving" : inferredType;
   const category = stockPurchase ? "Stocks" : inferredCategory;
   const date = parseDate(text);
