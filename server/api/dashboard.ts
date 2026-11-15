@@ -313,8 +313,12 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
       ];
 
       for (const candidate of candidates) {
+        const raw = String(candidate ?? "").trim();
+        if (!raw) continue;
+        const looksNumeric = /(?:\d|rp|idr|\$)/i.test(raw);
+        if (!looksNumeric) continue;
         const parsed = parseRupiah(candidate);
-        if (parsed >= 0 && String(candidate ?? "").trim() !== "") {
+        if (Number.isFinite(parsed)) {
           target = parsed;
           break outer;
         }
