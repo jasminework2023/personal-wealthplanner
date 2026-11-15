@@ -60,7 +60,12 @@ export function saveFinancialPlan(plan: Omit<FinancialPlan, "id" | "createdAt"> 
     id: plan.id || `${plan.calculatorId}-${Date.now()}`,
     createdAt: Date.now(),
   };
-  const updated = [next, ...current.filter((p) => p.calculatorId !== next.calculatorId)];
+  // Goals are persistent records. Saving a new plan must never remove an
+  // existing goal just because it uses the same calculator type.
+  // When an explicit id is supplied, update that specific plan instead.
+  const updated = plan.id
+    ? current.map((p) => (p.id === next.id ? next : p))
+    : [next, ...current];
   localStorage.setItem(KEY, JSON.stringify(updated));
   return next;
 }
