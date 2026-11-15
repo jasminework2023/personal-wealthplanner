@@ -308,13 +308,24 @@ export function Home() {
               <span className="min-w-0 truncate text-right text-[11px] font-medium text-[#03140C]/75">Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium", 11) : "Rp ••••••"}</span>
             </div>
             <div className="mt-2">
-              <div className="flex items-center gap-1 overflow-x-auto pb-1">
+              <div
+                className="flex items-center gap-1 overflow-x-auto pb-1 touch-pan-x"
+                onPointerDown={(event) => {
+                  const startX = event.clientX;
+                  const handleUp = (upEvent: PointerEvent) => {
+                    const delta = upEvent.clientX - startX;
+                    if (Math.abs(delta) > 45) cycleAssetPeriod(delta < 0 ? 1 : -1);
+                    window.removeEventListener("pointerup", handleUp);
+                  };
+                  window.addEventListener("pointerup", handleUp);
+                }}
+              >
                 {(["1M", "3M", "6M", "YTD", "1Y"] as const).map((period) => (
                   <button
                     key={period}
                     type="button"
                     onClick={(event) => { event.stopPropagation(); setAssetPeriod(period); }}
-                    className={`shrink-0 rounded-full px-2 py-1 text-[9px] font-semibold transition ${assetPeriod === period ? "bg-[#03140C] text-white" : "text-[#03140C]/60 hover:bg-black/10"}`}
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-[9px] font-semibold transition ${assetPeriod === period ? "bg-[#03140C] text-white" : "text-[#03140C]/60 hover:bg-black/10"}`}
                   >
                     {assetPeriodLabels[period]}
                   </button>
