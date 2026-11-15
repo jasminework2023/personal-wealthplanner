@@ -201,12 +201,15 @@ export function Home() {
           <div className="mt-0.5 min-w-0 break-words text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black" style={{ fontSize: "34px" }}>
             {renderMoney(integratedTotalAssets, assetsVisible, "text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black", 34)}
           </div>
-          <div className="mt-2 flex min-h-[46px] items-center justify-start gap-3">
+          <div className="mt-2 flex min-h-[46px] items-center justify-between gap-3">
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[11px] font-medium tracking-[-0.02em] text-[#042F21]">
               <TrendingUp size={14} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
             </span>
+            <span className="shrink-0 text-[11px] font-medium tracking-[-0.02em] text-[#075B40]/80 tabular-nums">
+              {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium tracking-[-0.02em] text-[#075B40]/80 tabular-nums", 11) : "Rp ••••••"}
+            </span>
           </div>
-          {/* Asset goal progress: keep the bar + percentage only; redundant current/target labels are intentionally omitted. */}
+          {/* Asset goal progress: target amount sits beside the percentage above the bar. */}
           <div className="mt-3">
             <div
               className="h-2.5 w-full overflow-hidden rounded-full bg-[#006B48]/20"
