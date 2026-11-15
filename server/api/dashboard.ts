@@ -149,7 +149,7 @@ function normalizeSheetDate(value: unknown, monthValue: unknown): string {
 }
 
 function getTransactions(rows: unknown[][], year?: number) {
-  const typeMap: Record<string, string> = { income: "Income", expense: "Expense", saving: "Saving", transfer: "Transfer" };
+  const typeMap: Record<string, string> = { income: "Income", expense: "Expense", saving: "Saving", transfer: "Transfer", debtreceived: "DebtReceived", debtpayment: "DebtPayment", debtcardpayment: "DebtCardPayment" };
 
   return rows
     .map((row, index) => ({ row, sheetRow: index + 10 }))
