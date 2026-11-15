@@ -11,6 +11,7 @@ type Investment = {
 type RealAsset = {
   id: string; name: string; initialValue: number; acquisitionDate: string;
   annualChangePercent: number; note: string; currentValue: number;
+  sourceAccount: string; transactionId: string; fundingMode: "purchase" | "owned";
 };
 
 const norm = (v: unknown) => String(v ?? "").trim().replace(/\s+/g, " ").toLowerCase();
@@ -49,8 +50,7 @@ async function rows(sheets: any, spreadsheetId: string) {
   return r.data.values || [];
 }
 function section(rows: any[][], label: string) {
-  const i = rows.findIndex(r => norm(r?.[0]) === norm(label));
-  return i;
+  return rows.findIndex(r => norm(r?.[0]) === norm(label));
 }
 async function ensureSection(sheets: any, spreadsheetId: string, rows: any[][], label: string, headers: string[]) {
   const found = section(rows, label);
@@ -65,6 +65,7 @@ async function ensureSection(sheets: any, spreadsheetId: string, rows: any[][], 
   return row - 1;
 }
 function findId(rows: any[][], sectionRow: number, id: string) {
+  if (sectionRow < 0) return -1;
   for (let i = sectionRow + 2; i < rows.length; i++) {
     if (display(rows[i]?.[0]) === id) return i + 1;
   }
@@ -76,7 +77,7 @@ function parseInvestment(rows: any[][]) {
   const out: Investment[] = [];
   for (let i=s+2;i<rows.length;i++) {
     const r=rows[i]||[]; if (!display(r[0])) continue;
-    if (norm(r[0]) === "real assets" || norm(r[0]) === "target assets") break;
+    if (["real assets","target assets"].includes(norm(r[0]))) break;
     const currency = norm(r[11]) === "usd" ? "USD" : "IDR";
     out.push({
       id:display(r[0]), name:display(r[1]), category:display(r[2]) || "Lainnya",
@@ -95,7 +96,12 @@ function parseReal(rows: any[][]) {
     const r=rows[i]||[]; if (!display(r[0])) continue;
     if (norm(r[0]) === "target assets") break;
     const initial=num(r[2]), rate=num(r[4]), date=isoDate(r[3]);
-    out.push({id:display(r[0]),name:display(r[1]),initialValue:initial,acquisitionDate:date,annualChangePercent:rate,note:display(r[5]),currentValue:realValue(initial,rate,date)});
+    out.push({
+      id:display(r[0]), name:display(r[1]), initialValue:initial, acquisitionDate:date,
+      annualChangePercent:rate, note:display(r[5]), currentValue:realValue(initial,rate,date),
+      sourceAccount:display(r[6]), transactionId:display(r[7]),
+      fundingMode:norm(r[8]) === "purchase" ? "purchase" : "owned",
+    });
   }
   return out;
 }
@@ -103,102 +109,141 @@ function transactionDate() {
   const d=new Date();
   return { date:d.toISOString().slice(0,10), month:d.toLocaleString("en-US",{month:"long"}), year:d.getFullYear() };
 }
-async function appendPurchaseTransaction(sheets:any, spreadsheetId:string, amount:number, account:string, txid:string, name:string) {
+async function transactionRows(sheets:any, spreadsheetId:string) {
+  const r=await sheets.spreadsheets.values.get({spreadsheetId,range:"Transaction!B10:I"});
+  return r.data.values || [];
+}
+async function appendTransaction(sheets:any, spreadsheetId:string, txid:string, amount:number, account:string, name:string, date:string) {
   const d=transactionDate();
+  const useDate=date || d.date;
+  const month=new Date(useDate+"T00:00:00").toLocaleString("en-US",{month:"long"});
   await sheets.spreadsheets.values.append({
     spreadsheetId, range:"Transaction!B10:I", valueInputOption:"USER_ENTERED", insertDataOption:"INSERT_ROWS",
-    requestBody:{values:[[d.date,d.month,"Saving","Investment Purchase",`${name} · TXID:${txid}`,amount,account,""]]}
+    requestBody:{values:[[useDate,month,"Saving","Real Asset Purchase",`[real-asset:${txid}] ${name}`,amount,account,""]]}
   });
 }
 async function updatePurchaseTransaction(sheets:any, spreadsheetId:string, txid:string, amount:number, account:string) {
-  const r=await sheets.spreadsheets.values.get({spreadsheetId,range:"Transaction!B10:I"});
-  const data=r.data.values||[];
+  const data=await transactionRows(sheets,spreadsheetId);
   for(let i=0;i<data.length;i++) {
-    if(String(data[i]?.[4]||"").includes(`TXID:${txid}`)) {
-      const row=i+10;
-      await sheets.spreadsheets.values.update({spreadsheetId,range:`Transaction!G${row}:H${row}`,valueInputOption:"USER_ENTERED",requestBody:{values:[[amount,account]]}});
+    if(String(data[i]?.[4]||"").includes(`[real-asset:${txid}]`)) {
+      await sheets.spreadsheets.values.update({spreadsheetId,range:`Transaction!G${i+10}:H${i+10}`,valueInputOption:"USER_ENTERED",requestBody:{values:[[amount,account]]}});
       return true;
     }
   }
   return false;
 }
-async function clearPurchaseTransaction(sheets:any, spreadsheetId:string, txid:string) {
-  const r=await sheets.spreadsheets.values.get({spreadsheetId,range:"Transaction!B10:I"});
-  const data=r.data.values||[];
-  for(let i=0;i<data.length;i++) if(String(data[i]?.[4]||"").includes(`TXID:${txid}`)) {
+async function clearTransactionByMarker(sheets:any, spreadsheetId:string, marker:string) {
+  const data=await transactionRows(sheets,spreadsheetId);
+  for(let i=0;i<data.length;i++) if(String(data[i]?.[4]||"").includes(marker)) {
     await sheets.spreadsheets.values.clear({spreadsheetId,range:`Transaction!B${i+10}:I${i+10}`}); return true;
   }
   return false;
+}
+async function appendSaleTransaction(sheets:any, spreadsheetId:string, assetId:string, assetName:string, amount:number, destination:string, gainLoss:number) {
+  const d=transactionDate();
+  const suffix=gainLoss>=0 ? `Untung ${Math.round(gainLoss)}` : `Rugi ${Math.round(Math.abs(gainLoss))}`;
+  await sheets.spreadsheets.values.append({
+    spreadsheetId,range:"Transaction!B10:I",valueInputOption:"USER_ENTERED",insertDataOption:"INSERT_ROWS",
+    requestBody:{values:[[d.date,d.month,"Income","Asset Sale",`[real-asset-sale:${assetId}] ${assetName} · ${suffix}`,amount,"",destination]]}
+  });
+}
+async function appendOrReusePurchaseTransaction(sheets:any, spreadsheetId:string, txid:string, amount:number, account:string, name:string, purchaseDate:string) {
+  const data=await transactionRows(sheets,spreadsheetId);
+  const marker=`[real-asset:${txid}]`;
+  if(data.some((r:any[])=>String(r?.[4]||"").includes(marker))) return;
+  const duplicate=data.find((r:any[]) =>
+    norm(r?.[2])==="saving" && norm(r?.[3])==="real asset purchase" &&
+    norm(r?.[4]).includes(norm(name)) && Math.abs(num(r?.[5])-amount)<1 &&
+    norm(r?.[6])===norm(account) && String(r?.[0]||"").slice(0,10)===purchaseDate
+  );
+  if(duplicate) return;
+  await appendTransaction(sheets,spreadsheetId,txid,amount,account,name,purchaseDate);
 }
 export default async function handler(req:VercelRequest,res:VercelResponse) {
   const token=String(req.method==="GET"?req.query.token||"":req.body?.token||"").trim();
   if(!token) return res.status(400).json({error:"Token tidak ditemukan"});
   try {
-    const user=await auth(token), sheets=sheetsClient();
-    const data=await rows(sheets,user.spreadsheet_id);
+    const user=await auth(token), sheets=sheetsClient(), data=await rows(sheets,user.spreadsheet_id);
     if(req.method==="GET") return res.status(200).json({investments:parseInvestment(data),realAssets:parseReal(data)});
-
     const kind:Kind=req.body?.kind==="real"?"real":"investment";
     const action=String(req.body?.action||"").toLowerCase();
+
     if(kind==="real") {
-      const id=display(req.body?.id)||globalThis.crypto?.randomUUID?.() || ("asset-" + Date.now());
+      const id=display(req.body?.id)||globalThis.crypto?.randomUUID?.()||("asset-"+Date.now());
+      const existing=parseReal(data).find(x=>x.id===id);
+
       if(action==="delete") {
-        const s=section(data,"Real Assets"); const row=findId(data,s,id);
-        if(row<0) return res.status(404).json({error:"Aset riil tidak ditemukan"});
-        await sheets.spreadsheets.values.clear({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${row}:F${row}`});
+        if(!existing) return res.status(404).json({error:"Aset riil tidak ditemukan"});
+        if(existing.fundingMode==="purchase" && existing.transactionId) await clearTransactionByMarker(sheets,user.spreadsheet_id,`[real-asset:${existing.transactionId}]`);
+        const s=section(data,"Real Assets"), row=findId(data,s,id);
+        if(row>0) await sheets.spreadsheets.values.clear({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${row}:I${row}`});
         return res.status(200).json({success:true});
       }
-      const name=display(req.body?.name), initial=num(req.body?.initialValue), date=isoDate(req.body?.acquisitionDate), rate=num(req.body?.annualChangePercent), note=display(req.body?.note);
-      if(!name || initial<0 || !date || rate<=-100) return res.status(400).json({error:"Nama, nilai awal, tanggal perolehan, dan perubahan nilai wajib valid."});
-      const s=await ensureSection(sheets,user.spreadsheet_id,data,"Real Assets",["ID","Nama Aset","Nilai Awal","Tanggal Perolehan","Perubahan/Tahun (%)","Catatan"]);
+
+      if(action==="sell") {
+        if(!existing) return res.status(404).json({error:"Aset riil tidak ditemukan"});
+        const salePrice=num(req.body?.salePrice), destination=display(req.body?.destinationAccount);
+        if(salePrice<=0 || !destination) return res.status(400).json({error:"Harga jual dan rekening tujuan wajib diisi."});
+        const gainLoss=salePrice-existing.currentValue;
+        await appendSaleTransaction(sheets,user.spreadsheet_id,id,existing.name,salePrice,destination,gainLoss);
+        if(existing.fundingMode==="purchase" && existing.transactionId) await clearTransactionByMarker(sheets,user.spreadsheet_id,`[real-asset:${existing.transactionId}]`);
+        const s=section(data,"Real Assets"), row=findId(data,s,id);
+        if(row>0) await sheets.spreadsheets.values.clear({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${row}:I${row}`});
+        return res.status(200).json({success:true,salePrice,gainLoss});
+      }
+
+      const name=display(req.body?.name), initial=num(req.body?.initialValue), date=isoDate(req.body?.acquisitionDate);
+      const rate=num(req.body?.annualChangePercent), note=display(req.body?.note), sourceAccount=display(req.body?.sourceAccount);
+      const fundingMode=norm(req.body?.fundingMode)==="purchase"?"purchase":"owned";
+      if(!name || initial<0 || !date || rate<=-100) return res.status(400).json({error:"Nama, harga perolehan, tanggal perolehan, dan perubahan nilai wajib valid."});
+      if(!existing && fundingMode==="purchase" && !sourceAccount) return res.status(400).json({error:"Rekening sumber dana wajib dipilih untuk pembelian aset riil."});
+      if(existing?.fundingMode==="purchase" && !sourceAccount) return res.status(400).json({error:"Aset ini terhubung ke rekening sumber. Pilih rekening sumber dana."});
+
+      const txid=existing?.transactionId || (fundingMode==="purchase" ? (globalThis.crypto?.randomUUID?.()||("tx-"+Date.now())) : "");
+      if(fundingMode==="purchase") {
+        if(existing?.transactionId) await updatePurchaseTransaction(sheets,user.spreadsheet_id,existing.transactionId,initial,sourceAccount);
+        else await appendOrReusePurchaseTransaction(sheets,user.spreadsheet_id,txid,initial,sourceAccount,name,date);
+      } else if(existing?.transactionId) {
+        await clearTransactionByMarker(sheets,user.spreadsheet_id,`[real-asset:${existing.transactionId}]`);
+      }
+
+      const s=await ensureSection(sheets,user.spreadsheet_id,data,"Real Assets",["ID","Nama Aset","Harga Perolehan","Tanggal Perolehan","Perubahan/Tahun (%)","Catatan","Rekening Sumber","Transaction ID","Sumber"]);
       const refreshed=await rows(sheets,user.spreadsheet_id), row=findId(refreshed,s,id);
-      const values=[[id,name,initial,date,rate,note]];
+      const values=[[id,name,initial,date,rate,note,sourceAccount,txid,fundingMode]];
       if(row<0) {
-        const fresh = await rows(sheets, user.spreadsheet_id);
-        const sectionRow = section(fresh, "Real Assets");
-        let targetRow = sectionRow + 2;
-        while (display(fresh[targetRow]?.[0])) targetRow++;
-        await sheets.spreadsheets.values.update({
-          spreadsheetId:user.spreadsheet_id, range:`'Asset Tracker'!A${targetRow + 1}:F${targetRow + 1}`,
-          valueInputOption:"USER_ENTERED", requestBody:{values}
-        });
-      } else await sheets.spreadsheets.values.update({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${row}:F${row}`,valueInputOption:"USER_ENTERED",requestBody:{values}});
-      return res.status(200).json({success:true,asset:{id,name,initialValue:initial,acquisitionDate:date,annualChangePercent:rate,note,currentValue:realValue(initial,rate,date)}});
+        const fresh=await rows(sheets,user.spreadsheet_id), sectionRow=section(fresh,"Real Assets");
+        let targetRow=sectionRow+2; while(display(fresh[targetRow]?.[0])) targetRow++;
+        await sheets.spreadsheets.values.update({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${targetRow+1}:I${targetRow+1}`,valueInputOption:"USER_ENTERED",requestBody:{values}});
+      } else await sheets.spreadsheets.values.update({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${row}:I${row}`,valueInputOption:"USER_ENTERED",requestBody:{values}});
+      return res.status(200).json({success:true,asset:{id,name,initialValue:initial,acquisitionDate:date,annualChangePercent:rate,note,currentValue:realValue(initial,rate,date),sourceAccount,transactionId:txid,fundingMode}});
     }
 
-    const id=display(req.body?.id)||crypto.randomUUID();
+    const id=display(req.body?.id)||globalThis.crypto?.randomUUID?.();
     if(action==="delete") {
       const s=section(data,"Managed Investment Assets"), row=findId(data,s,id);
       if(row<0) return res.status(404).json({error:"Aset investasi tidak ditemukan"});
       const existing=parseInvestment(data).find(x=>x.id===id);
-      if(existing?.transactionId) await clearPurchaseTransaction(sheets,user.spreadsheet_id,existing.transactionId);
+      if(existing?.transactionId) await clearTransactionByMarker(sheets,user.spreadsheet_id,`[asset-tx:${existing.transactionId}]`);
       await sheets.spreadsheets.values.clear({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${row}:N${row}`});
       return res.status(200).json({success:true});
     }
     const name=display(req.body?.name), category=display(req.body?.category)||"Lainnya", quantity=num(req.body?.quantity), unit=display(req.body?.unit)||"unit", buyPrice=num(req.body?.buyPrice), currentPrice=num(req.body?.currentPrice), sourceAccount=display(req.body?.sourceAccount), purchaseDate=isoDate(req.body?.purchaseDate), note=display(req.body?.note), currency=String(req.body?.currency||"IDR")==="USD"?"USD":"IDR", fxRate=num(req.body?.fxRate)||1;
     if(!name || quantity<=0 || buyPrice<0 || currentPrice<0 || !purchaseDate) return res.status(400).json({error:"Nama, jumlah, harga, dan tanggal wajib valid."});
     if(action==="create" && String(req.body?.fundingMode||"") === "purchase" && !sourceAccount) return res.status(400).json({error:"Rekening sumber dana wajib dipilih untuk pembelian aset."});
-    const costBasis=quantity*buyPrice*fxRate;
-    const existing=parseInvestment(data).find(x=>x.id===id);
-    const txid=existing?.transactionId || (String(req.body?.fundingMode||"") === "purchase" ? crypto.randomUUID() : "");
-    if(existing?.transactionId) {
-      if(!sourceAccount) return res.status(400).json({error:"Rekening sumber dana wajib dipilih untuk aset yang berasal dari pembelian."});
-      await updatePurchaseTransaction(sheets,user.spreadsheet_id,existing.transactionId,costBasis,sourceAccount);
-    } else if(String(req.body?.fundingMode||"") === "purchase") {
-      await appendPurchaseTransaction(sheets,user.spreadsheet_id,costBasis,sourceAccount,txid,name);
+    const costBasis=quantity*buyPrice*fxRate, existing=parseInvestment(data).find(x=>x.id===id);
+    const txid=existing?.transactionId || (String(req.body?.fundingMode||"") === "purchase" ? (globalThis.crypto?.randomUUID?.()||("tx-"+Date.now())) : "");
+    if(existing?.transactionId) await updatePurchaseTransaction(sheets,user.spreadsheet_id,existing.transactionId,costBasis,sourceAccount);
+    else if(String(req.body?.fundingMode||"") === "purchase") {
+      const d=transactionDate();
+      await sheets.spreadsheets.values.append({spreadsheetId:user.spreadsheet_id,range:"Transaction!B10:I",valueInputOption:"USER_ENTERED",insertDataOption:"INSERT_ROWS",requestBody:{values:[[d.date,d.month,"Saving","Investment Purchase",`[asset-tx:${txid}] ${name}`,costBasis,sourceAccount,""]]}});
     }
     const s=await ensureSection(sheets,user.spreadsheet_id,data,"Managed Investment Assets",["ID","Nama","Kategori","Jumlah","Unit","Harga Beli","Harga Terkini","Rekening Sumber","Tanggal Beli","Catatan","Transaction ID","Mata Uang","Kurs","Cost Basis IDR"]);
     const refreshed=await rows(sheets,user.spreadsheet_id), row=findId(refreshed,s,id);
     const values=[[id,name,category,quantity,unit,buyPrice,currentPrice,sourceAccount,purchaseDate,note,txid,currency,fxRate,costBasis]];
     if(row<0) {
-      const fresh = await rows(sheets, user.spreadsheet_id);
-      const sectionRow = section(fresh, "Managed Investment Assets");
-      let targetRow = sectionRow + 2;
-      while (display(fresh[targetRow]?.[0])) targetRow++;
-      await sheets.spreadsheets.values.update({
-        spreadsheetId:user.spreadsheet_id, range:`'Asset Tracker'!A${targetRow + 1}:N${targetRow + 1}`,
-        valueInputOption:"USER_ENTERED", requestBody:{values}
-      });
+      const fresh=await rows(sheets,user.spreadsheet_id), sectionRow=section(fresh,"Managed Investment Assets");
+      let targetRow=sectionRow+2; while(display(fresh[targetRow]?.[0])) targetRow++;
+      await sheets.spreadsheets.values.update({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${targetRow+1}:N${targetRow+1}`,valueInputOption:"USER_ENTERED",requestBody:{values}});
     } else await sheets.spreadsheets.values.update({spreadsheetId:user.spreadsheet_id,range:`'Asset Tracker'!A${row}:N${row}`,valueInputOption:"USER_ENTERED",requestBody:{values}});
     return res.status(200).json({success:true,asset:{id,name,category,quantity,unit,buyPrice,currentPrice,sourceAccount,purchaseDate,note,transactionId:txid,currency,fxRate,costBasis}});
   } catch(e) {
