@@ -524,7 +524,11 @@ export function AddTransactionModal({
       return;
     }
     if (!parsed) {
-      setAiError("Nggak ketemu nominalnya. Coba sertakan angka, misal '35 ribu'.");
+      if (/\b(beli|buy|membeli|beliin|purchase)\b/i.test(aiText)) {
+        setAiError("Pembelian belum dikenali. Coba format: beli mobil 150 juta dari BCA. Untuk investasi, gunakan nama aset investasinya.");
+      } else {
+        setAiError("Nggak ketemu nominalnya. Coba sertakan angka, misal '35 ribu'.");
+      }
       return;
     }
     setAiError("");
