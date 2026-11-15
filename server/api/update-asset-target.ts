@@ -83,7 +83,7 @@ async function getAssetTrackerSheet(token: string) {
 async function readRows(sheets: any, spreadsheetId: string, title: string) {
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `'${title}'!A1:O500`,
+    range: `'${title}'!A1:O1000`,
   });
   return response.data.values || [];
 }
