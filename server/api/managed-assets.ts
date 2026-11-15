@@ -141,7 +141,7 @@ export default async function handler(req:VercelRequest,res:VercelResponse) {
     const kind:Kind=req.body?.kind==="real"?"real":"investment";
     const action=String(req.body?.action||"").toLowerCase();
     if(kind==="real") {
-      const id=display(req.body?.id)||crypto.randomUUID();
+      const id=display(req.body?.id)||globalThis.crypto?.randomUUID?.() || ("asset-" + Date.now());
       if(action==="delete") {
         const s=section(data,"Real Assets"); const row=findId(data,s,id);
         if(row<0) return res.status(404).json({error:"Aset riil tidak ditemukan"});
