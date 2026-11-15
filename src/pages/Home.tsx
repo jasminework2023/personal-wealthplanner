@@ -37,7 +37,7 @@ export function Home() {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const id = language === "id";
-  const { error, isRealData, loading, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month, assets } = useFinanceData();
+  const { error, isRealData, loading, userId, username, transactions, totalIncome, totalExpense, totalSaving, byCategory, month, assets } = useFinanceData();
   const { wallets } = useWallets();
   // Keep Home and Report > Asset Tracker on the exact same asset calculation.
   // Wallet is the source of truth for liquid assets; investment assets come from the Asset Tracker.
@@ -101,6 +101,7 @@ export function Home() {
   const remainingBudget = hasBudget ? expenseBudget - totalExpense : 0;
 
   const renderMoney = (value: number, visible: boolean, amountClassName: string, fontSize?: number) => {
+    if (loading) return <span aria-label="Memuat data" className="inline-block h-[1em] w-[190px] max-w-full animate-pulse rounded-md bg-black/15 align-middle" />;
     if (!visible) return <span className={amountClassName} style={fontSize ? { fontSize: `${fontSize}px` } : undefined}>Rp ••••••</span>;
     const formatted = formatRupiah(value);
     const amount = formatted.startsWith("Rp ") ? formatted.slice(3) : formatted.replace(/^Rp\\s*/, "");
@@ -115,7 +116,7 @@ export function Home() {
   useEffect(() => {
     const now = new Date();
     const key = (date: Date) => "wealthplanner_asset_snapshot_" + date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
-    const prefix = isRealData ? (localStorage.getItem("wealthplanner_token") || "account") : "demo";
+    const prefix = isRealData && userId ? `user_${userId}` : "empty";
     const previousDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     try {
       const previousAssets = Number(localStorage.getItem(prefix + "_" + key(previousDate)));
