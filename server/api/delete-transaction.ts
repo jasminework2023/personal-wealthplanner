@@ -38,7 +38,8 @@ async function removeLinkedAsset(sheets: any, spreadsheetId: string, txDescripti
     }
   }
 }
-\nexport default async function handler(req: VercelRequest, res: VercelResponse) {
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
   const { token, sheetRow } = req.body || {};
