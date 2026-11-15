@@ -34,13 +34,22 @@ function inferStockTicker(text: string): string {
 
 function inferStockDetails(text: string) {
   const ticker = inferStockTicker(text);
-  if (!ticker) return { ticker: "", quantity: "", price: "" };
+  if (!ticker) return { ticker: "", quantity: "", price: "", market: "ID" as "ID" | "US", sourceAccount: "" };
+  const lower = text.toLowerCase();
+  const market = /\\b(saham\\s*(us|as|amerika)|us\\s*stock|american stock)\\b/i.test(lower)
+    ? "US" as const
+    : ["AAPL","TSLA","MSFT","AMZN","NVDA","META","GOOGL","GOOG","VOO","SPY","QQQ"].includes(ticker)
+      ? "US" as const : "ID" as const;
   const lotMatch = text.match(/(\\d+(?:[.,]\\d+)?)\\s*lot\\b/i);
-  const priceMatch = text.match(/@\\s*(\\d+(?:[.,]\\d+)?)/i);
+  const shareMatch = text.match(/(\\d+(?:[.,]\\d+)?)\\s*(?:lembar|saham|share|shares)\\b/i);
+  const priceMatch = text.match(/(?:@|harga(?:\\s+beli)?(?:nya)?\\s*)\\s*(?:usd\\s*)?(\\d+(?:[.,]\\d+)?)/i);
+  const sourceMatch = text.match(/\\b(?:dari|from)\\s+([A-Za-z0-9 ._-]+?)(?=\\s+(?:dengan|@|harga|rp|\\d)|$)/i);
   return {
     ticker,
-    quantity: lotMatch ? lotMatch[1].replace(",", ".") : "",
+    quantity: (lotMatch?.[1] || shareMatch?.[1] || "").replace(",", "."),
     price: priceMatch ? priceMatch[1].replace(",", ".") : "",
+    market,
+    sourceAccount: sourceMatch ? sourceMatch[1].trim() : "",
   };
 }
 
@@ -412,12 +421,51 @@ export function AddTransactionModal({
     setAiError("");
   }
 
-  function handleAiParse() {
+  async function handleAiParse() {
     if (!aiText.trim()) {
       setAiError("Ketik dulu transaksinya, misalnya: Tadi beli makan 35 ribu");
       return;
     }
+    const stockIntent = /\\b(beli|buy|membeli|beliin)\\b/i.test(aiText) && /\\b(saham|stock|idx|bei)\\b/i.test(aiText);
     const parsed = parseTransactionText(aiText);
+    if (stockIntent) {
+      const stock = parsed?.stockPurchase;
+      if (!stock) {
+        setAiError("Saham belum dikenali. Coba: beli saham BBCA 10 lot dari Stockbit atau beli saham AAPL 2 lembar dari Stockbit.");
+        return;
+      }
+      setMode("manual");
+      setForm((f) => ({ ...f, type: "Saving", category: "Stocks", description: aiText.trim(), amount: "" }));
+      setStockPurchase(true);
+      setStockMarket(stock.market);
+      setStockTicker(stock.ticker);
+      setStockQuantity(String(stock.quantity));
+      setStockBuyPrice(stock.buyPrice ? String(stock.buyPrice) : "");
+      setWallet(stock.sourceAccount || "");
+      setStockAmountAuto(Boolean(stock.buyPrice && stock.market === "ID"));
+      if (stock.market === "ID" && stock.buyPrice) {
+        setForm((f) => ({ ...f, amount: formatAmountInput(String(Math.round(stock.quantity * 100 * stock.buyPrice))) }));
+      }
+      if (stock.market === "US" && stock.buyPrice) {
+        try {
+          const fxResponse = await fetch("/api/exchange-rate?from=USD&to=IDR", { cache: "no-store" });
+          const fxData = await fxResponse.json().catch(() => ({}));
+          const fx = Number(fxData.rate);
+          if (!fxResponse.ok || !Number.isFinite(fx) || fx <= 0) {
+            setAiError("Kurs USD/IDR belum tersedia. Isi kurs USD/IDR secara manual.");
+            return;
+          }
+          setForm((f) => ({ ...f, amount: formatAmountInput(String(Math.round(stock.quantity * stock.buyPrice! * fx))) }));
+        } catch {
+          setAiError("Kurs USD/IDR belum tersedia. Isi kurs USD/IDR secara manual.");
+          return;
+        }
+      }
+      if (!stock.sourceAccount) setFormError("Pilih rekening sumber dana, misalnya Stockbit.");
+      if (!stock.buyPrice) setFormError(stock.market === "US" ? "Masukkan harga beli dalam USD agar nilai Rupiah dan kurs transaksi bisa dihitung." : "Masukkan harga beli per saham agar nominal transaksi bisa dihitung.");
+      setAiError("");
+      return;
+    }
     if (!parsed) {
       setAiError("Nggak ketemu nominalnya. Coba sertakan angka, misal '35 ribu'.");
       return;
