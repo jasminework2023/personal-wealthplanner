@@ -144,7 +144,7 @@ async function appendSaleTransaction(sheets:any, spreadsheetId:string, assetId:s
   const suffix=gainLoss>=0 ? `Untung ${Math.round(gainLoss)}` : `Rugi ${Math.round(Math.abs(gainLoss))}`;
   await sheets.spreadsheets.values.append({
     spreadsheetId,range:"Transaction!B10:I",valueInputOption:"USER_ENTERED",insertDataOption:"INSERT_ROWS",
-    requestBody:{values:[[d.date,d.month,"Income","Asset Sale",`[real-asset-sale:${assetId}] ${assetName} · ${suffix}`,amount,"",destination]]}
+    requestBody:{values:[[d.date,d.month,"Income","Asset Sale",`[real-asset-sale:${assetId}] ${assetName} · ${suffix}`,amount,destination,""]]}
   });
 }
 async function appendOrReusePurchaseTransaction(sheets:any, spreadsheetId:string, txid:string, amount:number, account:string, name:string, purchaseDate:string) {
