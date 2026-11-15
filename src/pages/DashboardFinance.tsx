@@ -651,8 +651,6 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
             wallets={wallets}
             isRealData={isRealData}
             assetsVisible={!assetValuesHidden}
-            integratedTotalAssets={integratedTotalAssets}
-            integratedLiquidTotal={integratedLiquidTotal}
             userId={userId}
           />
           <StockTracker
