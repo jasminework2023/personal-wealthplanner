@@ -57,6 +57,11 @@ function findRowIndex(rows: unknown[][], needle: string, from = 0): number {
   return -1;
 }
 
+function isCreditCardWallet(name: string): boolean {
+  const n = String(name || "").trim().toLowerCase().replace(/\s+/g, " ");
+  return /kartu kredit|credit card|creditcard|\bcc\b/.test(n);
+}
+
 // Ambil angka Rupiah TERAKHIR yang valid (>0) di sebuah baris -- dipakai
 // karena kita nggak 100% yakin index kolom "Value" persis di sheet asli,
 // tapi kolom nominal biasanya yang paling kanan di antara isian baris itu.
@@ -400,12 +405,15 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
   }
 
   const liquid = {
-    items: walletRows.map((wallet: any) => {
-      const key = String(wallet.name_key || wallet.name || "").trim().toLowerCase();
-      const sums = walletSums.get(key) || { inflow: 0, outflow: 0 };
-      const balance = (Number(wallet.opening_balance) || 0) + sums.inflow - sums.outflow;
-      return { name: String(wallet.name || "").trim(), value: balance };
-    }).filter((item: any) => item.name && Number.isFinite(item.value)),
+    items: walletRows
+      .filter((wallet: any) => !isCreditCardWallet(String(wallet.name || "")))
+      .map((wallet: any) => {
+        const key = String(wallet.name_key || wallet.name || "").trim().toLowerCase();
+        const sums = walletSums.get(key) || { inflow: 0, outflow: 0 };
+        const balance = (Number(wallet.opening_balance) || 0) + sums.inflow - sums.outflow;
+        return { name: String(wallet.name || "").trim(), value: balance };
+      })
+      .filter((item: any) => item.name && Number.isFinite(item.value)),
     total: 0,
   };
   liquid.total = liquid.items.reduce((sum: number, item: any) => sum + item.value, 0);
