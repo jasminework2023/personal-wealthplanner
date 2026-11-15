@@ -16,6 +16,7 @@ import { AIAssistant } from "./pages/AIAssistant";
 import { Guidance } from "./pages/Guidance";
 import { Checkup } from "./pages/Checkup";
 import { SpouseSharing } from "./pages/SpouseSharing";
+import { Calendar } from "./pages/Calendar";
 
 function CalculatorRoute() {
   const navigate = useNavigate();
@@ -72,6 +73,8 @@ export default function App() {
           <Route path="/spouse-sharing" element={<SpouseSharing />} />
           <Route path="/guidance" element={<Guidance />} />
           <Route path="/checkup" element={<Checkup />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/debt" element={<DashboardFinance initialTab="debt" />} />
         </Route>
       </Routes>
     </BrowserRouter>
