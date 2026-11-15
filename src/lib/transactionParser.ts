@@ -116,6 +116,19 @@ function inferStockPurchase(text: string): ParsedStockPurchase | undefined {
 }
 
 
+function inferDebtPayment(text: string): ParsedDebtPayment | undefined {
+  const lower = text.toLowerCase();
+  if (!/\b(bayar|bayarkan|cicil|cicilan|bayar tagihan)\b/i.test(lower)) return undefined;
+  const amount = parseAmount(text);
+  if (!amount) return undefined;
+  const sourceMatch = text.match(/\b(?:dari|from)\s+([A-Za-z0-9 ._-]+?)(?=\s+(?:sebesar|rp|\d|$))/i);
+  let debtName = "";
+  const debtMatch = text.match(/\b(?:bayar|bayarkan|cicil|cicilan)\s+(.+?)(?=\s+(?:rp\.?\s*)?\d|\s+(?:dari|from)\b|$)/i);
+  if (debtMatch?.[1]) debtName = debtMatch[1].trim();
+  if (!debtName) return undefined;
+  return { debtName, sourceAccount: sourceMatch ? sourceMatch[1].trim() : "" };
+}
+
 function inferRealPurchase(text: string): ParsedRealPurchase | undefined {
   const lower = text.toLowerCase();
   const buyIntent = /\b(beli|buy|membeli|beliin|purchase)\b/.test(lower);
