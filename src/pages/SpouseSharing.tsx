@@ -135,7 +135,7 @@ export function SpouseSharing() {
         <>
           <div className="rounded-2xl border border-charcoal/10 bg-charcoal/[0.02] p-4">
             <p className="text-[13px] font-semibold text-charcoal">Undang pasangan</p>
-            <p className="mt-1 text-[11.5px] leading-relaxed text-charcoal/55">Pasangan tetap punya akun sendiri. Setelah terhubung, kita bisa menambahkan Family View dan data yang dibagikan secara terpisah.</p>
+            <p className="mt-1 text-[11.5px] leading-relaxed text-charcoal/55">Pasangan tetap punya akun sendiri. Saat ini koneksi hanya menghubungkan kedua akun; data keuangan belum dibagikan.</p>
             {pending ? (
               <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11.5px] text-amber-800">Undangan sedang aktif. Bagikan link yang sudah dibuat sebelumnya.</div>
             ) : (
