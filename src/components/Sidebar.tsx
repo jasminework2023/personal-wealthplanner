@@ -36,6 +36,7 @@ const toolLinks = [
   { to: "/protection", label: "Financial Protection", icon: Shield },
   { to: "/ai-assistant", label: "AI Assistant", icon: Sparkles },
   { to: "/checkup", label: "Consultation", icon: CircleCheck },
+  { to: "/community", label: "Community", icon: UsersRound },
 ];
 
 function NavItem({ to, label, icon: Icon, onNavigate, dataTour }: { to: string; label: string; icon: any; onNavigate?: () => void; dataTour?: string }) {
@@ -78,7 +79,7 @@ function Brand() {
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
-  const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", asset: "Aset", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", checkup: "Konsultasi", guidance: "Panduan", profile: "Profil & Pengaturan", wallet: "Wallet", transaction: "Transaksi", goals: "Target", aiAssistant: "Asisten AI", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", asset: "Asset", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", checkup: "Consultation", wallet: "Wallet", guidance: "Guidance", transaction: "Transaction", goals: "Goals", aiAssistant: "AI Assistant", website: "Website", personalFinance: "Personal Finance" };
+  const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", asset: "Aset", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", checkup: "Konsultasi", community: "Komunitas", guidance: "Panduan", profile: "Profil & Pengaturan", wallet: "Wallet", transaction: "Transaksi", goals: "Target", aiAssistant: "Asisten AI", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", asset: "Asset", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", checkup: "Consultation", community: "Community", wallet: "Wallet", guidance: "Guidance", transaction: "Transaction", goals: "Goals", aiAssistant: "AI Assistant", website: "Website", personalFinance: "Personal Finance" };
   return (
     <div className="flex flex-col h-full">
       <Brand />
@@ -91,7 +92,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
         <p className="px-3 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.tools}</p>
         <nav className="flex flex-col gap-0.5">
-          {toolLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/wallets" ? "menu-wallet" : l.to === "/calculator" ? "menu-calculator" : l.to === "/protection" ? "menu-protection" : l.to === "/checkup" ? "menu-checkup" : undefined} label={l.to === "/wallets" ? labels.wallet : l.to === "/calculator" ? labels.calculator : l.to === "/protection" ? labels.protection : l.to === "/ai-assistant" ? labels.aiAssistant : l.to === "/checkup" ? labels.checkup : l.label} onNavigate={onNavigate} />)}
+          {toolLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/wallets" ? "menu-wallet" : l.to === "/calculator" ? "menu-calculator" : l.to === "/protection" ? "menu-protection" : l.to === "/checkup" ? "menu-checkup" : undefined} label={l.to === "/wallets" ? labels.wallet : l.to === "/calculator" ? labels.calculator : l.to === "/protection" ? labels.protection : l.to === "/ai-assistant" ? labels.aiAssistant : l.to === "/checkup" ? labels.checkup : l.to === "/community" ? labels.community : l.label} onNavigate={onNavigate} />)}
           <a href="https://www.wealthplanner.id" onClick={onNavigate} className="sidebar-item group flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all">
             <ExternalLink size={18} strokeWidth={2} className="sidebar-icon" />
             {labels.website}
