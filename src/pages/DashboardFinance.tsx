@@ -637,143 +637,232 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
         </div>
       </>}
       
-      {activeReportTab === "assets" && <>
-        {/* Asset Tracker: two reference cards only */}
-        <div data-tour="report-assets" className="mb-4 rounded-[16px] bg-[linear-gradient(145deg,#29FBA3_0%,#09C679_45%,#009D5E_100%)] p-4 text-[#03140C] shadow-[0_12px_32px_rgba(12,203,125,0.30)] dark:shadow-[0_0_38px_rgba(12,203,125,0.28),0_12px_32px_rgba(12,203,125,0.32)]">
-          <p className="text-[13px] font-bold text-[#03140C]/90">Total aset</p>
-          <p className="asset-tracker-total-value mt-1 whitespace-nowrap font-extrabold leading-[1.1] tracking-[-0.02em] tabular-nums">{assetValuesHidden ? "Rp ••••••••" : formatRupiah(integratedTotalAssets)}</p>
-          <p className="mt-1 text-[13px] font-normal text-[#03140C]/75">{assets.target > 0 ? `${formatPercent(integratedAssetProgress)} dari target aset` : "Target aset belum diatur"}</p>
-          {stockUSTotalUSD > 0 && <p className="mt-1 text-[10px] font-medium text-[#03140C]/60">{usdIdrRate ? "Kurs USD/IDR: Rp " + Math.round(usdIdrRate).toLocaleString("id-ID") + (usdIdrUpdatedAt ? " · update " + new Date(usdIdrUpdatedAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) : "") : "Kurs USD/IDR sedang diperbarui…"}</p>}
-          <div className="mt-2 h-[6px] w-full overflow-hidden rounded-full bg-[#03140C]/15">
-            <div className="h-full rounded-full bg-[#03140C]" style={{ width: `${Math.min(Math.max(integratedAssetProgress, 0), 100)}%` }} />
-          </div>
-          <div className="mt-3 flex min-h-[56px] items-center justify-between gap-3 rounded-[14px] bg-[rgb(var(--c-forest-700))] px-4 py-3 text-[rgb(var(--c-surface))]">
-            <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-normal opacity-75">Target aset</p>
-              {editingAssetTarget ? (
-                <div className="mt-2">
-                  <label className="sr-only" htmlFor="asset-target-input">Nominal target aset</label>
-                  <input
-                    id="asset-target-input"
-                    inputMode="numeric"
-                    value={assetTargetInput}
-                    onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))}
-                    className="w-full rounded-lg border border-white/20 bg-[rgb(var(--c-surface))] px-2.5 py-2 text-[14px] font-semibold text-[rgb(var(--c-charcoal))] outline-none placeholder:text-[rgb(var(--c-muted))]"
-                    placeholder="Masukkan target aset"
-                    autoFocus
-                  />
-                  <p className="mt-1 text-[10px] opacity-70">Nominal target wajib diisi dan tidak boleh negatif.</p>
-                  <div className="mt-2 flex flex-wrap justify-end gap-2">
-                    <button type="button" disabled={savingAssetTarget} onClick={() => { setEditingAssetTarget(false); setAssetTargetInput(String(Math.round(assets.target || 0))); }} className="rounded-full border border-white/20 px-3 py-1.5 text-[11px] font-semibold opacity-90 hover:bg-white/10 disabled:opacity-50">Batal</button>
-                    <button type="button" disabled={savingAssetTarget} onClick={async () => {
-                      const raw = assetTargetInput.trim();
-                      const value = Number(raw);
-                      if (!raw || !Number.isFinite(value) || value < 0) { alert("Nominal target wajib diisi dan tidak boleh negatif."); return; }
-                      const token = getStoredToken();
-                      if (!token) { alert("Sesi dashboard tidak ditemukan."); return; }
-                      setSavingAssetTarget(true);
-                      try {
-                        const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value }) });
-                        const data = await res.json().catch(() => ({}));
-                        if (!res.ok) throw new Error(data.error || "Gagal menyimpan target");
-                        setEditingAssetTarget(false);
-                        window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
-                      } catch (e) { alert(e instanceof Error ? e.message : "Gagal menyimpan target"); }
-                      finally { setSavingAssetTarget(false); }
-                    }} className="rounded-full bg-[rgb(var(--c-surface))] px-3 py-1.5 text-[11px] font-bold text-[rgb(var(--c-up))] disabled:opacity-50">{savingAssetTarget ? "Menyimpan…" : "Simpan"}</button>
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-0.5 whitespace-nowrap text-[17px] font-bold leading-tight tabular-nums">{assets.target > 0 ? (assetValuesHidden ? "Rp ••••••••" : formatRupiah(assets.target)) : "Belum diatur"}</p>
-              )}
+      {activeReportTab === "assets" && (() => {
+        const investmentRows = assets.investmentAssets.filter((item) => {
+          const key = String(item.name || "").trim().toLowerCase();
+          return !["saham", "stock", "stocks"].includes(key);
+        });
+
+        const categoryForInvestment = (name: string) => {
+          const key = String(name || "").toLowerCase();
+          if (/(obligasi|sbn|bond|sukuk)/.test(key)) return "Obligasi";
+          if (/(emas|gold)/.test(key)) return "Emas";
+          if (/(p2p|peer|lending)/.test(key)) return "P2P Lending";
+          if (/(saham|stock)/.test(key)) return "Saham";
+          if (/(reksa|reksadana|mutual)/.test(key)) return "Reksadana";
+          return "Lainnya";
+        };
+
+        const categoryTotals: Record<string, number> = {
+          "Aset Likuid": integratedLiquidTotal,
+          "Obligasi": 0,
+          "Saham": assets.stocksTotal,
+          "Reksadana": 0,
+          "Emas": 0,
+          "P2P Lending": 0,
+          "Lainnya": 0,
+        };
+
+        for (const item of investmentRows) {
+          const category = categoryForInvestment(item.name);
+          categoryTotals[category] = (categoryTotals[category] || 0) + Number(item.value || 0);
+        }
+
+        const compositionCategories = [
+          { key: "Aset Likuid", label: "Aset Likuid", color: "rgb(var(--asset-liquid))" },
+          { key: "Obligasi", label: "Obligasi", color: "rgb(var(--asset-bond))" },
+          { key: "Saham", label: "Saham", color: "rgb(var(--asset-stock))" },
+          { key: "Reksadana", label: "Reksadana", color: "rgb(var(--asset-fund))" },
+          { key: "Emas", label: "Emas", color: "rgb(var(--asset-gold))" },
+          { key: "P2P Lending", label: "P2P Lending", color: "rgb(var(--asset-p2p))" },
+          ...(categoryTotals["Lainnya"] > 0 ? [{ key: "Lainnya", label: "Lainnya", color: "rgb(var(--asset-other))" }] : []),
+        ];
+
+        const compositionData = compositionCategories.map((category) => ({
+          name: category.label,
+          value: Math.max(0, Number(categoryTotals[category.key] || 0)),
+          color: category.color,
+        }));
+
+        const compositionTotal = compositionData.reduce((sum, item) => sum + item.value, 0);
+        const investmentTotal = investmentRows.reduce((sum, item) => sum + Number(item.value || 0), 0) + Number(assets.stocksTotal || 0);
+        const liquidTotal = integratedLiquidTotal;
+        const categoryPercent = (value: number) => compositionTotal > 0 ? (value / compositionTotal) * 100 : 0;
+
+        return <>
+          <section data-tour="report-assets" className="rounded-[24px] bg-[rgb(var(--c-surface))] p-4 text-[rgb(var(--c-charcoal))] sm:p-5">
+            <p className="text-[14px] font-semibold text-[rgb(var(--c-muted))]">Total Aset</p>
+            <p className="asset-tracker-total-value mt-1 font-extrabold leading-[1.05] tracking-[-0.03em] tabular-nums">
+              {assetValuesHidden ? "Rp ••••••••" : formatRupiah(integratedTotalAssets)}
+            </p>
+
+            <div className="mt-4 grid grid-cols-2 gap-2.5">
+              <div className="min-w-0 rounded-[16px] bg-[rgb(var(--c-cream))] p-3">
+                <p className="text-[11px] font-medium text-[rgb(var(--c-muted))]">Likuid</p>
+                <p className="mt-1 truncate text-[15px] font-bold tabular-nums">{assetValuesHidden ? "Rp ••••••" : formatRupiah(liquidTotal)}</p>
+              </div>
+              <div className="min-w-0 rounded-[16px] bg-[rgb(var(--c-cream))] p-3">
+                <p className="text-[11px] font-medium text-[rgb(var(--c-muted))]">Investasi</p>
+                <p className="mt-1 truncate text-[15px] font-bold tabular-nums">{assetValuesHidden ? "Rp ••••••" : formatRupiah(investmentTotal)}</p>
+              </div>
             </div>
-            {isRealData && !editingAssetTarget && (
-              <div className="flex shrink-0 items-center gap-1">
-                <button type="button" aria-label="Edit target aset" title="Edit target" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="flex h-9 w-9 items-center justify-center rounded-full text-[rgb(var(--c-surface))] hover:bg-white/10"><Pencil size={15} /></button>
-                {assets.target > 0 && <button type="button" aria-label="Hapus target aset" title="Hapus target" onClick={async () => {
-                  if (!window.confirm("Hapus target aset? Target akan dikosongkan dan progress kembali 0%.")) return;
-                  const token = getStoredToken();
-                  if (!token) { alert("Sesi dashboard tidak ditemukan."); return; }
-                  setSavingAssetTarget(true);
-                  try {
-                    const res = await fetch(`${API_BASE}/update-asset-target`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value: 0 }) });
-                    const data = await res.json().catch(() => ({}));
-                    if (!res.ok) throw new Error(data.error || "Gagal menghapus target");
-                    setEditingAssetTarget(false);
-                    setAssetTargetInput("");
-                    window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
-                  } catch (e) { alert(e instanceof Error ? e.message : "Gagal menghapus target"); }
-                  finally { setSavingAssetTarget(false); }
-                }} className="flex h-9 w-9 items-center justify-center rounded-full text-[rgb(var(--c-surface))] opacity-80 hover:bg-white/10 hover:opacity-100"><Trash2 size={15} /></button>}
+
+            {assets.target > 0 && (
+              <div className="mt-3 rounded-[14px] bg-[rgb(var(--c-forest-50))] px-3 py-2.5 text-[rgb(var(--c-up))]">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] font-medium">Progress Target Aset</p>
+                  {isRealData && !editingAssetTarget && (
+                    <button type="button" onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }} className="min-h-11 min-w-11 rounded-full text-[11px] font-semibold hover:bg-[rgb(var(--c-surface))]" aria-label="Edit target aset">
+                      <Pencil size={14} className="mx-auto" />
+                    </button>
+                  )}
+                </div>
+                <p className="mt-0.5 text-[14px] font-bold tabular-nums">{assetValuesHidden ? "••••" : formatPercent(integratedAssetProgress) + " dari " + formatRupiah(assets.target)}</p>
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[rgb(var(--c-surface))]">
+                  <div className="h-full rounded-full bg-[rgb(var(--c-up))]" style={{ width: Math.min(Math.max(integratedAssetProgress, 0), 100) + "%" }} />
+                </div>
               </div>
             )}
-          </div>
-        </div>
 
-        <div className="rounded-[16px] border border-[#E4E6E8] bg-white p-4 text-[#111815] shadow-[0_2px_8px_rgba(17,24,21,0.025)] dark:border-[#25252C] dark:bg-[#131316] dark:text-white dark:shadow-none">
-          <p className="text-[17px] font-bold leading-tight">Komposisi Aset</p>
-          {assetChartData.length > 0 ? (
-            <div className="mt-3 flex flex-col items-center">
-              <div className="h-[148px] w-[148px] shrink-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={assetChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={43} outerRadius={68} paddingAngle={1.5} stroke="none" cornerRadius={4}>
-                      {assetChartData.map((_, i) => (
-                        <Cell key={i} fill={["#0F9D6B","#FFC815","#6EE7B7","#9CA3AF","#4B5563"][i % 5]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(v: number) => formatRupiah(v)} />
-                  </PieChart>
-                </ResponsiveContainer>
+            {editingAssetTarget && (
+              <div className="mt-3 rounded-[14px] border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-3">
+                <label className="sr-only" htmlFor="asset-target-input">Nominal target aset</label>
+                <input id="asset-target-input" inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-[14px] font-semibold text-[rgb(var(--c-charcoal))] outline-none" placeholder="Masukkan target aset" autoFocus />
+                <p className="mt-1 text-[10px] text-[rgb(var(--c-muted))]">Nominal wajib diisi dan tidak boleh negatif.</p>
+                <div className="mt-2 flex justify-end gap-2">
+                  <button type="button" disabled={savingAssetTarget} onClick={() => { setEditingAssetTarget(false); setAssetTargetInput(String(Math.round(assets.target || 0))); }} className="min-h-11 rounded-full border border-[rgb(var(--c-border))] px-3 text-[11px] font-semibold">Batal</button>
+                  <button type="button" disabled={savingAssetTarget} onClick={async () => {
+                    const raw = assetTargetInput.trim();
+                    const value = Number(raw);
+                    if (!raw || !Number.isFinite(value) || value < 0) { alert("Nominal target wajib diisi dan tidak boleh negatif."); return; }
+                    const token = getStoredToken();
+                    if (!token) { alert("Sesi dashboard tidak ditemukan."); return; }
+                    setSavingAssetTarget(true);
+                    try {
+                      const res = await fetch(API_BASE + "/update-asset-target", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value }) });
+                      const data = await res.json().catch(() => ({}));
+                      if (!res.ok) throw new Error(data.error || "Gagal menyimpan target");
+                      setEditingAssetTarget(false);
+                      window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
+                    } catch (e) { alert(e instanceof Error ? e.message : "Gagal menyimpan target"); }
+                    finally { setSavingAssetTarget(false); }
+                  }} className="min-h-11 rounded-full bg-[rgb(var(--c-forest-700))] px-4 text-[11px] font-semibold text-[rgb(var(--c-surface))] disabled:opacity-50">{savingAssetTarget ? "Menyimpan…" : "Simpan"}</button>
+                </div>
               </div>
-              <div className="mt-3 w-full space-y-2 border-t border-[#E4E6E8] pt-3 dark:border-[#25252C]">
-                {assetChartData.map((item, i) => (
-                  <div key={item.name} className="flex min-h-[22px] items-center gap-2">
-                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: ["#0F9D6B","#FFC815","#6EE7B7","#9CA3AF","#4B5563"][i % 5] }} />
-                    <span className="min-w-0 flex-1 text-[13px] font-normal leading-[20px]">{item.name}</span>
-                    <span className="shrink-0 text-[13px] font-bold leading-[20px] tabular-nums">{assetCompositionTotal > 0 ? ((item.value / assetCompositionTotal) * 100).toFixed(1).replace(".", ",") : "0,0"}%</span>
+            )}
+          </section>
+
+          <section className="mt-3 rounded-[24px] bg-[rgb(var(--c-surface))] text-[rgb(var(--c-charcoal))]">
+            <details open className="group">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 sm:px-5 [&::-webkit-details-marker]:hidden">
+                <span className="text-[15px] font-semibold">Komposisi Aset</span>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[rgb(var(--c-cream))] text-[rgb(var(--c-charcoal))] transition-transform duration-200 group-open:rotate-180">
+                  <ChevronRight size={18} className="rotate-90" />
+                </span>
+              </summary>
+
+              <div className="px-4 pb-5 sm:px-5">
+                <div className="mt-1 flex flex-col items-center">
+                  <div className="relative h-[184px] w-[184px]" role="img" aria-label={"Komposisi aset: " + compositionData.map((item) => item.name + " " + categoryPercent(item.value).toFixed(1) + " persen").join(", ")}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={compositionData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={54} outerRadius={82} paddingAngle={1.5} stroke="none">
+                          {compositionData.map((item) => <Cell key={item.name} fill={item.color} />)}
+                        </Pie>
+                        <Tooltip formatter={(value: number) => formatRupiah(value)} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-[10px] font-medium text-[rgb(var(--c-muted))]">Total</span>
+                      <span className="mt-0.5 max-w-[130px] truncate text-[15px] font-extrabold tabular-nums">{assetValuesHidden ? "Rp ••••••" : formatRupiah(compositionTotal)}</span>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p className="py-8 text-center text-[13px] text-charcoal/50">Belum ada data aset.</p>
-          )}
-        </div>
-      </>}
 
-      {activeReportTab === "assets" && <>
-        <div className="mt-4">
-          <Card>
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-[14px] font-semibold text-forest-900">Detail Aset</p>
-              {(liquidAssetsFromWallets.length > 2 || assets.investmentAssets.length > 2) && <button type="button" onClick={() => setShowAllAssets((v) => !v)} className="text-[12px] font-semibold text-forest-700">{showAllAssets ? "Sembunyikan" : "Lihat semua"} <ChevronRight size={14} className={showAllAssets ? "rotate-90 inline" : "inline"}/></button>}
-            </div>
-            {(liquidAssetsFromWallets.length > 0 || isRealData) && <div className="mb-3">
-              <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Liquid Assets</p><p className="mb-2 text-[11px] leading-relaxed text-charcoal/45">Termasuk saldo RDN / Investment Account yang masih berupa cash.</p>
-              {liquidAssetsFromWallets.slice(0, showAllAssets ? liquidAssetsFromWallets.length : 2).map((item) => <EditableAssetItem key={item.name} name={item.name} value={item.value} percentage={assetCompositionTotal > 0 ? item.value / assetCompositionTotal * 100 : 0} section="liquid" isRealData={isRealData} />)}
-              <p className="mt-2 text-[11px] text-charcoal/45">Saldo Liquid Asset mengikuti Wallet secara otomatis.</p>
-            </div>}
-            {(assets.investmentAssets.length > 0 || isRealData) && <div>
-               <p className="mb-1.5 text-[13px] font-medium uppercase tracking-wide text-charcoal/60">Investment Assets</p><p className="mb-2 text-[11px] leading-relaxed text-charcoal/45">Aset yang sudah dibeli: saham, deposito, obligasi/SBN, emas, reksa dana, dan investasi lainnya.</p>
-               {assets.excludedInvestmentNames?.length > 0 && <p className="mb-2 rounded-lg bg-[#DDF7E8] px-2.5 py-2 text-[11px] leading-relaxed text-[#0B6B47]">Baris 'Saham' di Investment Assets tidak dihitung, karena sudah diambil dari Stock Portfolio.</p>}
-               {assets.investmentAssets.slice(0, showAllAssets ? assets.investmentAssets.length : 2).map((item) => <EditableAssetItem key={`${item.name}-${item.sheetRow||0}`} name={item.name} value={item.value} percentage={integratedTotalAssets > 0 ? item.value / integratedTotalAssets * 100 : 0} section="investment" sheetRow={item.sheetRow} isRealData={isRealData} onDeleted={() => window.location.reload()} />)}
-               {isRealData && <AddItemForm placeholder="Tambah investasi (saham, deposito, emas, obligasi, dll.)" onSubmit={async (name, amount) => { const token = getStoredToken(); const res = await fetch(`${API_BASE}/add-asset-item`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, section: "investment", name, value: amount }) }); const data = await res.json(); if (!res.ok) throw new Error(data.error || "Gagal menambah item"); window.location.reload(); }} />}
-               <StockTracker
-  stocksID={assets.stocksID}
-  stocksUS={assets.stocksUS}
-  isRealData={isRealData}
-  investmentAccounts={wallets.filter((wallet) => wallet.type === "investment").map((wallet) => ({ name: wallet.name, balance: wallet.balance }))}
-  stocksTotal={assets.stocksTotal}
-  totalAssets={assets.totalAssets}
-  usdIdrRate={usdIdrRate}
-  assetsVisible={!assetValuesHidden}
-  showInvestmentStockBanner={assets.excludedInvestmentNames?.length > 0 && assets.stocksID.length + assets.stocksUS.length === 0}
-/>
-             </div>}
-          </Card>
-        </div>
-      </>}
+                  <div className="mt-3 w-full border-t border-[rgb(var(--c-border))] pt-3">
+                    <div className="grid gap-2">
+                      {compositionData.map((item) => (
+                        <div key={item.name} className="flex min-h-11 items-center gap-2">
+                          <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                          <span className="min-w-0 flex-1 truncate text-[12px] text-[rgb(var(--c-charcoal))]">{item.name}</span>
+                          <span className="shrink-0 text-[12px] font-bold tabular-nums">{categoryPercent(item.value).toFixed(1).replace(".", ",")}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 w-full">
+                    <p className="mb-2 text-[12px] font-semibold text-[rgb(var(--c-muted))]">Kategori Aset</p>
+
+                    <details className="rounded-[16px] bg-[rgb(var(--c-cream))]">
+                      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 [&::-webkit-details-marker]:hidden">
+                        <div className="min-w-0">
+                          <p className="truncate text-[13px] font-semibold">Aset Likuid</p>
+                          <p className="truncate text-[10px] text-[rgb(var(--c-muted))]">{liquidAssetsFromWallets.length} rekening · {assetValuesHidden ? "Rp ••••••" : formatRupiah(liquidTotal)}</p>
+                        </div>
+                        <ChevronRight size={16} className="shrink-0 rotate-90" />
+                      </summary>
+                      <div className="border-t border-[rgb(var(--c-border))] px-3 py-2">
+                        {liquidAssetsFromWallets.length ? liquidAssetsFromWallets.map((item) => (
+                          <div key={item.name} className="flex min-h-11 items-center gap-2 border-b border-[rgb(var(--c-border))] last:border-0">
+                            <Wallet size={15} className="shrink-0 text-[rgb(var(--c-up))]" />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-[12px] font-semibold">{item.name}</p>
+                              <p className="truncate text-[10px] text-[rgb(var(--c-muted))]">Bank / rekening</p>
+                            </div>
+                            <p className="shrink-0 text-[12px] font-semibold tabular-nums">{assetValuesHidden ? "Rp ••••••" : formatRupiah(item.value)}</p>
+                          </div>
+                        )) : <p className="py-3 text-[11px] text-[rgb(var(--c-muted))]">Belum ada rekening.</p>}
+                      </div>
+                    </details>
+
+                    <details className="mt-2 rounded-[16px] bg-[rgb(var(--c-cream))]">
+                      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 [&::-webkit-details-marker]:hidden">
+                        <div className="min-w-0">
+                          <p className="truncate text-[13px] font-semibold">Aset Investasi</p>
+                          <p className="truncate text-[10px] text-[rgb(var(--c-muted))]">5 jenis · {assetValuesHidden ? "Rp ••••••" : formatRupiah(investmentTotal)}</p>
+                        </div>
+                        <ChevronRight size={16} className="shrink-0 rotate-90" />
+                      </summary>
+                      <div className="border-t border-[rgb(var(--c-border))] px-3 py-2">
+                        {[
+                          { name: "Obligasi", value: categoryTotals["Obligasi"], subtitle: "Obligasi / SBN / Sukuk" },
+                          { name: "Emas", value: categoryTotals["Emas"], subtitle: "Gold / logam mulia" },
+                          { name: "P2P Lending", value: categoryTotals["P2P Lending"], subtitle: "Peer-to-peer lending" },
+                          { name: "Saham", value: categoryTotals["Saham"], subtitle: "Stock Portfolio · Auto" },
+                          { name: "Reksadana", value: categoryTotals["Reksadana"], subtitle: "Mutual fund" },
+                        ].map((item) => (
+                          <div key={item.name} className="flex min-h-11 items-center gap-2 border-b border-[rgb(var(--c-border))] last:border-0">
+                            <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: compositionCategories.find((c) => c.key === item.name)?.color }} />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-[12px] font-semibold">{item.name}</p>
+                              <p className="truncate text-[10px] text-[rgb(var(--c-muted))]">{item.subtitle}</p>
+                            </div>
+                            <p className="shrink-0 text-[12px] font-semibold tabular-nums">{assetValuesHidden ? "Rp ••••••" : formatRupiah(item.value)}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </section>
+
+          <div className="mt-3">
+            <StockTracker
+              stocksID={assets.stocksID}
+              stocksUS={assets.stocksUS}
+              isRealData={isRealData}
+              investmentAccounts={wallets.filter((wallet) => wallet.type === "investment").map((wallet) => ({ name: wallet.name, balance: wallet.balance }))}
+              stocksTotal={assets.stocksTotal}
+              totalAssets={assets.totalAssets}
+              usdIdrRate={usdIdrRate}
+              assetsVisible={!assetValuesHidden}
+            />
+          </div>
+        </>;
+      })()}
+
       {activeReportTab === "cashflow" && <>
         {(() => {
           const monthIndex = monthNames.indexOf(selectedMonth);
