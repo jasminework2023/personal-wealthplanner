@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { getAppLanguage } from "../lib/format";
 import {
   Home,
@@ -76,6 +76,7 @@ function Brand() {
 }
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+  const navigate = useNavigate();
   const [language, setLanguage] = useState(getAppLanguage());
   const [profileOpen, setProfileOpen] = useState(false);
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
@@ -87,7 +88,13 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="px-2 flex-1 overflow-y-auto">
         <p className="px-3 text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.main}</p>
         <nav className="flex flex-col gap-0.5 mb-4">
-          {mainLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/finance" ? "menu-report" : l.to === "/assets" ? "menu-asset" : l.to === "/budgeting" ? "menu-budget" : l.to === "/transaction" ? "menu-transaction" : l.to === "/goals" ? "menu-goals" : l.to === "/ai-assistant" ? "menu-ai-assistant" : undefined} label={l.to === "/finance" ? labels.report : l.to === "/assets" ? labels.asset : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.to === "/transaction" ? labels.transaction : l.to === "/goals" ? labels.goals : l.to === "/ai-assistant" ? labels.aiAssistant : l.label} onNavigate={onNavigate} />)}
+          {mainLinks.map((l) => l.to === "/assets" ? (
+            <button key={l.to} type="button" data-tour="menu-asset" onClick={() => { navigate("/assets"); onNavigate?.(); }} className={`group relative flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all w-full text-left ${location.pathname === "/assets" ? "sidebar-item-active" : "sidebar-item"}`}>
+              {location.pathname === "/assets" && <span className="sidebar-active-indicator absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#6EE7A8]" />}
+              <BarChart3 size={18} strokeWidth={2} className={location.pathname === "/assets" ? "sidebar-icon-active" : "sidebar-icon"} />
+              {labels.asset}
+            </button>
+          ) : <NavItem key={l.to} {...l} dataTour={l.to === "/finance" ? "menu-report" : l.to === "/budgeting" ? "menu-budget" : l.to === "/transaction" ? "menu-transaction" : l.to === "/goals" ? "menu-goals" : l.to === "/ai-assistant" ? "menu-ai-assistant" : undefined} label={l.to === "/finance" ? labels.report : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.to === "/transaction" ? labels.transaction : l.to === "/goals" ? labels.goals : l.to === "/ai-assistant" ? labels.aiAssistant : l.label} onNavigate={onNavigate} />)}
         </nav>
 
         <p className="px-3 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.tools}</p>
