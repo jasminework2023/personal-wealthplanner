@@ -8,6 +8,10 @@ export interface ParsedStockPurchase {
   sourceAccount: string;
   buyPrice?: number;
 }
+export interface ParsedRealPurchase {
+  assetName: string;
+  sourceAccount: string;
+}
 export interface ParsedTransaction extends Partial<Transaction> {
   amount: number;
   type: TransactionType;
@@ -15,6 +19,7 @@ export interface ParsedTransaction extends Partial<Transaction> {
   description: string;
   date?: string;
   stockPurchase?: ParsedStockPurchase;
+  realPurchase?: ParsedRealPurchase;
 }
 
 function normalizeNumber(raw: string): number | null {
@@ -111,6 +116,29 @@ function inferStockPurchase(text: string): ParsedStockPurchase | undefined {
 }
 
 
+function inferRealPurchase(text: string): ParsedRealPurchase | undefined {
+  const lower = text.toLowerCase();
+  const buyIntent = /\b(beli|buy|membeli|beliin|purchase)\b/.test(lower);
+  if (!buyIntent) return undefined;
+
+  const realWords = [
+    "mobil","motor","kendaraan","rumah","tanah","properti","property","apartemen",
+    "ruko","gedung","bangunan","villa","kos","gudang","lahan","emas batangan",
+    "batangan emas","physical gold","perhiasan emas"
+  ];
+  const matched = realWords.find((word) => lower.includes(word));
+  if (!matched) return undefined;
+
+  const sourceMatch = text.match(/\b(?:dari|from)\s+([A-Za-z0-9 ._-]+?)(?=\s+(?:dengan|@|harga|rp|\d)|$)/i);
+  let assetName = matched;
+  const nameMatch = text.match(/\b(?:beli|buy|membeli|beliin|purchase)\s+(.+?)(?=\s+(?:rp\.?\s*)?\d|\s+\d+(?:[.,]\d+)?\s*(?:juta|jt|miliar|milyar|ribu|rb|k|\b)|\s+(?:dari|from)\b|$)/i);
+  if (nameMatch?.[1]) {
+    const cleaned = nameMatch[1].replace(/\b(saham|stock)\b/ig, "").trim();
+    if (cleaned) assetName = cleaned;
+  }
+  return { assetName: assetName.trim(), sourceAccount: sourceMatch ? sourceMatch[1].trim() : "" };
+}
+
 function inferCategory(lower: string): { type: TransactionType; category: string } {
   if (/\b(gaji|gajian|salary|honor|fee|freelance|pendapatan|income|dividen|bunga|interest|komisi|commission|bonus)\b/i.test(lower)) {
     if (/\b(freelance|honor|fee)\b/i.test(lower)) return { type: "Income", category: "Freelance Income" };
@@ -141,12 +169,13 @@ function inferCategory(lower: string): { type: TransactionType; category: string
 export function parseTransactionText(text: string): ParsedTransaction | null {
   const lower = text.toLowerCase();
   const stockPurchase = inferStockPurchase(text);
+  const realPurchase = stockPurchase ? undefined : inferRealPurchase(text);
   const amount = parseAmount(text);
   if ((amount === null || amount <= 0) && !stockPurchase) return null;
 
   const { type: inferredType, category: inferredCategory } = inferCategory(lower);
-  const type = stockPurchase ? "Saving" : inferredType;
-  const category = stockPurchase ? "Stocks" : inferredCategory;
+  const type = stockPurchase || realPurchase ? "Saving" : inferredType;
+  const category = stockPurchase ? "Stocks" : realPurchase ? "Real Assets" : inferredCategory;
   const date = parseDate(text);
   const description = text
     .replace(/(?:rp\.?\s*)?(\d+(?:[.,]\d{3})*(?:[.,]\d+)?)\s*(miliar|milyar|juta|jt|j|ribu|rb|k|m)?\b/i, "")
@@ -162,5 +191,6 @@ export function parseTransactionText(text: string): ParsedTransaction | null {
     date: formatDate(date),
     month: date.toLocaleString("en-US", { month: "long" }),
     stockPurchase,
+    realPurchase,
   };
 }
