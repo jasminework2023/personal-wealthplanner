@@ -40,7 +40,7 @@ function assetIcon(name: string) {
 }
 function formatCompactAssetTotal(value: number) {
   const n = Math.abs(Number(value) || 0);
-  const trim = (v: number) => v.toFixed(1).replace(/\\.0$/, "").replace(".", ",");
+  const trim = (v: number) => v.toFixed(1).replace(/\.0$/, "").replace(".", ",");
   if (n >= 1_000_000_000) return trim(n / 1_000_000_000) + " M";
   if (n >= 1_000_000) return trim(n / 1_000_000) + " jt";
   if (n >= 1_000) return trim(n / 1_000) + " rb";
