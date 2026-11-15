@@ -38,6 +38,14 @@ function assetIcon(name: string) {
   if (/rumah|properti|property|tanah|apartemen/.test(k)) return <Building2 size={17} />;
   return <Package size={17} />;
 }
+function formatCompactAssetTotal(value: number) {
+  const n = Math.abs(Number(value) || 0);
+  const trim = (v: number) => v.toFixed(1).replace(/\\.0$/, "").replace(".", ",");
+  if (n >= 1_000_000_000) return trim(n / 1_000_000_000) + " M";
+  if (n >= 1_000_000) return trim(n / 1_000_000) + " jt";
+  if (n >= 1_000) return trim(n / 1_000) + " rb";
+  return Math.round(n).toLocaleString("id-ID");
+}
 
 export function AssetTrackerManaged({
   assets, wallets, isRealData, assetsVisible, integratedTotalAssets, integratedLiquidTotal, userId,
@@ -361,7 +369,7 @@ export function AssetTrackerManaged({
         </button>
         {compositionOpen && (
           <div className="px-4 pb-5 sm:px-5">
-            <div className="relative mx-auto h-[176px] w-[176px]">
+            <div className="relative mx-auto w-[180px] sm:w-[220px] lg:w-[240px] aspect-square [container-type:inline-size]">
               <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90" role="img" aria-label="Komposisi aset">
                 <circle cx="100" cy="100" r="72" fill="none" stroke="rgb(var(--c-border))" strokeWidth="28" />
                 {composition.map((item, index) => {
@@ -371,9 +379,11 @@ export function AssetTrackerManaged({
                   return <circle key={item.name} cx="100" cy="100" r="72" fill="none" stroke={item.color} strokeWidth="28" strokeDasharray={dash + " " + (circumference - dash)} strokeDashoffset={-prior / compositionTotal * circumference} />;
                 })}
               </svg>
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[10px] text-[rgb(var(--c-muted))]">Total</span>
-                <span className="text-[14px] font-extrabold tabular-nums">{assetsVisible ? formatRupiah(compositionTotal) : "Rp ••••••"}</span>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-[18%] text-center">
+                <span className="text-[clamp(9px,5cqw,13px)] leading-tight text-[rgb(var(--c-muted))]">Total</span>
+                <span className="mt-0.5 max-w-full whitespace-nowrap text-[clamp(12px,10cqw,21px)] font-extrabold leading-none tracking-[-0.03em] tabular-nums">
+                  {assetsVisible ? formatCompactAssetTotal(compositionTotal) : "••••••"}
+                </span>
               </div>
             </div>
             <div className="mt-3 space-y-1 border-t border-[rgb(var(--c-border))] pt-2">
