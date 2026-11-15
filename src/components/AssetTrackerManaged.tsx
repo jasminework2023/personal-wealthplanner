@@ -90,7 +90,10 @@ export function AssetTrackerManaged({
     detail: investmentDetails.find((d) => d.name === item.name && Math.abs(d.value - item.value) < 1) || null,
   }));
   const investmentTotal = investmentRows.reduce((s, x) => s + x.value, 0) + assets.stocksTotal;
-  const displayTotalAssets = liquidTotal + investmentTotal + realTotal;
+  // The API already calculates the canonical total from the same components.
+  // Never recompute it here, otherwise small differences (especially FX) can
+  // make the headline disagree with the dashboard payload.
+  const displayTotalAssets = Number(assets.totalAssets) || 0;
 
   const categoryTotals = useMemo(() => {
     const out: Record<string, number> = {};
