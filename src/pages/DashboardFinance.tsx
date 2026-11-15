@@ -337,9 +337,9 @@ function StockTracker({
       open={!collapsed}
       onToggle={() => setCollapsed((value) => !value)}
     >
-      <div className="mx-4 mt-4 rounded-[12px] bg-[rgb(var(--c-forest-50))] px-3 py-2.5 text-[rgb(var(--c-up))] sm:mx-5">
-        <p className="text-[11px] leading-relaxed">Pembelian saham dicatat lewat Transaction Tracker agar saldo rekening ikut berkurang.</p>
-        <a href="/dashboard/transactions" className="mt-1 inline-flex min-h-11 items-center text-[11px] font-bold underline underline-offset-2">Buka Transaction Tracker →</a>
+      <div className="mx-4 mt-4 flex items-center justify-between gap-3 px-0 text-[rgb(var(--c-up))] sm:mx-5">
+        <p className="min-w-0 truncate text-[12px]">Pembelian saham mengurangi saldo rekening melalui Transaction Tracker.</p>
+        <a href="/dashboard/transactions" className="shrink-0 text-[12px] font-semibold underline underline-offset-2">Buka Transaction Tracker →</a>
       </div>
 
       <div className="px-4 pt-4 sm:px-5">
@@ -488,8 +488,8 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
 
   // Liquid assets are derived from the Wallet module so the same balance is not entered twice.
   // Wallet is the source of truth for cash/bank/e-wallet balances; Asset Tracker only aggregates it.
-  const liquidAssetsFromWallets = wallets.map((wallet) => ({ name: wallet.name, value: wallet.balance, type: wallet.type }));
-  const integratedLiquidTotal = liquidAssetsFromWallets.reduce((sum, item) => sum + item.value, 0);
+  const liquidAssetsFromDashboard = assets.liquidAssets.map((item) => ({ name: item.name, value: Number(item.value) || 0 }));
+  const integratedLiquidTotal = liquidAssetsFromDashboard.reduce((sum, item) => sum + item.value, 0);
   const [usdIdrRate, setUsdIdrRate] = useState<number>(16300);
   const [usdIdrUpdatedAt, setUsdIdrUpdatedAt] = useState<string | null>(null);
 
@@ -518,12 +518,17 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   const stockUSTotalUSD = assets.stocksUS.reduce((sum, item) => sum + item.value, 0);
   const stockUSTotalIDR = stockUSTotalUSD * usdIdrRate;
   const integratedInvestmentTotal = assets.investmentAssets.reduce((sum, item) => sum + item.value, 0) + stockIDTotal + stockUSTotalIDR;
-  // Dashboard API is the single source of truth for Total Aset.
-  const integratedTotalAssets = assets.totalAssets;
+  // Single display source for Asset Tracker: liquid + investments + stocks + real assets.
+  const integratedTotalAssets =
+    integratedLiquidTotal +
+    assets.investmentAssets.reduce((sum, item) => sum + (Number(item.value) || 0), 0) +
+    stockIDTotal +
+    stockUSTotalIDR +
+    (Number(assets.realAssetsTotal) || 0);
   const integratedAssetProgress = assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0;
 
   const assetChartData = [
-    ...liquidAssetsFromWallets.map((i) => ({ name: i.name, value: i.value })),
+    ...liquidAssetsFromDashboard.map((i) => ({ name: i.name, value: i.value })),
     ...assets.investmentAssets.map((i) => ({ name: i.name, value: i.value })),
     ...(stockIDTotal > 0 ? [{ name: "Saham Indonesia", value: stockIDTotal }] : []),
     ...(stockUSTotalIDR > 0 ? [{ name: "Saham US", value: stockUSTotalIDR }] : []),
@@ -534,18 +539,22 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   const savingRows = byCategory("Saving");
   const expenseRows = byCategory("Expense");
   const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);
-  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }, { id: "debt" as const, label: "Debt Tracker" }];
+  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];
   const activeTabIndex = reportTabs.findIndex((tab) => tab.id === activeReportTab);
   const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-2">
-        <select aria-label="Pilih laporan" value={activeReportTab} onChange={(e) => setActiveReportTab(e.target.value as typeof activeReportTab)} className="min-w-0 flex-1 appearance-none rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-forest-900 shadow-sm outline-none">
-          <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="cashflow">Cashflow Tracker</option><option value="debt">Debt Tracker</option>
-        </select>
-        <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-forest-900 shadow-sm">
-          <CalendarDays size={15} className="shrink-0 text-forest-700" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-charcoal/50" />
+      <div className="flex items-center justify-between gap-3">
+        {activeReportTab === "assets" ? (
+          <h1 className="text-[20px] font-semibold leading-6 text-[rgb(var(--c-charcoal))]">Asset Tracker</h1>
+        ) : (
+          <select aria-label="Pilih laporan" value={activeReportTab} onChange={(e) => setActiveReportTab(e.target.value as typeof activeReportTab)} className="min-w-0 flex-1 appearance-none rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 py-2.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm outline-none">
+            <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="cashflow">Cashflow Tracker</option>
+          </select>
+        )}
+        <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm">
+          <CalendarDays size={15} className="shrink-0 text-[rgb(var(--c-up))]" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-[rgb(var(--c-muted))]" />
         </button>
       </div>
       {periodOpen && <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setPeriodOpen(false); }}>
@@ -661,7 +670,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
         </>
       )}
 
-      {activeReportTab === "debt" && <DebtTracker />}
+
       {activeReportTab === "cashflow" && <>
         {(() => {
           const monthIndex = monthNames.indexOf(selectedMonth);
