@@ -6,6 +6,8 @@ import {
   BarChart3,
   Receipt,
   CalendarRange,
+  CalendarDays,
+  CreditCard,
   PieChart,
   Calculator,
   Shield,
@@ -27,6 +29,7 @@ const mainLinks = [
   { to: "/budgeting", label: "Monthly Budget", icon: PieChart },
   { to: "/transaction", label: "Transaction", icon: Receipt },
   { to: "/goals", label: "Goals", icon: CalendarRange },
+  { to: "/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/ai-assistant", label: "AI Assistant", icon: Sparkles },
 ];
 
@@ -35,6 +38,7 @@ const toolLinks = [
   { to: "/calculator", label: "Financial Calculator", icon: Calculator },
   { to: "/protection", label: "Financial Protection", icon: Shield },
   { to: "/checkup", label: "Financial Checkup", icon: CircleCheck },
+  { to: "/debt", label: "Debt Tracker", icon: CreditCard },
 ];
 
 function NavItem({ to, label, icon: Icon, onNavigate, dataTour }: { to: string; label: string; icon: any; onNavigate?: () => void; dataTour?: string }) {
