@@ -472,7 +472,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   const [draftMonth, setDraftMonth] = useState(monthNames[now.getMonth()]);
   const [draftYear, setDraftYear] = useState(now.getFullYear());
   const [assetValuesHidden, setAssetValuesHidden] = useState(false);
-  const { loading, error, isRealData, username, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData(selectedMonth, false, selectedYear);
+  const { loading, error, isRealData, username, userId, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData(selectedMonth, false, selectedYear);
   const { wallets } = useWallets();
   const historyData = useFinanceData(selectedMonth, true, selectedYear);
   const [activeReportTab, setActiveReportTab] = useState<"income" | "assets" | "cashflow">(initialTab);
@@ -645,6 +645,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
             assetsVisible={!assetValuesHidden}
             integratedTotalAssets={integratedTotalAssets}
             integratedLiquidTotal={integratedLiquidTotal}
+            userId={userId}
           />
           <StockTracker
             stocksID={assets.stocksID}
