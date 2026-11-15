@@ -105,7 +105,7 @@ export function Home() {
     if (loading) return <span aria-label="Memuat data" className="inline-block h-[1em] w-[190px] max-w-full animate-pulse rounded-md bg-black/15 align-middle" />;
     if (!visible) return <span className={amountClassName} style={fontSize ? { fontSize: `${fontSize}px` } : undefined}>Rp ••••••</span>;
     const formatted = formatRupiah(value);
-    const amount = formatted.startsWith("Rp ") ? formatted.slice(3) : formatted.replace(/^Rp\\s*/, "");
+    const amount = formatted.startsWith("Rp ") ? formatted.slice(3) : formatted.replace(/^Rp\s*/, "");
     return (
       <span className={`inline-flex min-w-0 max-w-full items-baseline ${amountClassName}`} style={fontSize ? { fontSize: `${fontSize}px` } : undefined}>
         <span className="mr-[0.2em] text-[0.6em] font-medium opacity-60">Rp</span>

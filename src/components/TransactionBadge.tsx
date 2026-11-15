@@ -4,6 +4,10 @@ const styles: Record<TransactionType, string> = {
   Income: "bg-mint-100 text-[#0B6B47]",
   Expense: "bg-rose-50 text-rose-700",
   Saving: "bg-lilac-50 text-lilac-700",
+  Transfer: "bg-sky-50 text-sky-700",
+  DebtReceived: "bg-mint-100 text-[#0B6B47]",
+  DebtPayment: "bg-rose-50 text-rose-700",
+  DebtCardPayment: "bg-rose-50 text-rose-700",
 };
 
 export function TransactionBadge({ type }: { type: TransactionType }) {

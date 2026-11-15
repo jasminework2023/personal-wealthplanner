@@ -67,7 +67,7 @@ export function AppShell() {
             })}
             <button data-tour="home-fab" onClick={() => setQuickAddOpen(true)} aria-label={language === "id" ? "Tambah transaksi" : "Add transaction"} className="relative -mt-7 mx-auto flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-accent-ink shadow-pop ring-[5px] ring-[rgb(var(--c-cream))]"><Plus size={28} strokeWidth={2.6}/></button>
             {([
-              { to: "/goals", label: navLabels.goals, Icon: Target },
+              { to: "/goals", label: navLabels.goals, Icon: Target, tour: false },
               { to: "/settings", label: language === "id" ? "Profil" : "Profile", Icon: UserRound, tour: true },
             ] as const).map(({ to, label, Icon, tour }) => {
               const active = location.pathname === to;

@@ -24,6 +24,7 @@ export interface ParsedTransaction extends Partial<Transaction> {
   date?: string;
   stockPurchase?: ParsedStockPurchase;
   realPurchase?: ParsedRealPurchase;
+  debtPayment?: ParsedDebtPayment;
 }
 
 function normalizeNumber(raw: string): number | null {

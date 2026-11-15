@@ -9,16 +9,16 @@ function getDb() {
 function parseRupiah(value: unknown): number {
   if (value === null || value === undefined || value === "") return 0;
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-  let cleaned = String(value).replace(/Rp/gi, "").replace(/IDR/gi, "").replace(/\\$/g, "").replace(/\\s/g, "").trim();
+  let cleaned = String(value).replace(/Rp/gi, "").replace(/IDR/gi, "").replace(/\$/g, "").replace(/\s/g, "").trim();
   if (!cleaned) return 0;
   const lastComma = cleaned.lastIndexOf(",");
   const lastDot = cleaned.lastIndexOf(".");
   if (lastComma !== -1 && lastDot !== -1) {
-    cleaned = lastComma > lastDot ? cleaned.replace(/\\./g, "").replace(",", ".") : cleaned.replace(/,/g, "");
+    cleaned = lastComma > lastDot ? cleaned.replace(/\./g, "").replace(",", ".") : cleaned.replace(/,/g, "");
   } else if (lastComma !== -1) {
     cleaned = cleaned.length - lastComma - 1 === 3 ? cleaned.replace(/,/g, "") : cleaned.replace(",", ".");
   } else if (lastDot !== -1) {
-    cleaned = cleaned.length - lastDot - 1 === 3 ? cleaned.replace(/\\./g, "") : cleaned;
+    cleaned = cleaned.length - lastDot - 1 === 3 ? cleaned.replace(/\./g, "") : cleaned;
   }
   const n = Number(cleaned.replace(/[^0-9.-]/g, ""));
   return Number.isFinite(n) ? n : 0;
@@ -32,9 +32,9 @@ const MONTHS: Record<string, number> = {
 function normalizeDate(value: unknown, monthValue: unknown): string {
   const raw = String(value ?? "").trim();
   if (!raw) return "";
-  const iso = raw.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})/);
+  const iso = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
   if (iso) return `${iso[1]}-${String(Number(iso[2])).padStart(2, "0")}-${String(Number(iso[3])).padStart(2, "0")}`;
-  const parts = raw.match(/^(\\d{1,2})[\\/. -](\\d{1,2})[\\/. -](\\d{2,4})$/);
+  const parts = raw.match(/^(\d{1,2})[\/. -](\d{1,2})[\/. -](\d{2,4})$/);
   if (parts) {
     const first = Number(parts[1]), second = Number(parts[2]);
     let year = Number(parts[3]), day = first, month = second;
@@ -62,7 +62,7 @@ function parseSetupExpenseCategories(rows: unknown[][]): string[] {
 }
 
 function getBudgetByMonth(rows: unknown[][], expenseCategories: string[]) {
-  const normalizedExpense = new Set(expenseCategories.map((x) => x.trim().replace(/\\s+/g, " ").toLowerCase()));
+  const normalizedExpense = new Set(expenseCategories.map((x) => x.trim().replace(/\s+/g, " ").toLowerCase()));
   const result: Record<string, number> = {};
   for (const row of rows) {
     for (let col = 0; col < row.length; col++) {
@@ -70,7 +70,7 @@ function getBudgetByMonth(rows: unknown[][], expenseCategories: string[]) {
       if (!MONTHS[month]) continue;
       let total = 0;
       for (let i = rows.indexOf(row) + 1; i < rows.length; i++) {
-        const label = String(rows[i]?.[0] || "").trim().replace(/\\s+/g, " ").toLowerCase();
+        const label = String(rows[i]?.[0] || "").trim().replace(/\s+/g, " ").toLowerCase();
         if (!label) continue;
         if (normalizedExpense.has(label)) total += parseRupiah(rows[i]?.[col]);
       }
@@ -255,7 +255,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const answer = (typeof rawContent === "string"
       ? rawContent
       : Array.isArray(rawContent)
-        ? rawContent.map((part: any) => typeof part?.text === "string" ? part.text : "").join("\\n")
+        ? rawContent.map((part: any) => typeof part?.text === "string" ? part.text : "").join("\n")
         : "").trim();
     if (!answer) {
       try { await settleCredit(false); } catch (settleError) {

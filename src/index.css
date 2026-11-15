@@ -876,8 +876,8 @@ html.dark .wallet-stack-card {
   font-variant-numeric: tabular-nums;
 }
 
-.rounded-\\[28px\\] { border-radius: 16px; }
-.rounded-\\[22px\\] { border-radius: 14px; }
+.rounded-\[28px\] { border-radius: 16px; }
+.rounded-\[22px\] { border-radius: 14px; }
 
 
 /* DESIGN LAYER v3 — desktop sidebar */

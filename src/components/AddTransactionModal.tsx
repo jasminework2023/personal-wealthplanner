@@ -24,7 +24,7 @@ function inferStockTicker(text: string): string {
     INDF: ["indofood sukses makmur", "indf"],
     UNVR: ["unilever", "unvr"],
   };
-  const explicit = text.match(/\\b([A-Z]{4})\\b/);
+  const explicit = text.match(/\b([A-Z]{4})\b/);
   if (explicit && aliases[explicit[1]]) return explicit[1];
   for (const [ticker, names] of Object.entries(aliases)) {
     if (names.some((name) => lower.includes(name))) return ticker;
@@ -36,14 +36,14 @@ function inferStockDetails(text: string) {
   const ticker = inferStockTicker(text);
   if (!ticker) return { ticker: "", quantity: "", price: "", market: "ID" as "ID" | "US", sourceAccount: "" };
   const lower = text.toLowerCase();
-  const market = /\\b(saham\\s*(us|as|amerika)|us\\s*stock|american stock)\\b/i.test(lower)
+  const market = /\b(saham\s*(us|as|amerika)|us\s*stock|american stock)\b/i.test(lower)
     ? "US" as const
     : ["AAPL","TSLA","MSFT","AMZN","NVDA","META","GOOGL","GOOG","VOO","SPY","QQQ"].includes(ticker)
       ? "US" as const : "ID" as const;
-  const lotMatch = text.match(/(\\d+(?:[.,]\\d+)?)\\s*lot\\b/i);
-  const shareMatch = text.match(/(\\d+(?:[.,]\\d+)?)\\s*(?:lembar|saham|share|shares)\\b/i);
-  const priceMatch = text.match(/(?:@|harga(?:\\s+beli)?(?:nya)?\\s*)\\s*(?:usd\\s*)?(\\d+(?:[.,]\\d+)?)/i);
-  const sourceMatch = text.match(/\\b(?:dari|from)\\s+([A-Za-z0-9 ._-]+?)(?=\\s+(?:dengan|@|harga|rp|\\d)|$)/i);
+  const lotMatch = text.match(/(\d+(?:[.,]\d+)?)\s*lot\b/i);
+  const shareMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:lembar|saham|share|shares)\b/i);
+  const priceMatch = text.match(/(?:@|harga(?:\s+beli)?(?:nya)?\s*)\s*(?:usd\s*)?(\d+(?:[.,]\d+)?)/i);
+  const sourceMatch = text.match(/\b(?:dari|from)\s+([A-Za-z0-9 ._-]+?)(?=\s+(?:dengan|@|harga|rp|\d)|$)/i);
   return {
     ticker,
     quantity: (lotMatch?.[1] || shareMatch?.[1] || "").replace(",", "."),
@@ -173,14 +173,14 @@ export function AddTransactionModal({
       if (receiptPreview) URL.revokeObjectURL(receiptPreview);
     };
   }, [receiptPreview]);
-  const activeCategories = useMemo(() => ({
+  const activeCategories = useMemo<Record<string, string[]>>(() => ({
     Income: setup.income.filter((x) => x.active && x.name.trim()).map((x) => x.name),
     Expense: setup.expense.filter((x) => x.active && x.name.trim()).map((x) => x.name),
     Saving: setup.saving.filter((x) => x.active && x.name.trim()).map((x) => x.name),
   }), [setup]);
 
   function resolveCategory(type: TransactionType, parsedCategory: string) {
-    const options = activeCategories[type];
+    const options = activeCategories[type] ?? [];
     if (!options.length) return parsedCategory;
     const exact = options.find((c) => c.toLowerCase() === parsedCategory.toLowerCase());
     if (exact) return exact;
@@ -211,7 +211,7 @@ export function AddTransactionModal({
   // open the stock fields and prefill a known Indonesian ticker.
   useEffect(() => {
     if (form.type !== "Saving" || stockPurchase) return;
-    if (!/\\b(beli|buy|membeli|beliin)\\b.*\\b(saham|stock)\\b/i.test(form.description)) return;
+    if (!/\b(beli|buy|membeli|beliin)\b.*\b(saham|stock)\b/i.test(form.description)) return;
     const inferred = inferStockDetails(form.description);
     if (!inferred.ticker) return;
     setStockPurchase(true);
@@ -495,7 +495,7 @@ export function AddTransactionModal({
       setAiError("Ketik dulu transaksinya, misalnya: Tadi beli makan 35 ribu");
       return;
     }
-    const stockIntent = /\\b(beli|buy|membeli|beliin)\\b/i.test(aiText) && /\\b(saham|stock|idx|bei)\\b/i.test(aiText);
+    const stockIntent = /\b(beli|buy|membeli|beliin)\b/i.test(aiText) && /\b(saham|stock|idx|bei)\b/i.test(aiText);
     const parsed = parseTransactionText(aiText);
     if (parsed?.debtPayment) {
       const debt = parsed.debtPayment;
@@ -529,7 +529,7 @@ export function AddTransactionModal({
       setWallet(stock.sourceAccount || "");
       setStockAmountAuto(Boolean(stock.buyPrice && stock.market === "ID"));
       if (stock.market === "ID" && stock.buyPrice) {
-        setForm((f) => ({ ...f, amount: formatAmountInput(String(Math.round(stock.quantity * 100 * stock.buyPrice))) }));
+        setForm((f) => ({ ...f, amount: formatAmountInput(String(Math.round(stock.quantity * 100 * (stock.buyPrice ?? 0)))) }));
       }
       if (stock.market === "US" && stock.buyPrice) {
         try {
