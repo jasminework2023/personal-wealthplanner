@@ -195,7 +195,7 @@ function getBudgetByCategory(rows: unknown[][], monthName: string): Record<strin
 }
 
 // ---------- ASSET TRACKER ----------
-const SECTION_LABELS = ["liquid assets", "investment assets", "indonesia stock", "us stock"];
+const SECTION_LABELS = ["liquid assets", "investment assets", "managed investment assets", "real assets", "indonesia stock", "us stock", "target assets"];
 
 function parseAssetSection(rows: unknown[][], sectionLabel: string, excludedNames = new Set<string>()) {
   const startIdx = findRowIndex(rows, sectionLabel);
@@ -234,6 +234,69 @@ function parseAssetSection(rows: unknown[][], sectionLabel: string, excludedName
 
 function lowerSection(value: string) {
   return String(value || "").trim().toLowerCase();
+}
+
+function yearsHeld(date: string) {
+  const start = new Date(date + "T00:00:00Z").getTime();
+  return Number.isFinite(start) ? Math.max(0, (Date.now() - start) / (365.2425 * 86400000)) : 0;
+}
+function parseManagedInvestmentAssets(rows: unknown[][]) {
+  const startIdx = findRowIndex(rows, "Managed Investment Assets");
+  const items: any[] = [];
+  if (startIdx === -1) return items;
+  for (let i = startIdx + 2; i < rows.length; i++) {
+    const row = rows[i] || [];
+    if (!String(row[0] || "").trim()) continue;
+    const lower = String(row[0] || "").trim().toLowerCase();
+    if (["real assets", "target assets"].includes(lower)) break;
+    const quantity = parseRupiah(row[3]);
+    const buyPrice = parseRupiah(row[5]);
+    const currentPrice = parseRupiah(row[6]);
+    const currency = String(row[11] || "").trim().toUpperCase() === "USD" ? "USD" : "IDR";
+    const fxRate = parseRupiah(row[12]) || 1;
+    const currentValue = quantity * currentPrice * fxRate;
+    const costBasis = parseRupiah(row[13]) || quantity * buyPrice * fxRate;
+    items.push({
+      id: String(row[0] || "").trim(),
+      name: String(row[1] || "").trim(),
+      category: String(row[2] || "").trim() || "Lainnya",
+      quantity, unit: String(row[4] || "").trim() || "unit",
+      buyPrice, currentPrice,
+      sourceAccount: String(row[7] || "").trim(),
+      purchaseDate: normalizeSheetDate(row[8], ""),
+      note: String(row[9] || "").trim(),
+      transactionId: String(row[10] || "").trim(),
+      currency, fxRate, costBasis, value: currentValue,
+    });
+  }
+  return items.filter((x) => x.name && x.value > 0);
+}
+function parseRealAssets(rows: unknown[][]) {
+  const startIdx = findRowIndex(rows, "Real Assets");
+  const items: any[] = [];
+  if (startIdx === -1) return items;
+  for (let i = startIdx + 2; i < rows.length; i++) {
+    const row = rows[i] || [];
+    if (!String(row[0] || "").trim()) continue;
+    const lower = String(row[0] || "").trim().toLowerCase();
+    if (lower === "target assets") break;
+    const initialValue = parseRupiah(row[2]);
+    const annualChangePercent = parseRupiah(row[4]);
+    const acquisitionDate = normalizeSheetDate(row[3], "");
+    const elapsedYears = yearsHeld(acquisitionDate);
+    const currentValue = initialValue * Math.pow(1 + annualChangePercent / 100, elapsedYears);
+    items.push({
+      id: String(row[0] || "").trim(),
+      name: String(row[1] || "").trim(),
+      initialValue,
+      acquisitionDate,
+      annualChangePercent,
+      note: String(row[5] || "").trim(),
+      currentValue,
+      changeValue: currentValue - initialValue,
+    });
+  }
+  return items.filter((x) => x.name && x.initialValue >= 0);
 }
 
 function parseAssetTargets(rows: unknown[][]) {
@@ -344,7 +407,18 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
   };
   liquid.total = liquid.items.reduce((sum: number, item: any) => sum + item.value, 0);
 
-  const investment = parseAssetSection(rows, "Investment Assets", new Set(["saham", "stocks", "stock"]));
+  const legacyInvestment = parseAssetSection(rows, "Investment Assets", new Set(["saham", "stocks", "stock"]));
+  const managedInvestment = parseManagedInvestmentAssets(rows);
+  const investmentItems = [
+    ...legacyInvestment.items,
+    ...managedInvestment.map((item) => ({ name: item.name, value: item.value, sheetRow: 0 })),
+  ];
+  const investment = {
+    items: investmentItems,
+    total: investmentItems.reduce((sum, item) => sum + item.value, 0),
+    excludedNames: legacyInvestment.excludedNames,
+  };
+  const realAssets = parseRealAssets(rows);
   // The shared resolver has already selected the single authoritative stock tab.
   const stockSections = parseStockSections(rows);
   const stocksID = stockSections.id;
@@ -358,7 +432,8 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
 
   const usdIdrRate = await getUsdIdrRate();
   const stocksTotal = stocksID.subtotalValue + stocksUS.subtotalValue * usdIdrRate;
-  const totalAssets = liquid.total + investment.total + stocksTotal;
+  const realAssetsTotal = realAssets.reduce((sum, item) => sum + item.currentValue, 0);
+  const totalAssets = liquid.total + investment.total + stocksTotal + realAssetsTotal;
 
   return {
     totalAssets,
@@ -367,6 +442,9 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
     targets: targets.map((item) => ({ ...item, currentValueSource: "Asset Tracker" })),
     liquidAssets: liquid.items,
     investmentAssets: investment.items,
+    investmentDetails: managedInvestment,
+    realAssets,
+    realAssetsTotal,
     excludedInvestmentNames: investment.excludedNames,
     stocksID: stocksID.stocks,
     stocksUS: stocksUS.stocks,
