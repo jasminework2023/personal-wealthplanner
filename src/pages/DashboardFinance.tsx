@@ -330,6 +330,21 @@ function StockTracker({
       open={!collapsed}
       onToggle={() => setCollapsed((value) => !value)}
     >
+      <div className="px-4 pt-1 sm:px-5">
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="min-w-0 rounded-[14px] bg-[rgb(var(--c-cream))] px-3 py-2.5">
+            <p className="text-[10px] font-medium text-[rgb(var(--c-muted))]">Total modal</p>
+            <p className="mt-1 truncate text-[14px] font-bold tabular-nums">{assetsVisible ? formatRupiah(totalInvestment) : "Rp ••••••"}</p>
+          </div>
+          <div className="min-w-0 rounded-[14px] bg-[rgb(var(--c-cream))] px-3 py-2.5">
+            <p className="text-[10px] font-medium text-[rgb(var(--c-muted))]">Untung/rugi</p>
+            <p className={"mt-1 truncate text-[14px] font-bold tabular-nums " + (pl >= 0 ? "text-[rgb(var(--c-up))]" : "text-[rgb(var(--c-down))]")}>
+              {assetsVisible ? formatRupiah(pl) : "Rp ••••••"}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="px-4 pb-2 sm:px-5">
         <div className="flex flex-wrap items-center justify-between gap-2 pb-2">
           <div className="flex rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-0.5">
