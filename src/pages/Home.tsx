@@ -47,6 +47,9 @@ export function Home() {
   const integratedTotalAssets = assets.totalAssets;
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [assetsVisible, setAssetsVisible] = useState(true);
+  const [summaryTab, setSummaryTab] = useState<"asset" | "budget">("asset");
+  const [assetPeriod, setAssetPeriod] = useState<"1M" | "3M" | "6M" | "YTD" | "1Y">("YTD");
+  const [assetHistory, setAssetHistory] = useState<{ date: string; value: number }[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
   const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -60,13 +63,14 @@ export function Home() {
   const parseRecentDate = (value: string) => {
     const raw = String(value || "").trim();
     let day = 0, month = 0, year = 0;
-    const yearFirst = raw.match(/^(\\d{4})[-/.](\\d{1,2})[-/.](\\d{1,2})(?:$|T|\\s)/);
+    const yearFirst = raw.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:$|T|\s)/);
     if (yearFirst) {
       year = Number(yearFirst[1]); month = Number(yearFirst[2]); day = Number(yearFirst[3]);
     } else {
       const parts = raw.split(/[/. -]/).filter(Boolean).map(Number);
       if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return 0;
       [day, month, year] = parts;
+      // Source data is DD/MM/YYYY. Only flip when the second part proves MM/DD/YYYY.
       if (day <= 12 && month > 12) [day, month] = [month, day];
     }
     if (year < 100) year += year < 50 ? 2000 : 1900;
@@ -89,18 +93,16 @@ export function Home() {
       ? `You are ${formatRupiah(Math.max(0, assets.target - integratedTotalAssets))} away from your asset goal. Review your Asset Tracker and investment plan.`
       : totalSaving > 0 ? "You have saved money this month. Stay consistent and make sure your financial goals have clear targets."
       : "Start by recording transactions and setting one financial goal to get actionable guidance from your dashboard.");
-  const cashFlowData = [
-    { name: id ? "Pemasukan" : "Income", value: totalIncome },
-    { name: id ? "Pengeluaran" : "Expense", value: totalExpense },
-    { name: id ? "Tabungan" : "Saving", value: totalSaving },
-  ];
+  const cashFlowData = [{ name: id ? "Pemasukan" : "Income", value: totalIncome }, { name: id ? "Pengeluaran" : "Expense", value: totalExpense }, { name: id ? "Tabungan" : "Saving", value: totalSaving }];
   const spendingByCategory = byCategory("Expense").filter((c) => c.realization > 0).map((c) => ({ name: c.category, value: c.realization }));
   const incomeBudget = byCategory("Income").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
   const expenseBudget = byCategory("Expense").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
   const savingBudget = byCategory("Saving").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
   const hasBudget = incomeBudget > 0 || expenseBudget > 0 || savingBudget > 0;
   const remainingBudget = hasBudget ? expenseBudget - totalExpense : 0;
+
   const renderMoney = (value: number, visible: boolean, amountClassName: string, fontSize?: number) => {
+    if (loading) return <span aria-label="Memuat data" className="inline-block h-[1em] w-[190px] max-w-full animate-pulse rounded-md bg-black/15 align-middle" />;
     if (!visible) return <span className={amountClassName} style={fontSize ? { fontSize: `${fontSize}px` } : undefined}>Rp ••••••</span>;
     const formatted = formatRupiah(value);
     const amount = formatted.startsWith("Rp ") ? formatted.slice(3) : formatted.replace(/^Rp\\s*/, "");
@@ -112,6 +114,64 @@ export function Home() {
     );
   };
   const today = new Date().toLocaleDateString(id ? "id-ID" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  useEffect(() => {
+    if (!isRealData || !userId) {
+      setAssetHistory([]);
+      return;
+    }
+    const key = (date: Date) => `wealthplanner_asset_snapshot_user_${userId}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    try {
+      const now = new Date();
+      localStorage.setItem(key(now), String(integratedTotalAssets));
+      const rows: { date: string; value: number }[] = [];
+      const cursor = new Date(now.getFullYear(), now.getMonth(), 1);
+      for (let i = 0; i < 13; i++) {
+        const date = new Date(cursor.getFullYear(), cursor.getMonth() - i, 1);
+        const value = Number(localStorage.getItem(key(date)));
+        if (Number.isFinite(value) && value >= 0) {
+          rows.unshift({ date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`, value });
+        }
+      }
+      setAssetHistory(rows);
+    } catch {
+      setAssetHistory([]);
+    }
+  }, [integratedTotalAssets, isRealData, userId]);
+
+  const assetPeriodLabels: Record<typeof assetPeriod, string> = {
+    "1M": "1M", "3M": "3M", "6M": "6M", "YTD": "YTD", "1Y": "1Y",
+  };
+  const assetPeriodMonths = assetPeriod === "1M" ? 1 : assetPeriod === "3M" ? 3 : assetPeriod === "6M" ? 6 : assetPeriod === "YTD" ? new Date().getMonth() + 1 : 12;
+  const nowMonth = new Date();
+  const periodStart = assetPeriod === "YTD"
+    ? new Date(nowMonth.getFullYear(), 0, 1)
+    : new Date(nowMonth.getFullYear(), nowMonth.getMonth() - assetPeriodMonths + 1, 1);
+  const visibleAssetHistory = assetHistory.filter((row) => {
+    const [year, month] = row.date.split("-").map(Number);
+    return new Date(year, month - 1, 1) >= periodStart;
+  });
+  const chartHistory = visibleAssetHistory;
+  const hasChartHistory = chartHistory.length >= 2;
+  const hasSingleChartPoint = chartHistory.length === 1;
+  const chartMin = chartHistory.length ? Math.min(...chartHistory.map((p) => p.value)) : 0;
+  const chartMax = chartHistory.length ? Math.max(...chartHistory.map((p) => p.value)) : 1;
+  const chartRange = Math.max(chartMax - chartMin, chartMax * 0.02, 1);
+  const chartPoints = chartHistory.map((point, index) => {
+    const x = chartHistory.length === 1 ? 160 : 8 + (index / (chartHistory.length - 1)) * 304;
+    const y = 54 - ((point.value - chartMin) / chartRange) * 48;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  const chartPeriodChange = hasChartHistory
+    ? chartHistory[chartHistory.length - 1].value - chartHistory[0].value
+    : null;
+  const chartPeriodPercent = hasChartHistory && chartHistory[0].value > 0
+    ? (chartPeriodChange! / chartHistory[0].value) * 100
+    : null;
+  const cycleAssetPeriod = (direction: number) => {
+    const periods = ["1M", "3M", "6M", "YTD", "1Y"] as const;
+    const index = periods.indexOf(assetPeriod);
+    setAssetPeriod(periods[(index + direction + periods.length) % periods.length]);
+  };
 
   return (
     <div className="flex flex-col gap-3 pb-4" data-tour-loading={loading ? "true" : "false"}>
@@ -152,7 +212,14 @@ export function Home() {
               <span>{id ? "Aset saat ini" : "Current assets"}</span>
               <span className="shrink-0">{id ? "Target" : "Goal"}</span>
             </div>
-            <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#006B48]/20" aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}>
+            <div
+              className="h-2.5 w-full overflow-hidden rounded-full bg-[#006B48]/20"
+              role="progressbar"
+              aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}
+            >
               <div
                 className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
                 style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
@@ -226,19 +293,28 @@ export function Home() {
               <span className="min-w-0 truncate text-right text-[11px] font-medium text-[#03140C]/75">Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium", 11) : "Rp ••••••"}</span>
             </div>
             <div className="mt-2">
-              <div className="mb-1 flex items-center justify-between gap-3 text-[9px] font-medium text-[#03140C]/65">
-                <span>{id ? "Aset saat ini" : "Current assets"}</span>
-                <span className="shrink-0">{id ? "Target" : "Goal"}</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-[rgba(3,20,12,.14)]" aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}>
+              <div className="mt-2">
+                <div className="mb-1.5 flex items-center justify-between gap-3 text-[9px] font-medium text-[#03140C]/65">
+                  <span>{id ? "Aset saat ini" : "Current assets"}</span>
+                  <span>{id ? "Target" : "Goal"}</span>
+                </div>
                 <div
-                  className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
-                  style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
-                />
-              </div>
-              <div className="mt-1 flex items-center justify-between gap-3 text-[9px] font-medium text-[#03140C]/60 tabular-nums">
-                <span>{assetsVisible ? renderMoney(integratedTotalAssets, true, "text-[9px] font-medium", 9) : "Rp ••••••"}</span>
-                <span>{assetsVisible ? renderMoney(assets.target, true, "text-[9px] font-medium", 9) : "Rp ••••••"}</span>
+                  className="h-2.5 w-full overflow-hidden rounded-full bg-[rgba(3,20,12,.14)]"
+                  role="progressbar"
+                  aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}
+                >
+                  <div
+                    className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
+                    style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
+                  />
+                </div>
+                <div className="mt-1 flex items-center justify-between gap-3 text-[9px] font-medium text-[#03140C]/65 tabular-nums">
+                  <span>{assetsVisible ? renderMoney(integratedTotalAssets, true, "text-[9px] font-medium", 9) : "Rp ••••••"}</span>
+                  <span>{assetsVisible ? renderMoney(assets.target, true, "text-[9px] font-medium", 9) : "Rp ••••••"}</span>
+                </div>
               </div>
             </div>
           </div>
