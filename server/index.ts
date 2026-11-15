@@ -7,6 +7,22 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const apiDir = join(root, "server", "api");
 const distDir = join(root, "dist");
+const ALLOWED_ORIGINS = new Set([
+  "https://app.wealthplanner.id",
+  "https://wealthplanner.id",
+  "http://localhost:5173",
+  "http://localhost:4173",
+]);
+
+function applyCors(req: IncomingMessage, res: ServerResponse) {
+  const origin = String(req.headers.origin || "");
+  if (ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  }
+}
 
 function parseQuery(req: IncomingMessage) {
   const url = new URL(req.url || "/", "http://" + (req.headers.host || "localhost"));
@@ -19,7 +35,7 @@ function parseQuery(req: IncomingMessage) {
 }
 
 async function readBody(req: IncomingMessage) {
-  if (req.method === "GET" || req.method === "HEAD") return undefined;
+  if (req.method === "GET" || req.method === "HEAD" || req.method === "OPTIONS") return undefined;
   const chunks: Buffer[] = [];
   for await (const chunk of req) chunks.push(Buffer.from(chunk));
   const raw = Buffer.concat(chunks).toString("utf8");
@@ -112,8 +128,22 @@ async function serveStatic(res: ServerResponse, pathname: string) {
 
 const port = Number(process.env.PORT || 3000);
 createServer(async (req, res) => {
+  applyCors(req, res);
+
+  if (req.method === "OPTIONS") {
+    res.statusCode = 204;
+    return res.end();
+  }
+
   try {
     const { url } = parseQuery(req);
+
+    if (url.pathname === "/health") {
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return res.end(JSON.stringify({ ok: true, service: "wealthplanner-api" }));
+    }
+
     if (url.pathname.startsWith("/api/")) await handleApi(req, res, url.pathname);
     else await serveStatic(res, url.pathname);
   } catch (error) {
