@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Plus, Trash2, Wallet, Landmark, TrendingUp, Car, Building2, Package, Pencil } from "lucide-react";
+import { ChevronRight, Plus, Trash2, Wallet, TrendingUp, Car, Building2, Package, Pencil } from "lucide-react";
 import { formatRupiah } from "../lib/format";
 import type { AssetData, ManagedInvestmentAsset, RealAsset } from "../lib/useFinanceData";
 import { getStoredToken } from "../lib/useFinanceData";
@@ -48,7 +48,7 @@ function formatCompactAssetTotal(value: number) {
 }
 
 export function AssetTrackerManaged({
-  assets, wallets, isRealData, assetsVisible, integratedTotalAssets, integratedLiquidTotal, userId,
+  assets, wallets, isRealData, assetsVisible, userId,
 }: Props) {
   const [compositionOpen, setCompositionOpen] = useState(true);
   const [liquidOpen, setLiquidOpen] = useState(false);
@@ -76,13 +76,13 @@ export function AssetTrackerManaged({
   const liquidTotal = liquidAssets.reduce((sum, item) => sum + Number(item.value || 0), 0);
   const realTotal = Number(assets.realAssetsTotal || 0);
   const investmentDetails = assets.investmentDetails || [];
-  const legacyInvestment = assets.investmentAssets.filter(
-    (x) => !investmentDetails.some((d) => d.name === x.name && Math.abs(d.value - x.value) < 1),
-  );
-  const investmentRows = [
-    ...investmentDetails.map((d) => ({ name: d.name, value: d.value, detail: d })),
-    ...legacyInvestment.map((x) => ({ name: x.name, value: x.value, detail: null })),
-  ];
+  // Keep the exact investment items returned by the dashboard as the source of truth.
+  // Managed detail is only metadata for editing, never an extra amount.
+  const investmentRows = assets.investmentAssets.map((item) => ({
+    name: item.name,
+    value: Number(item.value) || 0,
+    detail: investmentDetails.find((d) => d.name === item.name && Math.abs(d.value - item.value) < 1) || null,
+  }));
   const investmentTotal = investmentRows.reduce((s, x) => s + x.value, 0) + assets.stocksTotal;
   const displayTotalAssets = liquidTotal + investmentTotal + realTotal;
 
