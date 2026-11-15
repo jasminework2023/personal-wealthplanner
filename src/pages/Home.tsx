@@ -48,130 +48,6 @@ export function Home() {
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [assetsVisible, setAssetsVisible] = useState(true);
   const [summaryTab, setSummaryTab] = useState<"asset" | "budget">("asset");
-  const [assetPeriod, setAssetPeriod] = useState<"1M" | "3M" | "6M" | "YTD" | "1Y">("YTD");
-  const [assetHistory, setAssetHistory] = useState<{ date: string; value: number }[]>([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
-  const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const displayName = getDisplayName() || username;
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const monthInIndonesian = currentDate.toLocaleDateString(id ? "id-ID" : "en-US", { month: "long" });
-  const monthLabel = monthInIndonesian.charAt(0).toUpperCase() + monthInIndonesian.slice(1);
-  const plans = loadFinancialPlans();
-  const allTxs = [...transactions, ...extraTxs];
-  const parseRecentDate = (value: string) => {
-    const raw = String(value || "").trim();
-    let day = 0, month = 0, year = 0;
-    const yearFirst = raw.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:$|T|\s)/);
-    if (yearFirst) {
-      year = Number(yearFirst[1]); month = Number(yearFirst[2]); day = Number(yearFirst[3]);
-    } else {
-      const parts = raw.split(/[/. -]/).filter(Boolean).map(Number);
-      if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return 0;
-      [day, month, year] = parts;
-      // Source data is DD/MM/YYYY. Only flip when the second part proves MM/DD/YYYY.
-      if (day <= 12 && month > 12) [day, month] = [month, day];
-    }
-    if (year < 100) year += year < 50 ? 2000 : 1900;
-    const parsed = new Date(year, month - 1, day);
-    if (month < 1 || month > 12 || day < 1 || day > 31 || parsed.getFullYear() !== year || parsed.getMonth() !== month - 1 || parsed.getDate() !== day) return 0;
-    return parsed.getTime();
-  };
-  const recent = [...allTxs].sort((a, b) => {
-    const difference = parseRecentDate(b.date) - parseRecentDate(a.date);
-    return difference || Number(b.sheetRow || 0) - Number(a.sheetRow || 0);
-  }).slice(0, 5);
-  const nextStep = id ? (totalExpense > totalIncome && totalIncome > 0
-    ? "Pengeluaranmu bulan ini sudah lebih besar dari pemasukan. Cek kategori pengeluaran terbesar dan tinjau kembali anggaran."
-    : assets.target > 0 && integratedTotalAssets < assets.target
-      ? `Target asetmu masih ${formatRupiah(Math.max(0, assets.target - integratedTotalAssets))} lagi. Tinjau Asset Tracker dan rencana investasimu.`
-      : totalSaving > 0 ? "Kamu sudah menabung bulan ini. Pertahankan konsistensi dan pastikan target finansialmu punya angka yang jelas."
-      : "Mulai dengan mencatat transaksi dan menetapkan satu target finansial agar dashboard bisa menyarankan langkah berikutnya.") : (totalExpense > totalIncome && totalIncome > 0
-    ? "Your expenses this month are higher than your income. Review your largest expense categories and revisit your budget."
-    : assets.target > 0 && integratedTotalAssets < assets.target
-      ? `You are ${formatRupiah(Math.max(0, assets.target - integratedTotalAssets))} away from your asset goal. Review your Asset Tracker and investment plan.`
-      : totalSaving > 0 ? "You have saved money this month. Stay consistent and make sure your financial goals have clear targets."
-      : "Start by recording transactions and setting one financial goal to get actionable guidance from your dashboard.");
-  const cashFlowData = [{ name: id ? "Pemasukan" : "Income", value: totalIncome }, { name: id ? "Pengeluaran" : "Expense", value: totalExpense }, { name: id ? "Tabungan" : "Saving", value: totalSaving }];
-  const spendingByCategory = byCategory("Expense").filter((c) => c.realization > 0).map((c) => ({ name: c.category, value: c.realization }));
-  const incomeBudget = byCategory("Income").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
-  const expenseBudget = byCategory("Expense").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
-  const savingBudget = byCategory("Saving").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
-  const hasBudget = incomeBudget > 0 || expenseBudget > 0 || savingBudget > 0;
-  const remainingBudget = hasBudget ? expenseBudget - totalExpense : 0;
-
-  const renderMoney = (value: number, visible: boolean, amountClassName: string, fontSize?: number) => {
-    if (loading) return <span aria-label="Memuat data" className="inline-block h-[1em] w-[190px] max-w-full animate-pulse rounded-md bg-black/15 align-middle" />;
-    if (!visible) return <span className={amountClassName} style={fontSize ? { fontSize: `${fontSize}px` } : undefined}>Rp ••••••</span>;
-    const formatted = formatRupiah(value);
-    const amount = formatted.startsWith("Rp ") ? formatted.slice(3) : formatted.replace(/^Rp\\s*/, "");
-    return (
-      <span className={`inline-flex min-w-0 max-w-full items-baseline ${amountClassName}`} style={fontSize ? { fontSize: `${fontSize}px` } : undefined}>
-        <span className="mr-[0.2em] text-[0.6em] font-medium opacity-60">Rp</span>
-        <span className="min-w-0 break-words">{amount}</span>
-      </span>
-    );
-  };
-  const today = new Date().toLocaleDateString(id ? "id-ID" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  useEffect(() => {
-    if (!isRealData || !userId) {
-      setAssetHistory([]);
-      return;
-    }
-    const key = (date: Date) => `wealthplanner_asset_snapshot_user_${userId}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    try {
-      const now = new Date();
-      localStorage.setItem(key(now), String(integratedTotalAssets));
-      const rows: { date: string; value: number }[] = [];
-      const cursor = new Date(now.getFullYear(), now.getMonth(), 1);
-      for (let i = 0; i < 13; i++) {
-        const date = new Date(cursor.getFullYear(), cursor.getMonth() - i, 1);
-        const value = Number(localStorage.getItem(key(date)));
-        if (Number.isFinite(value) && value >= 0) {
-          rows.unshift({ date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`, value });
-        }
-      }
-      setAssetHistory(rows);
-    } catch {
-      setAssetHistory([]);
-    }
-  }, [integratedTotalAssets, isRealData, userId]);
-
-  const assetPeriodLabels: Record<typeof assetPeriod, string> = {
-    "1M": "1M", "3M": "3M", "6M": "6M", "YTD": "YTD", "1Y": "1Y",
-  };
-  const assetPeriodMonths = assetPeriod === "1M" ? 1 : assetPeriod === "3M" ? 3 : assetPeriod === "6M" ? 6 : assetPeriod === "YTD" ? new Date().getMonth() + 1 : 12;
-  const nowMonth = new Date();
-  const periodStart = assetPeriod === "YTD"
-    ? new Date(nowMonth.getFullYear(), 0, 1)
-    : new Date(nowMonth.getFullYear(), nowMonth.getMonth() - assetPeriodMonths + 1, 1);
-  const visibleAssetHistory = assetHistory.filter((row) => {
-    const [year, month] = row.date.split("-").map(Number);
-    return new Date(year, month - 1, 1) >= periodStart;
-  });
-  const chartHistory = visibleAssetHistory;
-  const hasChartHistory = chartHistory.length >= 2;
-  const hasSingleChartPoint = chartHistory.length === 1;
-  const chartMin = chartHistory.length ? Math.min(...chartHistory.map((p) => p.value)) : 0;
-  const chartMax = chartHistory.length ? Math.max(...chartHistory.map((p) => p.value)) : 1;
-  const chartRange = Math.max(chartMax - chartMin, chartMax * 0.02, 1);
-  const chartPoints = chartHistory.map((point, index) => {
-    const x = chartHistory.length === 1 ? 160 : 8 + (index / (chartHistory.length - 1)) * 304;
-    const y = 54 - ((point.value - chartMin) / chartRange) * 48;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(" ");
-  const chartPeriodChange = hasChartHistory
-    ? chartHistory[chartHistory.length - 1].value - chartHistory[0].value
-    : null;
-  const chartPeriodPercent = hasChartHistory && chartHistory[0].value > 0
-    ? (chartPeriodChange! / chartHistory[0].value) * 100
-    : null;
-  const cycleAssetPeriod = (direction: number) => {
-    const periods = ["1M", "3M", "6M", "YTD", "1Y"] as const;
-    const index = periods.indexOf(assetPeriod);
-    setAssetPeriod(periods[(index + direction + periods.length) % periods.length]);
-  };
 
   return (
     <div className="flex flex-col gap-3 pb-4" data-tour-loading={loading ? "true" : "false"}>
@@ -208,48 +84,21 @@ export function Home() {
             <span className="min-w-0 truncate text-right text-[11px] font-medium tracking-[-0.02em] text-[#075B40]/90">Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium tracking-[-0.02em]", 11) : "Rp ••••••"}</span>
           </div>
           <div className="mt-3">
-            <div className="flex items-center gap-1 overflow-x-auto pb-1" onPointerDown={(event) => {
-              const startX = event.clientX;
-              const handleUp = (upEvent: PointerEvent) => {
-                const delta = upEvent.clientX - startX;
-                if (Math.abs(delta) > 45) cycleAssetPeriod(delta < 0 ? 1 : -1);
-                window.removeEventListener("pointerup", handleUp);
-              };
-              window.addEventListener("pointerup", handleUp);
-            }}>
-              {(["1M", "3M", "6M", "YTD", "1Y"] as const).map((period) => (
-                <button
-                  key={period}
-                  type="button"
-                  onClick={(event) => { event.stopPropagation(); setAssetPeriod(period); }}
-                  className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${assetPeriod === period ? "bg-[#03140C] text-white" : "text-[#03140C]/60 hover:bg-black/10"}`}
-                >
-                  {assetPeriodLabels[period]}
-                </button>
-              ))}
-              {chartPeriodPercent !== null ? (
-                <span className={`ml-auto shrink-0 text-[10px] font-semibold ${chartPeriodChange! >= 0 ? "text-[#075B40]" : "text-[#8F3A45]"}`}>
-                  {chartPeriodChange! >= 0 ? "↑ " : "↓ "}{Math.abs(chartPeriodPercent).toFixed(1).replace(".", ",")}%
-                </span>
-              ) : hasSingleChartPoint ? (
-                <span className="ml-auto shrink-0 text-[9px] text-[#03140C]/45">Belum cukup histori</span>
-              ) : null}
+            <div className="flex items-center justify-between gap-2 text-[10px] font-medium text-[#075B40]/75">
+              <span>{id ? "Aset saat ini" : "Current assets"}</span>
+              <span>{assetsVisible ? renderMoney(assets.target, true, "text-[10px] font-medium", 10) : "Rp ••••••"}</span>
             </div>
-            <div className="mt-1 h-[42px] w-full" aria-label={id ? `Grafik tren aset ${assetPeriod}` : `Asset trend chart ${assetPeriod}`} role="img">
-              <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
-                {hasChartHistory ? (
-                  <polyline points={chartPoints} fill="none" stroke="#03140C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
-                ) : hasSingleChartPoint ? (
-                  <>
-                    <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.12" strokeWidth="1" strokeDasharray="3 5"/>
-                    <circle cx="160" cy="30" r="3.5" fill="#03140C"/>
-                  </>
-                ) : (
-                  <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.10" strokeWidth="1" strokeDasharray="3 5"/>
-                )}
-              </svg>
+            <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-[#006B48]/20" aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}>
+              <div
+                className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
+                style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
+              />
             </div>
-          </div>
+            <div className="mt-1 flex items-center justify-between text-[9px] text-[#075B40]/65">
+              <span>{assetsVisible ? renderMoney(integratedTotalAssets, true, "text-[9px]", 9) : "Rp ••••••"}</span>
+              <span>{assets.target > 0 ? `${Math.round((integratedTotalAssets / assets.target) * 100)}%` : "0%"}</span>
+            </div>
+          </div>          </div>
         </div>
 
         <div role="button" tabIndex={0}
@@ -313,44 +162,21 @@ export function Home() {
               <span className="min-w-0 truncate text-right text-[11px] font-medium text-[#03140C]/75">Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium", 11) : "Rp ••••••"}</span>
             </div>
             <div className="mt-2">
-              <div
-                className="flex items-center gap-1 overflow-x-auto pb-1 touch-pan-x"
-                onPointerDown={(event) => {
-                  const startX = event.clientX;
-                  const handleUp = (upEvent: PointerEvent) => {
-                    const delta = upEvent.clientX - startX;
-                    if (Math.abs(delta) > 45) cycleAssetPeriod(delta < 0 ? 1 : -1);
-                    window.removeEventListener("pointerup", handleUp);
-                  };
-                  window.addEventListener("pointerup", handleUp);
-                }}
-              >
-                {(["1M", "3M", "6M", "YTD", "1Y"] as const).map((period) => (
-                  <button
-                    key={period}
-                    type="button"
-                    onClick={(event) => { event.stopPropagation(); setAssetPeriod(period); }}
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-[9px] font-semibold transition ${assetPeriod === period ? "bg-[#03140C] text-white" : "text-[#03140C]/60 hover:bg-black/10"}`}
-                  >
-                    {assetPeriodLabels[period]}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between gap-2 text-[9px] font-medium text-[#03140C]/65">
+                <span>{id ? "Aset saat ini" : "Current assets"}</span>
+                <span>{assetsVisible ? renderMoney(assets.target, true, "text-[9px] font-medium", 9) : "Rp ••••••"}</span>
               </div>
-              <div className="mt-1 h-[34px] w-full" aria-label={id ? `Grafik tren aset ${assetPeriod}` : `Asset trend chart ${assetPeriod}`} role="img">
-                <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
-                  {hasChartHistory ? (
-                    <polyline points={chartPoints} fill="none" stroke="#03140C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
-                  ) : hasSingleChartPoint ? (
-                    <>
-                      <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.12" strokeWidth="1" strokeDasharray="3 5"/>
-                      <circle cx="160" cy="30" r="3.5" fill="#03140C"/>
-                    </>
-                  ) : (
-                    <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.10" strokeWidth="1" strokeDasharray="3 5"/>
-                  )}
-                </svg>
+              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-[rgba(3,20,12,.14)]" aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}>
+                <div
+                  className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
+                  style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
+                />
               </div>
-            </div>
+              <div className="mt-1 flex items-center justify-between text-[8px] text-[#03140C]/50">
+                <span>{assetsVisible ? renderMoney(integratedTotalAssets, true, "text-[8px]", 8) : "Rp ••••••"}</span>
+                <span>{assets.target > 0 ? `${Math.round((integratedTotalAssets / assets.target) * 100)}%` : "0%"}</span>
+              </div>
+            </div>            </div>
           </div>
         ) : (
           <div role="button" tabIndex={0}
