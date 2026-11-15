@@ -394,7 +394,7 @@ export function AssetTrackerManaged({
         </button>
         {compositionOpen && (
           <div className="px-4 pb-5 sm:px-5">
-            <div className="grid items-center gap-5 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-8">
+            <div className="grid items-center gap-4 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-4">
               <div className="relative mx-auto h-[200px] w-[200px]">
                 <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90" role="img" aria-label="Komposisi aset">
                   <circle cx="100" cy="100" r="72" fill="none" stroke="rgb(var(--c-border))" strokeWidth="28" />
