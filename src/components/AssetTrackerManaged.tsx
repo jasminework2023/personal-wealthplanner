@@ -319,50 +319,59 @@ export function AssetTrackerManaged({
 
   return (
     <div className="space-y-3">
-      <section className="rounded-[16px] bg-[rgb(var(--c-surface))] p-4 sm:p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-[16px] font-semibold text-[rgb(var(--c-charcoal))]">Total Aset</p>
-            <p className="mt-1 text-[clamp(28px,7vw,40px)] font-extrabold leading-none tracking-[-0.03em] tabular-nums text-[rgb(var(--c-charcoal))]">
-              {assetsVisible ? formatRupiah(displayTotalAssets) : "Rp ••••••••"}
-            </p>
-            {assetChange && (
-              <div className="mt-2 flex items-center gap-2 text-[12px]">
-                <span className={`font-semibold tabular-nums ${assetChange.amount >= 0 ? "text-[rgb(var(--c-up))]" : "text-[rgb(var(--c-down))]"}`}>
-                  {assetChange.amount >= 0 ? "↑ " : "↓ "}{assetsVisible ? formatRupiah(Math.abs(assetChange.amount)) : "Rp ••••••"}
-                </span>
-                <span className="text-[rgb(var(--c-muted))]">({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}%)</span>
-                <span className="text-[rgb(var(--c-muted))]">vs bulan lalu</span>
+      <section
+        className="overflow-hidden rounded-[20px] p-4 text-[#062D20] sm:p-5"
+        style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)" }}
+      >
+        <div className="min-w-0">
+          <p className="text-[12px] font-medium tracking-[-0.02em] text-[#075B40]/80">Total Aset</p>
+          <p className="mt-0.5 min-w-0 break-words text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black sm:text-[38px]">
+            {assetsVisible ? formatRupiah(displayTotalAssets) : "Rp ••••••••"}
+          </p>
+
+          {assetChange && (
+            <div className="mt-2 flex items-center gap-2 text-[11px]">
+              <span className={`font-semibold tabular-nums ${assetChange.amount >= 0 ? "text-[#064A34]" : "text-[rgb(var(--c-down))]"}`}>
+                {assetChange.amount >= 0 ? "↑ " : "↓ "}{assetsVisible ? formatRupiah(Math.abs(assetChange.amount)) : "Rp ••••••"}
+              </span>
+              <span className="text-[#075B40]/70">({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}%)</span>
+              <span className="text-[#075B40]/70">vs bulan lalu</span>
+            </div>
+          )}
+
+          <div className="mt-3 flex min-h-[46px] items-center justify-between gap-3">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[11px] font-medium tracking-[-0.02em] text-[#042F21]">
+              {assets.target > 0 ? Math.round(Math.min(100, Math.max(0, (displayTotalAssets / assets.target) * 100))) : 0}% dari target
+            </span>
+
+            {isRealData && (
+              <div className="flex min-w-0 items-center gap-1.5 text-right">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-medium tracking-[-0.02em] text-[#075B40]/65">Target Aset</p>
+                  <p className="truncate text-[12px] font-semibold tabular-nums text-[#075B40]/85">
+                    {assetsVisible ? formatRupiah(assets.target || 0) : "Rp ••••••"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  aria-label="Edit target aset"
+                  title="Edit target aset"
+                  onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#064A34] transition hover:bg-[#006B48]/15"
+                >
+                  <Pencil size={15} strokeWidth={2} />
+                </button>
               </div>
             )}
           </div>
-          {isRealData && (
-            <div className="flex shrink-0 items-start gap-2">
-              <div className="text-right">
-                <p className="text-[12px] font-medium text-[rgb(var(--c-muted))]">Target Aset</p>
-                <p className="mt-1 text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">
-                  {assetsVisible ? formatRupiah(assets.target || 0) : "Rp ••••••"}
-                </p>
-              </div>
-              <button type="button" aria-label="Edit target aset" title="Edit target aset"
-                onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }}
-                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[rgb(var(--c-muted))] hover:bg-[rgb(var(--c-cream))] hover:text-[rgb(var(--c-up))]">
-                <Pencil size={15} />
-              </button>
-            </div>
-          )}
-        </div>
 
-        <div className="mt-4">
-          <div className="flex items-center justify-between gap-3 text-[12px] font-semibold">
-            <span className="text-[rgb(var(--c-muted))]">Progress target</span>
-            <span className="tabular-nums text-[rgb(var(--c-charcoal))]">
-              {assets.target > 0 ? Math.min(100, Math.max(0, (displayTotalAssets / assets.target) * 100)).toFixed(0) : "0"}%
-            </span>
-          </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-[rgb(var(--c-border))]">
-            <div className="h-full rounded-full bg-[rgb(var(--c-up))] transition-[width]"
-              style={{ width: `${assets.target > 0 ? Math.min(100, Math.max(0, (displayTotalAssets / assets.target) * 100)) : 0}%` }} />
+          <div className="mt-2.5">
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#006B48]/20">
+              <div
+                className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
+                style={{ width: `${assets.target > 0 ? Math.min(100, Math.max(0, (displayTotalAssets / assets.target) * 100)) : 0}%` }}
+              />
+            </div>
           </div>
         </div>
 
