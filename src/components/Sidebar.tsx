@@ -24,20 +24,18 @@ import logoMark from "../assets/logo-mark-white.png";
 const mainLinks = [
   { to: "/", label: "Home", icon: Home },
   { to: "/finance", label: "Report", icon: BarChart3 },
-  { to: "/assets", label: "Asset", icon: BarChart3 },
-  { to: "/transactions", label: "Community", icon: UsersRound },
-  { to: "/budgeting", label: "Monthly Budget", icon: PieChart },
-  { to: "/transaction", label: "Transaction", icon: Receipt },
-  { to: "/goals", label: "Goals", icon: CalendarRange },
   { to: "/calendar", label: "Calendar", icon: CalendarDays },
-  { to: "/ai-assistant", label: "AI Assistant", icon: Sparkles },
+  { to: "/transaction", label: "Transaction", icon: Receipt },
+  { to: "/budgeting", label: "Monthly Budget", icon: PieChart },
+  { to: "/goals", label: "Goals", icon: CalendarRange },
 ];
 
 const toolLinks = [
   { to: "/wallets", label: "Wallet", icon: Wallet },
   { to: "/calculator", label: "Financial Calculator", icon: Calculator },
   { to: "/protection", label: "Financial Protection", icon: Shield },
-  { to: "/checkup", label: "Financial Checkup", icon: CircleCheck },
+  { to: "/ai-assistant", label: "AI Assistant", icon: Sparkles },
+  { to: "/checkup", label: "Consultation", icon: CircleCheck },
 ];
 
 function NavItem({ to, label, icon: Icon, onNavigate, dataTour }: { to: string; label: string; icon: any; onNavigate?: () => void; dataTour?: string }) {
@@ -83,7 +81,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const [language, setLanguage] = useState(getAppLanguage());
   const [profileOpen, setProfileOpen] = useState(false);
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
-  const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", asset: "Aset", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", checkup: "Financial Checkup", guidance: "Panduan", profile: "Profil & Pengaturan", wallet: "Wallet", transaction: "Transaksi", goals: "Target", aiAssistant: "Asisten AI", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", asset: "Asset", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", checkup: "Financial Checkup", wallet: "Wallet", guidance: "Guidance", transaction: "Transaction", goals: "Goals", aiAssistant: "AI Assistant", website: "Website", personalFinance: "Personal Finance" };
+  const labels = language === "id" ? { main: "Menu Utama", tools: "Alat", report: "Laporan", asset: "Aset", community: "Komunitas", budget: "Anggaran Bulanan", calculator: "Kalkulator Keuangan", protection: "Proteksi Finansial", checkup: "Konsultasi", guidance: "Panduan", profile: "Profil & Pengaturan", wallet: "Wallet", transaction: "Transaksi", goals: "Target", aiAssistant: "Asisten AI", website: "Situs Web", personalFinance: "Keuangan Pribadi" } : { main: "Main", tools: "Tools", report: "Report", asset: "Asset", community: "Community", budget: "Monthly Budget", calculator: "Financial Calculator", protection: "Financial Protection", checkup: "Consultation", wallet: "Wallet", guidance: "Guidance", transaction: "Transaction", goals: "Goals", aiAssistant: "AI Assistant", website: "Website", personalFinance: "Personal Finance" };
   return (
     <div className="flex flex-col h-full">
       <Brand />
@@ -91,18 +89,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="px-2 flex-1 overflow-y-auto">
         <p className="px-3 text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.main}</p>
         <nav className="flex flex-col gap-0.5 mb-4">
-          {mainLinks.map((l) => l.to === "/assets" ? (
-            <button key={l.to} type="button" data-tour="menu-asset" onClick={() => { navigate("/assets"); onNavigate?.(); }} className={`group relative flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all w-full text-left ${location.pathname === "/assets" ? "sidebar-item-active" : "sidebar-item"}`}>
-              {location.pathname === "/assets" && <span className="sidebar-active-indicator absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#6EE7A8]" />}
-              <BarChart3 size={18} strokeWidth={2} className={location.pathname === "/assets" ? "sidebar-icon-active" : "sidebar-icon"} />
-              {labels.asset}
-            </button>
-          ) : <NavItem key={l.to} {...l} dataTour={l.to === "/finance" ? "menu-report" : l.to === "/budgeting" ? "menu-budget" : l.to === "/transaction" ? "menu-transaction" : l.to === "/goals" ? "menu-goals" : l.to === "/ai-assistant" ? "menu-ai-assistant" : undefined} label={l.to === "/finance" ? labels.report : l.to === "/transactions" ? labels.community : l.to === "/budgeting" ? labels.budget : l.to === "/transaction" ? labels.transaction : l.to === "/goals" ? labels.goals : l.to === "/ai-assistant" ? labels.aiAssistant : l.label} onNavigate={onNavigate} />)}
+          {mainLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/finance" ? "menu-report" : l.to === "/budgeting" ? "menu-budget" : l.to === "/transaction" ? "menu-transaction" : l.to === "/goals" ? "menu-goals" : undefined} label={l.to === "/finance" ? labels.report : l.to === "/budgeting" ? labels.budget : l.to === "/transaction" ? labels.transaction : l.to === "/goals" ? labels.goals : l.label} onNavigate={onNavigate} />)}
         </nav>
 
         <p className="px-3 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.tools}</p>
         <nav className="flex flex-col gap-0.5">
-          {toolLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/wallets" ? "menu-wallet" : l.to === "/calculator" ? "menu-calculator" : l.to === "/protection" ? "menu-protection" : l.to === "/checkup" ? "menu-checkup" : undefined} label={l.to === "/wallets" ? labels.wallet : l.to === "/calculator" ? labels.calculator : l.to === "/protection" ? labels.protection : l.to === "/checkup" ? labels.checkup : l.label} onNavigate={onNavigate} />)}
+          {toolLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/wallets" ? "menu-wallet" : l.to === "/calculator" ? "menu-calculator" : l.to === "/protection" ? "menu-protection" : l.to === "/checkup" ? "menu-checkup" : undefined} label={l.to === "/wallets" ? labels.wallet : l.to === "/calculator" ? labels.calculator : l.to === "/protection" ? labels.protection : l.to === "/ai-assistant" ? labels.aiAssistant : l.to === "/checkup" ? labels.checkup : l.label} onNavigate={onNavigate} />)}
           <a href="https://www.wealthplanner.id" onClick={onNavigate} className="sidebar-item group flex items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all">
             <ExternalLink size={18} strokeWidth={2} className="sidebar-icon" />
             {labels.website}
@@ -110,37 +102,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </nav>
       </div>
 
-      <div className="relative mx-2 mb-3">
-        <div className="rounded-xl border border-[#E4E6E8] bg-white p-1 flex flex-col gap-0.5">
-          <button
-            type="button"
-            data-tour="sidebar-profile"
-            onClick={() => setProfileOpen((open) => !open)}
-            aria-expanded={profileOpen}
-            className="sidebar-item group relative flex w-full items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all"
-          >
-            <Settings size={18} strokeWidth={2} className="sidebar-icon" />
-            {labels.profile}
-          </button>
-        </div>
-
-        {profileOpen && (
-          <div className="absolute bottom-[calc(100%+8px)] left-0 right-0 z-50 rounded-xl border border-[#E4E6E8] bg-white p-1.5 shadow-lg">
-            <NavLink
-              data-tour="profile-settings-link"
-              to="/settings"
-              onClick={() => {
-                setProfileOpen(false);
-                onNavigate?.();
-              }}
-              className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-[12.5px] font-medium text-charcoal/75 hover:bg-forest-50 hover:text-forest-800"
-            >
-              <Settings size={16} />
-              {language === "id" ? "Buka Profil & Pengaturan" : "Open Profile & Settings"}
-            </NavLink>
-          </div>
-        )}
-      </div>
+      <div className="mx-2 mb-3">
+        <NavLink data-tour="sidebar-profile" to="/settings" onClick={onNavigate} className="sidebar-item group flex w-full items-center gap-3 px-3 py-2 rounded-[10px] text-[13px] transition-all">
+          <Settings size={18} strokeWidth={2} className="sidebar-icon" />
+          {labels.profile}
+        </NavLink>
+      </div>      </div>
     </div>
   );
 }
