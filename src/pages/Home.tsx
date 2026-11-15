@@ -48,7 +48,8 @@ export function Home() {
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [assetsVisible, setAssetsVisible] = useState(true);
   const [summaryTab, setSummaryTab] = useState<"asset" | "budget">("asset");
-  const [assetTrend, setAssetTrend] = useState<number | null>(null);
+  const [assetPeriod, setAssetPeriod] = useState<"1M" | "3M" | "6M" | "YTD" | "1Y">("YTD");
+  const [assetHistory, setAssetHistory] = useState<{ date: string; value: number }[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
   const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -115,19 +116,64 @@ export function Home() {
   const today = new Date().toLocaleDateString(id ? "id-ID" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   useEffect(() => {
     if (!isRealData || !userId) {
-      setAssetTrend(null);
+      setAssetHistory([]);
       return;
     }
-    const now = new Date();
-    const key = (date: Date) => "wealthplanner_asset_snapshot_" + date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
-    const prefix = `user_${userId}`;
-    const previousDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const key = (date: Date) => `wealthplanner_asset_snapshot_user_${userId}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     try {
-      const previousAssets = Number(localStorage.getItem(prefix + "_" + key(previousDate)));
-      setAssetTrend(Number.isFinite(previousAssets) && previousAssets > 0 ? ((integratedTotalAssets - previousAssets) / previousAssets) * 100 : null);
-      localStorage.setItem(prefix + "_" + key(now), String(integratedTotalAssets));
-    } catch { setAssetTrend(null); }
+      const now = new Date();
+      localStorage.setItem(key(now), String(integratedTotalAssets));
+      const rows: { date: string; value: number }[] = [];
+      const cursor = new Date(now.getFullYear(), now.getMonth(), 1);
+      for (let i = 0; i < 13; i++) {
+        const date = new Date(cursor.getFullYear(), cursor.getMonth() - i, 1);
+        const value = Number(localStorage.getItem(key(date)));
+        if (Number.isFinite(value) && value >= 0) {
+          rows.unshift({ date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`, value });
+        }
+      }
+      setAssetHistory(rows);
+    } catch {
+      setAssetHistory([]);
+    }
   }, [integratedTotalAssets, isRealData, userId]);
+
+  const assetPeriodLabels: Record<typeof assetPeriod, string> = {
+    "1M": "1M", "3M": "3M", "6M": "6M", "YTD": "YTD", "1Y": "1Y",
+  };
+  const assetPeriodMonths = assetPeriod === "1M" ? 1 : assetPeriod === "3M" ? 3 : assetPeriod === "6M" ? 6 : assetPeriod === "YTD" ? new Date().getMonth() + 1 : 12;
+  const nowMonth = new Date();
+  const periodStart = assetPeriod === "YTD"
+    ? new Date(nowMonth.getFullYear(), 0, 1)
+    : new Date(nowMonth.getFullYear(), nowMonth.getMonth() - assetPeriodMonths + 1, 1);
+  const visibleAssetHistory = assetHistory.filter((row) => {
+    const [year, month] = row.date.split("-").map(Number);
+    return new Date(year, month - 1, 1) >= periodStart;
+  });
+  const chartHistory = visibleAssetHistory.length >= 2
+    ? visibleAssetHistory
+    : visibleAssetHistory.length === 1
+      ? [{ date: visibleAssetHistory[0].date, value: visibleAssetHistory[0].value }, { date: visibleAssetHistory[0].date, value: visibleAssetHistory[0].value }]
+      : [];
+  const chartMin = chartHistory.length ? Math.min(...chartHistory.map((p) => p.value)) : 0;
+  const chartMax = chartHistory.length ? Math.max(...chartHistory.map((p) => p.value)) : 1;
+  const chartRange = Math.max(chartMax - chartMin, chartMax * 0.02, 1);
+  const chartPoints = chartHistory.map((point, index) => {
+    const x = chartHistory.length === 1 ? 160 : 8 + (index / (chartHistory.length - 1)) * 304;
+    const y = 54 - ((point.value - chartMin) / chartRange) * 48;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  const chartPeriodChange = chartHistory.length >= 2
+    ? chartHistory[chartHistory.length - 1].value - chartHistory[0].value
+    : null;
+  const chartPeriodPercent = chartHistory.length >= 2 && chartHistory[0].value > 0
+    ? (chartPeriodChange! / chartHistory[0].value) * 100
+    : null;
+  const cycleAssetPeriod = (direction: number) => {
+    const periods = ["1M", "3M", "6M", "YTD", "1Y"] as const;
+    const index = periods.indexOf(assetPeriod);
+    setAssetPeriod(periods[(index + direction + periods.length) % periods.length]);
+  };
 
   return (
     <div className="flex flex-col gap-3 pb-4" data-tour-loading={loading ? "true" : "false"}>
@@ -163,10 +209,41 @@ export function Home() {
             </span>
             <span className="min-w-0 truncate text-right text-[11px] font-medium tracking-[-0.02em] text-[#075B40]/90">Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium tracking-[-0.02em]", 11) : "Rp ••••••"}</span>
           </div>
-          <div className="mt-3 h-[30px] w-full" aria-label={id ? "Grafik tren aset" : "Asset trend chart"} role="img">
-            <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
-              <polyline points="8,48 46,41 84,45 122,27 160,33 198,14 246,18 312,0" fill="none" stroke="#03140C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
-            </svg>
+          <div className="mt-3">
+            <div className="flex items-center gap-1 overflow-x-auto pb-1" onPointerDown={(event) => {
+              const startX = event.clientX;
+              const handleUp = (upEvent: PointerEvent) => {
+                const delta = upEvent.clientX - startX;
+                if (Math.abs(delta) > 45) cycleAssetPeriod(delta < 0 ? 1 : -1);
+                window.removeEventListener("pointerup", handleUp);
+              };
+              window.addEventListener("pointerup", handleUp);
+            }}>
+              {(["1M", "3M", "6M", "YTD", "1Y"] as const).map((period) => (
+                <button
+                  key={period}
+                  type="button"
+                  onClick={(event) => { event.stopPropagation(); setAssetPeriod(period); }}
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${assetPeriod === period ? "bg-[#03140C] text-white" : "text-[#03140C]/60 hover:bg-black/10"}`}
+                >
+                  {assetPeriodLabels[period]}
+                </button>
+              ))}
+              {chartPeriodPercent !== null && (
+                <span className="ml-auto shrink-0 text-[10px] font-medium text-[#03140C]/60">
+                  {chartPeriodChange! >= 0 ? "↑ " : "↓ "}{Math.abs(chartPeriodPercent).toFixed(1).replace(".", ",")}%
+                </span>
+              )}
+            </div>
+            <div className="mt-1 h-[42px] w-full" aria-label={id ? `Grafik tren aset ${assetPeriod}` : `Asset trend chart ${assetPeriod}`} role="img">
+              <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
+                {chartHistory.length >= 2 ? (
+                  <polyline points={chartPoints} fill="none" stroke="#03140C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+                ) : (
+                  <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.18" strokeWidth="2" strokeLinecap="round"/>
+                )}
+              </svg>
+            </div>
           </div>
         </div>
 
@@ -230,10 +307,28 @@ export function Home() {
               </span>
               <span className="min-w-0 truncate text-right text-[11px] font-medium text-[#03140C]/75">Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium", 11) : "Rp ••••••"}</span>
             </div>
-            <div className="mt-2 h-[30px] w-full" aria-label={id ? "Grafik tren aset" : "Asset trend chart"} role="img">
-              <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
-                <polyline points="8,48 46,41 84,45 122,27 160,33 198,14 246,18 312,0" fill="none" stroke="#03140C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
-              </svg>
+            <div className="mt-2">
+              <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                {(["1M", "3M", "6M", "YTD", "1Y"] as const).map((period) => (
+                  <button
+                    key={period}
+                    type="button"
+                    onClick={(event) => { event.stopPropagation(); setAssetPeriod(period); }}
+                    className={`shrink-0 rounded-full px-2 py-1 text-[9px] font-semibold transition ${assetPeriod === period ? "bg-[#03140C] text-white" : "text-[#03140C]/60 hover:bg-black/10"}`}
+                  >
+                    {assetPeriodLabels[period]}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-1 h-[34px] w-full" aria-label={id ? `Grafik tren aset ${assetPeriod}` : `Asset trend chart ${assetPeriod}`} role="img">
+                <svg viewBox="0 0 320 62" preserveAspectRatio="none" className="h-full w-full overflow-visible">
+                  {chartHistory.length >= 2 ? (
+                    <polyline points={chartPoints} fill="none" stroke="#03140C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
+                  ) : (
+                    <line x1="8" y1="54" x2="312" y2="54" stroke="#03140C" strokeOpacity="0.18" strokeWidth="2" strokeLinecap="round"/>
+                  )}
+                </svg>
+              </div>
             </div>
           </div>
         ) : (
