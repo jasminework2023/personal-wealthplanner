@@ -200,6 +200,20 @@ export default async function handler(req:VercelRequest,res:VercelResponse) {
       if(!existing && fundingMode==="purchase" && !sourceAccount) return res.status(400).json({error:"Rekening sumber dana wajib dipilih untuk pembelian aset riil."});
       if(existing?.fundingMode==="purchase" && !sourceAccount) return res.status(400).json({error:"Aset ini terhubung ke rekening sumber. Pilih rekening sumber dana."});
 
+      // Idempotency across both input paths: if the same purchase was already
+      // created from Asset Tracker, recording the same purchase in Transaction
+      // Tracker reuses that asset instead of creating a duplicate.
+      if(!existing && fundingMode==="purchase") {
+        const duplicate=parseReal(data).find(x =>
+          x.fundingMode==="purchase" &&
+          norm(x.name)===norm(name) &&
+          Math.abs(x.initialValue-initial)<1 &&
+          norm(x.sourceAccount)===norm(sourceAccount) &&
+          x.acquisitionDate===date
+        );
+        if(duplicate) return res.status(200).json({success:true,duplicate:true,asset:duplicate});
+      }
+
       const txid=existing?.transactionId || (fundingMode==="purchase" ? (globalThis.crypto?.randomUUID?.()||("tx-"+Date.now())) : "");
       if(fundingMode==="purchase") {
         if(existing?.transactionId) await updatePurchaseTransaction(sheets,user.spreadsheet_id,existing.transactionId,initial,sourceAccount);
