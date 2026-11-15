@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Plus, Trash2, Wallet, Car, Building2, Package, Pencil } from "lucide-react";
+import { ChevronRight, Plus, Trash2, Wallet, Landmark, TrendingUp, Car, Building2, Package, Pencil } from "lucide-react";
 import { formatRupiah } from "../lib/format";
 import type { AssetData, ManagedInvestmentAsset, RealAsset } from "../lib/useFinanceData";
 import { getStoredToken } from "../lib/useFinanceData";
@@ -70,6 +70,10 @@ export function AssetTrackerManaged({
   });
   const [fundingMode, setFundingMode] = useState<"purchase" | "opening">("purchase");
 
+  // Asset Tracker display source: the dashboard asset payload.
+  // The wallets prop remains available only for purchase/edit forms.
+  const liquidAssets = assets.liquidAssets || [];
+  const liquidTotal = liquidAssets.reduce((sum, item) => sum + Number(item.value || 0), 0);
   const realTotal = Number(assets.realAssetsTotal || 0);
   const investmentDetails = assets.investmentDetails || [];
   const legacyInvestment = assets.investmentAssets.filter(
@@ -80,6 +84,7 @@ export function AssetTrackerManaged({
     ...legacyInvestment.map((x) => ({ name: x.name, value: x.value, detail: null })),
   ];
   const investmentTotal = investmentRows.reduce((s, x) => s + x.value, 0) + assets.stocksTotal;
+  const displayTotalAssets = liquidTotal + investmentTotal + realTotal;
 
   const categoryTotals = useMemo(() => {
     const out: Record<string, number> = {};
@@ -92,7 +97,7 @@ export function AssetTrackerManaged({
   }, [investmentRows, assets.stocksTotal]);
 
   const composition = [
-    { name: "Aset Likuid", value: integratedLiquidTotal, color: "rgb(var(--asset-liquid))" },
+    { name: "Aset Likuid", value: liquidTotal, color: "rgb(var(--asset-liquid))" },
     { name: "Obligasi", value: categoryTotals.Obligasi || 0, color: "rgb(var(--asset-bond))" },
     { name: "Saham", value: categoryTotals.Saham || 0, color: "rgb(var(--asset-stock))" },
     { name: "Reksadana", value: categoryTotals.Reksadana || 0, color: "rgb(var(--asset-fund))" },
@@ -116,16 +121,16 @@ export function AssetTrackerManaged({
     try {
       const previousTotal = Number(localStorage.getItem(key(previous)));
       if (Number.isFinite(previousTotal) && previousTotal > 0) {
-        const amount = integratedTotalAssets - previousTotal;
+        const amount = displayTotalAssets - previousTotal;
         setAssetChange({ amount, percent: (amount / previousTotal) * 100 });
       } else {
         setAssetChange(null);
       }
-      localStorage.setItem(key(now), String(integratedTotalAssets));
+      localStorage.setItem(key(now), String(displayTotalAssets));
     } catch {
       setAssetChange(null);
     }
-  }, [integratedTotalAssets, isRealData, userId]);
+  }, [displayTotalAssets, isRealData, userId]);
 
   function openReal(asset?: RealAsset) {
     setError("");
@@ -305,44 +310,58 @@ export function AssetTrackerManaged({
 
   return (
     <div className="space-y-3">
-      <section className="rounded-[24px] bg-[rgb(var(--c-surface))] p-4 sm:p-5">
-        <p className="text-[14px] font-semibold text-[rgb(var(--c-muted))]">Total Aset</p>
-        <div className="flex items-start justify-between gap-3">
+      <section className="rounded-[20px] bg-[rgb(var(--c-surface))] p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="mt-1 text-[clamp(30px,8vw,44px)] font-extrabold leading-none tracking-[-0.03em] tabular-nums">{assetsVisible ? formatRupiah(integratedTotalAssets) : "Rp ••••••••"}</p>
-            <div className="mt-2 flex items-center gap-2 text-[11px]">
-              {assetChange ? (
-                <>
-                  <span className={`font-semibold tabular-nums ${assetChange.amount >= 0 ? "text-[rgb(var(--c-up))]" : "text-[rgb(var(--c-down))]"}`}>
-                    {assetChange.amount >= 0 ? "↑ " : "↓ "}{assetsVisible ? formatRupiah(Math.abs(assetChange.amount)) : "Rp ••••••"}
-                  </span>
-                  <span className="text-[rgb(var(--c-muted))]">({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}%)</span>
-                  <span className="text-[rgb(var(--c-muted))]">vs bulan lalu</span>
-                </>
-              ) : null}
-            </div>
+            <p className="text-[16px] font-semibold text-[rgb(var(--c-charcoal))]">Total Aset</p>
+            <p className="mt-1 text-[clamp(28px,7vw,40px)] font-extrabold leading-none tracking-[-0.03em] tabular-nums text-[rgb(var(--c-charcoal))]">
+              {assetsVisible ? formatRupiah(displayTotalAssets) : "Rp ••••••••"}
+            </p>
+            {assetChange && (
+              <div className="mt-2 flex items-center gap-2 text-[12px]">
+                <span className={`font-semibold tabular-nums ${assetChange.amount >= 0 ? "text-[rgb(var(--c-up))]" : "text-[rgb(var(--c-down))]"}`}>
+                  {assetChange.amount >= 0 ? "↑ " : "↓ "}{assetsVisible ? formatRupiah(Math.abs(assetChange.amount)) : "Rp ••••••"}
+                </span>
+                <span className="text-[rgb(var(--c-muted))]">({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}%)</span>
+                <span className="text-[rgb(var(--c-muted))]">vs bulan lalu</span>
+              </div>
+            )}
           </div>
           {isRealData && (
-            <div className="mt-1 flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-start gap-2">
               <div className="text-right">
-                <p className="text-[10px] font-medium text-[rgb(var(--c-muted))]">Target Aset</p>
-                <p className="text-[13px] font-bold tabular-nums text-[rgb(var(--c-charcoal))]">
+                <p className="text-[12px] font-medium text-[rgb(var(--c-muted))]">Target Aset</p>
+                <p className="mt-1 text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">
                   {assetsVisible ? formatRupiah(assets.target || 0) : "Rp ••••••"}
                 </p>
               </div>
               <button type="button" aria-label="Edit target aset" title="Edit target aset"
                 onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[rgb(var(--c-muted))] hover:bg-[rgb(var(--c-cream))] hover:text-[rgb(var(--c-up))]">
-                <Pencil size={16} />
+                className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[rgb(var(--c-muted))] hover:bg-[rgb(var(--c-cream))] hover:text-[rgb(var(--c-up))]">
+                <Pencil size={15} />
               </button>
             </div>
           )}
         </div>
+
+        <div className="mt-4">
+          <div className="flex items-center justify-between gap-3 text-[12px] font-semibold">
+            <span className="text-[rgb(var(--c-muted))]">Progress target</span>
+            <span className="tabular-nums text-[rgb(var(--c-charcoal))]">
+              {assets.target > 0 ? Math.min(100, Math.max(0, (displayTotalAssets / assets.target) * 100)).toFixed(0) : "0"}%
+            </span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-[rgb(var(--c-border))]">
+            <div className="h-full rounded-full bg-[rgb(var(--c-up))] transition-[width]"
+              style={{ width: `${assets.target > 0 ? Math.min(100, Math.max(0, (displayTotalAssets / assets.target) * 100)) : 0}%` }} />
+          </div>
+        </div>
+
         {editingAssetTarget && (
           <div className="mt-3 rounded-[14px] border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-3">
             <label className="sr-only" htmlFor="asset-target-input">Nominal target aset</label>
             <input id="asset-target-input" inputMode="numeric" value={assetTargetInput} onChange={(e) => setAssetTargetInput(e.target.value.replace(/[^0-9]/g, ""))} className="min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-[14px] font-semibold text-[rgb(var(--c-charcoal))] outline-none" placeholder="Masukkan target aset" autoFocus />
-            <p className="mt-1 text-[10px] text-[rgb(var(--c-muted))]">Nominal wajib diisi dan tidak boleh negatif.</p>
+            <p className="mt-1 text-[12px] text-[rgb(var(--c-muted))]">Nominal wajib diisi dan tidak boleh negatif.</p>
             <div className="mt-2 flex justify-end gap-2">
               <button type="button" disabled={savingAssetTarget} onClick={() => { setEditingAssetTarget(false); setAssetTargetInput(String(Math.round(assets.target || 0))); }} className="min-h-11 rounded-full border border-[rgb(var(--c-border))] px-3 text-[11px] font-semibold">Batal</button>
               <button type="button" disabled={savingAssetTarget} onClick={async () => {
@@ -362,93 +381,127 @@ export function AssetTrackerManaged({
         )}
       </section>
 
-      <section className="rounded-[24px] bg-[rgb(var(--c-surface))]">
-        <button type="button" onClick={() => setCompositionOpen(v => !v)} className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-4 text-left sm:px-5">
-          <span className="text-[15px] font-semibold">Komposisi Aset</span>
+      <section className="rounded-[20px] bg-[rgb(var(--c-surface))]">
+        <button type="button" onClick={() => setCompositionOpen(v => !v)} className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left sm:px-5">
+          <span className="text-[16px] font-semibold text-[rgb(var(--c-charcoal))]">Komposisi Aset</span>
           <ChevronRight size={18} className={compositionOpen ? "rotate-90" : ""} />
         </button>
         {compositionOpen && (
           <div className="px-4 pb-5 sm:px-5">
-            <div className="relative mx-auto w-[180px] sm:w-[220px] lg:w-[240px] aspect-square [container-type:inline-size]">
-              <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90" role="img" aria-label="Komposisi aset">
-                <circle cx="100" cy="100" r="72" fill="none" stroke="rgb(var(--c-border))" strokeWidth="28" />
-                {composition.map((item, index) => {
-                  const circumference = 2 * Math.PI * 72;
-                  const prior = composition.slice(0, index).reduce((s, x) => s + x.value, 0);
-                  const dash = (item.value / compositionTotal) * circumference;
-                  return <circle key={item.name} cx="100" cy="100" r="72" fill="none" stroke={item.color} strokeWidth="28" strokeDasharray={dash + " " + (circumference - dash)} strokeDashoffset={-prior / compositionTotal * circumference} />;
-                })}
-              </svg>
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-[18%] text-center">
-                <span className="text-[clamp(9px,5cqw,13px)] leading-tight text-[rgb(var(--c-muted))]">Total</span>
-                <span className="mt-0.5 max-w-full whitespace-nowrap text-[clamp(12px,10cqw,21px)] font-extrabold leading-none tracking-[-0.03em] tabular-nums">
-                  {assetsVisible ? formatCompactAssetTotal(compositionTotal) : "••••••"}
-                </span>
+            <div className="grid items-center gap-5 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-8">
+              <div className="relative mx-auto h-[200px] w-[200px]">
+                <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90" role="img" aria-label="Komposisi aset">
+                  <circle cx="100" cy="100" r="72" fill="none" stroke="rgb(var(--c-border))" strokeWidth="28" />
+                  {composition.map((item, index) => {
+                    const circumference = 2 * Math.PI * 72;
+                    const prior = composition.slice(0, index).reduce((s, x) => s + x.value, 0);
+                    const dash = compositionTotal > 0 ? (item.value / compositionTotal) * circumference : 0;
+                    return <circle key={item.name} cx="100" cy="100" r="72" fill="none" stroke={item.color} strokeWidth="28" strokeDasharray={dash + " " + (circumference - dash)} strokeDashoffset={-prior / Math.max(compositionTotal, 1) * circumference} />;
+                  })}
+                </svg>
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <span className="text-[12px] leading-tight text-[rgb(var(--c-muted))]">Total</span>
+                  <span className="mt-1 whitespace-nowrap text-[18px] font-extrabold leading-none tracking-[-0.02em] tabular-nums text-[rgb(var(--c-charcoal))]">
+                    {assetsVisible ? formatCompactAssetTotal(compositionTotal) : "••••••"}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="mt-3 space-y-1 border-t border-[rgb(var(--c-border))] pt-2">
-              {composition.map(item => <div key={item.name} className="flex min-h-7 items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="min-w-0 flex-1 truncate text-[12px]">{item.name}</span>
-                <span className="text-[12px] font-bold tabular-nums">{pct(item.value)}</span>
-              </div>)}
+              <div className="grid grid-cols-2 gap-x-5 gap-y-1 lg:grid-cols-1 lg:gap-y-1">
+                {composition.map(item => (
+                  <div key={item.name} className="flex min-h-7 items-center gap-2">
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-[rgb(var(--c-charcoal))]">{item.name}</span>
+                    <span className="w-12 shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{pct(item.value)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
       </section>
 
-      <section className="rounded-[24px] bg-[rgb(var(--c-surface))] p-4 sm:p-5">
+      <section className="rounded-[20px] bg-[rgb(var(--c-surface))] p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
-          <div><p className="text-[15px] font-semibold">Kategori Aset</p><p className="text-[10px] text-[rgb(var(--c-muted))]">Kelola aset investasi dan aset riil</p></div>
-          <button type="button" onClick={() => openInvestment()} className="flex h-11 w-11 items-center justify-center rounded-full bg-[rgb(var(--c-forest-50))] text-[rgb(var(--c-up))]" aria-label="Tambah aset investasi"><Plus size={18} /></button>
+          <div className="min-w-0">
+            <p className="text-[16px] font-semibold text-[rgb(var(--c-charcoal))]">Kategori Aset</p>
+            <p className="text-[12px] text-[rgb(var(--c-muted))]">Kelola investasi dan aset riil</p>
+          </div>
+          <button type="button" onClick={() => openInvestment()} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-forest-50))] text-[rgb(var(--c-up))]" aria-label="Tambah aset investasi"><Plus size={17} /></button>
         </div>
-
         <div className="mt-3 space-y-2">
-          <details className="rounded-[16px] bg-[rgb(var(--c-cream))]" open={liquidOpen} onToggle={e => setLiquidOpen(e.currentTarget.open)}>
-            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 [&::-webkit-details-marker]:hidden">
-              <div className="min-w-0"><p className="text-[13px] font-semibold">Aset Likuid</p><p className="text-[10px] text-[rgb(var(--c-muted))]">{wallets.length} rekening · {assetsVisible ? formatRupiah(integratedLiquidTotal) : "Rp ••••••"}</p></div>
-              <ChevronRight size={16} className="rotate-90" />
+          <details className="rounded-[14px] bg-[rgb(var(--c-cream))]" open={liquidOpen} onToggle={e => setLiquidOpen(e.currentTarget.open)}>
+            <summary className="flex min-h-[52px] cursor-pointer list-none items-center gap-3 px-3 [&::-webkit-details-marker]:hidden">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]"><Wallet size={16} /></span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">Aset Likuid</p>
+                <p className="text-[12px] text-[rgb(var(--c-muted))]">{liquidAssets.length} rekening • {assetsVisible ? formatRupiah(liquidTotal) : "Rp ••••••"}</p>
+              </div>
+              <p className="hidden w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))] sm:block">{assetsVisible ? formatRupiah(liquidTotal) : "Rp ••••••"}</p>
+              <ChevronRight size={16} className={liquidOpen ? "rotate-90" : ""} />
             </summary>
             <div className="border-t border-[rgb(var(--c-border))] px-3 py-1.5">
-              {wallets.length ? wallets.map(w => <div key={w.id} className="flex min-h-11 items-center gap-2 border-b border-[rgb(var(--c-border))] last:border-0">
-                <Wallet size={15} className="shrink-0 text-[rgb(var(--c-up))]" />
-                <div className="min-w-0 flex-1"><p className="truncate text-[12px] font-semibold">{w.name}</p><p className="text-[10px] text-[rgb(var(--c-muted))]">{w.type}</p></div>
-                <p className="text-[12px] font-semibold tabular-nums">{assetsVisible ? formatRupiah(w.balance) : "Rp ••••••"}</p>
-              </div>) : <p className="py-3 text-[11px] text-[rgb(var(--c-muted))]">Belum ada rekening.</p>}
+              {liquidAssets.length ? liquidAssets.map((item) => (
+                <div key={item.name} className="flex min-h-[48px] items-center gap-3 border-b border-[rgb(var(--c-border))] last:border-0">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]"><Wallet size={15} /></span>
+                  <div className="min-w-0 flex-1"><p className="truncate text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">{item.name}</p><p className="text-[12px] text-[rgb(var(--c-muted))]">Dompet</p></div>
+                  <p className="w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{assetsVisible ? formatRupiah(item.value) : "Rp ••••••"}</p>
+                </div>
+              )) : <p className="py-3 text-[12px] text-[rgb(var(--c-muted))]">Belum ada rekening.</p>}
             </div>
           </details>
 
-          <details className="rounded-[16px] bg-[rgb(var(--c-cream))]" open={investmentOpen} onToggle={e => setInvestmentOpen(e.currentTarget.open)}>
-            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 [&::-webkit-details-marker]:hidden">
-              <div className="min-w-0"><p className="text-[13px] font-semibold">Aset Investasi</p><p className="text-[10px] text-[rgb(var(--c-muted))]">{investmentRows.length + (assets.stocksTotal > 0 ? 1 : 0)} jenis · {assetsVisible ? formatRupiah(investmentTotal) : "Rp ••••••"}</p></div>
-              <ChevronRight size={16} className="rotate-90" />
+          <details className="rounded-[14px] bg-[rgb(var(--c-cream))]" open={investmentOpen} onToggle={e => setInvestmentOpen(e.currentTarget.open)}>
+            <summary className="flex min-h-[52px] cursor-pointer list-none items-center gap-3 px-3 [&::-webkit-details-marker]:hidden">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]"><TrendingUp size={16} /></span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">Aset Investasi</p>
+                <p className="text-[12px] text-[rgb(var(--c-muted))]">{investmentRows.length + (assets.stocksTotal > 0 ? 1 : 0)} jenis • {assetsVisible ? formatRupiah(investmentTotal) : "Rp ••••••"}</p>
+              </div>
+              <p className="hidden w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))] sm:block">{assetsVisible ? formatRupiah(investmentTotal) : "Rp ••••••"}</p>
+              <ChevronRight size={16} className={investmentOpen ? "rotate-90" : ""} />
             </summary>
             <div className="border-t border-[rgb(var(--c-border))] px-3 py-1.5">
-              {investmentRows.map(row => <button key={row.name} type="button" disabled={!row.detail} onClick={() => row.detail && openInvestment(row.detail)} className="flex min-h-11 w-full items-center gap-2 border-b border-[rgb(var(--c-border))] text-left last:border-0 disabled:cursor-default">
-                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: row.detail ? "rgb(var(--asset-" + (categoryOf(row.name) === "Obligasi" ? "bond" : categoryOf(row.name) === "Emas" ? "gold" : categoryOf(row.name) === "Reksadana" ? "fund" : categoryOf(row.name) === "P2P Lending" ? "p2p" : "other") + "))" : "rgb(var(--c-border))" }} />
-                <div className="min-w-0 flex-1"><p className="truncate text-[12px] font-semibold">{row.name}</p><p className="truncate text-[10px] text-[rgb(var(--c-muted))]">{row.detail ? row.detail.category + " · " + row.detail.unit : "Legacy asset"}</p></div>
-                <p className="text-[12px] font-semibold tabular-nums">{assetsVisible ? formatRupiah(row.value) : "Rp ••••••"}</p>
-              </button>)}
-              {assets.stocksTotal > 0 && <div className="flex min-h-11 items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-[rgb(var(--asset-stock))]" />
-                <div className="min-w-0 flex-1"><p className="text-[12px] font-semibold">Saham</p><p className="text-[10px] text-[rgb(var(--c-muted))]">Portofolio Saham · Auto</p></div>
-                <p className="text-[12px] font-semibold tabular-nums">{assetsVisible ? formatRupiah(assets.stocksTotal) : "Rp ••••••"}</p>
-              </div>}
-              {!investmentRows.length && assets.stocksTotal <= 0 && <div className="py-3 text-[11px] text-[rgb(var(--c-muted))]">Belum ada aset investasi.</div>}
+              {investmentRows.map(row => {
+                const colorVar = categoryOf(row.name) === "Obligasi" ? "bond" : categoryOf(row.name) === "Emas" ? "gold" : categoryOf(row.name) === "Reksadana" ? "fund" : categoryOf(row.name) === "P2P Lending" ? "p2p" : "other";
+                return (
+                  <button key={row.name} type="button" disabled={!row.detail} onClick={() => row.detail && openInvestment(row.detail)} className="flex min-h-[48px] w-full items-center gap-3 border-b border-[rgb(var(--c-border))] text-left last:border-0 disabled:cursor-default">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]"><TrendingUp size={15} /></span>
+                    <div className="min-w-0 flex-1"><p className="truncate text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">{row.name}</p><p className="truncate text-[12px] text-[rgb(var(--c-muted))]">{row.detail ? row.detail.category : "Investasi"}</p></div>
+                    <p className="w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{assetsVisible ? formatRupiah(row.value) : "Rp ••••••"}</p>
+                  </button>
+                );
+              })}
+              {assets.stocksTotal > 0 && (
+                <div className="flex min-h-[48px] items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]"><TrendingUp size={15} /></span>
+                  <div className="min-w-0 flex-1"><p className="text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">Saham</p><p className="text-[12px] text-[rgb(var(--c-muted))]">Portofolio Saham</p></div>
+                  <p className="w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{assetsVisible ? formatRupiah(assets.stocksTotal) : "Rp ••••••"}</p>
+                </div>
+              )}
+              {!investmentRows.length && assets.stocksTotal <= 0 && <div className="py-3 text-[12px] text-[rgb(var(--c-muted))]">Belum ada aset investasi.</div>}
             </div>
           </details>
 
-          <details className="rounded-[16px] bg-[rgb(var(--c-cream))]" open={realOpen} onToggle={e => setRealOpen(e.currentTarget.open)}>
-            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3 [&::-webkit-details-marker]:hidden">
-              <div className="min-w-0"><p className="text-[13px] font-semibold">Aset Riil</p><p className="text-[10px] text-[rgb(var(--c-muted))]">{assets.realAssets.length} aset · {assetsVisible ? formatRupiah(realTotal) : "Rp ••••••"}</p></div>
-              <ChevronRight size={16} className="rotate-90" />
+          <details className="rounded-[14px] bg-[rgb(var(--c-cream))]" open={realOpen} onToggle={e => setRealOpen(e.currentTarget.open)}>
+            <summary className="flex min-h-[52px] cursor-pointer list-none items-center gap-3 px-3 [&::-webkit-details-marker]:hidden">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]"><Package size={16} /></span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">Aset Riil</p>
+                <p className="text-[12px] text-[rgb(var(--c-muted))]">{assets.realAssets.length} aset • {assetsVisible ? formatRupiah(realTotal) : "Rp ••••••"}</p>
+              </div>
+              <p className="hidden w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))] sm:block">{assetsVisible ? formatRupiah(realTotal) : "Rp ••••••"}</p>
+              <ChevronRight size={16} className={realOpen ? "rotate-90" : ""} />
             </summary>
             <div className="border-t border-[rgb(var(--c-border))] px-3 py-1.5">
-              {assets.realAssets.length ? assets.realAssets.map(a => <button key={a.id} type="button" onClick={() => openReal(a)} className="flex min-h-11 w-full items-center gap-2 border-b border-[rgb(var(--c-border))] text-left last:border-0">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]">{assetIcon(a.name)}</span>
-                <div className="min-w-0 flex-1"><p className="truncate text-[12px] font-semibold">{a.name}</p><p className="truncate text-[10px] text-[rgb(var(--c-muted))]">Nilai awal {formatRupiah(a.initialValue)} · {a.annualChangePercent >= 0 ? "+" : ""}{a.annualChangePercent}%/tahun</p></div>
-                <p className="text-[12px] font-semibold tabular-nums">{assetsVisible ? formatRupiah(a.currentValue) : "Rp ••••••"}</p>
-              </button>) : <div className="py-3"><p className="text-[11px] text-[rgb(var(--c-muted))]">Belum ada aset riil.</p><button type="button" onClick={() => openReal()} className="mt-2 min-h-11 rounded-full bg-[rgb(var(--c-forest-50))] px-3 text-[11px] font-semibold text-[rgb(var(--c-up))]">+ Tambah aset riil</button></div>}
+              {assets.realAssets.length ? assets.realAssets.map(a => (
+                <button key={a.id} type="button" onClick={() => openReal(a)} className="flex min-h-[48px] w-full items-center gap-3 border-b border-[rgb(var(--c-border))] text-left last:border-0">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]">{assetIcon(a.name)}</span>
+                  <div className="min-w-0 flex-1"><p className="truncate text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">{a.name}</p><p className="truncate text-[12px] text-[rgb(var(--c-muted))]">Nilai awal {formatRupiah(a.initialValue)} · {a.annualChangePercent >= 0 ? "+" : ""}{a.annualChangePercent}%/tahun</p></div>
+                  <p className="w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{assetsVisible ? formatRupiah(a.currentValue) : "Rp ••••••"}</p>
+                </button>
+              )) : (
+                <div className="py-3"><p className="text-[12px] text-[rgb(var(--c-muted))]">Belum ada aset riil.</p><button type="button" onClick={() => openReal()} className="mt-2 min-h-11 rounded-full bg-[rgb(var(--c-forest-50))] px-3 text-[11px] font-semibold text-[rgb(var(--c-up))]">+ Tambah aset riil</button></div>
+              )}
             </div>
           </details>
         </div>
