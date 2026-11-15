@@ -47,7 +47,71 @@ export function Home() {
   const integratedTotalAssets = assets.totalAssets;
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [assetsVisible, setAssetsVisible] = useState(true);
-  const [summaryTab, setSummaryTab] = useState<"asset" | "budget">("asset");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"manual" | "ai">("manual");
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const displayName = getDisplayName() || username;
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const monthInIndonesian = currentDate.toLocaleDateString(id ? "id-ID" : "en-US", { month: "long" });
+  const monthLabel = monthInIndonesian.charAt(0).toUpperCase() + monthInIndonesian.slice(1);
+  const plans = loadFinancialPlans();
+  const allTxs = [...transactions, ...extraTxs];
+  const parseRecentDate = (value: string) => {
+    const raw = String(value || "").trim();
+    let day = 0, month = 0, year = 0;
+    const yearFirst = raw.match(/^(\\d{4})[-/.](\\d{1,2})[-/.](\\d{1,2})(?:$|T|\\s)/);
+    if (yearFirst) {
+      year = Number(yearFirst[1]); month = Number(yearFirst[2]); day = Number(yearFirst[3]);
+    } else {
+      const parts = raw.split(/[/. -]/).filter(Boolean).map(Number);
+      if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return 0;
+      [day, month, year] = parts;
+      if (day <= 12 && month > 12) [day, month] = [month, day];
+    }
+    if (year < 100) year += year < 50 ? 2000 : 1900;
+    const parsed = new Date(year, month - 1, day);
+    if (month < 1 || month > 12 || day < 1 || day > 31 || parsed.getFullYear() !== year || parsed.getMonth() !== month - 1 || parsed.getDate() !== day) return 0;
+    return parsed.getTime();
+  };
+  const recent = [...allTxs].sort((a, b) => {
+    const difference = parseRecentDate(b.date) - parseRecentDate(a.date);
+    return difference || Number(b.sheetRow || 0) - Number(a.sheetRow || 0);
+  }).slice(0, 5);
+  const nextStep = id ? (totalExpense > totalIncome && totalIncome > 0
+    ? "Pengeluaranmu bulan ini sudah lebih besar dari pemasukan. Cek kategori pengeluaran terbesar dan tinjau kembali anggaran."
+    : assets.target > 0 && integratedTotalAssets < assets.target
+      ? `Target asetmu masih ${formatRupiah(Math.max(0, assets.target - integratedTotalAssets))} lagi. Tinjau Asset Tracker dan rencana investasimu.`
+      : totalSaving > 0 ? "Kamu sudah menabung bulan ini. Pertahankan konsistensi dan pastikan target finansialmu punya angka yang jelas."
+      : "Mulai dengan mencatat transaksi dan menetapkan satu target finansial agar dashboard bisa menyarankan langkah berikutnya.") : (totalExpense > totalIncome && totalIncome > 0
+    ? "Your expenses this month are higher than your income. Review your largest expense categories and revisit your budget."
+    : assets.target > 0 && integratedTotalAssets < assets.target
+      ? `You are ${formatRupiah(Math.max(0, assets.target - integratedTotalAssets))} away from your asset goal. Review your Asset Tracker and investment plan.`
+      : totalSaving > 0 ? "You have saved money this month. Stay consistent and make sure your financial goals have clear targets."
+      : "Start by recording transactions and setting one financial goal to get actionable guidance from your dashboard.");
+  const cashFlowData = [
+    { name: id ? "Pemasukan" : "Income", value: totalIncome },
+    { name: id ? "Pengeluaran" : "Expense", value: totalExpense },
+    { name: id ? "Tabungan" : "Saving", value: totalSaving },
+  ];
+  const spendingByCategory = byCategory("Expense").filter((c) => c.realization > 0).map((c) => ({ name: c.category, value: c.realization }));
+  const incomeBudget = byCategory("Income").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
+  const expenseBudget = byCategory("Expense").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
+  const savingBudget = byCategory("Saving").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
+  const hasBudget = incomeBudget > 0 || expenseBudget > 0 || savingBudget > 0;
+  const remainingBudget = hasBudget ? expenseBudget - totalExpense : 0;
+  const renderMoney = (value: number, visible: boolean, amountClassName: string, fontSize?: number) => {
+    if (!visible) return <span className={amountClassName} style={fontSize ? { fontSize: `${fontSize}px` } : undefined}>Rp ••••••</span>;
+    const formatted = formatRupiah(value);
+    const amount = formatted.startsWith("Rp ") ? formatted.slice(3) : formatted.replace(/^Rp\\s*/, "");
+    return (
+      <span className={`inline-flex min-w-0 max-w-full items-baseline ${amountClassName}`} style={fontSize ? { fontSize: `${fontSize}px` } : undefined}>
+        <span className="mr-[0.2em] text-[0.6em] font-medium opacity-60">Rp</span>
+        <span className="min-w-0 break-words">{amount}</span>
+      </span>
+    );
+  };
+  const today = new Date().toLocaleDateString(id ? "id-ID" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
   return (
     <div className="flex flex-col gap-3 pb-4" data-tour-loading={loading ? "true" : "false"}>
