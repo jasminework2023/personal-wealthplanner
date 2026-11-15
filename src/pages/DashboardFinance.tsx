@@ -358,8 +358,8 @@ function StockTracker({
       <div className="px-4 pb-3 sm:px-5">
         <div className="flex items-center justify-between gap-3 pb-3">
           <div className="flex items-center gap-1 rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-1">
-            <button type="button" aria-pressed={market === "ID"} onClick={() => setMarket("ID")} className={`min-h-11 min-w-[56px] rounded-full px-3 text-[11px] font-semibold ${market === "ID" ? "bg-[rgb(var(--c-forest-700))] text-white" : "text-[rgb(var(--c-muted))]"}`}>ID</button>
-            <button type="button" aria-pressed={market === "US"} onClick={() => setMarket("US")} className={`min-h-11 min-w-[56px] rounded-full px-3 text-[11px] font-semibold ${market === "US" ? "bg-[rgb(var(--c-forest-700))] text-white" : "text-[rgb(var(--c-muted))]"}`}>US</button>
+            <button type="button" aria-pressed={market === "ID"} onClick={() => setMarket("ID")} className={`min-h-11 min-w-[56px] rounded-full px-3 text-[11px] font-semibold ${market === "ID" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>ID</button>
+            <button type="button" aria-pressed={market === "US"} onClick={() => setMarket("US")} className={`min-h-11 min-w-[56px] rounded-full px-3 text-[11px] font-semibold ${market === "US" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>US</button>
           </div>
           {isRealData && (
             <button type="button" onClick={() => void refreshPrices()} disabled={refreshing} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-[rgb(var(--c-cream))] px-3 text-[11px] font-semibold text-[rgb(var(--c-up))] disabled:opacity-50">
@@ -402,7 +402,7 @@ function StockTracker({
 
       {open && (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) resetForm(); }}>
-          <div className="w-full max-w-lg rounded-t-[22px] border border-forest-100 bg-white p-4 shadow-2xl dark:border-[#2B332F] dark:bg-[#151A17] sm:rounded-[18px]">
+          <div className="w-full max-w-lg rounded-t-[22px] border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-2xl sm:rounded-[18px]">
             <div className="flex items-center justify-between gap-2">
               <p className="text-[13px] font-semibold text-forest-900">{editing ? `Edit ${editing.ticker}` : `Tambah ${market === "ID" ? "Saham Indonesia" : "Saham US"}`}</p>
               <button type="button" aria-label="Tutup" onClick={resetForm} className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal/40 hover:bg-charcoal/5">×</button>
@@ -425,7 +425,7 @@ function StockTracker({
               </label>
               <label className="text-[10px] text-charcoal/55">
                 Investment account
-                <select value={account} onChange={(e) => setAccount(e.target.value)} className="mt-1 w-full rounded-lg border border-charcoal/12 bg-white px-2.5 py-2 text-[12px] outline-none">
+                <select value={account} onChange={(e) => setAccount(e.target.value)} className="mt-1 w-full rounded-lg border border-charcoal/12 bg-[rgb(var(--c-surface))] px-2.5 py-2 text-[12px] outline-none">
                   <option value="">Pilih akun investment</option>
                   {investmentAccounts.map((item) => <option key={item.name} value={item.name}>{item.name}</option>)}
                 </select>
@@ -447,7 +447,7 @@ function StockTracker({
               <>
                 <p className="mt-1.5 text-[10px] text-charcoal/40">{market === "ID" ? "1 lot = 100 saham. Nilai portfolio dihitung dari harga pasar × jumlah saham." : "US menggunakan shares. Nilai portfolio dalam USD dan dikonversi ke IDR di Total Aset."}</p>
                 <div className="mt-2 flex justify-end">
-                  <button type="button" onClick={() => void saveStock(editing ? "set" : (saveMode || "set"))} disabled={refreshing} className="rounded-full bg-[rgb(var(--c-forest-700))] px-4 py-2 text-[11px] font-semibold text-white disabled:opacity-50">
+                  <button type="button" onClick={() => void saveStock(editing ? "set" : (saveMode || "set"))} disabled={refreshing} className="rounded-full bg-[rgb(var(--c-forest-700))] px-4 py-2 text-[11px] font-semibold text-[rgb(var(--c-surface))] disabled:opacity-50">
                     {refreshing ? "Menyimpan…" : editing ? "Simpan perubahan" : saveMode === "buy" ? "Tambah ke posisi" : "Simpan saham"}
                   </button>
                 </div>
