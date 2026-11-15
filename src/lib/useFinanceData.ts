@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Transaction } from "../data/types";
-import { transactions as mockTransactions } from "../data/transactions";
 import { incomeCategories, expenseCategories, savingCategories } from "../data/budgets";
-import { assetGroups, totalAssets as mockTotalAssets, assetTarget, stocksID as mockStocksID, stocksUS as mockStocksUS } from "../data/assets";
+import { assetTarget } from "../data/assets";
 
 const TOKEN_KEY = "wealthplanner_token";
 const SESSION_TOKEN_KEY = "wealthplanner_session_token";
@@ -123,6 +122,7 @@ interface FinanceData {
   error: string | null;
   isRealData: boolean;
   username: string | null;
+  userId: string | null;
   month: string;
   year: number;
   transactions: Transaction[];
@@ -134,47 +134,25 @@ interface FinanceData {
   byCategory: (type: Transaction["type"]) => { category: string; allocation: number; realization: number }[];
 }
 
-function mockAssetData(): AssetData {
-  const liquid = assetGroups.find((g) => g.group === "Liquid Assets")?.items ?? [];
-  const investment = assetGroups.find((g) => g.group === "Investment Assets")?.items ?? [];
+function emptyAssetData(): AssetData {
   return {
-    totalAssets: mockTotalAssets,
+    totalAssets: 0,
     stocksTotal: 0,
-    target: assetTarget,
-    targets: assetTarget > 0 ? [{
-      id: "mock-target",
-      name: "Target Aset",
-      targetAmount: assetTarget,
-      targetDate: "",
-      currentValueSource: "Asset Tracker",
-    }] : [],
-    liquidAssets: liquid,
-    investmentAssets: investment,
+    target: 0,
+    targets: [],
+    liquidAssets: [],
+    investmentAssets: [],
     investmentDetails: [],
     realAssets: [],
     realAssetsTotal: 0,
     excludedInvestmentNames: [],
-    stocksID: mockStocksID.map((s) => ({
-      ticker: s.ticker,
-      currentPrice: s.currentPrice,
-      shares: s.shares,
-      avgPrice: s.avgPrice,
-      value: s.currentPrice * s.shares,
-      pl: (s.currentPrice - s.avgPrice) * s.shares,
-    })),
-    stocksUS: mockStocksUS.map((s) => ({
-      ticker: s.ticker,
-      currentPrice: s.currentPrice,
-      shares: s.shares,
-      avgPrice: s.avgPrice,
-      value: s.currentPrice * s.shares,
-      pl: (s.currentPrice - s.avgPrice) * s.shares,
-    })),
+    stocksID: [],
+    stocksUS: [],
   };
 }
 
 function normalizeAssetData(value: any): AssetData {
-  const fallback = mockAssetData();
+  const fallback = emptyAssetData();
   return {
     totalAssets: Number(value?.totalAssets) || 0,
     stocksTotal: Number(value?.stocksTotal) || 0,
@@ -248,11 +226,12 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
     error: null,
     isRealData: false,
     username: null,
+    userId: null,
     month: initialMonth,
     year: initialYear,
-    transactions: mockTransactions.filter((t) => t.month.toLowerCase() === initialMonth.toLowerCase()),
-    budgetByCategory: mockAllocationMap(),
-    assets: mockAssetData(),
+    transactions: [],
+    budgetByCategory: {},
+    assets: emptyAssetData(),
     setup: {
       income: incomeCategories.map((c) => ({ name: c.category, active: true })),
       expense: expenseCategories.map((c) => ({ name: c.category, active: true })),
@@ -277,7 +256,12 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
           loading: false,
           month: requestedMonth,
           year: requestedYear,
-          transactions: mockTransactions.filter((t) => t.month.toLowerCase() === requestedMonth.toLowerCase()),
+          transactions: [],
+          budgetByCategory: {},
+          assets: emptyAssetData(),
+          isRealData: false,
+          username: null,
+          userId: null,
         }));
         return;
       }
@@ -296,39 +280,21 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
         .then(({ dashboard, setup }) => {
           const { ok, data } = dashboard;
           if (cancelled) return;
-          const cacheKey = `wealthplanner_finance_cache_${token}`;
           if (!ok) {
-            try {
-              const cached = JSON.parse(localStorage.getItem(cacheKey) || "null");
-              if (cached?.dashboard) {
-                const cachedData = cached.dashboard;
-                setState((s) => ({
-                  ...s,
-                  loading: false,
-                  error: `Data terakhir tersimpan digunakan — ${data.error || "server sedang tidak dapat diakses"}`,
-                  isRealData: true,
-                  username: cachedData.username || s.username,
-                  month: cachedData.month || requestedMonth,
-                  year: cachedData.year || requestedYear,
-                  transactions: includeAllMonths ? (cachedData.transactions || []) : (cachedData.transactions || []).filter((t: Transaction) => String(t.month || "").toLowerCase() === String(cachedData.month || requestedMonth).toLowerCase()),
-                  budgetByCategory: cachedData.budgetByCategory || {},
-                  assets: normalizeAssetData(cachedData.assets || s.assets),
-                  setup: cached.setup?.sections || s.setup,
-                }));
-                return;
-              }
-            } catch {}
-            setState((s) => ({ ...s, loading: false, error: data.error || "Gagal memuat data" }));
-          } else {
-            try { localStorage.setItem(cacheKey, JSON.stringify({ dashboard: data, setup: setup.ok ? setup.data : null, savedAt: Date.now() })); } catch {}
+            // Do not fall back to token-scoped/stale financial cache. A failed
+            // request must never render another account or old mock data.
             setState((s) => ({
-              ...s,
-              loading: false,
-              error: null,
-              isRealData: true,
-              username: data.username,
-              month: data.month || requestedMonth,
-              year: data.year || requestedYear,
+              ...s, loading: false, error: data.error || "Gagal memuat data",
+              isRealData: false, userId: null, assets: emptyAssetData(),
+              transactions: [], budgetByCategory: {},
+            }));
+          } else {
+            const cacheKey = data?.user_id ? `wealthplanner_finance_cache_user_${data.user_id}` : "";
+            try { if (cacheKey) localStorage.setItem(cacheKey, JSON.stringify({ dashboard: data, setup: setup.ok ? setup.data : null, savedAt: Date.now() })); } catch {}
+            setState((s) => ({
+              ...s, loading: false, error: null, isRealData: true,
+              username: data.username, userId: data.user_id || null,
+              month: data.month || requestedMonth, year: data.year || requestedYear,
               transactions: includeAllMonths
                 ? (data.transactions || [])
                 : (data.transactions || []).filter((t: Transaction) => String(t.month || "").toLowerCase() === String(data.month || requestedMonth).toLowerCase()),
@@ -336,8 +302,7 @@ export function useFinanceData(monthOverride?: string, includeAllMonths = false,
               assets: normalizeAssetData(data.assets),
               setup: setup.ok && setup.data?.sections ? setup.data.sections : s.setup,
             }));
-          }
-        })
+          }        })
         .catch(() => {
           if (!cancelled) setState((s) => ({ ...s, loading: false, error: "Gagal memuat data" }));
         });
