@@ -85,7 +85,7 @@ async function fetchAllRanges(spreadsheetId: string, transactionsOnly = false) {
   const sheets = await getSheetsClient();
   const ranges = transactionsOnly
     ? ["Transaction!B10:I"]
-    : ["Transaction!B10:I", "Budgeting!B1:N40", "Asset Tracker!A1:O500"];
+    : ["Transaction!B10:I", "Budgeting!B1:N40", "Asset Tracker!A1:O1000"];
 
   const res = await sheets.spreadsheets.values.batchGet({
     spreadsheetId,
