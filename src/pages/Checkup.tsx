@@ -89,7 +89,7 @@ export function Checkup() {
     if (stale.length) {
       add("stale-price", "Disarankan", "Harga aset belum diperbarui > 30 hari", `${stale.length} aset memiliki metadata harga terakhir lebih dari 30 hari.`, "/assets");
     } else if (staleCandidates.length && !staleWithDate.length) {
-      add("price-date-missing", "Info", "Tanggal pembaruan harga belum tersedia", "Sistem belum memiliki metadata tanggal pembaruan harga untuk memeriksa aset yang stale secara akurat.", "/assets");
+      add("price-date-missing", "Info", "Riwayat pembaruan harga belum tersedia", "Metadata tanggal pembaruan harga belum tersedia, jadi Checkup tidak akan mengarang angka atau menandai aset sebagai stale tanpa bukti.", "/assets");
     }
 
     const realIncomplete = assets.realAssets.filter((a) => !a.acquisitionDate || !Number.isFinite(Number(a.annualChangePercent)));
@@ -118,7 +118,8 @@ export function Checkup() {
       add("target-unreasonable", "Disarankan", "Ada Target Aset yang tidak masuk akal", "Periksa kembali nominal target yang sangat besar agar tidak menghasilkan progres yang menyesatkan.", "/assets");
     }
 
-    add("profile-baseline", "Penting", "Profil baseline keuangan belum lengkap", "Penghasilan, pengeluaran bulanan, dan tanggungan belum tersedia sebagai data profil sehingga analisis rasio belum bisa dihitung.", "/settings");
+    add("profile-baseline", "Disarankan", "Baseline keuangan belum tersedia", "Penghasilan, pengeluaran bulanan, dan tanggungan belum tersimpan sebagai data terstruktur sehingga analisis rasio belum bisa dihitung.", "/settings");
+    add("ratio-unavailable", "Info", "Rasio belum bisa dihitung", "Dana darurat, rasio utang, dan rasio tabungan membutuhkan baseline keuangan yang lengkap. Lengkapi data dulu agar tidak muncul angka contoh.", "/settings");
 
     const duplicateMap = new Map<string, number>();
     for (const t of transactions) {
