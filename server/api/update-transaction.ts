@@ -22,7 +22,35 @@ async function validateWallets(sheets:ReturnType<typeof sheetsClient>,spreadshee
  for(const name of [wallet,toWallet].filter(Boolean))if(!active.has(norm(name)))throw new Error(`Wallet "${name}" tidak ditemukan atau tidak aktif pada Setup`);
  return {wallet,toWallet};
 }
-export default async function handler(req:VercelRequest,res:VercelResponse){
+async function syncLinkedAsset(sheets: any, spreadsheetId: string, description: string, amount: number, wallet: string, date: string) {
+ const managed = description.match(/\[asset-tx:([^\]]+)\]/);
+ const real = description.match(/\[real-asset:([^\]]+)\]/);
+ if (!managed && !real) return;
+ const txid=(managed||real)?.[1]||"";
+ const rows=(await sheets.spreadsheets.values.get({spreadsheetId,range:"Asset Tracker!A1:O2000"})).data.values||[];
+ const sectionLabel=managed?"Managed Investment Assets":"Real Assets";
+ const section=rows.findIndex((r:any[])=>String(r?.[0]||"").trim().toLowerCase()===sectionLabel.toLowerCase());
+ if(section<0||!txid)return;
+ const txCol=managed?10:7;
+ for(let i=section+2;i<rows.length;i++){
+   const row=rows[i]||[];
+   const first=String(row[0]||"").trim().toLowerCase();
+   if(["real assets","managed investment assets","target assets","indonesia stock","us stock"].includes(first)&&first!==sectionLabel.toLowerCase())break;
+   if(String(row[txCol]||"").trim()!==txid)continue;
+   if(managed){
+     const quantity=Number(String(row[3]||"").replace(/[^0-9.-]/g,""))||0;
+     const fx=Number(String(row[12]||"").replace(/[^0-9.-]/g,""))||1;
+     const currency=String(row[11]||"").trim().toUpperCase();
+     const buyPrice=quantity>0&&fx>0 ? amount/(quantity*fx) : Number(String(row[5]||"").replace(/[^0-9.-]/g,""))||0;
+     await sheets.spreadsheets.values.update({spreadsheetId,range:`Asset Tracker!F${i+1}:I${i+1}`,valueInputOption:"USER_ENTERED",requestBody:{values:[[buyPrice,row[6]||"",wallet,date]]}});
+     await sheets.spreadsheets.values.update({spreadsheetId,range:`Asset Tracker!N${i+1}`,valueInputOption:"USER_ENTERED",requestBody:{values:[[amount]]}});
+   }else{
+     await sheets.spreadsheets.values.update({spreadsheetId,range:`Asset Tracker!C${i+1}:G${i+1}`,valueInputOption:"USER_ENTERED",requestBody:{values:[[amount,date,row[4]||"",row[5]||"",wallet]]}});
+   }
+   return;
+ }
+}
+\nexport default async function handler(req:VercelRequest,res:VercelResponse){
  if(req.method!=="POST")return res.status(405).json({error:"Method Not Allowed"});
  const {token,sheetRow,transaction}=req.body||{};const row=Number(sheetRow);
  if(!token||!Number.isInteger(row)||row<10||!transaction)return res.status(400).json({error:"Data transaksi tidak lengkap"});
@@ -36,7 +64,7 @@ export default async function handler(req:VercelRequest,res:VercelResponse){
   const {data:u,error}=await sb.from("users").select("spreadsheet_id,is_active").eq("dashboard_token",token).single();
   if(error||!u)return res.status(404).json({error:"Akun tidak ditemukan"});if(!u.is_active)return res.status(403).json({error:"Akun belum aktif"});if(!u.spreadsheet_id)return res.status(404).json({error:"Spreadsheet belum terhubung ke akun ini"});
   const sheets=sheetsClient();let wallets:{wallet:string;toWallet:string};try{wallets=await validateWallets(sheets,u.spreadsheet_id,transaction,type);}catch(e){return res.status(400).json({error:(e as Error).message});}
-  await sheets.spreadsheets.values.update({spreadsheetId:u.spreadsheet_id,range:`Transaction!B${row}:I${row}`,valueInputOption:"USER_ENTERED",requestBody:{values:[[date,month,type,category,description,amount,wallets.wallet,wallets.toWallet]]}});
+  await sheets.spreadsheets.values.update({spreadsheetId:u.spreadsheet_id,range:`Transaction!B${row}:I${row}`,valueInputOption:"USER_ENTERED",requestBody:{values:[[date,month,type,category,description,amount,wallets.wallet,wallets.toWallet]]}});\n  await syncLinkedAsset(sheets,u.spreadsheet_id,description,amount,wallets.wallet,date);
   return res.status(200).json({success:true});
  }catch(e){console.error(e);return res.status(500).json({error:"Gagal mengubah transaksi"});}
 }
