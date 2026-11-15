@@ -186,7 +186,7 @@ export function parseTransactionText(text: string): ParsedTransaction | null {
   return {
     type,
     category,
-    amount,
+    amount: amount ?? 0,
     description: description || category,
     date: formatDate(date),
     month: date.toLocaleString("en-US", { month: "long" }),
