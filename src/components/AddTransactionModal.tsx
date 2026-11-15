@@ -153,6 +153,8 @@ export function AddTransactionModal({
   const [wallet, setWallet] = useState("");
   const [toWallet, setToWallet] = useState("");
   const [stockPurchase, setStockPurchase] = useState(false);
+  const [realPurchase, setRealPurchase] = useState(false);
+  const [realAssetName, setRealAssetName] = useState("");
   const [stockMarket, setStockMarket] = useState<"ID" | "US">("ID");
   const [stockTicker, setStockTicker] = useState("");
   const [stockQuantity, setStockQuantity] = useState("");
@@ -245,6 +247,8 @@ export function AddTransactionModal({
     setFormError("");
     setWallet(""); setToWallet("");
     setStockPurchase(false);
+    setRealPurchase(false);
+    setRealAssetName("");
     setStockMarket("ID");
     setStockTicker("");
     setStockQuantity("");
@@ -318,6 +322,36 @@ export function AddTransactionModal({
     }
   }
 
+  async function persistRealPurchase(assetName: string, amount: number, account: string) {
+    const token = getStoredToken();
+    if (!token) {
+      setFormError("Sesi akun tidak ditemukan. Buka kembali dashboard dari link akunmu, lalu coba simpan transaksi lagi.");
+      return;
+    }
+    setSaving(true);
+    setFormError("");
+    try {
+      const response = await fetch(`${API_BASE}/managed-assets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token, kind: "real", action: "create",
+          name: assetName.trim(), initialValue: amount, acquisitionDate: todayIso(),
+          annualChangePercent: 0, note: "", sourceAccount: account, fundingMode: "purchase",
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.success !== true) throw new Error(data.error || "Aset riil belum berhasil disimpan.");
+      window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added"));
+      window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
+      handleClose();
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Gagal menyimpan pembelian aset riil.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function retryStockPurchase() {
     const token = getStoredToken();
     if (!token || !pendingStockPurchase) return;
@@ -360,6 +394,18 @@ export function AddTransactionModal({
     }
     if (!form.description.trim()) {
       setFormError("Isi deskripsi transaksi dulu.");
+      return;
+    }
+
+    if (form.type === "Saving" && realPurchase) {
+      const selectedWallet = wallets.find((item) => item.name === wallet);
+      if (!wallet || !selectedWallet) {
+        setFormError("Pilih rekening sumber dana, misalnya BCA atau BSI.");
+        return;
+      }
+      const parsedReal = parseTransactionText(form.description)?.realPurchase;
+      const assetName = parsedReal?.assetName || realAssetName || form.description.trim();
+      await persistRealPurchase(assetName, parseAmountInput(form.amount), wallet);
       return;
     }
 
@@ -428,6 +474,17 @@ export function AddTransactionModal({
     }
     const stockIntent = /\\b(beli|buy|membeli|beliin)\\b/i.test(aiText) && /\\b(saham|stock|idx|bei)\\b/i.test(aiText);
     const parsed = parseTransactionText(aiText);
+    if (parsed?.realPurchase && !stockIntent) {
+      const real = parsed.realPurchase;
+      setMode("manual");
+      setForm((f) => ({ ...f, type: "Saving", category: "Real Assets", description: aiText.trim(), amount: parsed.amount ? formatAmountInput(String(parsed.amount)) : "" }));
+      setRealPurchase(true);
+      setRealAssetName(real.assetName);
+      setWallet(real.sourceAccount || "");
+      if (!real.sourceAccount) setFormError("Pilih rekening sumber dana untuk pembelian aset riil.");
+      setAiError("");
+      return;
+    }
     if (stockIntent) {
       const stock = parsed?.stockPurchase;
       if (!stock) {
@@ -532,6 +589,8 @@ export function AddTransactionModal({
                   setForm((f) => ({ ...f, type: t, category: t === "Transfer" ? "Transfer" : activeCategories[t][0] || f.category }));
                   if (t !== "Saving") {
                     setStockPurchase(false);
+                    setRealPurchase(false);
+                    setRealAssetName("");
                     setPendingStockPurchase(null);
                   }
                 }}
@@ -647,7 +706,13 @@ export function AddTransactionModal({
               )}
             </div>
           )}
-          <select
+          {realPurchase ? (
+            <div className="rounded-xl border border-cyan-200 bg-cyan-50/60 px-3 py-3">
+              <p className="text-[12px] font-semibold text-cyan-900">Pembelian Aset Riil</p>
+              <p className="mt-1 text-[11px] text-cyan-800">Pembelian ini akan otomatis membuat aset di Asset Tracker dan mengurangi saldo rekening sumber. Tidak perlu input transaksi kedua.</p>
+              <p className="mt-1 text-[11px] text-cyan-700">Contoh: beli mobil 150 juta dari BCA.</p>
+            </div>
+          ) : <select
             value={form.type === "Transfer" ? "Transfer" : form.category}
             disabled={form.type === "Transfer"}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
@@ -656,7 +721,7 @@ export function AddTransactionModal({
             {(form.type === "Transfer" ? ["Transfer"] : (activeCategories[form.type].length ? activeCategories[form.type] : fallbackCategories)).map((c) => (
               <option key={c}>{c}</option>
             ))}
-          </select>
+          </select>}
           <input
             placeholder="Deskripsi (misal: Makan siang)"
             value={form.description}
