@@ -114,16 +114,20 @@ export function Home() {
   };
   const today = new Date().toLocaleDateString(id ? "id-ID" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   useEffect(() => {
+    if (!isRealData || !userId) {
+      setAssetTrend(null);
+      return;
+    }
     const now = new Date();
     const key = (date: Date) => "wealthplanner_asset_snapshot_" + date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
-    const prefix = isRealData && userId ? `user_${userId}` : "empty";
+    const prefix = `user_${userId}`;
     const previousDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     try {
       const previousAssets = Number(localStorage.getItem(prefix + "_" + key(previousDate)));
       setAssetTrend(Number.isFinite(previousAssets) && previousAssets > 0 ? ((integratedTotalAssets - previousAssets) / previousAssets) * 100 : null);
       localStorage.setItem(prefix + "_" + key(now), String(integratedTotalAssets));
     } catch { setAssetTrend(null); }
-  }, [integratedTotalAssets, isRealData]);
+  }, [integratedTotalAssets, isRealData, userId]);
 
   return (
     <div className="flex flex-col gap-3 pb-4" data-tour-loading={loading ? "true" : "false"}>
