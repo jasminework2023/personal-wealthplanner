@@ -48,7 +48,7 @@ export function ThemeToggle({ variant = "bar" }: { variant?: "bar" | "compact" }
   }, []);
 
   const isDark = theme === "dark";
-  const label = isDark ? "Mode terang" : "Mode gelap";
+  const label = isDark ? "Mode gelap" : "Mode terang";
   const toggle = () => setTheme((c) => (c === "dark" ? "light" : "dark"));
 
   if (variant === "compact") {
@@ -62,7 +62,7 @@ export function ThemeToggle({ variant = "bar" }: { variant?: "bar" | "compact" }
         className="flex h-10 min-w-10 items-center justify-center gap-2 rounded-full border border-line bg-surface px-0 text-[12.5px] font-medium text-forest-800 shadow-sm transition-colors hover:border-forest-300 sm:w-auto sm:px-3.5"
       >
         {isDark ? <Sun size={17} /> : <Moon size={17} />}
-        <span className="hidden sm:inline">{isDark ? "Terang" : "Gelap"}</span>
+        <span className="hidden sm:inline">{isDark ? "Gelap" : "Terang"}</span>
       </button>
     );
   }
@@ -76,7 +76,7 @@ export function ThemeToggle({ variant = "bar" }: { variant?: "bar" | "compact" }
       className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[14px] text-white hover:bg-white/10 transition-all"
     >
       {isDark ? <Sun size={18} /> : <Moon size={18} />}
-      <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
+      <span>{isDark ? "Dark Mode" : "Light Mode"}</span>
     </button>
   );
 }
