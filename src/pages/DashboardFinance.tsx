@@ -13,6 +13,7 @@ import { AddItemForm } from "../components/AddItemForm";
 import { AddTransactionModal } from "../components/AddTransactionModal";
 import { AssetListSection, AssetListItem } from "../components/AssetListSection";
 import { AssetTrackerManaged } from "../components/AssetTrackerManaged";
+import { DebtTracker } from "../components/DebtTracker";
 
 
 
@@ -460,7 +461,7 @@ function StockTracker({
     </AssetListSection>
   );
 }
-export function DashboardFinance({ initialTab = "income" }: { initialTab?: "income" | "assets" | "cashflow" }) {
+export function DashboardFinance({ initialTab = "income" }: { initialTab?: "income" | "assets" | "cashflow" | "debt" }) {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const id = language === "id";
@@ -475,7 +476,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   const { loading, error, isRealData, username, userId, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData(selectedMonth, false, selectedYear);
   const { wallets } = useWallets();
   const historyData = useFinanceData(selectedMonth, true, selectedYear);
-  const [activeReportTab, setActiveReportTab] = useState<"income" | "assets" | "cashflow">(initialTab);
+  const [activeReportTab, setActiveReportTab] = useState<"income" | "assets" | "cashflow" | "debt">(initialTab);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllAssets, setShowAllAssets] = useState(false);
   const [editingAssetTarget, setEditingAssetTarget] = useState<AssetTarget | null>(null);
@@ -533,7 +534,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   const savingRows = byCategory("Saving");
   const expenseRows = byCategory("Expense");
   const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);
-  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];
+  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }, { id: "debt" as const, label: "Debt Tracker" }];
   const activeTabIndex = reportTabs.findIndex((tab) => tab.id === activeReportTab);
   const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
 
@@ -541,7 +542,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <select aria-label="Pilih laporan" value={activeReportTab} onChange={(e) => setActiveReportTab(e.target.value as typeof activeReportTab)} className="min-w-0 flex-1 appearance-none rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-forest-900 shadow-sm outline-none">
-          <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="cashflow">Cashflow Tracker</option>
+          <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="cashflow">Cashflow Tracker</option><option value="debt">Debt Tracker</option>
         </select>
         <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-forest-100/70 bg-white px-3.5 py-2.5 text-[12.5px] font-semibold text-forest-900 shadow-sm">
           <CalendarDays size={15} className="shrink-0 text-forest-700" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-charcoal/50" />
@@ -660,7 +661,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
         </>
       )}
 
-      {activeReportTab === "cashflow" && <>
+      {activeReportTab === "debt" && <DebtTracker />}\n      {activeReportTab === "cashflow" && <>
         {(() => {
           const monthIndex = monthNames.indexOf(selectedMonth);
           const previousMonth = monthNames[(monthIndex + 11) % 12];
