@@ -556,7 +556,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
         </button>
       </div>
       {periodOpen && <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setPeriodOpen(false); }}>
-        <div role="dialog" aria-modal="true" aria-labelledby="finance-period-title" className="w-full max-w-md rounded-t-3xl bg-white p-4 shadow-2xl sm:rounded-3xl">
+        <div role="dialog" aria-modal="true" aria-labelledby="finance-period-title" className="w-full max-w-md rounded-t-3xl bg-[rgb(var(--c-surface))] p-4 shadow-2xl sm:rounded-3xl">
           <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-charcoal/15 sm:hidden" />
           <div className="flex items-center justify-between">
             <h3 id="finance-period-title" className="text-[17px] font-semibold text-forest-900">Pilih periode</h3>
@@ -570,10 +570,10 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
           <div className="mt-4 grid grid-cols-3 gap-2">
             {monthNames.map((month, index) => {
               const disabled = draftYear > now.getFullYear() || (draftYear === now.getFullYear() && index > now.getMonth());
-              return <button key={month} type="button" disabled={disabled} onClick={() => setDraftMonth(month)} className={`rounded-xl px-2 py-3 text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-25 ${draftMonth === month ? "bg-[#0B4D38] text-white" : "bg-charcoal/[0.04] text-charcoal/75 hover:bg-forest-50"}`}>{month.slice(0,3)}</button>;
+              return <button key={month} type="button" disabled={disabled} onClick={() => setDraftMonth(month)} className={`rounded-xl px-2 py-3 text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-25 ${draftMonth === month ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "bg-[rgb(var(--c-cream))] text-[rgb(var(--c-charcoal))] hover:bg-[rgb(var(--c-forest-50))]"}`}>{month.slice(0,3)}</button>;
             })}
           </div>
-          <button type="button" onClick={() => { setSelectedMonth(draftMonth); setSelectedYear(draftYear); setPeriodOpen(false); }} className="mt-5 w-full rounded-xl bg-[#0B4D38] px-4 py-3 text-[14px] font-semibold text-white hover:bg-[#083c2c]">Terapkan</button>
+          <button type="button" onClick={() => { setSelectedMonth(draftMonth); setSelectedYear(draftYear); setPeriodOpen(false); }} className="mt-5 w-full rounded-xl bg-[rgb(var(--c-forest-700))] px-4 py-3 text-[14px] font-semibold text-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-forest-700))]">Terapkan</button>
         </div>
       </div>}
 
