@@ -99,7 +99,7 @@ export function Home() {
   const expenseBudget = byCategory("Expense").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
   const savingBudget = byCategory("Saving").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
   const hasBudget = incomeBudget > 0 || expenseBudget > 0 || savingBudget > 0;
-  const remainingBudget = hasBudget ? expenseBudget - totalExpense : 0;
+  const remainingBudget = totalIncome - totalExpense - totalSaving;
 
   const renderMoney = (value: number, visible: boolean, amountClassName: string, fontSize?: number) => {
     if (loading) return <span aria-label="Memuat data" className="inline-block h-[1em] w-[190px] max-w-full animate-pulse rounded-md bg-black/15 align-middle" />;
