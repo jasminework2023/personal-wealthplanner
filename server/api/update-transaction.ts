@@ -50,7 +50,8 @@ async function syncLinkedAsset(sheets: any, spreadsheetId: string, description: 
    return;
  }
 }
-\nexport default async function handler(req:VercelRequest,res:VercelResponse){
+
+export default async function handler(req:VercelRequest,res:VercelResponse){
  if(req.method!=="POST")return res.status(405).json({error:"Method Not Allowed"});
  const {token,sheetRow,transaction}=req.body||{};const row=Number(sheetRow);
  if(!token||!Number.isInteger(row)||row<10||!transaction)return res.status(400).json({error:"Data transaksi tidak lengkap"});
@@ -64,7 +65,8 @@ async function syncLinkedAsset(sheets: any, spreadsheetId: string, description: 
   const {data:u,error}=await sb.from("users").select("spreadsheet_id,is_active").eq("dashboard_token",token).single();
   if(error||!u)return res.status(404).json({error:"Akun tidak ditemukan"});if(!u.is_active)return res.status(403).json({error:"Akun belum aktif"});if(!u.spreadsheet_id)return res.status(404).json({error:"Spreadsheet belum terhubung ke akun ini"});
   const sheets=sheetsClient();let wallets:{wallet:string;toWallet:string};try{wallets=await validateWallets(sheets,u.spreadsheet_id,transaction,type);}catch(e){return res.status(400).json({error:(e as Error).message});}
-  await sheets.spreadsheets.values.update({spreadsheetId:u.spreadsheet_id,range:`Transaction!B${row}:I${row}`,valueInputOption:"USER_ENTERED",requestBody:{values:[[date,month,type,category,description,amount,wallets.wallet,wallets.toWallet]]}});\n  await syncLinkedAsset(sheets,u.spreadsheet_id,description,amount,wallets.wallet,date);
+  await sheets.spreadsheets.values.update({spreadsheetId:u.spreadsheet_id,range:`Transaction!B${row}:I${row}`,valueInputOption:"USER_ENTERED",requestBody:{values:[[date,month,type,category,description,amount,wallets.wallet,wallets.toWallet]]}});
+  await syncLinkedAsset(sheets,u.spreadsheet_id,description,amount,wallets.wallet,date);
   return res.status(200).json({success:true});
  }catch(e){console.error(e);return res.status(500).json({error:"Gagal mengubah transaksi"});}
 }
