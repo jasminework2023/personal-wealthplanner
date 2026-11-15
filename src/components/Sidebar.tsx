@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { getAppLanguage } from "../lib/format";
 import {
   Home,
@@ -77,6 +77,7 @@ function Brand() {
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [language, setLanguage] = useState(getAppLanguage());
   const [profileOpen, setProfileOpen] = useState(false);
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
