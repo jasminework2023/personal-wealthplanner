@@ -81,10 +81,19 @@ export interface StockItem {
   pl: number;
 }
 
+export interface AssetTarget {
+  id: string;
+  name: string;
+  targetAmount: number;
+  targetDate: string;
+  currentValueSource: string;
+}
+
 export interface AssetData {
   totalAssets: number;
   stocksTotal: number;
   target: number;
+  targets: AssetTarget[];
   liquidAssets: { name: string; value: number }[];
   investmentAssets: { name: string; value: number }[];
   excludedInvestmentNames: string[];
@@ -117,6 +126,13 @@ function mockAssetData(): AssetData {
     totalAssets: mockTotalAssets,
     stocksTotal: 0,
     target: assetTarget,
+    targets: assetTarget > 0 ? [{
+      id: "mock-target",
+      name: "Target Aset",
+      targetAmount: assetTarget,
+      targetDate: "",
+      currentValueSource: "Asset Tracker",
+    }] : [],
     liquidAssets: liquid,
     investmentAssets: investment,
     excludedInvestmentNames: [],
@@ -145,6 +161,7 @@ function normalizeAssetData(value: any): AssetData {
     totalAssets: Number(value?.totalAssets) || 0,
     stocksTotal: Number(value?.stocksTotal) || 0,
     target: Number(value?.target) || 0,
+    targets: Array.isArray(value?.targets) ? value.targets : [],
     liquidAssets: Array.isArray(value?.liquidAssets) ? value.liquidAssets : fallback.liquidAssets,
     investmentAssets: Array.isArray(value?.investmentAssets) ? value.investmentAssets : fallback.investmentAssets,
     excludedInvestmentNames: Array.isArray(value?.excludedInvestmentNames) ? value.excludedInvestmentNames : [],
