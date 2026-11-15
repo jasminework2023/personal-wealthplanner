@@ -8,6 +8,10 @@ export interface ParsedStockPurchase {
   sourceAccount: string;
   buyPrice?: number;
 }
+export interface ParsedDebtPayment {
+  debtName: string;
+  sourceAccount: string;
+}
 export interface ParsedRealPurchase {
   assetName: string;
   sourceAccount: string;
