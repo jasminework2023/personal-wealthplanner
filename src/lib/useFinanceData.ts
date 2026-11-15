@@ -97,6 +97,8 @@ export interface ManagedInvestmentAsset {
 export interface RealAsset {
   id: string; name: string; initialValue: number; acquisitionDate: string;
   annualChangePercent: number; note: string; currentValue: number; changeValue: number;
+  sourceAccount: string; transactionId: string;
+  fundingMode: "purchase" | "owned";
 }
 
 export interface AssetData {
