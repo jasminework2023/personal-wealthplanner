@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronRight, Plus, Trash2, Wallet, Car, Building2, Package } from "lucide-react";
 import { formatRupiah } from "../lib/format";
 import type { AssetData, ManagedInvestmentAsset, RealAsset } from "../lib/useFinanceData";
@@ -14,6 +14,7 @@ type Props = {
   assetsVisible: boolean;
   integratedTotalAssets: number;
   integratedLiquidTotal: number;
+  userId?: string | null;
 };
 
 function yearsHeld(date: string) {
@@ -39,7 +40,7 @@ function assetIcon(name: string) {
 }
 
 export function AssetTrackerManaged({
-  assets, wallets, isRealData, assetsVisible, integratedTotalAssets, integratedLiquidTotal,
+  assets, wallets, isRealData, assetsVisible, integratedTotalAssets, integratedLiquidTotal, userId,
 }: Props) {
   const [compositionOpen, setCompositionOpen] = useState(true);
   const [liquidOpen, setLiquidOpen] = useState(false);
@@ -91,6 +92,29 @@ export function AssetTrackerManaged({
   ].filter((x) => x.value > 0);
   const compositionTotal = composition.reduce((s, x) => s + x.value, 0);
   const pct = (v: number) => compositionTotal ? ((v / compositionTotal) * 100).toFixed(1).replace(".", ",") + "%" : "0,0%";
+  const [assetChange, setAssetChange] = useState<{ amount: number; percent: number } | null>(null);
+
+  useEffect(() => {
+    if (!isRealData || !userId) {
+      setAssetChange(null);
+      return;
+    }
+    const now = new Date();
+    const previous = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const key = (date: Date) => `wealthplanner_asset_snapshot_user_${userId}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    try {
+      const previousTotal = Number(localStorage.getItem(key(previous)));
+      if (Number.isFinite(previousTotal) && previousTotal > 0) {
+        const amount = integratedTotalAssets - previousTotal;
+        setAssetChange({ amount, percent: (amount / previousTotal) * 100 });
+      } else {
+        setAssetChange(null);
+      }
+      localStorage.setItem(key(now), String(integratedTotalAssets));
+    } catch {
+      setAssetChange(null);
+    }
+  }, [integratedTotalAssets, isRealData, userId]);
 
   function openReal(asset?: RealAsset) {
     setError("");
@@ -273,13 +297,20 @@ export function AssetTrackerManaged({
       <section className="rounded-[24px] bg-[rgb(var(--c-surface))] p-4 sm:p-5">
         <p className="text-[14px] font-semibold text-[rgb(var(--c-muted))]">Total Aset</p>
         <p className="mt-1 text-[clamp(30px,8vw,44px)] font-extrabold leading-none tracking-[-0.03em] tabular-nums">{assetsVisible ? formatRupiah(integratedTotalAssets) : "Rp ••••••••"}</p>
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {[["Likuid", integratedLiquidTotal], ["Investasi", investmentTotal], ["Aset Riil", realTotal]].map(([label, value]) => (
-            <div key={String(label)} className="min-w-0 rounded-[16px] bg-[rgb(var(--c-cream))] p-3">
-              <p className="text-[11px] text-[rgb(var(--c-muted))]">{label}</p>
-              <p className="mt-1 truncate text-[14px] font-bold tabular-nums">{assetsVisible ? formatRupiah(Number(value)) : "Rp ••••••"}</p>
-            </div>
-          ))}
+        <div className="mt-2 flex items-center gap-2 text-[11px]">
+          {assetChange ? (
+            <>
+              <span className={`font-semibold tabular-nums ${assetChange.amount >= 0 ? "text-[rgb(var(--c-up))]" : "text-[rgb(var(--c-down))]"}`}>
+                {assetChange.amount >= 0 ? "↑ " : "↓ "}{assetsVisible ? formatRupiah(Math.abs(assetChange.amount)) : "Rp ••••••"}
+              </span>
+              <span className="text-[rgb(var(--c-muted))]">
+                ({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}%)
+              </span>
+              <span className="text-[rgb(var(--c-muted))]">vs bulan lalu</span>
+            </>
+          ) : (
+            <span className="text-[rgb(var(--c-muted))]">Belum ada data perubahan bulan lalu</span>
+          )}
         </div>
       </section>
 
