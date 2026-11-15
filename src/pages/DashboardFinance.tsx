@@ -161,6 +161,7 @@ function StockTracker({
   showInvestmentStockBanner?: boolean;
 }) {
   const [market, setMarket] = useState<"ID" | "US">("ID");
+  const isId = getAppLanguage() === "id";
   const [refreshing, setRefreshing] = useState(false);
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -326,8 +327,8 @@ function StockTracker({
 
   return (
     <AssetListSection
-      title={id ? "Portofolio Saham" : "Stock Portfolio"}
-      infoText={id ? "Memengaruhi Total Aset" : "Affects Total Assets"}
+      title={isId ? "Portofolio Saham" : "Stock Portfolio"}
+      infoText={isId ? "Memengaruhi Total Aset" : "Affects Total Assets"}
       totalValue={assetsVisible ? formatRupiah(total) : "Rp " + hiddenStockMoney}
       totalChangePercent={plPct}
       onAdd={isRealData ? openAdd : undefined}
