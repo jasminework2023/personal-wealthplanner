@@ -188,12 +188,12 @@ export function Home() {
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }}
           data-tour="home-assets-desktop" className="home-asset-summary h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] border-0 p-4 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)]"
           style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)" }}>
-          <div className="flex items-center justify-between gap-2">
+          <div className="relative">
             <p className="text-[11px] font-medium uppercase tracking-[-0.02em] text-[#075B40]/85">Asset Tracker</p>
             <button type="button"
               onClick={(event) => { event.stopPropagation(); setAssetsVisible((visible) => !visible); }}
               aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
-              data-tour="home-eye-desktop" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#064A34] transition hover:bg-[#006B48]/15">
+              data-tour="home-eye-desktop" className="absolute -right-1 -top-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#064A34] transition hover:bg-[#006B48]/15">
               {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
             </button>
           </div>
