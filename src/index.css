@@ -66,6 +66,7 @@
   --asset-fund: 245 158 11;
   --asset-gold: 234 88 12;
   --asset-p2p: 100 116 139;
+  --asset-other: 71 85 105;
   --shadow-pop: 0 4px 16px rgba(0, 184, 110, 0.45);
   --shadow-nav: 0 6px 24px rgba(0, 0, 0, 0.08);
 
@@ -154,6 +155,7 @@ html.dark {
   --asset-fund: 251 191 36;
   --asset-gold: 251 146 60;
   --asset-p2p: 148 163 184;
+  --asset-other: 203 213 225;
   --shadow-pop: 0 0 24px rgba(0, 224, 138, 0.7);
   --shadow-nav: 0 12px 32px rgba(0, 0, 0, 0.45);
 
