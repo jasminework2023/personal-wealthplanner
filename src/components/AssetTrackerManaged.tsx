@@ -330,12 +330,12 @@ export function AssetTrackerManaged({
             <div className="mt-2 flex justify-end gap-2">
               <button type="button" disabled={savingAssetTarget} onClick={() => { setEditingAssetTarget(false); setAssetTargetInput(String(Math.round(assets.target || 0))); }} className="min-h-11 rounded-full border border-[rgb(var(--c-border))] px-3 text-[11px] font-semibold">Batal</button>
               <button type="button" disabled={savingAssetTarget} onClick={async () => {
-                const raw = assetTargetInput.trim(); const value = Number(raw);
+                const raw = assetTargetInput.trim(); const value = Number(raw); const existingTarget = assets.targets?.[0];
                 if (!raw || !Number.isFinite(value) || value < 0) { alert("Nominal target wajib diisi dan tidak boleh negatif."); return; }
                 const token = getStoredToken(); if (!token) { alert("Sesi dashboard tidak ditemukan."); return; }
                 setSavingAssetTarget(true);
                 try {
-                  const res = await fetch(API_BASE + "/update-asset-target", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, value }) });
+                  const res = await fetch(API_BASE + "/update-asset-target", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(existingTarget ? { token, targetId: existingTarget.id, targetAmount: value } : { token, targetAmount: value }) });
                   const data = await res.json().catch(() => ({})); if (!res.ok) throw new Error(data.error || "Gagal menyimpan target");
                   setEditingAssetTarget(false); window.dispatchEvent(new CustomEvent("wealthplanner:asset-updated"));
                 } catch (e) { alert(e instanceof Error ? e.message : "Gagal menyimpan target"); }
