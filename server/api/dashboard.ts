@@ -294,15 +294,32 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
   const stocksID = stockSections.id;
   const stocksUS = stockSections.us;
 
-  // Target: cari baris yang ada kata "Target", ambil angka di baris SETELAHNYA
-  // pada kolom yang sama (mengikuti pola header lalu isi di sheet aslinya).
+  // Target Asset: cari label target secara eksplisit, lalu baca nilai pada
+  // cell yang sama/berdekatan. Format sheet bisa berupa label + nilai dalam
+  // satu baris atau label diikuti nilai pada baris berikutnya.
   let target = 0;
-  const targetHeaderIdx = findRowIndex(rows, "target");
-  if (targetHeaderIdx !== -1) {
-    const header = rows[targetHeaderIdx] || [];
-    const colIdx = header.findIndex((c) => String(c || "").toLowerCase().includes("target"));
-    const valueRow = rows[targetHeaderIdx + 1] || [];
-    target = parseRupiah(valueRow[colIdx] ?? lastNumericValue(valueRow));
+  const targetLabels = ["target aset", "target asset", "target"];
+  outer: for (let r = 0; r < rows.length; r++) {
+    const row = rows[r] || [];
+    for (let c = 0; c < row.length; c++) {
+      const label = String(row[c] ?? "").trim().toLowerCase();
+      if (!targetLabels.includes(label)) continue;
+
+      const candidates = [
+        row[c + 1],
+        row[c + 2],
+        (rows[r + 1] || [])[c],
+        (rows[r + 1] || [])[c + 1],
+      ];
+
+      for (const candidate of candidates) {
+        const parsed = parseRupiah(candidate);
+        if (parsed >= 0 && String(candidate ?? "").trim() !== "") {
+          target = parsed;
+          break outer;
+        }
+      }
+    }
   }
 
   const usdIdrRate = await getUsdIdrRate();
