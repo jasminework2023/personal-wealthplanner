@@ -328,7 +328,7 @@ function StockTracker({
   return (
     <AssetListSection
       title={isId ? "Portofolio Saham" : "Stock Portfolio"}
-      infoText={isId ? "Memengaruhi Total Aset" : "Affects Total Assets"}
+      infoText="Memengaruhi Total Aset"
       totalValue={assetsVisible ? formatRupiah(total) : "Rp " + hiddenStockMoney}
       totalChangePercent={plPct}
       onAdd={isRealData ? openAdd : undefined}
