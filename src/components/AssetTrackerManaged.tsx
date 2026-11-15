@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronRight, Plus, Trash2, Wallet, Car, Building2, Package } from "lucide-react";
+import { ChevronRight, Plus, Trash2, Wallet, Car, Building2, Package, Pencil } from "lucide-react";
 import { formatRupiah } from "../lib/format";
 import type { AssetData, ManagedInvestmentAsset, RealAsset } from "../lib/useFinanceData";
 import { getStoredToken } from "../lib/useFinanceData";
@@ -305,7 +305,7 @@ export function AssetTrackerManaged({
                   <span className={`font-semibold tabular-nums ${assetChange.amount >= 0 ? "text-[rgb(var(--c-up))]" : "text-[rgb(var(--c-down))]"}`}>
                     {assetChange.amount >= 0 ? "↑ " : "↓ "}{assetsVisible ? formatRupiah(Math.abs(assetChange.amount)) : "Rp ••••••"}
                   </span>
-                  <span className="text-[rgb(var(--c-muted))]">({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}% )</span>
+                  <span className="text-[rgb(var(--c-muted))]">({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}%)</span>
                   <span className="text-[rgb(var(--c-muted))]">vs bulan lalu</span>
                 </>
               ) : <span className="text-[rgb(var(--c-muted))]">Belum ada data perubahan bulan lalu</span>}
@@ -447,7 +447,6 @@ export function AssetTrackerManaged({
             <label className="block text-[11px] text-[rgb(var(--c-muted))]">Harga perolehan<input inputMode="numeric" value={realForm.initialValue} onChange={e => setRealForm({ ...realForm, initialValue: e.target.value.replace(/\D/g, "") })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
             {realFundingMode === "purchase" && <label className="block text-[11px] text-[rgb(var(--c-muted))]">Rekening sumber dana<select value={realFormSourceAccount} onChange={e => setRealFormSourceAccount(e.target.value)} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]"><option value="">Pilih rekening</option>{wallets.map(w => <option key={w.id} value={w.name}>{w.name}</option>)}</select></label>}
             {realModal.id && <p className="rounded-xl bg-[rgb(var(--c-cream))] px-3 py-2 text-[10px] text-[rgb(var(--c-muted))]">{realModal.fundingMode === "purchase" ? "Pembelian terhubung ke Transaction Tracker. Mengubah harga atau rekening akan mengoreksi transaksi pembelian." : "Aset ini berasal dari aset yang sudah dimiliki dan tidak terhubung ke saldo rekening."}</p>}
-            <label className="block text-[11px] text-[rgb(var(--c-muted))]">Tanggal perolehan<input type="date" value={realForm.acquisitionDate} onChange={e => setRealForm({ ...realForm, acquisitionDate: e.target.value })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
             <label className="block text-[11px] text-[rgb(var(--c-muted))]">Tanggal perolehan<input type="date" value={realForm.acquisitionDate} onChange={e => setRealForm({ ...realForm, acquisitionDate: e.target.value })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
             <label className="block text-[11px] text-[rgb(var(--c-muted))]">Perubahan nilai per tahun (%)<input inputMode="decimal" value={realForm.annualChangePercent} onChange={e => setRealForm({ ...realForm, annualChangePercent: e.target.value.replace(/[^0-9.-]/g, "") })} className="mt-1 min-h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 text-[13px]" /></label>
             <label className="block text-[11px] text-[rgb(var(--c-muted))]">Catatan (opsional)<textarea value={realForm.note} onChange={e => setRealForm({ ...realForm, note: e.target.value })} className="mt-1 min-h-20 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] px-3 py-2 text-[13px]" /></label>
