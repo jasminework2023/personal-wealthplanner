@@ -98,7 +98,7 @@ export function Home() {
               <span>{assetsVisible ? renderMoney(integratedTotalAssets, true, "text-[9px]", 9) : "Rp ••••••"}</span>
               <span>{assets.target > 0 ? `${Math.round((integratedTotalAssets / assets.target) * 100)}%` : "0%"}</span>
             </div>
-          </div>          </div>
+          </div>
         </div>
 
         <div role="button" tabIndex={0}
