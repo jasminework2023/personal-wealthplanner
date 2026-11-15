@@ -661,7 +661,8 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
         </>
       )}
 
-      {activeReportTab === "debt" && <DebtTracker />}\n      {activeReportTab === "cashflow" && <>
+      {activeReportTab === "debt" && <DebtTracker />}
+      {activeReportTab === "cashflow" && <>
         {(() => {
           const monthIndex = monthNames.indexOf(selectedMonth);
           const previousMonth = monthNames[(monthIndex + 11) % 12];
