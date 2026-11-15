@@ -343,11 +343,11 @@ function StockTracker({
       <div className="px-4 pt-4 sm:px-5">
         <div className="grid grid-cols-2 gap-2.5">
           <div className="min-w-0 rounded-[14px] bg-[rgb(var(--c-cream))] px-3 py-2.5">
-            <p className="text-[10px] font-medium text-[rgb(var(--c-muted))]">Total modal</p>
+            <p className="text-[12px] font-medium text-[rgb(var(--c-muted))]">Total modal</p>
             <p className="mt-1 truncate text-[14px] font-bold tabular-nums">{assetsVisible ? formatRupiah(totalInvestment) : "Rp ••••••"}</p>
           </div>
           <div className="min-w-0 rounded-[14px] bg-[rgb(var(--c-cream))] px-3 py-2.5">
-            <p className="text-[10px] font-medium text-[rgb(var(--c-muted))]">Untung/rugi</p>
+            <p className="text-[12px] font-medium text-[rgb(var(--c-muted))]">Untung/rugi</p>
             <p className={"mt-1 truncate text-[14px] font-bold tabular-nums " + (pl >= 0 ? "text-[rgb(var(--c-up))]" : "text-[rgb(var(--c-down))]")}>
               {assetsVisible ? formatRupiah(pl) : "Rp ••••••"}
             </p>
@@ -358,23 +358,23 @@ function StockTracker({
       <div className="px-4 pb-3 sm:px-5">
         <div className="flex items-center justify-between gap-3 pb-3">
           <div className="flex items-center gap-1 rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-1">
-            <button type="button" aria-pressed={market === "ID"} onClick={() => setMarket("ID")} className={`min-h-11 min-w-[56px] rounded-full px-3 text-[11px] font-semibold ${market === "ID" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>ID</button>
-            <button type="button" aria-pressed={market === "US"} onClick={() => setMarket("US")} className={`min-h-11 min-w-[56px] rounded-full px-3 text-[11px] font-semibold ${market === "US" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>US</button>
+            <button type="button" aria-pressed={market === "ID"} onClick={() => setMarket("ID")} className={`min-h-11 min-w-[56px] rounded-full px-3 text-[12px] font-semibold ${market === "ID" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>ID</button>
+            <button type="button" aria-pressed={market === "US"} onClick={() => setMarket("US")} className={`min-h-11 min-w-[56px] rounded-full px-3 text-[12px] font-semibold ${market === "US" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>US</button>
           </div>
           {isRealData && (
-            <button type="button" onClick={() => void refreshPrices()} disabled={refreshing} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-[rgb(var(--c-cream))] px-3 text-[11px] font-semibold text-[rgb(var(--c-up))] disabled:opacity-50">
+            <button type="button" onClick={() => void refreshPrices()} disabled={refreshing} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-[rgb(var(--c-cream))] px-3 text-[12px] font-semibold text-[rgb(var(--c-up))] disabled:opacity-50">
               <RefreshCw size={13} className={refreshing ? "animate-spin" : ""}/> Update
             </button>
           )}
         </div>
       </div>
 
-      {error && <p className="mx-4 mb-2 rounded-lg bg-[rgb(var(--c-rose-50))] px-2.5 py-2 text-[11px] text-[rgb(var(--c-down))] sm:mx-5">{error}</p>}
+      {error && <p className="mx-4 mb-2 rounded-lg bg-[rgb(var(--c-rose-50))] px-2.5 py-2 text-[12px] text-[rgb(var(--c-down))] sm:mx-5">{error}</p>}
 
       {showInvestmentStockBanner && (
         <div className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-[12px] bg-[rgb(var(--c-forest-50))] px-3 py-2.5 text-[rgb(var(--c-up))] sm:mx-5">
-          <p className="min-w-0 text-[11px] leading-relaxed">Ada baris 'Saham' di Investment Assets yang tidak dihitung. Tambahkan saham satu per satu di Stock Portfolio.</p>
-          {isRealData && <button type="button" onClick={openAdd} className="shrink-0 rounded-full bg-[rgb(var(--c-surface))] px-2.5 py-1.5 text-[10px] font-bold text-[rgb(var(--c-up))]">+ Tambah</button>}
+          <p className="min-w-0 text-[12px] leading-relaxed">Ada baris 'Saham' di Investment Assets yang tidak dihitung. Tambahkan saham satu per satu di Stock Portfolio.</p>
+          {isRealData && <button type="button" onClick={openAdd} className="shrink-0 rounded-full bg-[rgb(var(--c-surface))] px-2.5 py-1.5 text-[12px] font-bold text-[rgb(var(--c-up))]">+ Tambah</button>}
         </div>
       )}
 
@@ -397,7 +397,7 @@ function StockTracker({
           })}
         </div>
       ) : (
-        <p className="px-4 pb-5 pt-3 text-center text-[11px] text-[rgb(var(--c-muted))]">Belum ada saham {market === "ID" ? "Indonesia" : "US"}.</p>
+        <p className="px-4 pb-5 pt-3 text-center text-[12px] text-[rgb(var(--c-muted))]">Belum ada saham {market === "ID" ? "Indonesia" : "US"}.</p>
       )}
 
       {open && (
@@ -408,22 +408,22 @@ function StockTracker({
               <button type="button" aria-label="Tutup" onClick={resetForm} className="flex h-9 w-9 items-center justify-center rounded-full text-charcoal/40 hover:bg-charcoal/5">×</button>
             </div>
 
-            {!editing && <p className="mt-1 text-[10px] text-charcoal/45">Untuk saham yang sudah kamu miliki sebelumnya. Pembelian baru lebih baik dicatat lewat Transaksi.</p>}
+            {!editing && <p className="mt-1 text-[12px] text-charcoal/45">Untuk saham yang sudah kamu miliki sebelumnya. Pembelian baru lebih baik dicatat lewat Transaksi.</p>}
 
             <div className="mt-2 grid gap-2 sm:grid-cols-4">
-              <label className="text-[10px] text-charcoal/55">
+              <label className="text-[12px] text-charcoal/55">
                 Ticker
                 <input disabled={!!editing} value={ticker} onChange={(e) => setTicker(e.target.value)} placeholder={market === "ID" ? "BBCA" : "AAPL"} className="mt-1 w-full rounded-lg border border-charcoal/12 px-2.5 py-2 text-[12px] outline-none disabled:bg-charcoal/[0.04]"/>
               </label>
-              <label className="text-[10px] text-charcoal/55">
+              <label className="text-[12px] text-charcoal/55">
                 Jumlah {market === "ID" ? "(lot)" : "(saham)"}
                 <input value={quantity} onChange={(e) => setQuantity(e.target.value.replace(/[^0-9.]/g, ""))} placeholder={market === "ID" ? "5" : "10"} inputMode="decimal" className="mt-1 w-full rounded-lg border border-charcoal/12 px-2.5 py-2 text-[12px] outline-none"/>
               </label>
-              <label className="text-[10px] text-charcoal/55">
+              <label className="text-[12px] text-charcoal/55">
                 Harga beli {market === "ID" ? "(Rp)" : "(USD)"}
                 <input value={avgPrice} onChange={(e) => setAvgPrice(e.target.value.replace(/[^0-9.]/g, ""))} placeholder={market === "ID" ? "9200" : "195.20"} inputMode="decimal" className="mt-1 w-full rounded-lg border border-charcoal/12 px-2.5 py-2 text-[12px] outline-none"/>
               </label>
-              <label className="text-[10px] text-charcoal/55">
+              <label className="text-[12px] text-charcoal/55">
                 Investment account
                 <select value={account} onChange={(e) => setAccount(e.target.value)} className="mt-1 w-full rounded-lg border border-charcoal/12 bg-[rgb(var(--c-surface))] px-2.5 py-2 text-[12px] outline-none">
                   <option value="">Pilih akun investment</option>
@@ -434,20 +434,20 @@ function StockTracker({
 
             {!editing && findExistingTicker() && saveMode === null && (
               <div className="mt-2 rounded-lg bg-charcoal/[0.035] p-2.5">
-                <p className="text-[11px] font-medium text-charcoal/70">Ticker {ticker.trim().toUpperCase()} sudah ada.</p>
-                <p className="mt-0.5 text-[10px] text-charcoal/45">Pilih cara menyimpan data ini:</p>
+                <p className="text-[12px] font-medium text-charcoal/70">Ticker {ticker.trim().toUpperCase()} sudah ada.</p>
+                <p className="mt-0.5 text-[12px] text-charcoal/45">Pilih cara menyimpan data ini:</p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  <button type="button" onClick={() => setSaveMode("buy")} className="rounded-full bg-[rgb(var(--c-forest-50))] px-3 py-1.5 text-[10px] font-semibold text-[rgb(var(--c-up))]">Tambah ke posisi yang ada</button>
-                  <button type="button" onClick={() => setSaveMode("set")} className="rounded-full border border-[rgb(var(--c-border))] px-3 py-1.5 text-[10px] font-semibold text-[rgb(var(--c-charcoal))]">Timpa data</button>
+                  <button type="button" onClick={() => setSaveMode("buy")} className="rounded-full bg-[rgb(var(--c-forest-50))] px-3 py-1.5 text-[12px] font-semibold text-[rgb(var(--c-up))]">Tambah ke posisi yang ada</button>
+                  <button type="button" onClick={() => setSaveMode("set")} className="rounded-full border border-[rgb(var(--c-border))] px-3 py-1.5 text-[12px] font-semibold text-[rgb(var(--c-charcoal))]">Timpa data</button>
                 </div>
               </div>
             )}
 
             {(!findExistingTicker() || saveMode !== null || editing) && (
               <>
-                <p className="mt-1.5 text-[10px] text-charcoal/40">{market === "ID" ? "1 lot = 100 saham. Nilai portfolio dihitung dari harga pasar × jumlah saham." : "US menggunakan shares. Nilai portfolio dalam USD dan dikonversi ke IDR di Total Aset."}</p>
+                <p className="mt-1.5 text-[12px] text-charcoal/40">{market === "ID" ? "1 lot = 100 saham. Nilai portfolio dihitung dari harga pasar × jumlah saham." : "US menggunakan shares. Nilai portfolio dalam USD dan dikonversi ke IDR di Total Aset."}</p>
                 <div className="mt-2 flex justify-end">
-                  <button type="button" onClick={() => void saveStock(editing ? "set" : (saveMode || "set"))} disabled={refreshing} className="rounded-full bg-[rgb(var(--c-forest-700))] px-4 py-2 text-[11px] font-semibold text-[rgb(var(--c-surface))] disabled:opacity-50">
+                  <button type="button" onClick={() => void saveStock(editing ? "set" : (saveMode || "set"))} disabled={refreshing} className="rounded-full bg-[rgb(var(--c-forest-700))] px-4 py-2 text-[12px] font-semibold text-[rgb(var(--c-surface))] disabled:opacity-50">
                     {refreshing ? "Menyimpan…" : editing ? "Simpan perubahan" : saveMode === "buy" ? "Tambah ke posisi" : "Simpan saham"}
                   </button>
                 </div>
