@@ -99,6 +99,7 @@ export function Home() {
               <span>{assetsVisible ? renderMoney(assets.target, true, "text-[10px] font-medium", 10) : "Rp ••••••"}</span>
             </div>
           </div>
+        </div>
 
         <div role="button" tabIndex={0}
           onClick={() => navigate("/budgeting")}
