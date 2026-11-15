@@ -181,9 +181,11 @@ export default async function handler(req:VercelRequest,res:VercelResponse) {
     const costBasis=quantity*buyPrice*fxRate;
     const existing=parseInvestment(data).find(x=>x.id===id);
     const txid=existing?.transactionId || (String(req.body?.fundingMode||"") === "purchase" ? crypto.randomUUID() : "");
-    if(String(req.body?.fundingMode||"") === "purchase") {
-      if(existing?.transactionId) await updatePurchaseTransaction(sheets,user.spreadsheet_id,existing.transactionId,costBasis,sourceAccount);
-      else await appendPurchaseTransaction(sheets,user.spreadsheet_id,costBasis,sourceAccount,txid,name);
+    if(existing?.transactionId) {
+      if(!sourceAccount) return res.status(400).json({error:"Rekening sumber dana wajib dipilih untuk aset yang berasal dari pembelian."});
+      await updatePurchaseTransaction(sheets,user.spreadsheet_id,existing.transactionId,costBasis,sourceAccount);
+    } else if(String(req.body?.fundingMode||"") === "purchase") {
+      await appendPurchaseTransaction(sheets,user.spreadsheet_id,costBasis,sourceAccount,txid,name);
     }
     const s=await ensureSection(sheets,user.spreadsheet_id,data,"Managed Investment Assets",["ID","Nama","Kategori","Jumlah","Unit","Harga Beli","Harga Terkini","Rekening Sumber","Tanggal Beli","Catatan","Transaction ID","Mata Uang","Kurs","Cost Basis IDR"]);
     const refreshed=await rows(sheets,user.spreadsheet_id), row=findId(refreshed,s,id);
