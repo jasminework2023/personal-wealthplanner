@@ -51,6 +51,9 @@ export function AssetTrackerManaged({
   const [realFundingMode, setRealFundingMode] = useState<"purchase" | "owned">("owned");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [editingAssetTarget, setEditingAssetTarget] = useState(false);
+  const [assetTargetInput, setAssetTargetInput] = useState("");
+  const [savingAssetTarget, setSavingAssetTarget] = useState(false);
   const [realForm, setRealForm] = useState({ name: "", initialValue: "", acquisitionDate: "", annualChangePercent: "", note: "" });
   const [realFormSourceAccount, setRealFormSourceAccount] = useState("");
   const [investmentForm, setInvestmentForm] = useState({
