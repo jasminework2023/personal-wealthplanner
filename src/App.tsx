@@ -14,6 +14,7 @@ import { Goals } from "./pages/Goals";
 import { WalletsPage } from "./pages/WalletsPage";
 import { AIAssistant } from "./pages/AIAssistant";
 import { Guidance } from "./pages/Guidance";
+import { Checkup } from "./pages/Checkup";
 import { SpouseSharing } from "./pages/SpouseSharing";
 
 function CalculatorRoute() {
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/spouse-sharing" element={<SpouseSharing />} />
           <Route path="/guidance" element={<Guidance />} />
+          <Route path="/checkup" element={<Checkup />} />
         </Route>
       </Routes>
     </BrowserRouter>
