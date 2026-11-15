@@ -315,11 +315,19 @@ export function AssetTrackerManaged({
             </div>
           </div>
           {isRealData && (
-            <button type="button" aria-label="Edit target aset" title="Edit target aset"
-              onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }}
-              className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[rgb(var(--c-muted))] hover:bg-[rgb(var(--c-cream))] hover:text-[rgb(var(--c-up))]">
-              <Pencil size={16} />
-            </button>
+            <div className="mt-1 flex shrink-0 items-center gap-2">
+              <div className="text-right">
+                <p className="text-[10px] font-medium text-[rgb(var(--c-muted))]">Target Aset</p>
+                <p className="text-[13px] font-bold tabular-nums text-[rgb(var(--c-charcoal))]">
+                  {assetsVisible ? formatRupiah(assets.target || 0) : "Rp ••••••"}
+                </p>
+              </div>
+              <button type="button" aria-label="Edit target aset" title="Edit target aset"
+                onClick={() => { setAssetTargetInput(String(Math.round(assets.target || 0))); setEditingAssetTarget(true); }}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[rgb(var(--c-muted))] hover:bg-[rgb(var(--c-cream))] hover:text-[rgb(var(--c-up))]">
+                <Pencil size={16} />
+              </button>
+            </div>
           )}
         </div>
         {editingAssetTarget && (
