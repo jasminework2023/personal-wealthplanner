@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import { Plus, Pencil, Trash2, X, CreditCard, Landmark, ChevronRight, Flame, Snowflake } from "lucide-react";
-import { formatRupiah, getAppLanguage } from "../lib/format";
+import { useEffect, useState } from "react";
+import { Plus, Trash2, X, CreditCard, Landmark, ChevronRight, Flame, Snowflake } from "lucide-react";
+import { formatRupiah } from "../lib/format";
 import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
 import { useWallets } from "../lib/useWallets";
 
@@ -35,7 +35,7 @@ export function DebtTracker(){
   </button>
   {analysisOpen&&<div className="mt-3">
    <label className="text-[11px] font-semibold text-charcoal/65">Dana ekstra per bulan
-    <input inputMode="numeric" value={extra} onChange={e=>setExtra(e.target.value.replace(/\\D/g,""))} placeholder="0" className="mt-1.5 h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-sm"/>
+    <input inputMode="numeric" value={extra} onChange={e=>setExtra(e.target.value.replace(/\D/g,""))} placeholder="0" className="mt-1.5 h-11 w-full rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 text-sm"/>
    </label>
    {!complete?<div className="mt-3 rounded-xl bg-yellow-50 px-3 py-3 text-xs text-yellow-700">Lengkapi data dulu: bunga tahunan dan cicilan minimum harus diisi.</div>:<div className="mt-3 grid gap-3 lg:grid-cols-2">
     <div className="rounded-xl border border-[rgb(var(--c-border))] p-3">
