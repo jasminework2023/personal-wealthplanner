@@ -11,6 +11,7 @@ export function AssetListSection({
   children,
 }: {
   title: string;
+  subtitle?: ReactNode;
   totalValue: ReactNode;
   totalChangePercent?: number;
   onAdd?: () => void;
@@ -26,6 +27,7 @@ export function AssetListSection({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[15px] font-semibold leading-tight">{title}</p>
+            {subtitle && <p className="mt-1 truncate text-[11px] leading-tight text-[rgb(var(--c-muted))]">{subtitle}</p>}
             <div className="mt-1.5 flex min-w-0 items-center gap-2">
               <p className="min-w-0 truncate text-[22px] font-bold leading-none tracking-[-0.02em] tabular-nums">{totalValue}</p>
               {change !== null && (
