@@ -72,7 +72,6 @@ function Brand() {
         </div>
         <div className="min-w-0">
           <p className="text-[15px] font-semibold text-forest-900 tracking-tight">wealthplanner.id</p>
-          <p className="text-[12px] text-charcoal/55">{getAppLanguage() === "id" ? "Keuangan Pribadi" : "Personal Finance"}</p>
         </div>
       </div>
     </div>
