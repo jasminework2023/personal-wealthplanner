@@ -316,7 +316,7 @@ export function AssetTrackerManaged({
 
   return (
     <div className="space-y-3">
-      <section className="rounded-[20px] bg-[rgb(var(--c-surface))] p-4 sm:p-5">
+      <section className="rounded-[16px] bg-[rgb(var(--c-surface))] p-4 sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="text-[16px] font-semibold text-[rgb(var(--c-charcoal))]">Total Aset</p>
@@ -387,7 +387,7 @@ export function AssetTrackerManaged({
         )}
       </section>
 
-      <section className="rounded-[20px] bg-[rgb(var(--c-surface))]">
+      <section className="rounded-[16px] bg-[rgb(var(--c-surface))]">
         <button type="button" onClick={() => setCompositionOpen(v => !v)} className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left sm:px-5">
           <span className="text-[16px] font-semibold text-[rgb(var(--c-charcoal))]">Komposisi Aset</span>
           <ChevronRight size={18} className={compositionOpen ? "rotate-90" : ""} />
@@ -412,11 +412,11 @@ export function AssetTrackerManaged({
                   </span>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-x-5 gap-y-1 lg:grid-cols-1 lg:gap-y-1">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 lg:grid-cols-1 lg:gap-y-1">
                 {composition.map(item => (
                   <div key={item.name} className="flex min-h-7 items-center gap-2">
                     <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-[rgb(var(--c-charcoal))]">{item.name}</span>
+                    <span className="min-w-0 flex-1 truncate text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">{item.name}</span>
                     <span className="w-12 shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{pct(item.value)}</span>
                   </div>
                 ))}
@@ -435,19 +435,19 @@ export function AssetTrackerManaged({
           <button type="button" onClick={() => openInvestment()} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-forest-50))] text-[rgb(var(--c-up))]" aria-label="Tambah aset investasi"><Plus size={17} /></button>
         </div>
         <div className="mt-3 space-y-2">
-          <details className="rounded-[14px] bg-[rgb(var(--c-cream))]" open={liquidOpen} onToggle={e => setLiquidOpen(e.currentTarget.open)}>
-            <summary className="flex min-h-[52px] cursor-pointer list-none items-center gap-3 px-3 [&::-webkit-details-marker]:hidden">
+          <details className="rounded-[12px] bg-[rgb(var(--c-cream))]" open={liquidOpen} onToggle={e => setLiquidOpen(e.currentTarget.open)}>
+            <summary className="flex min-h-[52px] cursor-pointer list-none items-center gap-2 px-3 [&::-webkit-details-marker]:hidden">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]"><Wallet size={16} /></span>
               <div className="min-w-0 flex-1">
                 <p className="text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">Aset Likuid</p>
                 <p className="text-[12px] text-[rgb(var(--c-muted))]">{liquidAssets.length} rekening • {assetsVisible ? formatRupiah(liquidTotal) : "Rp ••••••"}</p>
               </div>
-              <p className="hidden w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))] sm:block">{assetsVisible ? formatRupiah(liquidTotal) : "Rp ••••••"}</p>
+              <p className="hidden w-[132px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))] sm:block">{assetsVisible ? formatRupiah(liquidTotal) : "Rp ••••••"}</p>
               <ChevronRight size={16} className={liquidOpen ? "rotate-90" : ""} />
             </summary>
             <div className="border-t border-[rgb(var(--c-border))] px-3 py-1.5">
               {liquidAssets.length ? liquidAssets.map((item) => (
-                <div key={item.name} className="flex min-h-[48px] items-center gap-3 border-b border-[rgb(var(--c-border))] last:border-0">
+                <div key={item.name} className="flex min-h-[48px] items-center gap-2 border-b border-[rgb(var(--c-border))] last:border-0">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]"><Wallet size={15} /></span>
                   <div className="min-w-0 flex-1"><p className="truncate text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">{item.name}</p><p className="text-[12px] text-[rgb(var(--c-muted))]">{liquidSubtitle(item.name)}</p></div>
                   <p className="w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{assetsVisible ? formatRupiah(item.value) : "Rp ••••••"}</p>
@@ -463,14 +463,14 @@ export function AssetTrackerManaged({
                 <p className="text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">Aset Investasi</p>
                 <p className="text-[12px] text-[rgb(var(--c-muted))]">{investmentRows.length + (assets.stocksTotal > 0 ? 1 : 0)} jenis • {assetsVisible ? formatRupiah(investmentTotal) : "Rp ••••••"}</p>
               </div>
-              <p className="hidden w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))] sm:block">{assetsVisible ? formatRupiah(investmentTotal) : "Rp ••••••"}</p>
+              <p className="hidden w-[132px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))] sm:block">{assetsVisible ? formatRupiah(investmentTotal) : "Rp ••••••"}</p>
               <ChevronRight size={16} className={investmentOpen ? "rotate-90" : ""} />
             </summary>
             <div className="border-t border-[rgb(var(--c-border))] px-3 py-1.5">
               {investmentRows.map(row => {
                 const colorVar = categoryOf(row.name) === "Obligasi" ? "bond" : categoryOf(row.name) === "Emas" ? "gold" : categoryOf(row.name) === "Reksadana" ? "fund" : categoryOf(row.name) === "P2P Lending" ? "p2p" : "other";
                 return (
-                  <button key={row.name} type="button" disabled={!row.detail} onClick={() => row.detail && openInvestment(row.detail)} className="flex min-h-[48px] w-full items-center gap-3 border-b border-[rgb(var(--c-border))] text-left last:border-0 disabled:cursor-default">
+                  <button key={row.name} type="button" disabled={!row.detail} onClick={() => row.detail && openInvestment(row.detail)} className="flex min-h-[48px] w-full items-center gap-2 border-b border-[rgb(var(--c-border))] text-left last:border-0 disabled:cursor-default">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[rgb(var(--c-surface))] text-[rgb(var(--c-up))]"><TrendingUp size={15} /></span>
                     <div className="min-w-0 flex-1"><p className="truncate text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">{row.name}</p><p className="truncate text-[12px] text-[rgb(var(--c-muted))]">{row.detail ? row.detail.category : "Investasi"}</p></div>
                     <p className="w-[150px] shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{assetsVisible ? formatRupiah(row.value) : "Rp ••••••"}</p>
