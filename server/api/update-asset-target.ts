@@ -181,13 +181,11 @@ async function ensureTargetSection(sheets: any, spreadsheetId: string, title: st
 }
 
 function validateTarget(body: any) {
-  const name = String(body.name ?? "").trim();
   const targetAmount = Number(body.targetAmount);
-  const targetDate = String(body.targetDate ?? "").trim();
-  if (!name) throw new Error("Nama target wajib diisi.");
-  if (!Number.isFinite(targetAmount) || targetAmount < 0) throw new Error("Nominal target wajib diisi dan tidak boleh negatif.");
-  if (targetDate && !/^\d{4}-\d{2}-\d{2}$/.test(targetDate)) throw new Error("Tanggal target tidak valid.");
-  return { name, targetAmount, targetDate, currentValueSource: "Asset Tracker" };
+  if (!Number.isFinite(targetAmount) || targetAmount < 0) {
+    throw new Error("Nominal target wajib diisi dan tidak boleh negatif.");
+  }
+  return { targetAmount };
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -219,9 +217,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         spreadsheetId,
         range: `'${title}'!A${rowNumber}:E${rowNumber}`,
         valueInputOption: "USER_ENTERED",
-        requestBody: { values: [[id, data.name, data.targetAmount, data.targetDate, data.currentValueSource]] },
+        requestBody: { values: [[id, "Target Aset", data.targetAmount, "", "Asset Tracker"]] },
       });
-      return res.status(201).json({ target: { id, ...data } });
+      return res.status(201).json({ target: { id, name: "Target Aset", ...data, targetDate: "", currentValueSource: "Asset Tracker" } });
     }
 
     if (req.method === "PUT") {
@@ -237,14 +235,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         section = findTargetSection(refreshed);
         if (!section) return res.status(500).json({ error: "Target Assets gagal dibuat." });
         const rowNumber = section.sectionRow + 2;
+        const migratedId = globalThis.crypto?.randomUUID?.() || `target-${Date.now()}`;
         await sheets.spreadsheets.values.update({
           spreadsheetId,
           range: `'${title}'!A${rowNumber}:E${rowNumber}`,
           valueInputOption: "USER_ENTERED",
-          requestBody: { values: [[globalThis.crypto?.randomUUID?.() || `target-${Date.now()}`, data.name, data.targetAmount, data.targetDate, data.currentValueSource]] },
+          requestBody: { values: [[migratedId, "Target Aset", data.targetAmount, "", "Asset Tracker"]] },
         });
         await sheets.spreadsheets.values.clear({ spreadsheetId, range: `'${title}'!${colLetter(legacy.col + 1)}${legacy.row + 1}` });
-        return res.status(200).json({ target: { id: "migrated-target", ...data } });
+        return res.status(200).json({ target: { id: migratedId, name: "Target Aset", ...data, targetDate: "", currentValueSource: "Asset Tracker" } });
       }
 
       if (!section) return res.status(404).json({ error: "Target Assets belum tersedia." });
@@ -258,13 +257,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       if (rowNumber < 0) return res.status(404).json({ error: "Target tidak ditemukan." });
 
+      const existingRow = rows[rowNumber - 1] || [];
+      const existingName = String(existingRow[1] ?? "").trim() || "Target Aset";
+      const existingDate = String(existingRow[3] ?? "").trim();
+      const existingSource = String(existingRow[4] ?? "Asset Tracker").trim() || "Asset Tracker";
       await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: `'${title}'!A${rowNumber}:E${rowNumber}`,
+        range: `'${title}'!C${rowNumber}`,
         valueInputOption: "USER_ENTERED",
-        requestBody: { values: [[id, data.name, data.targetAmount, data.targetDate, data.currentValueSource]] },
+        requestBody: { values: [[data.targetAmount]] },
       });
-      return res.status(200).json({ target: { id, ...data } });
+      return res.status(200).json({ target: { id, name: existingName, targetAmount: data.targetAmount, targetDate: existingDate, currentValueSource: existingSource } });
     }
 
     if (req.method === "DELETE") {
