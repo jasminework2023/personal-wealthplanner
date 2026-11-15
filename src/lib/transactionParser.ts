@@ -1,11 +1,20 @@
 import type { Transaction, TransactionType } from "../data/types";
 
+export interface ParsedStockPurchase {
+  ticker: string;
+  market: "ID" | "US";
+  quantity: number;
+  unit: "lot" | "share";
+  sourceAccount: string;
+  buyPrice?: number;
+}
 export interface ParsedTransaction extends Partial<Transaction> {
   amount: number;
   type: TransactionType;
   category: string;
   description: string;
   date?: string;
+  stockPurchase?: ParsedStockPurchase;
 }
 
 function normalizeNumber(raw: string): number | null {
@@ -60,6 +69,47 @@ function parseDate(text: string): Date {
 function formatDate(date: Date): string {
   return date.toLocaleDateString("id-ID");
 }
+function inferStockPurchase(text: string): ParsedStockPurchase | undefined {
+  const lower = text.toLowerCase();
+  const stockIntent = /\b(beli|buy|membeli|beliin)\b/.test(lower) && /\b(saham|stock|idx|bei)\b/.test(lower);
+  const directTickerIntent = /\b(beli|buy|membeli|beliin)\b/.test(lower);
+  if (!stockIntent && !directTickerIntent) return undefined;
+
+  const idTickers = ["BBCA","BBRI","BMRI","BBNI","TLKM","ASII","ANTM","GOTO","ICBP","INDF","UNVR","PTBA","ADRO","MDKA","BUKA","KLBF","JPFA","SMGR","PGAS","EMTK"];
+  const usTickers = ["AAPL","TSLA","MSFT","AMZN","NVDA","META","GOOGL","GOOG","VOO","SPY","QQQ","AMD","NFLX","COST","AVGO","BRK.B"];
+  const aliases: Record<string,string> = {
+    telkom:"TLKM", bbca:"BBCA", bca:"BBCA", bbri:"BBRI", bri:"BBRI", bmri:"BMRI", mandiri:"BMRI",
+    bbni:"BBNI", bni:"BBNI", antam:"ANTM", asii:"ASII", goto:"GOTO", icbp:"ICBP", indf:"INDF", unvr:"UNVR",
+    apple:"AAPL", tesla:"TSLA", microsoft:"MSFT", amazon:"AMZN", nvidia:"NVDA", meta:"META",
+  };
+  const explicit = text.match(/\b([A-Z]{1,5}(?:\.[A-Z])?)\b/);
+  let ticker = "";
+  if (explicit && (idTickers.includes(explicit[1]) || usTickers.includes(explicit[1]))) ticker = explicit[1];
+  if (!ticker) {
+    for (const [name, value] of Object.entries(aliases)) if (lower.includes(name)) { ticker = value; break; }
+  }
+  if (!ticker) return undefined;
+
+  const market: "ID"|"US" =
+    /\b(saham\s*(us|as|amerika)|us\s*stock|american stock)\b/i.test(lower) || usTickers.includes(ticker)
+      ? "US" : "ID";
+  const lot = text.match(/(\d+(?:[.,]\d+)?)\s*lot\b/i);
+  const share = text.match(/(\d+(?:[.,]\d+)?)\s*(?:lembar|saham|share|shares)\b/i);
+  const quantity = Number((lot?.[1] || share?.[1] || "").replace(",", "."));
+  if (!Number.isFinite(quantity) || quantity <= 0) return undefined;
+  const sourceMatch = text.match(/\b(?:dari|from)\s+([A-Za-z0-9 ._-]+?)(?=\s+(?:dengan|@|harga|rp|\d)|$)/i);
+  const sourceAccount = sourceMatch ? sourceMatch[1].trim() : "";
+  const priceMatch = text.match(/(?:@|harga(?:\s+beli)?(?:nya)?\s*)\s*(?:usd\s*)?(\d+(?:[.,]\d+)?)/i);
+  return {
+    ticker,
+    market,
+    quantity,
+    unit: market === "ID" ? "lot" : "share",
+    sourceAccount,
+    buyPrice: priceMatch ? Number(priceMatch[1].replace(",", ".")) : undefined,
+  };
+}
+
 
 function inferCategory(lower: string): { type: TransactionType; category: string } {
   if (/\b(gaji|gajian|salary|honor|fee|freelance|pendapatan|income|dividen|bunga|interest|komisi|commission|bonus)\b/i.test(lower)) {
@@ -93,7 +143,10 @@ export function parseTransactionText(text: string): ParsedTransaction | null {
   if (amount === null || amount <= 0) return null;
 
   const lower = text.toLowerCase();
-  const { type, category } = inferCategory(lower);
+  const { type: inferredType, category: inferredCategory } = inferCategory(lower);
+  const stockPurchase = inferStockPurchase(text);
+  const type = stockPurchase ? "Saving" : inferredType;
+  const category = stockPurchase ? "Stocks" : inferredCategory;
   const date = parseDate(text);
   const description = text
     .replace(/(?:rp\.?\s*)?(\d+(?:[.,]\d{3})*(?:[.,]\d+)?)\s*(miliar|milyar|juta|jt|j|ribu|rb|k|m)?\b/i, "")
@@ -108,5 +161,6 @@ export function parseTransactionText(text: string): ParsedTransaction | null {
     description: description || category,
     date: formatDate(date),
     month: date.toLocaleString("en-US", { month: "long" }),
+    stockPurchase,
   };
 }
