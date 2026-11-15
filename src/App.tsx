@@ -74,7 +74,6 @@ export default function App() {
           <Route path="/guidance" element={<Guidance />} />
           <Route path="/checkup" element={<Checkup />} />
           <Route path="/calendar" element={<Calendar />} />
-          <Route path="/debt" element={<DashboardFinance initialTab="debt" />} />
         </Route>
       </Routes>
     </BrowserRouter>
