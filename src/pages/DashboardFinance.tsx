@@ -163,6 +163,7 @@ function StockTracker({
   const [market, setMarket] = useState<"ID" | "US">("ID");
   const [refreshing, setRefreshing] = useState(false);
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState<{ ticker: string; market: "ID" | "US" } | null>(null);
   const [ticker, setTicker] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -326,8 +327,8 @@ function StockTracker({
       totalValue={assetsVisible ? displayStockMoney(total) : (market === "ID" ? "Rp " + hiddenStockMoney : "$" + hiddenStockMoney)}
       totalChangePercent={plPct}
       onAdd={isRealData ? openAdd : undefined}
-      open={open}
-      onToggle={() => setOpen((value) => !value)}
+      open={!collapsed}
+      onToggle={() => setCollapsed((value) => !value)}
     >
       <div className="px-4 pb-2 sm:px-5">
         <div className="flex flex-wrap items-center justify-between gap-2 pb-2">
