@@ -173,9 +173,15 @@ function StockTracker({
   const [error, setError] = useState("");
 
   const rows = market === "ID" ? stocksID : stocksUS;
-  const total = rows.reduce((sum, row) => sum + row.value, 0);
-  const pl = rows.reduce((sum, row) => sum + row.pl, 0);
-  const totalInvestment = rows.reduce((sum, row) => sum + row.avgPrice * row.shares, 0);
+  const totalIDR = stocksID.reduce((sum, row) => sum + row.value, 0);
+  const totalUSIDR = stocksUS.reduce((sum, row) => sum + row.value, 0) * usdIdrRate;
+  const total = totalIDR + totalUSIDR;
+  const plIDR = stocksID.reduce((sum, row) => sum + row.pl, 0);
+  const plUSIDR = stocksUS.reduce((sum, row) => sum + row.pl, 0) * usdIdrRate;
+  const pl = plIDR + plUSIDR;
+  const totalInvestmentIDR = stocksID.reduce((sum, row) => sum + row.avgPrice * row.shares, 0);
+  const totalInvestmentUSIDR = stocksUS.reduce((sum, row) => sum + row.avgPrice * row.shares, 0) * usdIdrRate;
+  const totalInvestment = totalInvestmentIDR + totalInvestmentUSIDR;
   const plPct = totalInvestment > 0 ? (pl / totalInvestment) * 100 : 0;
 
   const formatStockPrice = (value: number) =>
@@ -324,7 +330,8 @@ function StockTracker({
   return (
     <AssetListSection
       title="Stock Portfolio"
-      totalValue={assetsVisible ? displayStockMoney(total) : (market === "ID" ? "Rp " + hiddenStockMoney : "$" + hiddenStockMoney)}
+      subtitle="Memengaruhi Aset Investasi › Saham"
+      totalValue={assetsVisible ? formatRupiah(total) : "Rp " + hiddenStockMoney}
       totalChangePercent={plPct}
       onAdd={isRealData ? openAdd : undefined}
       open={!collapsed}
