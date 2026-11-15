@@ -133,8 +133,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!type || !Number.isFinite(amount)) continue;
       if (!from && !to) { unassignedCount++; if(type==="income")unassignedNet+=amount; else if(type==="expense")unassignedNet-=amount; continue; }
       const add=(key:string,field:"inflow"|"outflow")=>{ if(!key)return; const x=sums.get(key)||{inflow:0,outflow:0,count:0}; x[field]+=amount; x.count++; sums.set(key,x); };
-      if(type==="income") add(from,"inflow");
-      if(type==="expense") add(from,"outflow");
+      if(type==="income"||type==="debtreceived") add(from,"inflow");
+      if(type==="expense"||type==="debtpayment"||type==="debtcardpayment") add(from,"outflow");
       if(type==="transfer"){add(from,"outflow");add(to,"inflow");}
       if(type==="saving"&&from){
         // Saving without To Wallet is still money leaving the selected wallet.
