@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
 
 export function AssetListSection({
   title,
+  subtitle,
   totalValue,
   totalChangePercent,
   onAdd,
