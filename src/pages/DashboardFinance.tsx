@@ -637,14 +637,26 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
       </>}
       
       {activeReportTab === "assets" && (
-        <AssetTrackerManaged
-          assets={assets}
-          wallets={wallets}
-          isRealData={isRealData}
-          assetsVisible={!assetValuesHidden}
-          integratedTotalAssets={integratedTotalAssets}
-          integratedLiquidTotal={integratedLiquidTotal}
-        />
+        <>
+          <AssetTrackerManaged
+            assets={assets}
+            wallets={wallets}
+            isRealData={isRealData}
+            assetsVisible={!assetValuesHidden}
+            integratedTotalAssets={integratedTotalAssets}
+            integratedLiquidTotal={integratedLiquidTotal}
+          />
+          <StockTracker
+            stocksID={assets.stocksID}
+            stocksUS={assets.stocksUS}
+            isRealData={isRealData}
+            investmentAccounts={wallets.filter((wallet) => wallet.type === "investment").map((wallet) => ({ name: wallet.name, balance: wallet.balance }))}
+            stocksTotal={assets.stocksTotal}
+            totalAssets={integratedTotalAssets}
+            usdIdrRate={usdIdrRate}
+            assetsVisible={!assetValuesHidden}
+          />
+        </>
       )}
 
       {activeReportTab === "cashflow" && <>
