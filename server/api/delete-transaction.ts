@@ -12,7 +12,33 @@ function sheetsClient() {
   return google.sheets({ version: "v4", auth });
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function removeLinkedAsset(sheets: any, spreadsheetId: string, txDescription: string) {
+  const managed = txDescription.match(/\[asset-tx:([^\]]+)\]/);
+  const real = txDescription.match(/\[real-asset:([^\]]+)\]/);
+  if (!managed && !real) return;
+  const rows = (await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: "Asset Tracker!A1:O2000",
+  })).data.values || [];
+  const sectionLabel = managed ? "Managed Investment Assets" : "Real Assets";
+  const section = rows.findIndex((row: any[]) => String(row?.[0] || "").trim().toLowerCase() === sectionLabel.toLowerCase());
+  const txid = (managed || real)?.[1] || "";
+  if (section < 0 || !txid) return;
+  const txCol = managed ? 10 : 7;
+  for (let i = section + 2; i < rows.length; i++) {
+    const row = rows[i] || [];
+    const first = String(row[0] || "").trim().toLowerCase();
+    if (["real assets","managed investment assets","target assets","indonesia stock","us stock"].includes(first) && first !== sectionLabel.toLowerCase()) break;
+    if (String(row[txCol] || "").trim() === txid) {
+      await sheets.spreadsheets.values.clear({
+        spreadsheetId,
+        range: managed ? `Asset Tracker!A${i + 1}:N${i + 1}` : `Asset Tracker!A${i + 1}:I${i + 1}`,
+      });
+      return;
+    }
+  }
+}
+\nexport default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
 
   const { token, sheetRow } = req.body || {};
@@ -55,6 +81,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (sheetId === undefined || sheetId === null) {
       return res.status(404).json({ error: "Sheet Transaction tidak ditemukan" });
     }
+
+    const txRead = await sheets.spreadsheets.values.get({ spreadsheetId: u.spreadsheet_id, range: `Transaction!B${row}:I${row}` });
+    const txDescription = String(txRead.data.values?.[0]?.[4] || "");
+    await removeLinkedAsset(sheets, u.spreadsheet_id, txDescription);
 
     // Physically remove the row instead of merely clearing its cells.
     // This prevents the deleted transaction from remaining in the report and
