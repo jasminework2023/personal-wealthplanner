@@ -197,9 +197,6 @@ function StockTracker({
   const formatPL = (value: number) =>
     (value >= 0 ? "+" : "−") + formatStockMoney(value);
   const hiddenStockMoney = "••••••";
-  const displayStockMoney = (value: number) =>
-    assetsVisible ? formatStockMoney(value) : (market === "ID" ? "Rp " + hiddenStockMoney : "$" + hiddenStockMoney);
-
   const quantityLabel = (shares: number) =>
     market === "ID"
       ? (shares / 100).toLocaleString("id-ID") + " lot"
@@ -495,7 +492,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
 
   // Liquid assets are derived from the Wallet module so the same balance is not entered twice.
   // Wallet is the source of truth for cash/bank/e-wallet balances; Asset Tracker only aggregates it.
-  const liquidAssetsFromWallets = wallets.map((wallet) => ({ name: wallet.name, value: wallet.balance }));
+  const liquidAssetsFromWallets = wallets.map((wallet) => ({ name: wallet.name, value: wallet.balance, type: wallet.type }));
   const integratedLiquidTotal = liquidAssetsFromWallets.reduce((sum, item) => sum + item.value, 0);
   const [usdIdrRate, setUsdIdrRate] = useState<number>(16300);
   const [usdIdrUpdatedAt, setUsdIdrUpdatedAt] = useState<string | null>(null);
@@ -814,7 +811,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
                             <Wallet size={15} className="shrink-0 text-[rgb(var(--c-up))]" />
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-[12px] font-semibold">{item.name}</p>
-                              <p className="truncate text-[10px] text-[rgb(var(--c-muted))]">Bank / rekening</p>
+                              <p className="truncate text-[10px] text-[rgb(var(--c-muted))]">{item.type === "bank" ? "Bank" : item.type === "cash" ? "Cash" : item.type === "investment" ? "Investment account" : "Akun"}</p>
                             </div>
                             <p className="shrink-0 text-[12px] font-semibold tabular-nums">{assetValuesHidden ? "Rp ••••••" : formatRupiah(item.value)}</p>
                           </div>
