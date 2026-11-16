@@ -24,6 +24,7 @@ import h_wealth_tracker_payment from "../server/api/wealth-tracker-payment.js";
 import h_wealth_tracker_webhook from "../server/api/wealth-tracker-webhook.js";
 import h_xendit_webhook from "../server/api/xendit-webhook.js";
 import h_lynk_webhook from "../server/api/lynk-webhook.js";
+import h_managed_assets from "../server/api/managed-assets.js";
 import h_asset_tracker_stocks from "../server/api/asset-tracker-stocks.js";
 import h_exchange_rate from "../server/api/exchange-rate.js";
 import h_telegram_link from "../server/api/telegram-link.js";
@@ -54,6 +55,7 @@ const handlers: Record<string, (req: VercelRequest, res: VercelResponse) => unkn
   "wealth-tracker-webhook": h_wealth_tracker_webhook,
   "xendit-webhook": h_xendit_webhook,
   "lynk-webhook": h_lynk_webhook,
+  "managed-assets": h_managed_assets,
   "asset-tracker-stocks": h_asset_tracker_stocks,
   "exchange-rate": h_exchange_rate,
   "telegram-link": h_telegram_link,
