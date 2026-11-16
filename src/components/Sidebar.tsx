@@ -21,6 +21,7 @@ import logoMark from "../assets/logo-mark-white.png";
 
 const mainLinks = [
   { to: "/", label: "Home", icon: Home },
+  { to: "/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/transaction", label: "Transaction", icon: Receipt },
   { to: "/budgeting", label: "Budget", icon: PieChart },
   { to: "/finance", label: "Asset & Report", icon: BarChart3 },
@@ -28,7 +29,6 @@ const mainLinks = [
   { to: "/goals", label: "Goals", icon: CalendarRange },
   { to: "/protection", label: "Protection", icon: Shield },
   { to: "/ai-assistant", label: "AI Assistant", icon: Sparkles },
-  { to: "/guidance", label: "Guide", icon: CircleCheck },
 ];
 
 const toolLinks = [
@@ -77,8 +77,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const labels = language === "id"
-    ? { main: "Menu Utama", tools: "Alat", report: "Aset & Laporan", budget: "Anggaran", calculator: "Kalkulator", protection: "Proteksi", checkup: "Konsultasi", profile: "Profil & Pengaturan", wallet: "Wallet", transaction: "Transaksi", goals: "Target", aiAssistant: "Asisten AI", guide: "Panduan" }
-    : { main: "Main", tools: "Tools", report: "Asset & Report", budget: "Budget", calculator: "Calculator", protection: "Protection", checkup: "Consultation", profile: "Profile & Settings", wallet: "Wallet", transaction: "Transaction", goals: "Goals", aiAssistant: "AI Assistant", guide: "Guide" };
+    ? { main: "Menu Utama", tools: "Alat", report: "Aset & Laporan", budget: "Anggaran", calculator: "Kalkulator", protection: "Proteksi", checkup: "Konsultasi", profile: "Profil & Pengaturan", wallet: "Wallet", transaction: "Transaksi", goals: "Target", aiAssistant: "Asisten AI", calendar: "Kalender", guide: "Panduan" }
+    : { main: "Main", tools: "Tools", report: "Asset & Report", budget: "Budget", calculator: "Calculator", protection: "Protection", checkup: "Consultation", profile: "Profile & Settings", wallet: "Wallet", transaction: "Transaction", goals: "Goals", aiAssistant: "AI Assistant", calendar: "Calendar", guide: "Guide" };
   return (
     <div className="flex flex-col h-full">
       <Brand />
@@ -86,7 +86,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <div className="px-2 flex-1 overflow-y-auto">
         <p className="px-3 text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.main}</p>
         <nav className="flex flex-col gap-0.5 mb-4">
-          {mainLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/finance" ? "menu-report" : l.to === "/budgeting" ? "menu-budget" : l.to === "/transaction" ? "menu-transaction" : l.to === "/goals" ? "menu-goals" : l.to === "/calculator" ? "menu-calculator" : l.to === "/protection" ? "menu-protection" : undefined} label={l.to === "/finance" ? labels.report : l.to === "/budgeting" ? labels.budget : l.to === "/transaction" ? labels.transaction : l.to === "/goals" ? labels.goals : l.to === "/ai-assistant" ? labels.aiAssistant : l.to === "/guidance" ? labels.guide : l.label} onNavigate={onNavigate} />)}
+          {mainLinks.map((l) => <NavItem key={l.to} {...l} dataTour={l.to === "/finance" ? "menu-report" : l.to === "/budgeting" ? "menu-budget" : l.to === "/transaction" ? "menu-transaction" : l.to === "/goals" ? "menu-goals" : l.to === "/calculator" ? "menu-calculator" : l.to === "/protection" ? "menu-protection" : undefined} label={l.to === "/finance" ? labels.report : l.to === "/budgeting" ? labels.budget : l.to === "/transaction" ? labels.transaction : l.to === "/goals" ? labels.goals : l.to === "/ai-assistant" ? labels.aiAssistant : l.to === "/calendar" ? labels.calendar : l.label} onNavigate={onNavigate} />)}
         </nav>
 
         <p className="px-3 sidebar-group-label text-[11px] font-medium uppercase tracking-[0.08em] text-charcoal/45 mt-2 mb-1.5">{labels.tools}</p>
@@ -97,6 +97,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             Community
             <span className="ml-auto text-[9px] font-medium uppercase tracking-wide">Soon</span>
           </div>
+          <NavItem to="/guidance" label={labels.guide} icon={CircleCheck} onNavigate={onNavigate} />
         </nav>
       </div>
 
