@@ -3,8 +3,9 @@ import { ArrowRight, CheckCircle2, Clock3, ExternalLink, FileSpreadsheet, Loader
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card } from "../components/Card";
 import { getStoredToken, setStoredToken } from "../lib/useFinanceData";
+import { apiUrl } from "../lib/apiBase";
 
-const API_BASE = "/api";
+
 
 export function DashboardWelcome() {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ export function DashboardWelcome() {
     if (!token) return;
     if (!silent) setChecking(true);
     try {
-      const res = await fetch(`${API_BASE}/access?ref=${encodeURIComponent(token)}&t=${Date.now()}`, {
+      const res = await fetch(`${apiUrl("/access")}?ref=${encodeURIComponent(token)}&t=${Date.now()}`, {
         cache: "no-store",
       });
       const body = await res.json();
@@ -65,7 +66,7 @@ export function DashboardWelcome() {
     setError("");
     setTelegramLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/telegram-link`, {
+      const res = await fetch(apiUrl("/telegram-link"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
@@ -90,7 +91,7 @@ export function DashboardWelcome() {
     setSuccess("");
     setConnecting(true);
     try {
-      const res = await fetch(`${API_BASE}/connect-sheet`, {
+      const res = await fetch(apiUrl("/connect-sheet"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, spreadsheetId: spreadsheet }),
