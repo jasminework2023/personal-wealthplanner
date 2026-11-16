@@ -275,7 +275,7 @@ export function AddTransactionModal({
         throw new Error("Sesi akun tidak ditemukan. Buka kembali dashboard dari link akunmu, lalu coba simpan transaksi lagi.");
       }
 
-      const response = await fetch(`${API_BASE}/add-transaction`, {
+      const response = await fetch(apiUrl("/add-transaction"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, transaction }),
@@ -292,7 +292,7 @@ export function AddTransactionModal({
 
       if (stockToAdd) {
         try {
-          const stockResponse = await fetch(`${API_BASE}/asset-tracker-stocks`, {
+          const stockResponse = await fetch(apiUrl("/asset-tracker-stocks"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token, ...stockToAdd, mode: "buy" }),
@@ -330,7 +330,7 @@ export function AddTransactionModal({
     setSaving(true);
     setFormError("");
     try {
-      const response = await fetch(`${API_BASE}/managed-assets`, {
+      const response = await fetch(apiUrl("/managed-assets"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -358,7 +358,7 @@ export function AddTransactionModal({
     setFormError("");
     setAiError("");
     try {
-      const response = await fetch(`${API_BASE}/asset-tracker-stocks`, {
+      const response = await fetch(apiUrl("/asset-tracker-stocks"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, ...pendingStockPurchase, mode: "buy" }),
