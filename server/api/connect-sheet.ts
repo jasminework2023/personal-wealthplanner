@@ -70,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       spreadsheetId,
       spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`,
       title: meta.data.properties?.title || "Google Sheet",
-      dashboardUrl: `https://wealthplanner.id/dashboard/welcome?token=${encodeURIComponent(token)}`,
+      dashboardUrl: `https://app.wealthplanner.id/dashboard/welcome?token=${encodeURIComponent(token)}`,
     });
   } catch (error) {
     console.error("connect-sheet error:", error);
