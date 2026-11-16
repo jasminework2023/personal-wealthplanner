@@ -125,7 +125,7 @@ export function WalletsPage({ embedded = false }: { embedded?: boolean }) {
     const now = new Date();
     const transaction: Transaction = { date: now.toLocaleDateString("id-ID"), month: now.toLocaleString("en-US", { month: "long" }), year: now.getFullYear(), type: "Transfer", category: "Transfer", description: transferNote.trim() || "Transfer antar-wallet", amount, wallet: transferFrom, toWallet: transferTo };
     try {
-      const response = await fetch("/api/add-transaction", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, transaction }) });
+      const response = await fetch(apiUrl("/add-transaction", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, transaction }) });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Gagal menyimpan transfer");
       window.dispatchEvent(new CustomEvent("wealthplanner:transaction-added", { detail: transaction }));
