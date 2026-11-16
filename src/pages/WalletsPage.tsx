@@ -5,6 +5,7 @@ import { useWallets, type Wallet } from "../lib/useWallets";
 import { resolveWalletColor, walletGradient } from "../lib/walletColors";
 import { formatRupiah } from "../lib/format";
 import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
+import { apiUrl } from "../lib/apiBase";
 import type { Transaction } from "../data/types";
 
 const presets = ["#0B4D38","#1A5FD0","#003D79","#4C3494","#0B7A52","#B02A3F","#4B5563","#7C3AED"];
