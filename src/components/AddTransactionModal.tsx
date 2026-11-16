@@ -6,8 +6,7 @@ import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
 import { useWallets } from "../lib/useWallets";
 import { parseTransactionText } from "../lib/transactionParser";
 import { formatAmountInput, parseAmountInput } from "../lib/format";
-
-const API_BASE = "/api";
+import { apiUrl } from "../lib/apiBase";
 
 function inferStockTicker(text: string): string {
   const lower = text.toLowerCase();
