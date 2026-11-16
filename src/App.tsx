@@ -56,6 +56,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/welcome" element={<DashboardWelcome />} />
+        <Route path="/dashboard" element={<DashboardWelcome />} />
+        <Route path="/dashboard/welcome" element={<DashboardWelcome />} />
         <Route element={<AppShell />}>
           <Route path="/" element={<Home />} />
           <Route path="/finance" element={<DashboardFinance />} />
