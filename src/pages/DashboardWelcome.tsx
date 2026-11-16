@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, Clock3, ExternalLink, FileSpreadsheet, Loader2, Link2, MessageCircle, RefreshCw } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card } from "../components/Card";
-import { setStoredToken } from "../lib/useFinanceData";
+import { getStoredToken, setStoredToken } from "../lib/useFinanceData";
 
 const API_BASE = "/api";
 
@@ -43,7 +43,7 @@ export function DashboardWelcome() {
   }, [token]);
 
   useEffect(() => {
-    const ref = searchParams.get("ref") || searchParams.get("token") || "";
+    const ref = searchParams.get("ref") || searchParams.get("token") || getStoredToken() || "";
     if (!ref) {
       setLoading(false);
       setError("Link akses tidak lengkap. Gunakan link Dashboard yang diberikan setelah checkout.");
