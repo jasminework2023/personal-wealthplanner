@@ -62,9 +62,10 @@ function captureTokenFromUrl() {
   const token = (params.get("token") || params.get("ref") || "").trim();
   if (token) {
     setStoredToken(token);
-    // Remove only authentication parameters, preserving unrelated query params and the hash.
-    params.delete("token");
-    params.delete("ref");
+    // Keep the token in the URL as a recovery path. This prevents the dashboard
+    // session from becoming unusable if browser storage is blocked/cleared.
+    // The token is already present in the private access link, so navigation
+    // between dashboard routes remains token-aware.
     const query = params.toString();
     const nextUrl = window.location.pathname + (query ? `?${query}` : "") + window.location.hash;
     window.history.replaceState({}, "", nextUrl);
