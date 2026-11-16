@@ -5,8 +5,7 @@ import type { Transaction, TransactionType } from "../data/types";
 import { getStoredToken, useFinanceData } from "../lib/useFinanceData";
 import { formatAmountInput, parseAmountInput } from "../lib/format";
 import { useWallets } from "../lib/useWallets";
-
-const API_BASE = "/api";
+import { apiUrl } from "../lib/apiBase";
 const fallback = ["Gajian","Freelance Income","Business Income","Commission","Dividend / Interest","Side Hustle","Utilities","Internet & Phone","Insurance Premium","Food & Groceries","Transport","Entertainment","Education","Charity","Mutual Funds","Bonds","Gold","Deposito"];
 function toInputDate(value:string){const p=value.split("/").map(Number); if(p.length===3 && p.every(Number.isFinite)){const [d,m,y]=p; return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;} return new Date().toISOString().slice(0,10);}
 function fromInputDate(value:string){const [y,m,d]=value.split("-").map(Number); return {date:`${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")}/${y}`,month:new Date(y,m-1,d).toLocaleString("en-US",{month:"long"}),year:y};}
