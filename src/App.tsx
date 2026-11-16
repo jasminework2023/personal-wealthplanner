@@ -53,7 +53,7 @@ function CalculatorRoute() {
 
 export default function App() {
   return (
-    <BrowserRouter basename="/dashboard">
+    <BrowserRouter>
       <Routes>
         <Route path="/welcome" element={<DashboardWelcome />} />
         <Route element={<AppShell />}>
