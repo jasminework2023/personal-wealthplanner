@@ -106,12 +106,11 @@ export function AssetTrackerManaged({
   }, [investmentRows, assets.stocksTotal]);
 
   const composition = [
-    { name: "Aset Likuid", value: liquidTotal, color: "rgb(var(--asset-chart-green))" },
-    { name: "Saham", value: categoryTotals.Saham || 0, color: "rgb(var(--asset-chart-blue))" },
-    { name: "Obligasi", value: categoryTotals.Obligasi || 0, color: "rgb(var(--asset-chart-mint))" },
-    { name: "Reksadana", value: categoryTotals.Reksadana || 0, color: "rgb(var(--asset-chart-gray))" },
-    { name: "Lainnya", value: (categoryTotals.Emas || 0) + (categoryTotals["P2P Lending"] || 0) + (categoryTotals.Lainnya || 0), color: "rgb(var(--asset-chart-slate))" },
-    { name: "Aset Riil", value: realTotal, color: "rgb(var(--asset-chart-gray))" },
+    { name: "Saham", value: categoryTotals.Saham || 0, color: "rgb(var(--asset-chart-green))" },
+    { name: "Emas", value: categoryTotals.Emas || 0, color: "rgb(var(--asset-chart-blue))" },
+    { name: "Kas", value: liquidTotal, color: "rgb(var(--asset-chart-mint))" },
+    { name: "Reksa dana", value: categoryTotals.Reksadana || 0, color: "rgb(var(--asset-chart-gray))" },
+    { name: "Lainnya", value: (categoryTotals.Obligasi || 0) + (categoryTotals["P2P Lending"] || 0) + (categoryTotals.Lainnya || 0) + realTotal, color: "rgb(var(--asset-chart-slate))" },
   ].filter((x) => x.value > 0);
   const compositionTotal = composition.reduce((s, x) => s + x.value, 0);
   const pct = (v: number) => compositionTotal ? ((v / compositionTotal) * 100).toFixed(1).replace(".", ",") + "%" : "0,0%";
