@@ -183,8 +183,10 @@ function StockTracker({
   const pl = plIDR + plUSIDR;
   const totalInvestmentIDR = stocksID.reduce((sum, row) => sum + row.avgPrice * row.shares, 0);
   const totalInvestmentUSIDR = stocksUS.reduce((sum, row) => sum + row.avgPrice * row.shares, 0) * usdIdrRate;
-  const totalInvestment = totalInvestmentIDR + totalInvestmentUSIDR;
-  const plPct = totalInvestment > 0 ? (pl / totalInvestment) * 100 : 0;
+  const selectedTotal = market === "ID" ? totalIDR : stocksUS.reduce((sum, row) => sum + row.value, 0);
+  const selectedInvestment = market === "ID" ? totalInvestmentIDR : stocksUS.reduce((sum, row) => sum + row.avgPrice * row.shares, 0);
+  const selectedPL = market === "ID" ? plIDR : stocksUS.reduce((sum, row) => sum + row.pl, 0);
+  const plPct = selectedInvestment > 0 ? (selectedPL / selectedInvestment) * 100 : 0;
 
   const formatStockPrice = (value: number) =>
     market === "ID"
@@ -329,47 +331,71 @@ function StockTracker({
   return (
     <AssetListSection
       title={isId ? "Portofolio Saham" : "Stock Portfolio"}
-      infoText="Pembelian saham dicatat lewat Transaction Tracker agar saldo rekening ikut berkurang."
-      totalValue={assetsVisible ? formatRupiah(total) : "Rp " + hiddenStockMoney}
+      infoText="Nilai portofolio dihitung dari jumlah aset × harga saat ini. Transaksi pembelian tetap terhubung ke Transaction Tracker."
+      totalValue={assetsVisible ? (market === "ID" ? formatRupiah(selectedTotal) : "$" + selectedTotal.toLocaleString("en-US", { maximumFractionDigits: 2 })) : (market === "ID" ? "Rp ••••••" : "$ ••••••")}
       totalChangePercent={plPct}
       onAdd={undefined}
       open={!collapsed}
       onToggle={() => setCollapsed((value) => !value)}
     >
-      <div className="px-4 pt-4 sm:px-5">
-        <a href="/dashboard/transactions" className="text-[12px] font-semibold text-[rgb(var(--c-up))] underline underline-offset-2">Buka Transaction Tracker →</a>
-      </div>
-
-      <div className="px-4 pt-4 sm:px-5">
-        <div className="grid grid-cols-2 gap-2.5">
-          <div className="min-w-0 rounded-[14px] bg-[rgb(var(--c-cream))] px-3 py-2.5">
-            <p className="text-[12px] font-medium text-[rgb(var(--c-muted))]">Total modal</p>
-            <p className="mt-1 truncate text-[14px] font-bold tabular-nums">{assetsVisible ? formatRupiah(totalInvestment) : "Rp ••••••"}</p>
+      <div className="px-5 pt-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="min-w-0 rounded-[16px] bg-[#F3F4F6] px-3.5 py-3">
+            <p className="text-[12px] font-medium text-[#7B8492]">Total modal</p>
+            <p className="mt-1 truncate text-[16px] font-bold tabular-nums text-[#172033]">{assetsVisible ? (market === "ID" ? formatRupiah(selectedInvestment) : "$" + selectedInvestment.toLocaleString("en-US", { maximumFractionDigits: 2 })) : (market === "ID" ? "Rp ••••••" : "$ ••••••")}</p>
           </div>
-          <div className="min-w-0 rounded-[14px] bg-[rgb(var(--c-cream))] px-3 py-2.5">
-            <p className="text-[12px] font-medium text-[rgb(var(--c-muted))]">Untung/rugi</p>
-            <p className={"mt-1 truncate text-[14px] font-bold tabular-nums " + (pl >= 0 ? "text-[rgb(var(--c-up))]" : "text-[rgb(var(--c-down))]")}>
-              {assetsVisible ? formatRupiah(pl) : "Rp ••••••"}
-            </p>
+          <div className="min-w-0 rounded-[16px] bg-[#F3F4F6] px-3.5 py-3">
+            <p className="text-[12px] font-medium text-[#7B8492]">Untung/rugi</p>
+            <p className={"mt-1 truncate text-[16px] font-bold tabular-nums " + (selectedPL >= 0 ? "text-[#07845C]" : "text-[#DC5252]")}>{assetsVisible ? (market === "ID" ? (selectedPL >= 0 ? "+" : "−") + formatRupiah(Math.abs(selectedPL)) : (selectedPL >= 0 ? "+" : "−") + "$" + Math.abs(selectedPL).toLocaleString("en-US", { maximumFractionDigits: 2 })) : (market === "ID" ? "Rp ••••••" : "$ ••••••")}</p>
           </div>
         </div>
       </div>
 
-      <div className="px-4 pb-3 sm:px-5">
-        <div className="flex items-center justify-between gap-3 pb-3">
-          <div className="inline-flex min-h-11 items-center rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-cream))] p-1">
-            <button type="button" aria-pressed={market === "ID"} onClick={() => setMarket("ID")} className={`flex min-h-9 min-w-[64px] items-center justify-center rounded-full px-4 text-[12px] font-semibold leading-none ${market === "ID" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>ID</button>
-            <button type="button" aria-pressed={market === "US"} onClick={() => setMarket("US")} className={`flex min-h-9 min-w-[64px] items-center justify-center rounded-full px-4 text-[12px] font-semibold leading-none ${market === "US" ? "bg-[rgb(var(--c-forest-700))] text-[rgb(var(--c-surface))]" : "text-[rgb(var(--c-muted))]"}`}>US</button>
+      <div className="px-5 pb-4 pt-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="inline-flex min-h-11 items-center rounded-full bg-[#F3F4F6] p-1">
+            <button type="button" aria-pressed={market === "ID"} onClick={() => setMarket("ID")} className={`flex min-h-9 min-w-[64px] items-center justify-center rounded-full px-4 text-[12px] font-bold leading-none ${market === "ID" ? "bg-[#273244] text-white shadow-sm" : "text-[#7B8492]"}`}>IDR</button>
+            <button type="button" aria-pressed={market === "US"} onClick={() => setMarket("US")} className={`flex min-h-9 min-w-[64px] items-center justify-center rounded-full px-4 text-[12px] font-bold leading-none ${market === "US" ? "bg-[#273244] text-white shadow-sm" : "text-[#7B8492]"}`}>US</button>
           </div>
-          {isRealData && (
-            <button type="button" onClick={() => void refreshPrices()} disabled={refreshing} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-[rgb(var(--c-cream))] px-3 text-[12px] font-semibold text-[rgb(var(--c-up))] disabled:opacity-50">
-              <RefreshCw size={13} className={refreshing ? "animate-spin" : ""}/> Update
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {isRealData && <button type="button" onClick={openAdd} aria-label="Tambah saham" className="flex h-11 w-11 items-center justify-center rounded-full bg-[#273244] text-white shadow-sm transition hover:opacity-90 active:scale-95"><span className="text-[28px] font-light leading-none">+</span></button>}
+            {isRealData && <button type="button" onClick={() => void refreshPrices()} disabled={refreshing} aria-label="Update harga saham" className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F3F4F6] text-[#273244] transition hover:bg-[#E5E7EB] active:scale-95 disabled:opacity-50"><RefreshCw size={17} className={refreshing ? "animate-spin" : ""}/></button>}
+          </div>
         </div>
       </div>
 
-      {error && <p className="mx-4 mb-2 rounded-lg bg-[rgb(var(--c-rose-50))] px-2.5 py-2 text-[12px] text-[rgb(var(--c-down))] sm:mx-5">{error}</p>}
+      {error && <p className="mx-5 mb-2 rounded-[12px] bg-[#FCEEEE] px-3 py-2.5 text-[12px] text-[#DC5252]">{error}</p>}
+
+      {showInvestmentStockBanner && (
+        <div className="mx-5 mb-2 flex items-center justify-between gap-2 rounded-[12px] bg-[rgb(var(--c-forest-50))] px-3 py-2.5 text-[rgb(var(--c-up))]">
+          <p className="min-w-0 text-[12px] leading-relaxed">Ada baris 'Saham' di Investment Assets yang tidak dihitung. Tambahkan saham satu per satu di Stock Portfolio.</p>
+          {isRealData && <button type="button" onClick={openAdd} className="shrink-0 rounded-full bg-[rgb(var(--c-surface))] px-2.5 py-1.5 text-[12px] font-bold text-[rgb(var(--c-up))]">+ Tambah</button>}
+        </div>
+      )}
+
+      {rows.length ? (
+        <div className="border-t border-[#E5E7EB]">
+          {rows.map((row) => {
+            const pct = row.avgPrice * row.shares > 0 ? (row.pl / (row.avgPrice * row.shares)) * 100 : 0;
+            return (
+              <div key={market + row.ticker} className="border-b border-[#E5E7EB] last:border-0">
+                <AssetListItem
+                  icon={<TrendingUp size={18} strokeWidth={2.2} />}
+                  name={row.ticker}
+                  subtitle={`Saham · Auto`}
+                  value={assetsVisible ? formatStockMoney(row.value) : (market === "ID" ? "Rp " + hiddenStockMoney : "$" + hiddenStockMoney)}
+                  changePercent={pct}
+                  onClick={isRealData ? () => openEdit(row) : undefined}
+                />
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="px-5 pb-5 pt-3 text-center text-[12px] text-[#7B8492]">Belum ada saham {market === "ID" ? "Indonesia" : "US"}.</p>
+      )}
+
+      {open && ( <p className="mx-4 mb-2 rounded-lg bg-[rgb(var(--c-rose-50))] px-2.5 py-2 text-[12px] text-[rgb(var(--c-down))] sm:mx-5">{error}</p>}
 
       {showInvestmentStockBanner && (
         <div className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-[12px] bg-[rgb(var(--c-forest-50))] px-3 py-2.5 text-[rgb(var(--c-up))] sm:mx-5">
