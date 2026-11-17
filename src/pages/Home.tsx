@@ -31,7 +31,7 @@ const menus = [
   { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true, tone: "bg-[#F1F2F4] text-[#17191C]" },
   { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant", tone: "bg-[#F1F2F4] text-[#17191C]" },
   { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#F1F2F4] text-[#17191C]" },
-  { key: "debt", label: "Debt", icon: Landmark, to: "/finance?tab=debt", tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "debt", label: "Debt", icon: Landmark, to: "/debt", tone: "bg-[#F1F2F4] text-[#17191C]" },
 ];
 
 export function Home() {
