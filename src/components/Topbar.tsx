@@ -1,4 +1,4 @@
-import { HelpCircle, Menu } from "lucide-react";
+import { HelpCircle, Menu, CircleCheck } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () => void }) {
@@ -18,6 +18,7 @@ export function Topbar({ title, onMenuClick }: { title: string; onMenuClick: () 
       </div>
       <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "main", route: "/" } }))} aria-label="Mulai panduan interaktif" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-surface text-forest-800 shadow-sm"><HelpCircle size={18}/></button>
       <ThemeToggle variant="compact" />
+      <button type="button" onClick={() => window.location.assign("/guidance")} aria-label="Buka panduan dan token aktivasi" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest-100/70 bg-surface text-forest-800 shadow-sm"><CircleCheck size={18}/></button>
     </header>
   );
 }
