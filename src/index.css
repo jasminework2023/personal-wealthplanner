@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,16 +11,16 @@
    ============================================================ */
 :root {
   /* Theme tokens — Light */
-  --c-forest-50: 240 253 247;
-  --c-forest-100: 220 252 231;
-  --c-forest-200: 187 247 208;
-  --c-forest-300: 134 239 172;
+  --c-forest-50: 239 246 243;
+  --c-forest-100: 226 231 229;
+  --c-forest-200: 209 218 214;
+  --c-forest-300: 148 163 157;
   --c-forest-400: 74 222 128;
-  --c-forest-500: 34 197 94;
-  --c-forest-600: 0 184 110;
-  --c-forest-700: 0 122 74;
-  --c-forest-800: 6 95 70;
-  --c-forest-900: 15 26 20;
+  --c-forest-500: 14 159 110;
+  --c-forest-600: 14 159 110;
+  --c-forest-700: 4 120 83;
+  --c-forest-800: 17 24 39;
+  --c-forest-900: 17 24 39;
 
   /* Legacy rose utilities now resolve to semantic red (down/expense), never pink. */
   --c-rose-50: 255 241 242;
@@ -47,15 +49,15 @@
   --c-orange-100: 228 230 232;
   --c-orange-500: 242 169 0;
 
-  --c-cream: 244 245 246;
+  --c-cream: 244 245 247;
   --c-surface: 255 255 255;
-  --c-border: 228 230 232;
-  --c-charcoal: 15 26 20;
+  --c-border: 229 231 235;
+  --c-charcoal: 17 24 39;
   --c-muted: 107 114 128;
-  --c-shadow: 15 26 20;
-  --c-accent: 0 184 110;
-  --c-accent-ink: 4 19 12;
-  --c-accent-text: 0 122 74;
+  --c-shadow: 17 24 39;
+  --c-accent: 14 159 110;
+  --c-accent-ink: 255 255 255;
+  --c-accent-text: 4 120 83;
   --c-up: 0 122 74;
   --c-down: 214 51 79;
   --c-warn: 242 169 0;
@@ -68,8 +70,8 @@
   --asset-p2p: 100 116 139;
   --asset-other: 71 85 105;
     --asset-real: 6 182 212;
-  --shadow-pop: 0 4px 16px rgba(0, 184, 110, 0.45);
-  --shadow-nav: 0 6px 24px rgba(0, 0, 0, 0.08);
+  --shadow-pop: 0 6px 18px rgba(17,24,39,.16);
+  --shadow-nav: 0 4px 20px rgba(17,24,39,.10);
 
   /* Chart and calculator tokens used by existing UI. */
   --chart-axis: #6B7280;
@@ -190,7 +192,7 @@ html.dark {
 
 html,
 body {
-  font-family: "Geist", "Inter", system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 body {
@@ -469,13 +471,13 @@ html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: 
    Tidak mengubah warna brand atau hero gradient existing.
    ============================================================ */
 :root {
-  --wp-radius-card: 16px;
-  --wp-radius-control: 10px;
-  --wp-card-padding: 16px;
-  --wp-grid-gap: 12px;
-  --wp-section-gap: 20px;
-  --wp-row-height: 38px;
-  --wp-control-height: 36px;
+  --wp-radius-card: 20px;
+  --wp-radius-control: 14px;
+  --wp-card-padding: 18px;
+  --wp-grid-gap: 10px;
+  --wp-section-gap: 24px;
+  --wp-row-height: 40px;
+  --wp-control-height: 44px;
 }
 
 /* ============================================================
@@ -937,4 +939,101 @@ input,
 select,
 textarea {
   font-family: inherit;
+}
+
+
+/* ============================================================
+   WEALTHPLANNER REDESIGN — STAGE 1
+   Visual-only tokens inspired by wealthplanner.id mockup.
+   Existing variable names are preserved for compatibility.
+   ============================================================ */
+:root {
+  --wp-bg: #F4F5F7;
+  --wp-surface: #FFFFFF;
+  --wp-border: #E5E7EB;
+  --wp-muted: #6B7280;
+  --wp-text: #111827;
+  --wp-green: #0E9F6E;
+  --wp-radius-card: 20px;
+  --wp-radius-control: 14px;
+  --wp-shadow-soft: 0 1px 2px rgba(17,24,39,.04), 0 4px 16px rgba(17,24,39,.05);
+  --wp-hero: linear-gradient(150deg,#FFFFFF 0%,#EEF2F7 55%,#DCEFE6 100%);
+  --wp-gradient-neutral: linear-gradient(150deg,#F3F5F8,#E3E7EE);
+  --wp-gradient-dark: linear-gradient(150deg,#4B5563 0%,#1F2937 55%,#0B1220 100%);
+}
+
+html.dark {
+  --wp-bg: #0F1115;
+  --wp-surface: #171A20;
+  --wp-border: #262A33;
+  --wp-muted: #9CA3AF;
+  --wp-text: #F3F4F6;
+  --wp-green: #34D399;
+  --wp-shadow-soft: none;
+  --wp-hero: linear-gradient(150deg,#1D222B 0%,#171A20 55%,#10261E 100%);
+  --wp-gradient-neutral: linear-gradient(150deg,#222730,#171A20);
+  --wp-gradient-dark: linear-gradient(150deg,#3A4150 0%,#222733 55%,#0B0D11 100%);
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  background: var(--wp-bg);
+}
+
+@media (max-width: 1023px) {
+  .wp-mobile-header {
+    background: color-mix(in srgb, var(--wp-bg) 88%, transparent);
+    backdrop-filter: blur(18px);
+  }
+
+  .wp-mobile-title {
+    font-family: "Inter", system-ui, sans-serif !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    letter-spacing: -.03em !important;
+  }
+
+  .wp-mobile-action {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 999px !important;
+    border: 1px solid var(--wp-border) !important;
+    background: var(--wp-surface) !important;
+    box-shadow: var(--wp-shadow-soft) !important;
+  }
+
+  .wp-nav {
+    height: 64px;
+    border-radius: 22px !important;
+    border: 1px solid var(--wp-border);
+    background: var(--wp-surface);
+    box-shadow: 0 4px 20px rgba(17,24,39,.10);
+  }
+
+  .wp-nav-item {
+    min-width: 52px;
+    min-height: 44px;
+  }
+
+  .wp-nav-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+  }
+
+  .wp-nav-item-active .wp-nav-icon {
+    background: rgb(var(--c-forest-50));
+  }
+
+  .wp-nav-fab {
+    width: 52px;
+    height: 52px;
+    margin-top: -6px;
+    border-radius: 999px !important;
+    box-shadow: 0 6px 18px rgba(17,24,39,.20);
+  }
+}
+
+@media (min-width: 1024px) {
+  .wp-nav { display: none !important; }
 }
