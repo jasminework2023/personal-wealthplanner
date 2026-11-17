@@ -101,7 +101,26 @@ export function Home() {
       : totalSaving > 0 ? "You have saved money this month. Stay consistent and make sure your financial goals have clear targets."
       : "Start by recording transactions and setting one financial goal to get actionable guidance from your dashboard.");
   const cashFlowData = [{ name: id ? "Pemasukan" : "Income", value: totalIncome }, { name: id ? "Pengeluaran" : "Expense", value: totalExpense }, { name: id ? "Tabungan" : "Saving", value: totalSaving }];
-  const spendingByCategory = byCategory("Expense").filter((c) => c.realization > 0).map((c) => ({ name: c.category, value: c.realization }));
+  const spendingByCategory = byCategory("Expense")
+    .filter((c) => c.realization > 0)
+    .map((c) => ({ name: c.category, value: c.realization }))
+    .sort((a, b) => b.value - a.value);
+
+  const expenseChartData = (() => {
+    const total = spendingByCategory.reduce((sum, item) => sum + item.value, 0);
+    if (!total) return [];
+    const top = spendingByCategory.slice(0, 4);
+    const smaller = spendingByCategory.slice(4);
+    const smallerTotal = smaller.reduce((sum, item) => sum + item.value, 0);
+    const topShare = top.reduce((sum, item) => sum + item.value, 0);
+    const result = top.map((item) => ({ ...item, percentage: (item.value / total) * 100 }));
+    if (smallerTotal > 0 && (smaller.length > 0 || smaller.some((item) => item.value / total < 0.05))) {
+      result.push({ name: "Lainnya", value: smallerTotal, percentage: (smallerTotal / total) * 100 });
+    }
+    return result;
+  })();
+
+  const cashFlowBase = Math.max(totalIncome, 1);
   const incomeBudget = byCategory("Income").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
   const expenseBudget = byCategory("Expense").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
   const savingBudget = byCategory("Saving").reduce((sum, item) => sum + Number(item.allocation || 0), 0);
@@ -201,7 +220,7 @@ export function Home() {
   };
 
   return (
-    <div className="flex flex-col gap-3 pb-4" data-tour-loading={loading ? "true" : "false"}>
+    <div className="flex flex-col gap-3 bg-[#F4F5F7] pb-4" data-tour-loading={loading ? "true" : "false"}>
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/50">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
         <h1 className="font-display font-normal text-[26px] leading-[1.1] tracking-[-0.02em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
@@ -360,7 +379,7 @@ export function Home() {
         </div>
       </section>
 
-      <section data-tour="main-menu" className="order-2 md:order-none">
+      <section data-tour="main-menu" className="order-2 md:order-none -mb-1">
         <div className="mb-2 flex items-center">
           <button type="button" onClick={() => setMenuExpanded((value) => !value)} aria-expanded={menuExpanded} className="flex items-center gap-1.5 rounded-full px-0.5 py-1 text-[16px] font-bold tracking-[-0.02em] text-[#17191C] dark:text-[#F5F5F5]">
             <span>{id ? "Menu Utama" : "Main Menu"}</span>
@@ -458,12 +477,93 @@ export function Home() {
 
 
       <div className="order-9 md:order-none grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <ChartCard title={id ? "Arus Kas" : "Cashflow"} subtitle={id ? "Pemasukan, pengeluaran, dan tabungan bulan ini" : "This Month’s Income, Expenses, and Savings"}>
-          <ResponsiveContainer width="100%" height={210}><BarChart data={cashFlowData}><XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false}/><YAxis tickFormatter={(v) => formatCompact(v)} tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} width={45}/><Tooltip formatter={(v: number) => formatRupiah(v)}/><Bar dataKey="value" radius={[6, 6, 0, 0]}>{cashFlowData.map((_, i) => <Cell key={i} fill={["var(--chart-income)", "var(--chart-expense)", "var(--chart-saving)"][i]}/>)}</Bar></BarChart></ResponsiveContainer>
-        </ChartCard>
-        <ChartCard title={id ? "Pengeluaran per Kategori" : "Expenses by Category"} subtitle={id ? "Distribusi pengeluaran yang tercatat" : "Breakdown of recorded expenses"}>
-          {spendingByCategory.length ? <ResponsiveContainer width="100%" height={210}><RechartsPieChart><Pie data={spendingByCategory} dataKey="value" nameKey="name" innerRadius={48} outerRadius={76} paddingAngle={2}>{spendingByCategory.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]}/>)}</Pie><Tooltip formatter={(v: number) => formatRupiah(v)}/><Legend wrapperStyle={{ fontSize: 10 }}/></RechartsPieChart></ResponsiveContainer> : <p className="py-16 text-center text-[12px] text-charcoal/45">{id ? "Belum ada data pengeluaran untuk ditampilkan." : "No expense data to display yet."}</p>}
-        </ChartCard>
+        <Card className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-none">
+          <div className="mb-5">
+            <h2 className="text-[15px] font-medium leading-tight tracking-[-0.01em] text-[#111827]">{id ? "Arus Kas" : "Cash Flow"}</h2>
+            <p className="mt-1 text-[12px] leading-snug text-[#6B7280]">{id ? "Pemasukan, pengeluaran, dan tabungan bulan ini" : "Income, expenses, and savings this month"}</p>
+          </div>
+
+          <div className="space-y-4" aria-label={id ? "Arus kas bulan ini" : "Cash flow this month"}>
+            {[
+              { label: id ? "Pemasukan" : "Income", value: totalIncome, color: "#1D9E75" },
+              { label: id ? "Pengeluaran" : "Expenses", value: totalExpense, color: "#9AA3B2" },
+              { label: id ? "Tabungan" : "Savings", value: totalSaving, color: "#378ADD" },
+            ].map((item) => (
+              <div key={item.label}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[13px] text-[#6B7280]">{item.label}</span>
+                  <span className="text-[13px] font-medium tabular-nums text-[#111827]">{formatRupiah(item.value)}</span>
+                </div>
+                <div className="mt-1.5 h-[10px] overflow-hidden rounded-full bg-[#ECEEF2]" aria-hidden="true">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${Math.min(100, Math.max(0, (item.value / cashFlowBase) * 100))}%`, backgroundColor: item.color }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 inline-flex max-w-full rounded-full bg-[#DDF2DE] px-4 py-2 text-[12px] font-medium text-[#166534]">
+            {id ? `Menabung ${totalIncome > 0 ? Math.round((totalSaving / totalIncome) * 100) : 0}% dari pemasukan` : `Saving ${totalIncome > 0 ? Math.round((totalSaving / totalIncome) * 100) : 0}% of income`}
+          </div>
+        </Card>
+
+        <Card className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-none">
+          <div className="mb-4">
+            <h2 className="text-[15px] font-medium leading-tight tracking-[-0.01em] text-[#111827]">{id ? "Pengeluaran per Kategori" : "Expenses by Category"}</h2>
+            <p className="mt-1 text-[12px] leading-snug text-[#6B7280]">{id ? "Distribusi pengeluaran yang tercatat" : "Distribution of recorded expenses"}</p>
+          </div>
+
+          {expenseChartData.length ? (
+            <>
+              <div className="flex justify-center" aria-label={id ? "Donut pengeluaran per kategori" : "Expense category donut chart"} title={id ? "Pengeluaran per kategori" : "Expenses by category"}>
+                <div className="relative h-[190px] w-[190px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsPieChart>
+                      <Pie
+                        data={expenseChartData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={72}
+                        outerRadius={88}
+                        paddingAngle={2}
+                        stroke="none"
+                        isAnimationActive={false}
+                      >
+                        {expenseChartData.map((item, index) => (
+                          <Cell
+                            key={item.name}
+                            fill={["#0F6E56", "#9AA3B2", "#E0B04A", "#9FE1CB", "#DDE1E6"][index]}
+                          />
+                        ))}
+                      </Pie>
+                    </RechartsPieChart>
+                  </ResponsiveContainer>
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-[11px] text-[#6B7280]">Total</span>
+                    <span className="mt-0.5 text-[16px] font-medium leading-tight tabular-nums text-[#111827]">{formatCompact(expenseChartData.reduce((sum, item) => sum + item.value, 0))}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-2 divide-y divide-[#E5E7EB] border-t border-[#E5E7EB]">
+                {expenseChartData.map((item, index) => (
+                  <div key={item.name} className="flex min-w-0 items-center gap-2.5 py-2.5">
+                    <span className="h-[10px] w-[10px] shrink-0 rounded-[2px]" style={{ backgroundColor: ["#0F6E56", "#9AA3B2", "#E0B04A", "#9FE1CB", "#DDE1E6"][index] }} aria-hidden="true" />
+                    <span className="min-w-0 flex-1 truncate text-[13px] text-[#111827]">{item.name}</span>
+                    <span className="w-10 shrink-0 text-right text-[12px] text-[#6B7280] tabular-nums">{Math.round(item.percentage)}%</span>
+                    <span className="w-[96px] shrink-0 text-right text-[13px] font-medium tabular-nums text-[#111827]">{formatRupiah(item.value)}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="py-12 text-center text-[12px] text-[#6B7280]">{id ? "Belum ada data pengeluaran untuk ditampilkan." : "No expense data to display yet."}</p>
+          )}
+        </Card>
       </div>
 
       <div className="order-6 md:order-none"><Card>
