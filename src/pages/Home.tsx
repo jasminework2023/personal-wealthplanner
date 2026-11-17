@@ -322,9 +322,8 @@ export function Home() {
       </div>
 
       <section data-tour="main-menu">
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2">
           <h2 className="section-title">{id ? "Menu Utama" : "Main Menu"}</h2>
-          <span className="text-[11px] text-charcoal/45">Pilih fitur</span>
         </div>
         <div className="grid grid-cols-4 gap-2 sm:gap-3">
           {menus.map(({ label, icon: Icon, to, soon, tone }) => (
@@ -339,13 +338,6 @@ export function Home() {
           ))}
         </div>
       </section>
-
-      <div className="rounded-[14px] border border-forest-100 bg-forest-50 p-3">
-        <div className="flex items-start gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-[20px]">💡</div>
-          <div className="min-w-0"><p className="text-[14px] font-bold tracking-[-0.01em] text-forest-900">{id ? "Langkah Berikutnya" : "Next Step"}</p><p className="mt-1 text-[13px] leading-[1.55] text-charcoal/70">{nextStep}</p></div>
-        </div>
-      </div>
 
       <section>
         <div className="mb-2 flex items-center justify-between">
@@ -370,6 +362,13 @@ export function Home() {
           </button>;
         })}</div> : <div className="rounded-[14px] border border-dashed border-forest-200 bg-forest-50/50 px-3 py-5 text-center"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47]"><Target size={21}/></span><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-full bg-[#123524] px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm">Buka Calculator</button></div>}
       </section>
+
+      <div className="rounded-[14px] border border-forest-100 bg-forest-50 p-3">
+        <div className="flex items-start gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-[20px]">💡</div>
+          <div className="min-w-0"><p className="text-[14px] font-bold tracking-[-0.01em] text-forest-900">{id ? "Langkah Berikutnya" : "Next Step"}</p><p className="mt-1 text-[13px] leading-[1.55] text-charcoal/70">{nextStep}</p></div>
+        </div>
+      </div>
 
       <HomeMonthlyCalendar transactions={allTxs} userId={userId} />
 
