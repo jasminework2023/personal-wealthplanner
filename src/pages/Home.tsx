@@ -4,7 +4,7 @@ import {
   Wallet, CircleDollarSign, TrendingUp, TrendingDown, PiggyBank, Plus, Sparkles,
   ArrowLeftRight, Landmark, Calculator, Target, ShieldCheck,
   ChartNoAxesCombined, Bot, BookOpen, ChevronRight, X, Eye, EyeOff, ArrowDownLeft, ArrowUpRight,
-  PieChart, CalendarDays, ClipboardCheck, Users, Settings,
+  PieChart, CalendarDays,
 } from "lucide-react";
 import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import { Card, ChartCard } from "../components/Card";
@@ -32,9 +32,6 @@ const menus = [
   { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant", tone: "bg-[#F1F2F4] text-[#17191C]" },
   { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#F1F2F4] text-[#17191C]" },
   { key: "calendar", label: "Calendar", icon: CalendarDays, to: "/calendar", tone: "bg-[#F1F2F4] text-[#17191C]" },
-  { key: "checkup", label: "Checkup", icon: ClipboardCheck, to: "/checkup", tone: "bg-[#F1F2F4] text-[#17191C]" },
-  { key: "spouse", label: "Spouse", icon: Users, to: "/spouse-sharing", tone: "bg-[#F1F2F4] text-[#17191C]" },
-  { key: "settings", label: "Settings", icon: Settings, to: "/settings", tone: "bg-[#F1F2F4] text-[#17191C]" },
 ];
 
 export function Home() {
