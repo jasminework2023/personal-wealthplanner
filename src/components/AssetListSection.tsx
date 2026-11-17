@@ -48,45 +48,30 @@ export function AssetListSection({
   return (
     <section className="rounded-[24px] border border-[#E5E7EB] bg-white text-[rgb(var(--asset-primary-text))] shadow-[0_4px_16px_rgba(15,23,42,0.06)]">
       <div className="px-5 pt-5 pb-4 sm:px-6 sm:pt-6 sm:pb-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <p className="truncate text-[22px] font-bold leading-tight tracking-[-0.025em] text-[rgb(var(--asset-primary-text))]">{title}</p>
-              {infoText && (
-                <div ref={infoRef} className="relative shrink-0">
-                  <button
-                    type="button"
-                    aria-label="Info"
-                    aria-expanded={infoOpen}
-                    onClick={() => setInfoOpen((value) => !value)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-[#7B8492] transition-colors hover:bg-[#F3F4F6] hover:text-[#172033]"
-                  >
-                    <Info size={18} strokeWidth={2} />
-                  </button>
-                  {infoOpen && (
-                    <div
-                      role="tooltip"
-                      className="absolute left-0 top-full z-20 mt-1.5 w-max max-w-[220px] rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-2 text-[11px] font-medium leading-relaxed text-[rgb(var(--c-charcoal))] shadow-lg"
-                    >
-                      {infoText}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="mt-4 flex min-w-0 items-end gap-3 sm:gap-4">
-              <p className="min-w-0 truncate text-[48px] font-bold leading-[1.02] tracking-[-0.04em] tabular-nums sm:text-[56px] text-[rgb(var(--asset-primary-text))]">
-                {totalValue}
-              </p>
-              {change !== null && (
-                <span
-                  className={`shrink-0 rounded-[16px] bg-[#EAF5F0] px-3.5 py-2.5 text-[16px] font-bold leading-none tabular-nums text-[#07845C]`}
+        <div className="relative">
+          <div className="flex min-w-0 items-center gap-2.5 pr-16">
+            <p className="truncate text-[22px] font-bold leading-tight tracking-[-0.025em] text-[rgb(var(--asset-primary-text))]">{title}</p>
+            {infoText && (
+              <div ref={infoRef} className="relative shrink-0">
+                <button
+                  type="button"
+                  aria-label="Info"
+                  aria-expanded={infoOpen}
+                  onClick={() => setInfoOpen((value) => !value)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-[#7B8492] transition-colors hover:bg-[#F3F4F6] hover:text-[#172033]"
                 >
-                  {change >= 0 ? "+" : "−"}{Math.abs(change).toFixed(1)}%
-                </span>
-              )}
-            </div>
+                  <Info size={18} strokeWidth={2} />
+                </button>
+                {infoOpen && (
+                  <div
+                    role="tooltip"
+                    className="absolute left-0 top-full z-20 mt-1.5 w-max max-w-[220px] rounded-xl border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3 py-2 text-[11px] font-medium leading-relaxed text-[rgb(var(--c-charcoal))] shadow-lg"
+                  >
+                    {infoText}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {onToggle && (
@@ -94,11 +79,24 @@ export function AssetListSection({
               type="button"
               onClick={onToggle}
               aria-label={open ? "Ciutkan" : "Buka"}
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[#7B8492] transition-all hover:bg-[#F3F4F6] active:scale-95"
+              className="absolute right-0 top-0 flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[#7B8492] transition-all hover:bg-[#F3F4F6] active:scale-95"
             >
               {open ? <ChevronUp size={25} strokeWidth={1.9} /> : <ChevronDown size={25} strokeWidth={1.9} />}
             </button>
           )}
+
+          <div className="mt-5 flex min-w-0 items-end gap-4 sm:gap-5">
+            <p className="min-w-0 truncate text-[56px] font-bold leading-[0.98] tracking-[-0.045em] tabular-nums text-[rgb(var(--asset-primary-text))] sm:text-[64px]">
+              {totalValue}
+            </p>
+            {change !== null && (
+              <span
+                className="shrink-0 rounded-[16px] bg-[#EAF5F0] px-4 py-3 text-[18px] font-bold leading-none tabular-nums text-[#07845C]"
+              >
+                {change >= 0 ? "+" : "−"}{Math.abs(change).toFixed(1)}%
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
