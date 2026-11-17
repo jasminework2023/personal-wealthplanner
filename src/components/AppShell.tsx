@@ -44,7 +44,7 @@ export function AppShell() {
       <DesktopSidebar />
       <MobileSidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
       <div className="flex-1 min-w-0">
-        <Topbar title={title} onMenuClick={() => setMobileOpen(true)} />
+        {location.pathname !== "/" && <Topbar title={title} onMenuClick={() => setMobileOpen(true)} />}
         <main className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-6 pt-2 pb-32 lg:py-5">
           <div className="hidden lg:flex items-center justify-end gap-3 mb-2">
             <DateHeader />
