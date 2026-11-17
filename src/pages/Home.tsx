@@ -275,17 +275,14 @@ export function Home() {
         </div>
       </div>
 
-      <section data-tour="home-assets-mobile" className="md:hidden">
+      <section data-tour="home-assets-mobile" className="md:hidden w-full min-w-0">
         <div
           ref={summaryScrollRef}
-          className="flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="grid w-full min-w-0 grid-flow-col auto-cols-[100%] overflow-x-auto snap-x snap-mandatory scroll-smooth overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label={id ? "Ringkasan aset dan anggaran" : "Asset and budget summary"}
         >
-          <div
-            className="w-full shrink-0 snap-start"
-            style={{ flex: "0 0 100%" }}
-          >
-            <div className="home-mobile-asset-card w-full overflow-hidden rounded-[20px] border p-4">
+          <div className="min-w-0 snap-start pr-0">
+            <div className="home-mobile-asset-card w-full min-w-0 overflow-hidden rounded-[20px] border p-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]">Asset Tracker</span>
                 <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} data-tour="home-eye-mobile" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#4B5563]">
@@ -316,11 +313,8 @@ export function Home() {
             </div>
           </div>
 
-          <div
-            className="w-full shrink-0 snap-start"
-            style={{ flex: "0 0 100%" }}
-          >
-            <div className="home-mobile-budget-card w-full overflow-hidden rounded-[20px] border p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
+          <div className="min-w-0 snap-start pr-0">
+            <div className="home-mobile-budget-card w-full min-w-0 overflow-hidden rounded-[20px] border p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">Budget Tracker</span>
                 <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white">
@@ -331,13 +325,13 @@ export function Home() {
               <div role="button" tabIndex={0} onClick={() => navigate("/budgeting")} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }} className="mt-3 cursor-pointer">
                 <p className="text-[12px] font-medium text-white/55">Sisa anggaran</p>
 
-                <div className="mt-1 flex min-w-0 items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1 truncate text-[27px] font-extrabold leading-tight tracking-[-0.035em] tabular-nums">
+                <div className="mt-1 grid min-w-0 grid-cols-[minmax(0,1fr)_56px] items-center gap-3">
+                  <div className="min-w-0 truncate text-[24px] font-extrabold leading-tight tracking-[-0.035em] tabular-nums">
                     {hasBudget ? renderMoney(remainingBudget, assetsVisible, "text-[27px] font-extrabold leading-tight tracking-[-0.035em] tabular-nums", 27) : (assetsVisible ? renderMoney(0, true, "text-[27px] font-extrabold leading-tight tracking-[-0.035em] tabular-nums", 27) : "Rp ••••••")}
                   </div>
-                  <div className="relative h-[64px] w-[64px] shrink-0 rounded-full" style={{ background: `conic-gradient(#34D399 ${Math.min(100, Math.max(0, hasBudget && expenseBudget > 0 ? (totalExpense / expenseBudget) * 100 : 0))}%, #D1D5DB 0)` }}>
-                    <div className="absolute inset-[9px] flex items-center justify-center rounded-full bg-[#292A2D]">
-                      <span className="text-[13px] font-extrabold tabular-nums text-white">{hasBudget && expenseBudget > 0 ? Math.round(Math.min(100, (totalExpense / expenseBudget) * 100)) : 0}%</span>
+                  <div className="relative h-[56px] w-[56px] shrink-0 rounded-full" style={{ background: `conic-gradient(#34D399 ${Math.min(100, Math.max(0, hasBudget && expenseBudget > 0 ? (totalExpense / expenseBudget) * 100 : 0))}%, #D1D5DB 0)` }}>
+                    <div className="absolute inset-[8px] flex items-center justify-center rounded-full bg-[#292A2D]">
+                      <span className="text-[11px] font-extrabold tabular-nums text-white">{hasBudget && expenseBudget > 0 ? Math.round(Math.min(100, (totalExpense / expenseBudget) * 100)) : 0}%</span>
                     </div>
                   </div>
                 </div>
