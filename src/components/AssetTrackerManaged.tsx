@@ -317,11 +317,11 @@ export function AssetTrackerManaged({
   return (
     <div className="space-y-3">
       <section
-        className="relative isolate overflow-hidden rounded-[20px] border border-[#4B5563] bg-[#374151] p-4 text-white sm:p-5 shadow-none"
+        className="relative isolate overflow-hidden rounded-[14px] bg-gradient-to-br from-[#374151] via-[#1F2937] to-[#111827] p-4 text-white shadow-float sm:p-5"
       >
         <div className="min-w-0">
           <p className="text-[12px] font-medium tracking-[-0.02em] text-white/65">Total Aset</p>
-          <p className="mt-0.5 min-w-0 break-words text-[34px] font-semibold leading-[1.1] tracking-[-0.02em] tabular-nums text-white sm:text-[38px]">
+          <p className="report-headline-amount mt-0.5 min-w-0 break-words font-extrabold leading-[1.1] tracking-[-0.6px] tabular-nums text-white">
             {assetsVisible ? formatRupiah(displayTotalAssets) : "Rp ••••••••"}
           </p>
 
