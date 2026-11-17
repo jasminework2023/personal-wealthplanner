@@ -387,15 +387,13 @@ export function Home() {
             <ChevronRight size={17} className={menuExpanded ? "-rotate-90" : "rotate-90"} />
           </button>
         </div>
-        <div className="grid grid-cols-4 gap-2 sm:gap-3">
-          {menus.map(({ label, icon: Icon, to, soon, tone }, index) => (
+        <div className="grid grid-cols-4 gap-x-1 gap-y-3 rounded-[22px] border border-[#E5E7EB] bg-white px-3 py-4 shadow-[0_8px_24px_rgba(17,24,39,.06)]">
+          {menus.map(({ label, icon: Icon, to, soon }, index) => (
             <button key={label} type="button" disabled={Boolean(soon)} onClick={() => to && navigate(to)}
-              className={`relative flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-[18px] border border-forest-100/60 bg-white px-1.5 py-2 text-center shadow-card transition sm:min-h-[78px] ${index >= 4 && !menuExpanded ? "hidden md:flex" : ""} ${soon ? "cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-float"}`}>
-              <span className={`flex h-9 w-9 items-center justify-center rounded-[14px] ${tone} ${soon ? "opacity-60" : ""}`}>
-                <Icon size={18} strokeWidth={2.1}/>
-              </span>
-              <span className={`text-[10.5px] font-semibold leading-tight text-forest-900 ${soon ? "opacity-70" : ""}`}>{label}</span>
-              {soon && <span className="absolute right-1.5 top-1.5 rounded-full bg-[#DDF7E8] px-1.5 py-0.5 text-[8px] font-bold leading-none text-[#0B6B47]">Soon</span>}
+              className={`relative flex min-h-[68px] flex-col items-center justify-center gap-2 rounded-xl bg-transparent px-1 py-1.5 text-center transition ${index >= 4 && !menuExpanded ? "hidden md:flex" : ""} ${soon ? "cursor-not-allowed" : "hover:bg-[#F8F9FA]"}`}>
+              <Icon size={21} strokeWidth={1.9} className={soon ? "text-[#9CA3AF]" : "text-[#111827]"} />
+              <span className={`text-[11px] font-medium leading-tight text-[#111827] ${soon ? "text-[#9CA3AF]" : ""}`}>{label}</span>
+              {soon && <span className="absolute right-0.5 top-0.5 rounded-full bg-[#DDF7E8] px-1.5 py-0.5 text-[8px] font-bold leading-none text-[#0B6B47]">Soon</span>}
             </button>
           ))}
         </div>
