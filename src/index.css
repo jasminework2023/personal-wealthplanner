@@ -1360,7 +1360,7 @@ html.dark .home-budget-donut-inner { background:#303237 !important; }
   .home-mobile-budget-card{background:linear-gradient(145deg,#5A5C60 0%,#34363A 52%,#17191C 100%)!important}
   html.dark .home-mobile-asset-card{background:linear-gradient(145deg,#292A2C 0%,#1D1E20 58%,#121314 100%)!important}
   html.dark .home-mobile-budget-card{background:linear-gradient(145deg,#52545A 0%,#303237 52%,#111214 100%)!important}
-  [data-tour="home-assets-mobile"]{overflow:visible!important}
-  [data-tour="home-assets-mobile"]>div{display:flex!important;gap:10px!important;overflow-x:auto!important;scroll-snap-type:x mandatory!important}
-  [data-tour="home-assets-mobile"]>div>div{flex:0 0 calc(50% - 5px)!important;width:calc(50% - 5px)!important;min-width:calc(50% - 5px)!important}
+  [data-tour="home-assets-mobile"]{overflow:hidden!important;width:100%!important;min-width:0!important}
+  [data-tour="home-assets-mobile"]>div{display:flex!important;gap:0!important;overflow-x:auto!important;scroll-snap-type:x mandatory!important;width:100%!important;min-width:0!important}
+  [data-tour="home-assets-mobile"]>div>div{flex:0 0 100%!important;width:100%!important;min-width:100%!important;max-width:100%!important;scroll-snap-align:start!important}
 }
