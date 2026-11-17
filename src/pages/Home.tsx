@@ -278,28 +278,37 @@ export function Home() {
       <section data-tour="home-assets-mobile" className="md:hidden">
         <div
           ref={summaryScrollRef}
-          className="grid w-full grid-flow-col auto-cols-[100%] snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex w-full overflow-x-auto snap-x snap-mandatory scroll-smooth overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label={id ? "Ringkasan aset dan anggaran" : "Asset and budget summary"}
         >
-          <div className="w-full min-w-0 max-w-full snap-start box-border pr-0">
-            <div className="home-mobile-asset-card w-full min-w-0 overflow-hidden rounded-[20px] border p-4">
+          <div
+            className="w-full shrink-0 snap-start"
+            style={{ flex: "0 0 100%" }}
+          >
+            <div className="home-mobile-asset-card w-full overflow-hidden rounded-[20px] border p-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]">{id ? "Asset Tracker" : "Asset Tracker"}</span>
-                <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} data-tour="home-eye-mobile" className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#4B5563]">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]">Asset Tracker</span>
+                <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} data-tour="home-eye-mobile" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#4B5563]">
                   {assetsVisible ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </div>
+
               <div role="button" tabIndex={0} onClick={() => navigate("/finance")} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }} className="mt-3 cursor-pointer">
-                <p className="text-[12px] font-medium text-[#6B7280]">{id ? "Total Aset" : "Total Assets"}</p>
-                <div className="mt-1 min-w-0 max-w-full break-words text-[27px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums">
-                  {renderMoney(integratedTotalAssets, assetsVisible, "text-[27px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums", 31)}
+                <p className="text-[12px] font-medium text-[#6B7280]">Total Aset</p>
+                <div className="mt-1 min-w-0 truncate text-[28px] font-extrabold leading-tight tracking-[-0.035em] tabular-nums">
+                  {renderMoney(integratedTotalAssets, assetsVisible, "text-[28px] font-extrabold leading-tight tracking-[-0.035em] tabular-nums", 28)}
                 </div>
+
                 <div className="mt-4 flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#E5E7EB] px-2.5 py-1 text-[10.5px] font-semibold text-[#374151]">
-                    <TrendingUp size={13} />{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#E5E7EB] px-2.5 py-1 text-[10.5px] font-semibold text-[#374151]">
+                    <TrendingUp size={13} />
+                    {Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% dari target
                   </span>
-                  <span className="text-[10.5px] font-medium text-[#6B7280]">{assetsVisible ? renderMoney(assets.target, true, "text-[10.5px] font-medium text-[#0B6B47]/60", 10.5) : "Rp ••••••"}</span>
+                  <span className="min-w-0 truncate text-right text-[10.5px] font-medium text-[#6B7280]">
+                    {assetsVisible ? renderMoney(assets.target, true, "text-[10.5px] font-medium text-[#0B6B47]/60", 10.5) : "Rp ••••••"}
+                  </span>
                 </div>
+
                 <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#E5E7EB]">
                   <div className="h-full rounded-full bg-[#15803D]" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
                 </div>
@@ -307,34 +316,41 @@ export function Home() {
             </div>
           </div>
 
-          <div className="w-full min-w-0 max-w-full snap-start box-border pl-0">
-            <div className="home-mobile-budget-card w-full min-w-0 overflow-hidden rounded-[20px] border p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
+          <div
+            className="w-full shrink-0 snap-start"
+            style={{ flex: "0 0 100%" }}
+          >
+            <div className="home-mobile-budget-card w-full overflow-hidden rounded-[20px] border p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">{id ? "Budget Tracker" : "Budget Tracker"}</span>
-                <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">Budget Tracker</span>
+                <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white">
                   {assetsVisible ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </div>
+
               <div role="button" tabIndex={0} onClick={() => navigate("/budgeting")} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }} className="mt-3 cursor-pointer">
-                <p className="text-[12px] font-medium text-white/55">{id ? "Sisa anggaran" : "Remaining budget"}</p>
-                <div className="mt-1 flex items-center justify-between gap-4">
-                  <div className="min-w-0 max-w-full break-words text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums">
-                    {hasBudget ? renderMoney(remainingBudget, assetsVisible, "text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums", 31) : (assetsVisible ? renderMoney(0, true, "text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums", 31) : "Rp ••••••")}
+                <p className="text-[12px] font-medium text-white/55">Sisa anggaran</p>
+
+                <div className="mt-1 flex min-w-0 items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1 truncate text-[27px] font-extrabold leading-tight tracking-[-0.035em] tabular-nums">
+                    {hasBudget ? renderMoney(remainingBudget, assetsVisible, "text-[27px] font-extrabold leading-tight tracking-[-0.035em] tabular-nums", 27) : (assetsVisible ? renderMoney(0, true, "text-[27px] font-extrabold leading-tight tracking-[-0.035em] tabular-nums", 27) : "Rp ••••••")}
                   </div>
-                  <div className="home-budget-donut relative h-[64px] w-[64px] shrink-0 rounded-full" style={{ background: `conic-gradient(#34D399 ${Math.min(100, Math.max(0, hasBudget && expenseBudget > 0 ? (totalExpense / expenseBudget) * 100 : 0))}%, #D1D5DB 0)` }}>
-                    <div className="home-budget-donut-inner absolute inset-[9px] flex items-center justify-center rounded-full">
+                  <div className="relative h-[64px] w-[64px] shrink-0 rounded-full" style={{ background: `conic-gradient(#34D399 ${Math.min(100, Math.max(0, hasBudget && expenseBudget > 0 ? (totalExpense / expenseBudget) * 100 : 0))}%, #D1D5DB 0)` }}>
+                    <div className="absolute inset-[9px] flex items-center justify-center rounded-full bg-[#292A2D]">
                       <span className="text-[13px] font-extrabold tabular-nums text-white">{hasBudget && expenseBudget > 0 ? Math.round(Math.min(100, (totalExpense / expenseBudget) * 100)) : 0}%</span>
                     </div>
                   </div>
                 </div>
-                {!hasBudget && <p className="mt-1 text-[10.5px] text-white/40">{id ? "Atur anggaran untuk melihat sisa budget" : "Set a budget to see your remaining amount"}</p>}
+
+                {!hasBudget && <p className="mt-1 text-[10.5px] text-white/40">Atur anggaran untuk melihat sisa budget</p>}
+
                 <div className="mt-4 grid grid-cols-2 gap-2">
-                  <div className="rounded-[14px] bg-white/10 px-3 py-2.5">
-                    <span className="text-[10.5px] font-medium text-white/45">{id ? "Penghasilan" : "Income"}</span>
+                  <div className="min-w-0 rounded-[14px] bg-white/10 px-3 py-2.5">
+                    <span className="text-[10.5px] font-medium text-white/45">Penghasilan</span>
                     <p className="mt-0.5 truncate text-[14px] font-semibold tabular-nums">{assetsVisible ? formatRupiah(totalIncome) : "Rp ••••••"}</p>
                   </div>
-                  <div className="rounded-[14px] bg-white/8 px-3 py-2.5">
-                    <span className="text-[10.5px] font-medium text-white/45">{id ? "Pengeluaran" : "Expense"}</span>
+                  <div className="min-w-0 rounded-[14px] bg-white/10 px-3 py-2.5">
+                    <span className="text-[10.5px] font-medium text-white/45">Pengeluaran</span>
                     <p className="mt-0.5 truncate text-[14px] font-semibold tabular-nums">{assetsVisible ? formatRupiah(totalExpense) : "Rp ••••••"}</p>
                   </div>
                 </div>
@@ -342,6 +358,7 @@ export function Home() {
             </div>
           </div>
         </div>
+
         <div className="mt-2 flex items-center justify-center gap-1.5" aria-label={id ? "Pilih ringkasan" : "Select summary"}>
           {(["asset", "budget"] as const).map((tab) => (
             <button key={tab} type="button" onClick={() => scrollToSummary(tab)} aria-label={tab === "asset" ? "Asset Tracker" : "Budget Tracker"} className={`h-1.5 rounded-full transition-all ${summaryTab === tab ? "w-5 bg-forest-700" : "w-1.5 bg-forest-200"}`} />
