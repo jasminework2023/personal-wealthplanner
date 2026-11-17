@@ -346,7 +346,7 @@ export function Home() {
         <div className="grid grid-cols-4 gap-2 sm:gap-3">
           {menus.map(({ label, icon: Icon, to, soon, tone }, index) => (
             <button key={label} type="button" disabled={Boolean(soon)} onClick={() => to && navigate(to)}
-              className={`relative flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-[18px] border border-forest-100/60 bg-white px-1.5 py-2 text-center shadow-card transition sm:min-h-[78px] ${index >= 4 && !menuExpanded ? "hidden" : ""} ${soon ? "cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-float"}`}>
+              className={`relative flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-[18px] border border-forest-100/60 bg-white px-1.5 py-2 text-center shadow-card transition sm:min-h-[78px] ${index >= 4 && !menuExpanded ? "hidden md:flex" : ""} ${soon ? "cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-float"}`}>
               <span className={`flex h-9 w-9 items-center justify-center rounded-[14px] ${tone} ${soon ? "opacity-60" : ""}`}>
                 <Icon size={18} strokeWidth={2.1}/>
               </span>
@@ -355,7 +355,7 @@ export function Home() {
             </button>
           ))}
         </div>
-        <button type="button" onClick={() => setMenuExpanded((value) => !value)} className="mx-auto mt-2.5 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-forest-700">
+        <button type="button" onClick={() => setMenuExpanded((value) => !value)} className="mx-auto mt-2.5 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-forest-700 md:hidden">
           {menuExpanded ? (id ? "Sembunyikan" : "Show less") : (id ? "Lihat semua" : "View all")}
           <ChevronRight size={14} className={`transition-transform ${menuExpanded ? "rotate-90" : ""}`} />
         </button>
