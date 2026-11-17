@@ -100,7 +100,7 @@ export function DashboardWelcome() {
       if (!res.ok) throw new Error(body.error || "Gagal menghubungkan spreadsheet.");
       setSuccess("Google Sheet berhasil terhubung. Dashboard kamu sudah siap.");
       setData((current: any) => ({ ...current, ready: true, spreadsheetUrl: body.spreadsheetUrl }));
-      setTimeout(() => navigate(`/?token=${encodeURIComponent(token)}`), 900);
+      setTimeout(() => window.location.assign(body.dashboardUrl || `/?token=${encodeURIComponent(token)}`), 900);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal menghubungkan spreadsheet.");
     } finally {
@@ -223,7 +223,7 @@ export function DashboardWelcome() {
               </div>
 
               {ready && data?.dashboardUrl && (
-                <button onClick={() => navigate(`/?token=${encodeURIComponent(token)}`)} className="flex w-full items-center justify-center gap-2 rounded-xl border border-charcoal/10 bg-white px-4 py-3 text-sm font-semibold text-charcoal/75 hover:border-forest-200 hover:text-forest-700">
+                <button onClick={() => window.location.assign(data.dashboardUrl || `/?token=${encodeURIComponent(token)}`)} className="flex w-full items-center justify-center gap-2 rounded-xl border border-charcoal/10 bg-white px-4 py-3 text-sm font-semibold text-charcoal/75 hover:border-forest-200 hover:text-forest-700">
                   Masuk ke Dashboard <ArrowRight size={16} />
                 </button>
               )}
