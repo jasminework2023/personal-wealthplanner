@@ -75,13 +75,13 @@ export function AssetListSection({
               )}
             </div>
 
-            <div className="mt-6 flex min-w-0 items-center gap-3">
-              <p className="min-w-0 truncate text-[34px] font-bold leading-none tracking-[-0.035em] tabular-nums text-[rgb(var(--asset-primary-text))]">
+            <div className="mt-7 flex min-w-0 items-end gap-4 sm:gap-5">
+              <p className="min-w-0 truncate text-[48px] font-bold leading-[1.02] tracking-[-0.04em] tabular-nums sm:text-[56px] text-[rgb(var(--asset-primary-text))]">
                 {totalValue}
               </p>
               {change !== null && (
                 <span
-                  className={`shrink-0 rounded-[14px] bg-[#EAF5F0] px-3 py-2 text-[13px] font-bold leading-none tabular-nums text-[#07845C]`}
+                  className={`shrink-0 rounded-[16px] bg-[#EAF5F0] px-3.5 py-2.5 text-[16px] font-bold leading-none tabular-nums text-[#07845C]`}
                 >
                   {change >= 0 ? "+" : "−"}{Math.abs(change).toFixed(1)}%
                 </span>
