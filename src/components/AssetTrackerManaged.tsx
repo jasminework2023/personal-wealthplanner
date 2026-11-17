@@ -106,15 +106,15 @@ export function AssetTrackerManaged({
   }, [investmentRows, assets.stocksTotal]);
 
   const composition = [
-    // Same palette as the Home expense donut.
-    { name: "Aset Likuid", value: liquidTotal, color: "#0F6E56" },
-    { name: "Obligasi", value: categoryTotals.Obligasi || 0, color: "#9AA3B2" },
-    { name: "Saham", value: categoryTotals.Saham || 0, color: "#E0B04A" },
-    { name: "Reksadana", value: categoryTotals.Reksadana || 0, color: "#9FE1CB" },
-    { name: "Emas", value: categoryTotals.Emas || 0, color: "#D4D9DF" },
-    { name: "P2P Lending", value: categoryTotals["P2P Lending"] || 0, color: "#6F8B80" },
-    { name: "Lainnya", value: categoryTotals.Lainnya || 0, color: "#D4D9DF" },
-    { name: "Aset Riil", value: realTotal, color: "#9AA3B2" },
+    { name: "Aset Likuid", value: liquidTotal, color: "rgb(var(--asset-chart-green))" },
+    { name: "Saham", value: categoryTotals.Saham || 0, color: "rgb(var(--asset-chart-blue))" },
+    { name: "Obligasi", value: categoryTotals.Obligasi || 0, color: "rgb(var(--asset-chart-mint))" },
+    { name: "Reksadana", value: categoryTotals.Reksadana || 0, color: "rgb(var(--asset-chart-gray))" },
+    {
+      name: "Aset Riil",
+      value: realTotal + (categoryTotals.Emas || 0) + (categoryTotals["P2P Lending"] || 0) + (categoryTotals.Lainnya || 0),
+      color: "rgb(var(--asset-chart-slate))",
+    },
   ].filter((x) => x.value > 0);
   const compositionTotal = composition.reduce((s, x) => s + x.value, 0);
   const pct = (v: number) => compositionTotal ? ((v / compositionTotal) * 100).toFixed(1).replace(".", ",") + "%" : "0,0%";
@@ -399,40 +399,54 @@ export function AssetTrackerManaged({
         )}
       </section>
 
-      <section className="rounded-[16px] bg-[rgb(var(--c-surface))]">
-        <button type="button" onClick={() => setCompositionOpen(v => !v)} className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left sm:px-5">
-          <span className="text-[16px] font-semibold text-[rgb(var(--c-charcoal))]">Komposisi Aset</span>
-          <ChevronRight size={18} className={compositionOpen ? "rotate-90" : ""} />
+      <section className="rounded-[24px] border border-[#E5E7EB] bg-white p-5 shadow-[0_4px_16px_rgba(15,23,42,0.06)]">
+        <button type="button" onClick={() => setCompositionOpen(v => !v)} className="flex min-h-11 w-full items-center justify-between gap-3 text-left">
+          <div>
+            <p className="text-[20px] font-semibold tracking-[-0.02em] text-[rgb(var(--asset-primary-text))]">Portfolio Allocation</p>
+            <p className="mt-1 text-[13px] text-[rgb(var(--asset-secondary-text))]">Distribusi aset berdasarkan nilai saat ini</p>
+          </div>
+          <ChevronRight size={18} className={`shrink-0 text-[rgb(var(--asset-secondary-text))] transition-transform ${compositionOpen ? "rotate-90" : ""}`} />
         </button>
         {compositionOpen && (
-          <div className="px-4 pb-5 sm:px-5">
-            <div className="grid items-center gap-4 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-4">
-              <div className="relative mx-auto h-[200px] w-[200px]">
-                <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90" role="img" aria-label="Komposisi aset">
-                  <circle cx="100" cy="100" r="72" fill="none" stroke="rgb(var(--c-border))" strokeWidth="28" />
-                  {composition.map((item, index) => {
-                    const circumference = 2 * Math.PI * 72;
-                    const prior = composition.slice(0, index).reduce((s, x) => s + x.value, 0);
-                    const dash = compositionTotal > 0 ? (item.value / compositionTotal) * circumference : 0;
-                    return <circle key={item.name} cx="100" cy="100" r="72" fill="none" stroke={item.color} strokeWidth="28" strokeDasharray={dash + " " + (circumference - dash)} strokeDashoffset={-prior / Math.max(compositionTotal, 1) * circumference} />;
-                  })}
-                </svg>
-                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="text-[12px] leading-tight text-[rgb(var(--c-muted))]">Total</span>
-                  <span className="mt-1 whitespace-nowrap text-[18px] font-extrabold leading-none tracking-[-0.02em] tabular-nums text-[rgb(var(--c-charcoal))]">
-                    {assetsVisible ? formatCompactAssetTotal(compositionTotal) : "••••••"}
-                  </span>
+          <div className="mt-5 grid grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] items-center gap-4 sm:gap-6">
+            <div className="relative mx-auto aspect-square w-full max-w-[190px]">
+              <svg viewBox="0 0 200 200" className="h-full w-full -rotate-90" role="img" aria-label="Portfolio allocation">
+                <circle cx="100" cy="100" r="72" fill="none" stroke="#E5E7EB" strokeWidth="24" />
+                {composition.map((item, index) => {
+                  const circumference = 2 * Math.PI * 72;
+                  const prior = composition.slice(0, index).reduce((s, x) => s + x.value, 0);
+                  const dash = compositionTotal > 0 ? (item.value / compositionTotal) * circumference : 0;
+                  return (
+                    <circle
+                      key={item.name}
+                      cx="100"
+                      cy="100"
+                      r="72"
+                      fill="none"
+                      stroke={item.color}
+                      strokeWidth="24"
+                      strokeLinecap="butt"
+                      strokeDasharray={dash + " " + (circumference - dash)}
+                      strokeDashoffset={-prior / Math.max(compositionTotal, 1) * circumference}
+                    />
+                  );
+                })}
+              </svg>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span className="text-[11px] text-[rgb(var(--asset-secondary-text))]">Total</span>
+                <span className="mt-1 max-w-[90%] truncate text-[16px] font-bold leading-none tracking-[-0.02em] tabular-nums text-[rgb(var(--asset-primary-text))]">
+                  {assetsVisible ? formatCompactAssetTotal(compositionTotal) : "••••••"}
+                </span>
+              </div>
+            </div>
+            <div className="min-w-0 space-y-2.5">
+              {composition.map(item => (
+                <div key={item.name} className="flex min-w-0 items-center gap-2.5">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[rgb(var(--asset-primary-text))]">{item.name}</span>
+                  <span className="shrink-0 text-[13px] font-semibold tabular-nums text-[rgb(var(--asset-secondary-text))]">{pct(item.value)}</span>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 lg:grid-cols-1 lg:gap-y-1">
-                {composition.map(item => (
-                  <div key={item.name} className="flex min-h-7 items-center gap-2">
-                    <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="min-w-0 flex-1 truncate text-[14px] font-semibold text-[rgb(var(--c-charcoal))]">{item.name}</span>
-                    <span className="w-12 shrink-0 text-right text-[14px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{pct(item.value)}</span>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
         )}
