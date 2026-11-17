@@ -377,7 +377,7 @@ export function Home() {
         </div>
       </section>
 
-      <section data-tour="main-menu" className="order-2 md:order-none -mt-2 -mb-1">
+      <section data-tour="main-menu" className="order-2 md:order-none -mt-4 -mb-1">
         <div className="mb-2 flex items-center">
           <button type="button" onClick={() => setMenuExpanded((value) => !value)} aria-expanded={menuExpanded} className="flex items-center gap-1.5 rounded-full px-0.5 py-1 text-[16px] font-bold tracking-[-0.02em] text-[#17191C] dark:text-[#F5F5F5]">
             <span>{id ? "Menu Utama" : "Main Menu"}</span>
