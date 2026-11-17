@@ -46,12 +46,12 @@ export function AssetListSection({
   }, [infoOpen]);
 
   return (
-    <section className="rounded-[24px] bg-[rgb(var(--c-surface))] text-[rgb(var(--c-charcoal))]">
+    <section className="rounded-[24px] border border-[#E5E7EB] bg-white text-[rgb(var(--asset-primary-text))] shadow-[0_4px_16px_rgba(15,23,42,0.06)]">
       <div className="px-4 pt-4 sm:px-5 sm:pt-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-1">
-              <p className="text-[16px] font-semibold leading-tight">{title}</p>
+              <p className="text-[20px] font-semibold leading-tight tracking-[-0.02em] text-[rgb(var(--asset-primary-text))]">{title}</p>
               {infoText && (
                 <div ref={infoRef} className="relative shrink-0">
                   <button
@@ -76,7 +76,7 @@ export function AssetListSection({
             </div>
 
             <div className="mt-1.5 flex min-w-0 items-center gap-2">
-              <p className="min-w-0 truncate text-[22px] font-bold leading-none tracking-[-0.02em] tabular-nums">{totalValue}</p>
+              <p className="min-w-0 truncate text-[32px] font-bold leading-none tracking-[-0.025em] tabular-nums text-[rgb(var(--asset-primary-text))]">{totalValue}</p>
               {change !== null && (
                 <span className={`shrink-0 rounded-lg px-2 py-1 text-[11px] font-semibold tabular-nums ${
                   change >= 0
