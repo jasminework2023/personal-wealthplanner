@@ -110,11 +110,8 @@ export function AssetTrackerManaged({
     { name: "Saham", value: categoryTotals.Saham || 0, color: "rgb(var(--asset-chart-blue))" },
     { name: "Obligasi", value: categoryTotals.Obligasi || 0, color: "rgb(var(--asset-chart-mint))" },
     { name: "Reksadana", value: categoryTotals.Reksadana || 0, color: "rgb(var(--asset-chart-gray))" },
-    {
-      name: "Aset Riil",
-      value: realTotal + (categoryTotals.Emas || 0) + (categoryTotals["P2P Lending"] || 0) + (categoryTotals.Lainnya || 0),
-      color: "rgb(var(--asset-chart-slate))",
-    },
+    { name: "Lainnya", value: (categoryTotals.Emas || 0) + (categoryTotals["P2P Lending"] || 0) + (categoryTotals.Lainnya || 0), color: "rgb(var(--asset-chart-slate))" },
+    { name: "Aset Riil", value: realTotal, color: "rgb(var(--asset-chart-gray))" },
   ].filter((x) => x.value > 0);
   const compositionTotal = composition.reduce((s, x) => s + x.value, 0);
   const pct = (v: number) => compositionTotal ? ((v / compositionTotal) * 100).toFixed(1).replace(".", ",") + "%" : "0,0%";
