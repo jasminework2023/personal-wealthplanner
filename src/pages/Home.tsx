@@ -240,13 +240,7 @@ export function Home() {
               {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
             </button>
           </div>
-          <div className="flex items-start justify-between gap-3">
-            <p className="text-[12px] font-medium tracking-[-0.02em] text-[#6B7280]">{id ? "Total Aset" : "Total Assets"}</p>
-            <span className="shrink-0 text-[11px] font-medium tracking-[-0.02em] text-[#6B7280] tabular-nums">
-              {id ? "Target " : "Goal "}
-              {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium tracking-[-0.02em] text-[#6B7280] tabular-nums", 11) : "Rp ••••••"}
-            </span>
-          </div>
+          <p className="text-[12px] font-medium tracking-[-0.02em] text-[#6B7280]">{id ? "Total Aset" : "Total Assets"}</p>
           <div className="mt-1 min-w-0 break-words text-[44px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-black">
             {renderMoney(integratedTotalAssets, assetsVisible, "text-[44px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-black", 44)}
           </div>
@@ -260,7 +254,10 @@ export function Home() {
               <div className="absolute left-0 top-[13px] h-[2px] rounded-full bg-[#111827] transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
               <div className="absolute left-0 top-[9px] h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-[#111827]" style={{ left: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
             </div>
-          </div>
+          </div>            <div className="mt-1.5 text-right text-[11px] font-medium text-[#6B7280] tabular-nums">
+              Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium text-[#6B7280] tabular-nums", 11) : "Rp ••••••"}
+            </div>
+
         </div>
 
         <div role="button" tabIndex={0}
@@ -301,12 +298,7 @@ export function Home() {
               </div>
 
               <div role="button" tabIndex={0} onClick={() => navigate("/finance")} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }} className="mt-3 cursor-pointer">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-[12px] font-medium text-[#6B7280]">Total Aset</p>
-                  <span className="shrink-0 text-[10.5px] font-medium text-[#6B7280] tabular-nums">
-                    Target {assetsVisible ? renderMoney(assets.target, true, "text-[10.5px] font-medium text-[#6B7280] tabular-nums", 10.5) : "Rp ••••••"}
-                  </span>
-                </div>
+                <p className="text-[12px] font-medium text-[#6B7280]">Total Aset</p>
                 <div className="mt-1 min-w-0 truncate text-[34px] font-extrabold leading-none tracking-[-0.04em] tabular-nums">
                   {renderMoney(integratedTotalAssets, assetsVisible, "text-[34px] font-extrabold leading-none tracking-[-0.04em] tabular-nums", 34)}
                 </div>
@@ -320,6 +312,9 @@ export function Home() {
                     <div className="absolute left-0 right-0 top-[10px] h-[2px] rounded-full bg-[#E5E7EB]" />
                     <div className="absolute left-0 top-[10px] h-[2px] rounded-full bg-[#111827] transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
                     <div className="absolute top-[6px] h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-[#111827]" style={{ left: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
+                  </div>
+                  <div className="mt-1.5 text-right text-[10.5px] font-medium text-[#6B7280] tabular-nums">
+                    Target {assetsVisible ? renderMoney(assets.target, true, "text-[10.5px] font-medium text-[#6B7280] tabular-nums", 10.5) : "Rp ••••••"}
                   </div>
                 </div>
               </div>
