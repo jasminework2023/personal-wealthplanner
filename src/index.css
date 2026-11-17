@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,16 +11,16 @@
    ============================================================ */
 :root {
   /* Theme tokens — Light */
-  --c-forest-50: 240 253 247;
-  --c-forest-100: 220 252 231;
-  --c-forest-200: 187 247 208;
-  --c-forest-300: 134 239 172;
+  --c-forest-50: 239 246 243;
+  --c-forest-100: 226 231 229;
+  --c-forest-200: 209 218 214;
+  --c-forest-300: 148 163 157;
   --c-forest-400: 74 222 128;
-  --c-forest-500: 34 197 94;
-  --c-forest-600: 0 184 110;
-  --c-forest-700: 0 122 74;
-  --c-forest-800: 6 95 70;
-  --c-forest-900: 15 26 20;
+  --c-forest-500: 14 159 110;
+  --c-forest-600: 14 159 110;
+  --c-forest-700: 4 120 83;
+  --c-forest-800: 17 24 39;
+  --c-forest-900: 17 24 39;
 
   /* Legacy rose utilities now resolve to semantic red (down/expense), never pink. */
   --c-rose-50: 255 241 242;
@@ -47,15 +49,15 @@
   --c-orange-100: 228 230 232;
   --c-orange-500: 242 169 0;
 
-  --c-cream: 244 245 246;
+  --c-cream: 244 245 247;
   --c-surface: 255 255 255;
-  --c-border: 228 230 232;
-  --c-charcoal: 15 26 20;
+  --c-border: 229 231 235;
+  --c-charcoal: 17 24 39;
   --c-muted: 107 114 128;
-  --c-shadow: 15 26 20;
-  --c-accent: 0 184 110;
-  --c-accent-ink: 4 19 12;
-  --c-accent-text: 0 122 74;
+  --c-shadow: 17 24 39;
+  --c-accent: 14 159 110;
+  --c-accent-ink: 255 255 255;
+  --c-accent-text: 4 120 83;
   --c-up: 0 122 74;
   --c-down: 214 51 79;
   --c-warn: 242 169 0;
@@ -68,8 +70,8 @@
   --asset-p2p: 100 116 139;
   --asset-other: 71 85 105;
     --asset-real: 6 182 212;
-  --shadow-pop: 0 4px 16px rgba(0, 184, 110, 0.45);
-  --shadow-nav: 0 6px 24px rgba(0, 0, 0, 0.08);
+  --shadow-pop: 0 6px 18px rgba(17,24,39,.16);
+  --shadow-nav: 0 4px 20px rgba(17,24,39,.10);
 
   /* Chart and calculator tokens used by existing UI. */
   --chart-axis: #6B7280;
@@ -190,7 +192,7 @@ html.dark {
 
 html,
 body {
-  font-family: "Geist", "Inter", system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
 body {
@@ -469,13 +471,13 @@ html.dark .recharts-default-tooltip, html.dark .recharts-tooltip-label { color: 
    Tidak mengubah warna brand atau hero gradient existing.
    ============================================================ */
 :root {
-  --wp-radius-card: 16px;
-  --wp-radius-control: 10px;
-  --wp-card-padding: 16px;
-  --wp-grid-gap: 12px;
-  --wp-section-gap: 20px;
-  --wp-row-height: 38px;
-  --wp-control-height: 36px;
+  --wp-radius-card: 20px;
+  --wp-radius-control: 14px;
+  --wp-card-padding: 18px;
+  --wp-grid-gap: 10px;
+  --wp-section-gap: 24px;
+  --wp-row-height: 40px;
+  --wp-control-height: 44px;
 }
 
 /* ============================================================
@@ -937,4 +939,428 @@ input,
 select,
 textarea {
   font-family: inherit;
+}
+
+
+/* ============================================================
+   WEALTHPLANNER REDESIGN — STAGE 1
+   Visual-only tokens inspired by wealthplanner.id mockup.
+   Existing variable names are preserved for compatibility.
+   ============================================================ */
+:root {
+  --wp-bg: #F4F5F7;
+  --wp-surface: #FFFFFF;
+  --wp-border: #E5E7EB;
+  --wp-muted: #6B7280;
+  --wp-text: #111827;
+  --wp-green: #0E9F6E;
+  --wp-radius-card: 20px;
+  --wp-radius-control: 14px;
+  --wp-shadow-soft: 0 1px 2px rgba(17,24,39,.04), 0 4px 16px rgba(17,24,39,.05);
+  --wp-hero: linear-gradient(150deg,#FFFFFF 0%,#EEF2F7 55%,#DCEFE6 100%);
+  --wp-gradient-neutral: linear-gradient(150deg,#F3F5F8,#E3E7EE);
+  --wp-gradient-dark: linear-gradient(150deg,#4B5563 0%,#1F2937 55%,#0B1220 100%);
+}
+
+html.dark {
+  --wp-bg: #0F1115;
+  --wp-surface: #171A20;
+  --wp-border: #262A33;
+  --wp-muted: #9CA3AF;
+  --wp-text: #F3F4F6;
+  --wp-green: #34D399;
+  --wp-shadow-soft: none;
+  --wp-hero: linear-gradient(150deg,#1D222B 0%,#171A20 55%,#10261E 100%);
+  --wp-gradient-neutral: linear-gradient(150deg,#222730,#171A20);
+  --wp-gradient-dark: linear-gradient(150deg,#3A4150 0%,#222733 55%,#0B0D11 100%);
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  background: var(--wp-bg);
+}
+
+@media (max-width: 1023px) {
+  .wp-mobile-header {
+    background: color-mix(in srgb, var(--wp-bg) 88%, transparent);
+    backdrop-filter: blur(18px);
+  }
+
+  .wp-mobile-title {
+    font-family: "Inter", system-ui, sans-serif !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    letter-spacing: -.03em !important;
+  }
+
+  .wp-mobile-action {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 999px !important;
+    border: 1px solid var(--wp-border) !important;
+    background: var(--wp-surface) !important;
+    box-shadow: var(--wp-shadow-soft) !important;
+  }
+
+  .wp-nav {
+    height: 64px;
+    border-radius: 22px !important;
+    border: 1px solid var(--wp-border);
+    background: var(--wp-surface);
+    box-shadow: 0 4px 20px rgba(17,24,39,.10);
+  }
+
+  .wp-nav-item {
+    min-width: 52px;
+    min-height: 44px;
+  }
+
+  .wp-nav-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+  }
+
+  .wp-nav-item-active .wp-nav-icon {
+    background: rgb(var(--c-forest-50));
+  }
+
+  .wp-nav-fab {
+    width: 52px;
+    height: 52px;
+    margin-top: -6px;
+    border-radius: 999px !important;
+    box-shadow: 0 6px 18px rgba(17,24,39,.20);
+  }
+}
+
+@media (min-width: 1024px) {
+  .wp-nav { display: none !important; }
+}
+
+
+/* ============================================================
+   WEALTHPLANNER REDESIGN — MOCKUP PALETTE
+   Neutral white / black / gray is the dominant visual system.
+   Green remains an accent only.
+   ============================================================ */
+:root {
+  --wp-bg: #F6F6F5;
+  --wp-surface: #FFFFFF;
+  --wp-border: #E7E7E5;
+  --wp-muted: #737373;
+  --wp-text: #171717;
+  --wp-green: #15803D;
+  --wp-hero: linear-gradient(135deg,#FFFFFF 0%,#F3F4F4 58%,#E1E3E3 100%);
+  --wp-gradient-neutral: linear-gradient(135deg,#FFFFFF 0%,#F0F1F2 55%,#DCDDE0 100%);
+  --wp-gradient-dark: linear-gradient(135deg,#525252 0%,#292929 58%,#171717 100%);
+}
+html.dark {
+  --wp-bg: #101112;
+  --wp-surface: #171819;
+  --wp-border: #292B2D;
+  --wp-muted: #A3A3A3;
+  --wp-text: #F5F5F5;
+  --wp-green: #4ADE80;
+  --wp-hero: linear-gradient(135deg,#202122 0%,#18191A 58%,#102118 100%);
+  --wp-gradient-neutral: linear-gradient(135deg,#292A2C 0%,#1D1E20 55%,#151617 100%);
+  --wp-gradient-dark: linear-gradient(135deg,#525252 0%,#292929 58%,#111111 100%);
+}
+
+/* Home hero cards: neutral first, accent second. */
+.hero-neutral {
+  background: linear-gradient(135deg,#FFFFFF 0%,#F1F2F3 58%,#D9DBDE 100%) !important;
+  color: #171717 !important;
+  border: 1px solid #E4E5E7 !important;
+  box-shadow: 0 12px 36px rgba(17,24,39,.07) !important;
+}
+html.dark .hero-neutral {
+  background: linear-gradient(135deg,#252628 0%,#1C1D1F 58%,#121314 100%) !important;
+  color: #F5F5F5 !important;
+  border-color: #303235 !important;
+}
+.home-asset-summary {
+  background: linear-gradient(135deg,#FFFFFF 0%,#F1F2F3 58%,#D9DBDE 100%) !important;
+  color: #171717 !important;
+  border: 1px solid #E4E5E7 !important;
+  box-shadow: 0 12px 36px rgba(17,24,39,.07) !important;
+}
+html.dark .home-asset-summary {
+  background: linear-gradient(135deg,#252628 0%,#1C1D1F 58%,#121314 100%) !important;
+  color: #F5F5F5 !important;
+  border-color: #303235 !important;
+}
+
+/* Menu tiles follow the mockup's quiet neutral treatment. */
+.home-menu-grid button,
+.home-menu-grid a {
+  border-color: #E7E7E5 !important;
+}
+.home-menu-grid .bg-\[\#DDF7E8\],
+.home-menu-grid .bg-\[\#CFEFDD\] {
+  background: #F1F2F4 !important;
+}
+.home-menu-grid .text-\[\#0B6B47\] {
+  color: #17191C !important;
+}
+
+/* Keep green for meaningful status/progress accents only. */
+.home-asset-summary .bg-\[\#008D59\]\/35 { background: #E5E7EB !important; }
+.home-asset-summary .bg-\[\#006B48\]\/20 { background: #E5E7EB !important; }
+.home-asset-summary .bg-\[\#03140C\] { background: #111827 !important; }
+
+/* Mobile summary cards should read as premium neutral cards. */
+@media (max-width: 1023px) {
+  .home-asset-summary,
+  .hero-neutral {
+    border-radius: 20px !important;
+  }
+}
+
+
+/* ============================================================
+   WEALTHPLANNER REDESIGN — STAGE 3
+   Transaction / Wallet / Budget: mockup-first neutral palette.
+   ============================================================ */
+
+/* Shared inner-page surfaces */
+.transaction-page,
+.wallets-page,
+.budget-page {
+  color: #171717;
+}
+.transaction-page .section-title,
+.wallets-page h2,
+.budget-page .section-title {
+  color: #171717 !important;
+}
+html.dark .transaction-page,
+html.dark .wallets-page,
+html.dark .budget-page {
+  color: #F5F5F5;
+}
+html.dark .transaction-page .section-title,
+html.dark .wallets-page h2,
+html.dark .budget-page .section-title {
+  color: #F5F5F5 !important;
+}
+
+/* Transaction */
+.transaction-page .rounded-2xl.bg-charcoal\/\[0\.05\] {
+  background: #F0F0F0 !important;
+}
+.transaction-page .rounded-2xl.bg-charcoal\/\[0\.05\] button {
+  border-radius: 12px !important;
+}
+.transaction-page .rounded-2xl.bg-charcoal\/\[0\.05\] button.bg-white {
+  background: #FFFFFF !important;
+  color: #171717 !important;
+  box-shadow: 0 1px 3px rgba(17,24,39,.08) !important;
+}
+.transaction-page .rounded-2xl.bg-charcoal\/\[0\.05\] button.bg-\[\#123524\] {
+  background: #171717 !important;
+  color: #FFFFFF !important;
+}
+.transaction-page .border-forest-100\/70,
+.transaction-page .border-charcoal\/10 {
+  border-color: #E5E5E5 !important;
+}
+.transaction-page .bg-\[\#DDF7E8\] {
+  background: #F0F1F2 !important;
+  color: #171717 !important;
+}
+.transaction-page .text-\[\#0B6B47\],
+.transaction-page .text-forest-900 {
+  color: #171717 !important;
+}
+.transaction-page .bg-forest-50 {
+  background: #F0F1F2 !important;
+}
+.transaction-page .text-forest-800,
+.transaction-page .text-forest-700 {
+  color: #404040 !important;
+}
+.transaction-page .divide-charcoal\/8 {
+  border-color: #ECECEC !important;
+}
+.transaction-page .bg-\[\#DFF3E7\] {
+  background: #F1F3F2 !important;
+  color: #166534 !important;
+}
+.transaction-page .bg-\[\#FDE3EA\] {
+  background: #F7F1F2 !important;
+}
+.transaction-page .bg-\[\#DCEBFF\] {
+  background: #F1F3F5 !important;
+  color: #374151 !important;
+}
+.transaction-page .bg-\[\#E8DDFA\] {
+  background: #F3F1F5 !important;
+  color: #4B5563 !important;
+}
+.transaction-page .text-\[\#0B6B47\] { color: #166534 !important; }
+.transaction-page .bg-\[\#123524\] { background: #171717 !important; }
+
+/* Wallet */
+.wallets-page > section:first-child {
+  border-radius: 20px !important;
+}
+.wallets-page > section:first-child:not([style]) {
+  background: linear-gradient(135deg,#FFFFFF 0%,#F0F1F2 60%,#DCDDE0 100%) !important;
+  color: #171717 !important;
+  border: 1px solid #E5E5E5 !important;
+  box-shadow: 0 10px 30px rgba(17,24,39,.06) !important;
+}
+.wallets-page > section:first-child:not([style]) p {
+  color: #737373 !important;
+}
+.wallets-page .wallet-stack-card {
+  border: 1px solid rgba(17,24,39,.10) !important;
+  box-shadow: 0 10px 26px rgba(17,24,39,.08) !important;
+}
+.wallets-page .bg-white {
+  background: #FFFFFF !important;
+}
+.wallets-page .border-slate-100,
+.wallets-page .border-slate-200 {
+  border-color: #E7E7E7 !important;
+}
+.wallets-page .text-slate-900,
+.wallets-page .text-slate-800 {
+  color: #171717 !important;
+}
+.wallets-page .text-slate-500,
+.wallets-page .text-slate-400 {
+  color: #737373 !important;
+}
+.wallets-page .bg-slate-100 {
+  background: #F1F2F3 !important;
+}
+.wallets-page .bg-\[\#123524\] {
+  background: #171717 !important;
+}
+.wallets-page .text-\[\#0B6B47\] {
+  color: #171717 !important;
+}
+html.dark .wallets-page > section:first-child:not([style]) {
+  background: linear-gradient(135deg,#262729 0%,#1D1E20 60%,#151617 100%) !important;
+  color: #F5F5F5 !important;
+  border-color: #303235 !important;
+}
+html.dark .wallets-page .bg-white {
+  background: #171819 !important;
+}
+html.dark .wallets-page .text-slate-900,
+html.dark .wallets-page .text-slate-800 {
+  color: #F5F5F5 !important;
+}
+
+/* Budget */
+.budget-page > section[data-tour="budget-summary"] {
+  background: linear-gradient(135deg,#FFFFFF 0%,#F0F1F2 58%,#D9DBDE 100%) !important;
+  color: #171717 !important;
+  border: 1px solid #E5E5E5 !important;
+  box-shadow: 0 10px 30px rgba(17,24,39,.06) !important;
+}
+.budget-page > section[data-tour="budget-summary"] .text-white\/70,
+.budget-page > section[data-tour="budget-summary"] .text-white\/75 {
+  color: #737373 !important;
+}
+.budget-page > section[data-tour="budget-summary"] .text-white {
+  color: #171717 !important;
+}
+.budget-page > section[data-tour="budget-summary"] .border-white\/15 {
+  border-color: #E5E5E5 !important;
+}
+.budget-page > section[data-tour="budget-summary"] .bg-white\/15 {
+  background: #E5E5E5 !important;
+}
+.budget-page > section[data-tour="budget-summary"] .bg-emerald-400 {
+  background: #15803D !important;
+}
+.budget-page > section[data-tour="budget-summary"] .bg-pink-400 {
+  background: #D1D5DB !important;
+}
+.budget-page > section[data-tour="budget-summary"] .bg-\[\#A78BFA\] {
+  background: #9CA3AF !important;
+}
+.budget-page > section[data-tour="budget-summary"] .text-\[\#F9A8D4\] {
+  color: #991B1B !important;
+}
+.budget-page .border-forest-100\/50 {
+  border-color: #E7E7E5 !important;
+}
+.budget-page .bg-\[\#F59BB8\] {
+  background: #F0F1F2 !important;
+  color: #171717 !important;
+  border: 1px solid #E5E5E5;
+}
+.budget-page .bg-\[\#0B6B47\] {
+  background: #15803D !important;
+}
+.budget-page .text-forest-900 {
+  color: #171717 !important;
+}
+.budget-page .text-forest-700,
+.budget-page .text-forest-800 {
+  color: #404040 !important;
+}
+html.dark .budget-page > section[data-tour="budget-summary"] {
+  background: linear-gradient(135deg,#262729 0%,#1D1E20 58%,#151617 100%) !important;
+  color: #F5F5F5 !important;
+  border-color: #303235 !important;
+}
+html.dark .budget-page > section[data-tour="budget-summary"] .text-white,
+html.dark .budget-page > section[data-tour="budget-summary"] .text-white\/70,
+html.dark .budget-page > section[data-tour="budget-summary"] .text-white\/75 {
+  color: #F5F5F5 !important;
+}
+html.dark .budget-page .bg-\[\#F59BB8\] {
+  background: #1D1E20 !important;
+  color: #F5F5F5 !important;
+  border-color: #303235 !important;
+}
+
+/* Mobile: cards breathe like the mockup, controls stay pill-shaped. */
+@media (max-width: 1023px) {
+  .transaction-page,
+  .wallets-page,
+  .budget-page {
+    gap: 14px !important;
+  }
+  .transaction-page > *,
+  .wallets-page > *,
+  .budget-page > * {
+    border-radius: 20px;
+  }
+  .transaction-page input,
+  .transaction-page select,
+  .budget-page select,
+  .wallets-page input,
+  .wallets-page select {
+    min-height: 44px;
+  }
+}
+
+/* HOME MOBILE — FINAL MOCKUP ALIGNMENT */
+@media (max-width: 1023px) {
+  .home-mobile-asset-card { background: linear-gradient(145deg,#FFFFFF 0%,#F1F2F3 58%,#D8DADD 100%) !important; border-color:#E3E4E6 !important; color:#171717 !important; box-shadow:0 10px 30px rgba(17,24,39,.07); }
+  .home-mobile-budget-card { background:linear-gradient(145deg,#5A5C60 0%,#34363A 52%,#17191C 100%) !important; border-color:#4A4C50 !important; }
+  .home-budget-donut { background-color:#D1D5DB; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
+  .home-budget-donut-inner { background:#34363A !important; }
+  [data-tour="main-menu"] > div:first-child button { min-height:40px; }
+  [data-tour="main-menu"] .shadow-card { box-shadow:0 4px 16px rgba(17,24,39,.045); }
+}
+html.dark .home-mobile-asset-card { background:linear-gradient(145deg,#292A2C 0%,#1D1E20 58%,#121314 100%) !important; border-color:#303235 !important; color:#F5F5F5 !important; }
+html.dark .home-mobile-budget-card { background:linear-gradient(145deg,#52545A 0%,#303237 52%,#111214 100%) !important; border-color:#3A3C40 !important; }
+html.dark .home-budget-donut-inner { background:#303237 !important; }
+
+@media (max-width:1023px){
+  .home-mobile-asset-card{background:linear-gradient(145deg,#FFFFFF 0%,#F1F2F3 58%,#D8DADD 100%)!important}
+  .home-mobile-budget-card{background:linear-gradient(145deg,#5A5C60 0%,#34363A 52%,#17191C 100%)!important}
+  html.dark .home-mobile-asset-card{background:linear-gradient(145deg,#292A2C 0%,#1D1E20 58%,#121314 100%)!important}
+  html.dark .home-mobile-budget-card{background:linear-gradient(145deg,#52545A 0%,#303237 52%,#111214 100%)!important}
+  [data-tour="home-assets-mobile"]{overflow:hidden!important;width:100%!important;min-width:0!important}
+  [data-tour="home-assets-mobile"]>div{display:flex!important;gap:0!important;overflow-x:auto!important;scroll-snap-type:x mandatory!important;width:100%!important;min-width:0!important}
+  [data-tour="home-assets-mobile"]>div>div{flex:0 0 100%!important;width:100%!important;min-width:100%!important;max-width:100%!important;scroll-snap-align:start!important}
 }
