@@ -537,13 +537,9 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
-        {activeReportTab === "assets" ? (
-          <h1 className="text-[20px] font-semibold leading-6 text-[rgb(var(--c-charcoal))]">Asset Tracker</h1>
-        ) : (
-          <select aria-label="Pilih laporan" value={activeReportTab} onChange={(e) => setActiveReportTab(e.target.value as typeof activeReportTab)} className="min-w-0 flex-1 appearance-none rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 py-2.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm outline-none">
-            <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="debt">Debt Tracker</option><option value="cashflow">Cashflow Tracker</option>
-          </select>
-        )}
+        <select aria-label="Pilih laporan" value={activeReportTab} onChange={(e) => setActiveReportTab(e.target.value as typeof activeReportTab)} className="min-w-0 flex-1 appearance-none rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 py-2.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm outline-none">
+          <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="debt">Debt Tracker</option><option value="cashflow">Cashflow Tracker</option>
+        </select>
         <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm">
           <CalendarDays size={15} className="shrink-0 text-[rgb(var(--c-up))]" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-[rgb(var(--c-muted))]" />
         </button>
@@ -670,34 +666,18 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
           const pieColors = ["#0F7A5C", "#9CA7B7", "#E3B341", "#9ADBC7", "#D4D9DF", "#6F8B80"];
           return (
             <div className="grid gap-3">
-              <Card>
-                <div className="p-4 sm:p-5">
-                  <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-[rgb(var(--c-charcoal))]">{id ? "Arus Kas" : "Cash Flow"}</h2>
-                  <p className="mt-1 text-[13px] text-charcoal/60">{id ? "Pemasukan, pengeluaran, dan tabungan bulan ini" : "Income, expenses, and savings this month"}</p>
-
-                  <div className="mt-5 space-y-4">
-                    {[
-                      { label: id ? "Pemasukan" : "Income", value: totalIncome, fill: "#20A77A" },
-                      { label: id ? "Pengeluaran" : "Expenses", value: totalExpense, fill: "#9CA7B7" },
-                      { label: id ? "Tabungan" : "Savings", value: totalSaving, fill: "#3E8DDB" },
-                    ].map((item) => (
-                      <div key={item.label}>
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="text-[14px] text-charcoal/70">{item.label}</span>
-                          <span className="text-[15px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{formatRupiah(item.value)}</span>
-                        </div>
-                        <div className="mt-2 h-[20px] overflow-hidden rounded-full bg-charcoal/[0.025]">
-                          <div className="h-full rounded-full" style={{ width: `${Math.min(100, (item.value / cashflowMax) * 100)}%`, background: item.fill }} />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-5 inline-flex rounded-full bg-[#CDECCB] px-4 py-2 text-[13px] font-medium text-[#147A19]">
-                    {id ? `Menabung ${Math.round(savingRate)}% dari pemasukan` : `Saving ${Math.round(savingRate)}% of income`}
-                  </div>
+              <section className="rounded-[14px] bg-gradient-to-br from-[#374151] via-[#1F2937] to-[#111827] p-4 text-white shadow-float sm:p-5">
+                <p className="text-[14px] font-semibold text-white/70">Net Cashflow</p>
+                <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
+                  <span className="shrink-0 text-[14px] font-semibold leading-tight text-white/70">Rp</span>
+                  <span className="report-headline-amount min-w-0 font-extrabold leading-tight tracking-[-0.6px] tabular-nums text-white">{formatRupiah(Math.abs(totalIncome - totalExpense)).replace(/^Rp\s?/, "")}</span>
                 </div>
-              </Card>
+                <p className={`mt-1 text-[11px] font-medium ${totalIncome - totalExpense < 0 ? "text-[#FCA5A5]" : "text-white/55"}`}>{totalIncome - totalExpense < 0 ? (id ? "Defisit pada periode terpilih" : "Deficit in selected period") : (id ? "Surplus pada periode terpilih" : "Surplus in selected period")}</p>
+                <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
+                  <div className="min-w-0 rounded-2xl bg-white/10 p-3"><p className="text-[12px] text-white/65">Cash In</p><p className="mt-2 whitespace-nowrap text-[clamp(16px,4.6vw,21px)] font-bold leading-tight tracking-[-0.2px] text-white tabular-nums">{formatRupiah(totalIncome)}</p></div>
+                  <div className="min-w-0 rounded-2xl bg-white/10 p-3"><p className="text-[12px] text-white/65">Cash Out</p><p className="mt-2 whitespace-nowrap text-[clamp(16px,4.6vw,21px)] font-bold leading-tight tracking-[-0.2px] text-white tabular-nums">{formatRupiah(totalExpense)}</p></div>
+                </div>
+              </section>
 
               <Card>
                 <div className="p-4 sm:p-5">
