@@ -107,7 +107,7 @@ export function Transaction() {
   const colorFor = (type: TransactionType) => type === "Income" ? "bg-[#DFF3E7] text-[#0B6B47]" : type === "Expense" ? "bg-[#FDE3EA] text-[#C23A5B]" : type === "Transfer" ? "bg-[#DCEBFF] text-[#1A5FD0]" : "bg-[#E8DDFA] text-[#6F46B0]";
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="transaction-page flex flex-col gap-3">
       <div className="grid grid-cols-2 rounded-2xl bg-charcoal/[0.05] p-1">
         <button type="button" onClick={() => setActiveTab("transactions")} className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${activeTab === "transactions" ? "bg-white text-[#123524] shadow-sm" : "text-charcoal/55"}`}>Transaction List</button>
         <button type="button" onClick={() => setActiveTab("wallets")} className={`rounded-xl px-3 py-3 text-sm font-semibold transition ${activeTab === "wallets" ? "bg-[#123524] text-white shadow-sm" : "text-charcoal/55"}`}>Dompet</button>
