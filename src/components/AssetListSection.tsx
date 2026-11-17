@@ -59,7 +59,7 @@ export function AssetListSection({
                     aria-label="Info"
                     aria-expanded={infoOpen}
                     onClick={() => setInfoOpen((value) => !value)}
-                    className="flex h-11 w-11 items-center justify-center rounded-full text-[rgb(var(--c-muted))] hover:bg-[rgb(var(--c-cream))] hover:text-[rgb(var(--c-charcoal))]"
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-[#7B8492] hover:bg-[#F3F4F6] hover:text-[#172033]"
                   >
                     <Info size={14} />
                   </button>
@@ -75,7 +75,7 @@ export function AssetListSection({
               )}
             </div>
 
-            <div className="mt-1.5 flex min-w-0 items-center gap-2">
+            <div className="mt-3 flex min-w-0 items-center gap-2">
               <p className="min-w-0 truncate text-[32px] font-bold leading-none tracking-[-0.025em] tabular-nums text-[rgb(var(--asset-primary-text))]">{totalValue}</p>
               {change !== null && (
                 <span className={`shrink-0 rounded-lg px-2 py-1 text-[11px] font-semibold tabular-nums ${
@@ -107,7 +107,7 @@ export function AssetListSection({
                 type="button"
                 onClick={onToggle}
                 aria-label={open ? "Ciutkan" : "Buka"}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[rgb(var(--c-cream))] text-[rgb(var(--c-charcoal))] transition-colors hover:bg-[rgb(var(--c-border))]"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[#7B8492] transition-colors hover:bg-[#F3F4F6]"
               >
                 {open ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
               </button>
