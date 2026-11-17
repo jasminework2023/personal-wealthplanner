@@ -34,5 +34,8 @@
     "node": ">=24 <25",
     "npm": ">=10"
   },
-  "packageManager": "npm@10.9.4"
+  "packageManager": "npm@10.9.4",
+  "overrides": {
+    "csstype": "3.2.3"
+  }
 }
