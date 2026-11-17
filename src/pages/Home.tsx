@@ -20,17 +20,17 @@ import { HomeMonthlyCalendar } from "../components/HomeMonthlyCalendar";
 
 const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 const menus = [
-  { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
-  { key: "wallets", label: "Wallet", icon: Wallet, to: "/wallets", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
-  { key: "budget", label: "Budget", icon: PieChart, to: "/budgeting", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
-  { key: "asset", label: "Asset", icon: TrendingUp, to: "/assets", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
-  { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
-  { key: "goals", label: "Goals", icon: Target, to: "/goals", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
-  { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection", tone: "bg-[#CFEFDD] text-[#0B6B47]" },
-  { key: "report", label: "Report", icon: Landmark, to: "/finance", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
-  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true, tone: "bg-[#DDF7E8] text-[#0B6B47]" },
-  { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
-  { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#DDF7E8] text-[#0B6B47]" },
+  { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction", tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "wallets", label: "Wallet", icon: Wallet, to: "/wallets", tone: "bg-[#E7E8EB] text-[#17191C]" },
+  { key: "budget", label: "Budget", icon: PieChart, to: "/budgeting", tone: "bg-[#E7E8EB] text-[#17191C]" },
+  { key: "asset", label: "Asset", icon: TrendingUp, to: "/assets", tone: "bg-[#E7E8EB] text-[#17191C]" },
+  { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator", tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "goals", label: "Goals", icon: Target, to: "/goals", tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection", tone: "bg-[#E7E8EB] text-[#17191C]" },
+  { key: "report", label: "Report", icon: Landmark, to: "/finance", tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true, tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant", tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#F1F2F4] text-[#17191C]" },
 ];
 
 export function Home() {
@@ -209,32 +209,32 @@ export function Home() {
         <div role="button" tabIndex={0}
           onClick={() => navigate("/finance")}
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }}
-          data-tour="home-assets-desktop" className="home-asset-summary h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] border-0 p-4 text-[#062D20] shadow-[0_18px_48px_rgba(0,184,110,0.20)]"
-          style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)" }}>
+          data-tour="home-assets-desktop" className="home-asset-summary h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] border-0 p-4 text-[#17191C] shadow-[0_12px_36px_rgba(17,24,39,0.08)]"
+          style={{ background: "linear-gradient(135deg, #FFFFFF 0%, #F0F1F3 55%, #D9DCE1 100%)" }}>
           <div className="relative">
             <button type="button"
               onClick={(event) => { event.stopPropagation(); setAssetsVisible((visible) => !visible); }}
               aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
-              data-tour="home-eye-desktop" className="absolute -right-1 -top-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#064A34] transition hover:bg-[#006B48]/15">
+              data-tour="home-eye-desktop" className="absolute -right-1 -top-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#4B5563] transition hover:bg-[#006B48]/15">
               {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
             </button>
           </div>
-          <p className="mt-1.5 text-[12px] font-medium tracking-[-0.02em] text-[#075B40]/80">{id ? "Total Aset" : "Total Assets"}</p>
+          <p className="mt-1.5 text-[12px] font-medium tracking-[-0.02em] text-[#6B7280]">{id ? "Total Aset" : "Total Assets"}</p>
           <div className="mt-0.5 min-w-0 break-words text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black" style={{ fontSize: "34px" }}>
             {renderMoney(integratedTotalAssets, assetsVisible, "text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black", 34)}
           </div>
           <div className="mt-2 flex min-h-[46px] items-center justify-between gap-3">
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[11px] font-medium tracking-[-0.02em] text-[#042F21]">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#E5E7EB] px-3 py-1.5 text-[11px] font-medium tracking-[-0.02em] text-[#374151]">
               <TrendingUp size={14} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
             </span>
-            <span className="shrink-0 text-[11px] font-medium tracking-[-0.02em] text-[#075B40]/80 tabular-nums">
-              {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium tracking-[-0.02em] text-[#075B40]/80 tabular-nums", 11) : "Rp ••••••"}
+            <span className="shrink-0 text-[11px] font-medium tracking-[-0.02em] text-[#6B7280] tabular-nums">
+              {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium tracking-[-0.02em] text-[#6B7280] tabular-nums", 11) : "Rp ••••••"}
             </span>
           </div>
           {/* Asset goal progress: target amount sits beside the percentage above the bar. */}
           <div className="mt-3">
             <div
-              className="h-2.5 w-full overflow-hidden rounded-full bg-[#006B48]/20"
+              className="h-2.5 w-full overflow-hidden rounded-full bg-[#E5E7EB]"
               role="progressbar"
               aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"}
               aria-valuemin={0}
@@ -242,7 +242,7 @@ export function Home() {
               aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}
             >
               <div
-                className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
+                className="h-full rounded-full bg-[#111827] transition-[width] duration-500"
                 style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
               />
             </div>
@@ -252,7 +252,7 @@ export function Home() {
         <div role="button" tabIndex={0}
           onClick={() => navigate("/budgeting")}
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }}
-          data-tour="home-budget-desktop" className="hero-forest h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] p-4 text-white transition hover:-translate-y-0.5">
+          data-tour="home-budget-desktop" className="hero-neutral h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] p-4 text-white transition hover:-translate-y-0.5">
           <p className="mt-1.5 text-[12px] font-medium tracking-[-0.02em] text-white/70">{id ? "Sisa anggaran" : "Remaining budget"}</p>
           <div className="mt-0.5 min-w-0 break-words text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums" style={{ fontSize: "34px" }}>
             {hasBudget ? renderMoney(remainingBudget, assetsVisible, "text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 34) : (assetsVisible ? renderMoney(0, true, "text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 34) : "Rp ••••••")}
