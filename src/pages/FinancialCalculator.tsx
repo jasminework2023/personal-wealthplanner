@@ -44,17 +44,49 @@ function formatThousands(n) {
   return Number(n || 0).toLocaleString("id-ID");
 }
 function Button({ children, variant="primary", size, onClick, icon, iconRight, style }) {
-  return <button type="button" onClick={onClick} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7,borderRadius:10,border:variant==="outline"?"1px solid rgba(15,61,46,.18)":"1px solid transparent",padding:size==="sm"?"9px 13px":"11px 15px",fontSize:13,fontWeight:600,cursor:"pointer",background:variant==="primary"?"rgb(var(--c-accent-text))":variant==="secondary"?"rgb(var(--c-cream))":"transparent",color:variant==="primary"?"white":"rgb(var(--c-charcoal))",...style}}>{icon}{children}{iconRight}</button>;
+  return <button type="button" onClick={onClick} style={{
+    display:"inline-flex", alignItems:"center", justifyContent:"center", gap:7,
+    minHeight: size==="sm" ? 46 : 46, flex: size==="sm" ? "1 1 0" : undefined,
+    borderRadius:14,
+    border:variant==="outline" || variant==="secondary" ? "1px solid rgb(var(--c-border))" : "1px solid transparent",
+    padding:"0 15px", fontSize:13, fontWeight:600, cursor:"pointer",
+    background:variant==="primary" ? "linear-gradient(145deg,#374151,#111827)" : "#FFFFFF",
+    color:variant==="primary" ? "#FFFFFF" : "rgb(var(--c-charcoal))",
+    ...style
+  }}>{icon}{children}{iconRight}</button>;
 }
-function Tag({ children, variant="default" }) { return <span style={{display:"inline-flex",alignItems:"center",borderRadius:999,padding:"5px 9px",fontSize:10,fontWeight:700,letterSpacing:".04em",background:variant==="accent"?"rgb(var(--c-forest-50))":"rgb(var(--c-cream))",color:"rgb(var(--c-forest-800))",border:variant==="outline"?"1px solid rgb(var(--c-border))":"1px solid transparent"}}>{children}</span>; }
+function Tag({ children, variant="default" }) {
+  return <span style={{display:"inline-flex",alignItems:"center",borderRadius:999,padding:"5px 9px",minHeight:28,fontSize:10,fontWeight:700,letterSpacing:".04em",background:variant==="accent"?"rgb(var(--c-forest-50))":"rgb(var(--c-cream))",color:"rgb(var(--c-forest-800))",border:"1px solid rgb(var(--c-border))"}}>{children}</span>;
+}
 function Section({ children, style }) { return <section style={style}><div style={{maxWidth:1200,margin:"0 auto"}}>{children}</div></section>; }
 function NumberInput({ label, value, onChange, prefix, suffix, min=0, step=1, hint }) {
   const [raw,setRaw]=React.useState(null);
   const display=raw!==null?raw:formatThousands(value);
-  return <div><label style={{display:"block",fontSize:12,fontWeight:600,color:"rgb(var(--c-forest-800))",marginBottom:7}}>{label}</label><div style={{display:"flex",alignItems:"stretch"}}>{prefix&&<div style={{padding:"0 11px",display:"flex",alignItems:"center",background:"rgb(var(--c-cream))",border:"1px solid rgb(var(--c-border))",borderRight:0,borderRadius:"10px 0 0 10px",color:"rgb(var(--c-muted))",fontSize:12}}>{prefix}</div>}<input inputMode="numeric" value={display} onChange={e=>{const d=e.target.value.replace(/[^0-9]/g,"");setRaw(d);if(d!=="")onChange(Number(d));}} onBlur={()=>{const n=raw===""||raw===null?min:Number(raw);onChange(Math.max(min,n));setRaw(null)}} style={{width:"100%",border:"1px solid rgb(var(--c-border))",borderRadius:prefix?(suffix?0:"0 10px 10px 0"):(suffix?"10px 0 0 10px":10),padding:"11px 12px",outline:"none",fontSize:13,boxSizing:"border-box"}}/>{suffix&&<div style={{padding:"0 11px",display:"flex",alignItems:"center",background:"rgb(var(--c-cream))",border:"1px solid rgb(var(--c-border))",borderLeft:0,borderRadius:"0 10px 10px 0",color:"rgb(var(--c-muted))",fontSize:12}}>{suffix}</div>}</div>{hint&&<div style={{fontSize:11,color:"rgb(var(--c-muted))",marginTop:5}}>{hint}</div>}</div>;
+  const inputId = `calc-input-${String(label).toLowerCase().replace(/[^a-z0-9]+/g,"-")}`;
+  return <div className="wp-calc-field">
+    <label htmlFor={inputId} className="wp-calc-label">{label}</label>
+    <div style={{display:"flex",alignItems:"stretch"}}>
+      {prefix&&<div className="wp-calc-affix" style={{borderRight:0,borderRadius:"14px 0 0 14px"}}>{prefix}</div>}
+      <input id={inputId} inputMode="numeric" value={display} onChange={e=>{const d=e.target.value.replace(/[^0-9]/g,"");setRaw(d);if(d!=="")onChange(Number(d));}} onBlur={()=>{const n=raw===""||raw===null?min:Number(raw);onChange(Math.max(min,n));setRaw(null)}} style={{width:"100%",border:"1px solid rgb(var(--c-border))",borderRadius:prefix?(suffix?0:"0 14px 14px 0"):(suffix?"14px 0 0 14px":14),padding:"12px 13px",outline:"none",fontSize:13,boxSizing:"border-box",background:"rgb(var(--c-surface))",color:"rgb(var(--c-charcoal))",fontVariantNumeric:"tabular-nums"}}/>
+      {suffix&&<div className="wp-calc-affix" style={{borderLeft:0,borderRadius:"0 14px 14px 0"}}>{suffix}</div>}
+    </div>
+    {hint&&<div style={{fontSize:11,color:"rgb(var(--c-muted))",marginTop:5}}>{hint}</div>}
+  </div>;
 }
-function Slider({ label,value,onChange,min,max,step=1,format }) { return <div><div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}><span style={{fontSize:12,fontWeight:600,color:"rgb(var(--c-forest-800))"}}>{label}</span><span style={{fontSize:12,fontWeight:700,color:"rgb(var(--c-charcoal))"}}>{format?format(value):value}</span></div><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))} style={{width:"100%"}}/></div>; }
-function ResultTile({ label,value,sub }) { return <div style={{background:"rgb(var(--c-forest-50))",border:"1px solid rgb(var(--c-forest-100))",borderRadius:16,padding:"22px 22px 24px"}}><div style={{fontSize:10,fontWeight:700,letterSpacing:".08em",color:"rgb(var(--c-forest-800))"}}>{label}</div><div style={{fontSize:"clamp(30px,4vw,48px)",lineHeight:1.05,fontWeight:800,color:"rgb(var(--c-accent-text))",marginTop:9}}>{value}</div>{sub&&<div style={{fontSize:12,color:"rgb(var(--c-forest-800))",marginTop:9}}>{sub}</div>}</div>; }
+function Slider({ label,value,onChange,min,max,step=1,format }) {
+  const sliderId = `calc-slider-${String(label).toLowerCase().replace(/[^a-z0-9]+/g,"-")}`;
+  return <div className="wp-calc-field">
+    <div className="wp-calc-slider-head"><label htmlFor={sliderId}>{label}</label><span>{format?format(value):value}</span></div>
+    <input id={sliderId} aria-label={label} type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))} className="wp-calc-range"/>
+  </div>;
+}
+function ResultTile({ label,value,sub }) {
+  return <div className="wp-calc-result-tile">
+    <div className="wp-calc-result-label">{label}</div>
+    <div className="wp-calc-result-value">{value}</div>
+    {sub&&<div className="wp-calc-result-sub">{sub}</div>}
+  </div>;
+}
 function ScoreRow({ label, value, status, target }) {
   const color = status === "good" ? "#2e9e6b" : status === "ok" ? "#e0a100" : "#d64545";
   return <div className="card card-tight row-between" style={{background:"rgb(var(--c-surface))",border:"1px solid rgb(var(--c-border))",borderRadius:14,padding:"12px 14px",alignItems:"center"}}>
@@ -62,7 +94,7 @@ function ScoreRow({ label, value, status, target }) {
     <div style={{display:"flex",alignItems:"center",gap:12}}><span className="mono" style={{fontWeight:600,color:"rgb(var(--c-charcoal))"}}>{value}</span><span style={{width:10,height:10,borderRadius:999,background:color,display:"inline-block"}}/></div>
   </div>;
 }
-function Card({children,style}) { return <div className="wp-calc-card" style={{background:"rgb(var(--c-surface))",border:"1px solid rgb(var(--c-border))",borderRadius:16,padding:18,...style}}>{children}</div>; }
+function Card({children,style}) { return <div className="wp-calc-card" style={{background:"rgb(var(--c-surface))",border:"1px solid rgb(var(--c-border))",borderRadius:20,padding:"18px 20px",overflow:"hidden",boxShadow:"none",backgroundClip:"padding-box",...style}}>{children}</div>; }
 
 function CalculatorBody({ id, onSaveResult, onNavigate }) {
   switch (id) {
@@ -1761,125 +1793,70 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
   };
 
   return (
-    <div>
-      <div
-        className="wp-calc-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr",
-          gap: 10,
-          alignItems: "start",
-        }}
-      >
-        <Card style={{ position: "sticky", top: 20 }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 16,
-              flexWrap: "wrap",
-            }}
-          >
-            <h3 style={{ margin: 0, fontSize: 18 }}>{copy.input}</h3>
+    <div className="wp-calc-layout">
+      <div className="wp-calc-grid">
+        <div className="wp-calc-results-column">
+          {results}
+          <div className="wp-calc-actions">
+            <Button variant="secondary" size="sm" onClick={save} icon={saved ? <Check size={14} /> : <Plus size={14} />}>
+              {saved ? copy.saved : copy.save}
+            </Button>
+            <Button variant="primary" size="sm" onClick={goProtection} iconRight={<ArrowRight size={14} />}>
+              {copy.protect}
+            </Button>
+          </div>
+        </div>
+
+        <Card>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:18,flexWrap:"wrap"}}>
+            <h3 style={{margin:0,fontSize:16,fontWeight:700,color:"rgb(var(--c-charcoal))"}}>{copy.input}</h3>
             <Tag>{copy.autoUpdate}</Tag>
           </div>
-
-          <div style={{ display: "grid", gap: 10 }}>{inputs}</div>
+          <div style={{display:"grid",gap:16}}>{inputs}</div>
         </Card>
-
-        <div style={{ minWidth: 0 }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 10,
-              marginBottom: 12,
-              flexWrap: "wrap",
-            }}
-          >
-            <h3 style={{ margin: 0, fontSize: 18 }}>{copy.results}</h3>
-
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={save}
-                icon={saved ? <Check size={14} /> : <Plus size={14} />}
-              >
-                {saved ? copy.saved : copy.save}
-              </Button>
-
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={goProtection}
-                iconRight={<ArrowRight size={14} />}
-              >
-                {copy.protect}
-              </Button>
-            </div>
-          </div>
-
-          {results}
-
-        </div>
       </div>
 
       <style>{`
+        .wp-calc-layout{color:rgb(var(--c-charcoal))}
+        .wp-calc-grid{display:grid!important;grid-template-columns:1fr!important;gap:16px!important}
+        .wp-calc-results-column,.wp-calc-input-column{min-width:0}
+        .wp-calc-results-column{display:flex;flex-direction:column;gap:14px}
+        .wp-calc-field{display:flex;flex-direction:column}
+        .wp-calc-label{display:block;font-size:12px;font-weight:600;color:rgb(var(--c-forest-800));margin-bottom:7px}
+        .wp-calc-affix{padding:0 11px;display:flex;align-items:center;background:rgb(var(--c-cream));border:1px solid rgb(var(--c-border));color:rgb(var(--c-muted));font-size:12px}
+        .wp-calc-slider-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+        .wp-calc-slider-head label{font-size:12px;font-weight:600;color:rgb(var(--c-forest-800))}
+        .wp-calc-slider-head span{font-size:12px;font-weight:700;color:rgb(var(--c-charcoal));font-variant-numeric:tabular-nums}
+        .wp-calc-range{width:100%;height:6px;accent-color:#0E9F6E}
+        .wp-calc-result-tile{background:rgb(var(--c-surface));border:1px solid rgb(var(--c-border));border-radius:20px;padding:18px 20px;overflow:hidden;box-shadow:none;background-clip:padding-box}
+        .wp-calc-result-label{font-size:12px;font-weight:700;letter-spacing:.08em;color:rgb(var(--c-muted));text-transform:uppercase}
+        .wp-calc-result-value{font-size:32px;line-height:1.08;font-weight:800;color:rgb(var(--c-charcoal));margin-top:8px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+        .wp-calc-result-sub{font-size:12px;color:rgb(var(--c-muted));margin-top:8px;line-height:1.45}
+        .wp-calc-actions{display:flex;gap:10px}
+        .wp-calc-actions>button{flex:1 1 0;min-width:0}
+        .wp-calculator .card{background:rgb(var(--c-surface));border:1px solid rgb(var(--c-border));border-radius:20px;padding:18px 20px}
+        .wp-calculator .card-tight{padding:12px 14px}
+        .wp-calculator .row{display:flex;align-items:center}
+        .wp-calculator .row-between{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px 12px}
+        .wp-calculator .row-between>*{min-width:0}
+        .wp-calculator .row-between>*:last-child{margin-left:auto;text-align:right;overflow-wrap:anywhere;word-break:break-word}
+        .wp-calculator .stack{display:flex;flex-direction:column}
+        .wp-calculator .muted{color:rgb(var(--c-muted))}
+        .wp-calculator .ink-2{color:rgb(var(--c-forest-800))}
+        .wp-calculator .mono{font-variant-numeric:tabular-nums}
+        .wp-calculator .divider{height:1px;background:rgb(var(--c-border))}
         @media(min-width:1181px){
-          .wp-calculator .wp-calc-grid{
-            grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)!important;
-            gap:20px!important;
-          }
+          .wp-calculator .wp-calc-grid{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)!important;gap:20px!important}
         }
-
-        @media(max-width:1180px){
-          .wp-calculator .wp-calc-grid{
-            grid-template-columns:minmax(0,1fr)!important;
-            gap:16px!important;
-          }
-
-          .wp-calculator .wp-calc-grid>div:first-child{
-            position:relative!important;
-            top:0!important;
-          }
-
-          .wp-calculator .wp-calc-grid>div,
-          .wp-calculator .wp-calc-grid .wp-calc-card{
-            min-width:0;
-            max-width:100%;
-            box-sizing:border-box;
-          }
-
-          .wp-calculator .wp-calc-grid input,
-          .wp-calculator .wp-calc-grid select,
-          .wp-calculator .wp-calc-grid textarea{
-            min-width:0;
-            max-width:100%;
-          }
-
-          .wp-calculator .wp-calc-grid table{
-            min-width:560px;
-          }
-
-          .wp-calculator .wp-calc-grid [style*="grid-template-columns"]{
-            min-width:0;
-          }
+        @media(max-width:420px){
+          .wp-calculator [style*="1.1fr"]{grid-template-columns:1fr!important}
+          .wp-calc-actions{gap:8px}
+          .wp-calc-actions button{font-size:12px}
         }
       `}</style>
     </div>
   );
 }
-
 
 export function FinancialCalculator({ onOpen }: { onOpen: (id: string) => void }) {
   const [language, setLanguage] = React.useState(getAppLanguage());
