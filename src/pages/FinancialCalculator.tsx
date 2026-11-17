@@ -94,7 +94,7 @@ function ScoreRow({ label, value, status, target }) {
     <div style={{display:"flex",alignItems:"center",gap:12}}><span className="mono" style={{fontWeight:600,color:"rgb(var(--c-charcoal))"}}>{value}</span><span style={{width:10,height:10,borderRadius:999,background:color,display:"inline-block"}}/></div>
   </div>;
 }
-function Card({children,style}) { return <div className="wp-calc-card" style={{background:"rgb(var(--c-surface))",border:"1px solid rgb(var(--c-border))",borderRadius:20,padding:"18px 20px",...style}}>{children}</div>; }
+function Card({children,style}) { return <div className="wp-calc-card" style={{background:"rgb(var(--c-surface))",border:"1px solid rgb(var(--c-border))",borderRadius:20,padding:"18px 20px",overflow:"hidden",boxShadow:"none",backgroundClip:"padding-box",...style}}>{children}</div>; }
 
 function CalculatorBody({ id, onSaveResult, onNavigate }) {
   switch (id) {
@@ -1828,7 +1828,7 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
         .wp-calc-slider-head label{font-size:12px;font-weight:600;color:rgb(var(--c-forest-800))}
         .wp-calc-slider-head span{font-size:12px;font-weight:700;color:rgb(var(--c-charcoal));font-variant-numeric:tabular-nums}
         .wp-calc-range{width:100%;height:6px;accent-color:#0E9F6E}
-        .wp-calc-result-tile{background:linear-gradient(150deg,#FFFFFF 0%,#EEF2F7 72%,#DCEFE6 100%);border:1px solid rgb(var(--c-border));border-radius:20px;padding:18px 20px}
+        .wp-calc-result-tile{background:rgb(var(--c-surface));border:1px solid rgb(var(--c-border));border-radius:20px;padding:18px 20px;overflow:hidden;box-shadow:none;background-clip:padding-box}
         .wp-calc-result-label{font-size:12px;font-weight:700;letter-spacing:.08em;color:rgb(var(--c-muted));text-transform:uppercase}
         .wp-calc-result-value{font-size:32px;line-height:1.08;font-weight:800;color:rgb(var(--c-charcoal));margin-top:8px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
         .wp-calc-result-sub{font-size:12px;color:rgb(var(--c-muted));margin-top:8px;line-height:1.45}
