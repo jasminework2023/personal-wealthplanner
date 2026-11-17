@@ -240,32 +240,25 @@ export function Home() {
               {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
             </button>
           </div>
-          <p className="mt-1.5 text-[12px] font-medium tracking-[-0.02em] text-[#6B7280]">{id ? "Total Aset" : "Total Assets"}</p>
-          <div className="mt-0.5 min-w-0 break-words text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black" style={{ fontSize: "34px" }}>
-            {renderMoney(integratedTotalAssets, assetsVisible, "text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black", 34)}
-          </div>
-          <div className="mt-2 flex min-h-[46px] items-center justify-between gap-3">
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#E5E7EB] px-3 py-1.5 text-[11px] font-medium tracking-[-0.02em] text-[#374151]">
-              <TrendingUp size={14} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
-            </span>
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-[12px] font-medium tracking-[-0.02em] text-[#6B7280]">{id ? "Total Aset" : "Total Assets"}</p>
             <span className="shrink-0 text-[11px] font-medium tracking-[-0.02em] text-[#6B7280] tabular-nums">
+              {id ? "Target " : "Goal "}
               {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium tracking-[-0.02em] text-[#6B7280] tabular-nums", 11) : "Rp ••••••"}
             </span>
           </div>
-          {/* Asset goal progress: target amount sits beside the percentage above the bar. */}
-          <div className="mt-3">
-            <div
-              className="h-2.5 w-full overflow-hidden rounded-full bg-[#E5E7EB]"
-              role="progressbar"
-              aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}
-            >
-              <div
-                className="h-full rounded-full bg-[#111827] transition-[width] duration-500"
-                style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
-              />
+          <div className="mt-1 min-w-0 break-words text-[44px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-black">
+            {renderMoney(integratedTotalAssets, assetsVisible, "text-[44px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-black", 44)}
+          </div>
+          <div className="mt-4">
+            <div className="flex items-center justify-between gap-2 text-[10.5px] font-medium text-[#6B7280]">
+              <span>{id ? "Progress target" : "Goal progress"}</span>
+              <span className="tabular-nums font-semibold text-[#374151]">{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}%</span>
+            </div>
+            <div className="relative mt-1.5 h-[28px] w-full" aria-label={id ? "Progress target aset" : "Asset goal progress"}>
+              <div className="absolute left-0 right-0 top-[13px] h-[2px] rounded-full bg-[#E5E7EB]" />
+              <div className="absolute left-0 top-[13px] h-[2px] rounded-full bg-[#111827] transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
+              <div className="absolute left-0 top-[9px] h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-[#111827]" style={{ left: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
             </div>
           </div>
         </div>
@@ -308,23 +301,26 @@ export function Home() {
               </div>
 
               <div role="button" tabIndex={0} onClick={() => navigate("/finance")} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }} className="mt-3 cursor-pointer">
-                <p className="text-[12px] font-medium text-[#6B7280]">Total Aset</p>
-                <div className="mt-1 min-w-0 truncate text-[28px] font-extrabold leading-tight tracking-[-0.035em] tabular-nums">
-                  {renderMoney(integratedTotalAssets, assetsVisible, "text-[28px] font-extrabold leading-tight tracking-[-0.035em] tabular-nums", 28)}
-                </div>
-
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#E5E7EB] px-2.5 py-1 text-[10.5px] font-semibold text-[#374151]">
-                    <TrendingUp size={13} />
-                    {Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% dari target
-                  </span>
-                  <span className="min-w-0 truncate text-right text-[10.5px] font-medium text-[#6B7280]">
-                    {assetsVisible ? renderMoney(assets.target, true, "text-[10.5px] font-medium text-[#0B6B47]/60", 10.5) : "Rp ••••••"}
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-[12px] font-medium text-[#6B7280]">Total Aset</p>
+                  <span className="shrink-0 text-[10.5px] font-medium text-[#6B7280] tabular-nums">
+                    Target {assetsVisible ? renderMoney(assets.target, true, "text-[10.5px] font-medium text-[#6B7280] tabular-nums", 10.5) : "Rp ••••••"}
                   </span>
                 </div>
+                <div className="mt-1 min-w-0 truncate text-[34px] font-extrabold leading-none tracking-[-0.04em] tabular-nums">
+                  {renderMoney(integratedTotalAssets, assetsVisible, "text-[34px] font-extrabold leading-none tracking-[-0.04em] tabular-nums", 34)}
+                </div>
 
-                <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#E5E7EB]">
-                  <div className="h-full rounded-full bg-[#15803D]" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
+                <div className="mt-3.5">
+                  <div className="flex items-center justify-between text-[10px] font-medium text-[#6B7280]">
+                    <span>Progress target</span>
+                    <span className="font-semibold tabular-nums text-[#374151]">{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}%</span>
+                  </div>
+                  <div className="relative mt-1.5 h-[22px] w-full" aria-label="Progress target aset">
+                    <div className="absolute left-0 right-0 top-[10px] h-[2px] rounded-full bg-[#E5E7EB]" />
+                    <div className="absolute left-0 top-[10px] h-[2px] rounded-full bg-[#111827] transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
+                    <div className="absolute top-[6px] h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-[#111827]" style={{ left: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
+                  </div>
                 </div>
               </div>
             </div>
