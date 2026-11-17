@@ -1856,7 +1856,7 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
       `}</style>
     </div>
   );
-
+}
 
 export function FinancialCalculator({ onOpen }: { onOpen: (id: string) => void }) {
   const [language, setLanguage] = React.useState(getAppLanguage());
