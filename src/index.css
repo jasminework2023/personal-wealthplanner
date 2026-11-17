@@ -70,6 +70,22 @@
   --asset-p2p: 100 116 139;
   --asset-other: 71 85 105;
     --asset-real: 6 182 212;
+
+  /* Asset Tracker design tokens */
+  --asset-page-bg: 243 244 246;
+  --asset-card-bg: 255 255 255;
+  --asset-primary-text: 23 32 51;
+  --asset-secondary-text: 123 132 146;
+  --asset-primary-green: 7 132 92;
+  --asset-profit-bg: 234 245 240;
+  --asset-chart-green: 12 163 111;
+  --asset-chart-blue: 37 99 235;
+  --asset-chart-mint: 94 224 182;
+  --asset-chart-gray: 161 169 181;
+  --asset-chart-slate: 75 85 99;
+  --asset-loss: 220 82 82;
+  --asset-loss-bg: 252 238 238;
+  --asset-nav-dark: 39 50 68;
   --shadow-pop: 0 6px 18px rgba(17,24,39,.16);
   --shadow-nav: 0 4px 20px rgba(17,24,39,.10);
 
