@@ -395,37 +395,6 @@ function StockTracker({
         <p className="px-5 pb-5 pt-3 text-center text-[12px] text-[#7B8492]">Belum ada saham {market === "ID" ? "Indonesia" : "US"}.</p>
       )}
 
-      {open && ( <p className="mx-4 mb-2 rounded-lg bg-[rgb(var(--c-rose-50))] px-2.5 py-2 text-[12px] text-[rgb(var(--c-down))] sm:mx-5">{error}</p>}
-
-      {showInvestmentStockBanner && (
-        <div className="mx-4 mb-2 flex items-center justify-between gap-2 rounded-[12px] bg-[rgb(var(--c-forest-50))] px-3 py-2.5 text-[rgb(var(--c-up))] sm:mx-5">
-          <p className="min-w-0 text-[12px] leading-relaxed">Ada baris 'Saham' di Investment Assets yang tidak dihitung. Tambahkan saham satu per satu di Stock Portfolio.</p>
-          {isRealData && <button type="button" onClick={openAdd} className="shrink-0 rounded-full bg-[rgb(var(--c-surface))] px-2.5 py-1.5 text-[12px] font-bold text-[rgb(var(--c-up))]">+ Tambah</button>}
-        </div>
-      )}
-
-      {rows.length ? (
-        <div className="border-t border-[rgb(var(--c-border))]">
-          {rows.map((row) => {
-            const pct = row.avgPrice * row.shares > 0 ? (row.pl / (row.avgPrice * row.shares)) * 100 : 0;
-            return (
-              <div key={market + row.ticker} className="border-b border-[rgb(var(--c-border))] last:border-0">
-                <AssetListItem
-                  icon={<TrendingUp size={18} strokeWidth={2.2} />}
-                  name={row.ticker}
-                  subtitle={`Saham · Auto · ${row.ticker}`}
-                  value={assetsVisible ? formatStockMoney(row.value) : (market === "ID" ? "Rp " + hiddenStockMoney : "$" + hiddenStockMoney)}
-                  changePercent={pct}
-                  onClick={isRealData ? () => openEdit(row) : undefined}
-                />
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <p className="px-4 pb-5 pt-3 text-center text-[12px] text-[rgb(var(--c-muted))]">Belum ada saham {market === "ID" ? "Indonesia" : "US"}.</p>
-      )}
-
       {open && (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) resetForm(); }}>
           <div className="w-full max-w-lg rounded-t-[22px] border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-2xl sm:rounded-[18px]">
