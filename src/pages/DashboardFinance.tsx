@@ -666,77 +666,105 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
 
       {activeReportTab === "cashflow" && <>
         {(() => {
-          const monthIndex = monthNames.indexOf(selectedMonth);
-          const previousMonth = monthNames[(monthIndex + 11) % 12];
-          const previousYear = monthIndex === 0 ? selectedYear - 1 : selectedYear;
-          const previousTransactions = historyData.transactions.filter((t) => {
-            const year = Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear));
-            return String(t.month || "").toLowerCase() === previousMonth.toLowerCase() && year === previousYear;
-          });
-          const previousIncome = previousTransactions.filter((t) => t.type === "Income").reduce((sum, t) => sum + t.amount, 0);
-          const previousExpense = previousTransactions.filter((t) => t.type === "Expense").reduce((sum, t) => sum + t.amount, 0);
-          const previousSaving = previousTransactions.filter((t) => t.type === "Saving").reduce((sum, t) => sum + t.amount, 0);
-          const netCashflow = totalIncome - totalExpense - totalSaving;
-          const previousNetCashflow = previousIncome - previousExpense - previousSaving;
-          const trend = previousTransactions.length > 0 && previousNetCashflow !== 0
-            ? ((netCashflow - previousNetCashflow) / Math.abs(previousNetCashflow)) * 100
-            : null;
-          const netDigits = String(Math.round(Math.abs(netCashflow))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-          return <div className="report-summary-card rounded-[14px] bg-gradient-to-br from-[#BDF7DF] to-[#61E5AC] p-4 text-[#071B12] dark:from-[#BDF7DF] dark:to-[#61E5AC]">
-            <p className="text-[14px] font-semibold text-[#53697A]">Net cashflow</p>
-            <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
-              <span className="shrink-0 text-[14px] font-semibold leading-tight text-[#53697A]">Rp</span>
-              <span className="report-headline-amount min-w-0 font-extrabold leading-tight tracking-[-0.6px] text-[#123524] tabular-nums">{netCashflow < 0 ? "-" : ""}{netDigits}</span>
+          const cashflowMax = Math.max(totalIncome, totalExpense, totalSaving, 1);
+          const savingRate = totalIncome > 0 ? (totalSaving / totalIncome) * 100 : 0;
+          const expenseCategoryTotal = expenseRows.reduce((sum, row) => sum + Math.max(0, Number(row.realization) || 0), 0);
+          const categoryRows = expenseRows.filter((row) => Number(row.realization) > 0);
+          const pieColors = ["#0F7A5C", "#9CA7B7", "#E3B341", "#9ADBC7", "#D4D9DF", "#6F8B80"];
+          return (
+            <div className="grid gap-3">
+              <Card>
+                <div className="p-4 sm:p-5">
+                  <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-[rgb(var(--c-charcoal))]">{id ? "Arus Kas" : "Cash Flow"}</h2>
+                  <p className="mt-1 text-[13px] text-charcoal/60">{id ? "Pemasukan, pengeluaran, dan tabungan bulan ini" : "Income, expenses, and savings this month"}</p>
+
+                  <div className="mt-5 space-y-4">
+                    {[
+                      { label: id ? "Pemasukan" : "Income", value: totalIncome, fill: "#20A77A" },
+                      { label: id ? "Pengeluaran" : "Expenses", value: totalExpense, fill: "#9CA7B7" },
+                      { label: id ? "Tabungan" : "Savings", value: totalSaving, fill: "#3E8DDB" },
+                    ].map((item) => (
+                      <div key={item.label}>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-[14px] text-charcoal/70">{item.label}</span>
+                          <span className="text-[15px] font-semibold tabular-nums text-[rgb(var(--c-charcoal))]">{formatRupiah(item.value)}</span>
+                        </div>
+                        <div className="mt-2 h-[20px] overflow-hidden rounded-full bg-charcoal/[0.025]">
+                          <div className="h-full rounded-full" style={{ width: `${Math.min(100, (item.value / cashflowMax) * 100)}%`, background: item.fill }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 inline-flex rounded-full bg-[#CDECCB] px-4 py-2 text-[13px] font-medium text-[#147A19]">
+                    {id ? `Menabung ${Math.round(savingRate)}% dari pemasukan` : `Saving ${Math.round(savingRate)}% of income`}
+                  </div>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="p-4 sm:p-5">
+                  <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-[rgb(var(--c-charcoal))]">{id ? "Pengeluaran per Kategori" : "Expenses by Category"}</h2>
+                  <p className="mt-1 text-[13px] text-charcoal/60">{id ? "Distribusi pengeluaran yang tercatat" : "Distribution of recorded expenses"}</p>
+
+                  {expenseCategoryTotal > 0 ? (
+                    <>
+                      <div className="mt-5 flex justify-center">
+                        <div className="relative h-[210px] w-[210px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={categoryRows}
+                                dataKey="realization"
+                                nameKey="category"
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={58}
+                                outerRadius={94}
+                                paddingAngle={2}
+                                stroke="#FFFFFF"
+                                strokeWidth={3}
+                              >
+                                {categoryRows.map((row, index) => <Cell key={row.category} fill={pieColors[index % pieColors.length]} />)}
+                              </Pie>
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span className="text-[12px] text-charcoal/55">Total</span>
+                            <span className="mt-0.5 text-[22px] font-semibold leading-tight tabular-nums text-[rgb(var(--c-charcoal))]">{formatCompact(expenseCategoryTotal)}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 divide-y divide-charcoal/10 border-t border-charcoal/10">
+                        {categoryRows.slice(0, showAllCategories ? categoryRows.length : 6).map((row, index) => {
+                          const pct = expenseCategoryTotal > 0 ? (row.realization / expenseCategoryTotal) * 100 : 0;
+                          return (
+                            <div key={row.category} className="flex items-center gap-3 py-3">
+                              <span className="h-5 w-5 shrink-0 rounded-[4px]" style={{ background: pieColors[index % pieColors.length] }} />
+                              <span className="min-w-0 flex-1 truncate text-[14px] text-[rgb(var(--c-charcoal))]">{row.category}</span>
+                              <span className="w-12 shrink-0 text-right text-[13px] text-charcoal/65 tabular-nums">{Math.round(pct)}%</span>
+                              <span className="w-[104px] shrink-0 text-right text-[14px] font-medium tabular-nums text-[rgb(var(--c-charcoal))]">{formatRupiah(row.realization)}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {categoryRows.length > 6 && (
+                        <div className="mt-3 flex justify-end">
+                          <button type="button" onClick={() => setShowAllCategories((value) => !value)} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold text-forest-700 hover:bg-forest-50">
+                            {showAllCategories ? (id ? "Tampilkan lebih sedikit" : "Show less") : (id ? "Lihat semua kategori" : "View all categories")} <ChevronRight size={14} className={showAllCategories ? "rotate-90" : ""}/>
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="py-10 text-center text-[13px] text-charcoal/45">{id ? "Belum ada data pengeluaran." : "No expense data yet."}</p>
+                  )}
+                </div>
+              </Card>
             </div>
-            {trend !== null && <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#123524]/[0.12] px-2.5 py-1 text-[12px] font-medium text-[#123524]"><span>{trend >= 0 ? <TrendingUp size={14}/> : <TrendingDown size={14}/>}</span><span>{trend >= 0 ? "+" : ""}{Math.round(trend)}% dari bulan lalu</span></div>}
-            <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
-              <div className="min-w-0 rounded-2xl bg-black/[0.08] p-3 dark:bg-black/10">
-                <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#DFF3E7] text-[#0B6B47]"><ArrowDownLeft size={16}/></span><span className="text-[13px] text-[#6B7B70]">Cash in</span></div>
-                <p className="mt-2 whitespace-nowrap text-[clamp(17px,4.7vw,21px)] font-bold leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalIncome)}</p>
-              </div>
-              <div className="min-w-0 rounded-2xl bg-black/[0.08] p-3 dark:bg-black/10">
-                <div className="flex items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FDE3EA] text-[#C23A5B]"><ArrowUpRight size={16}/></span><span className="text-[13px] text-[#6B7B70]">Cash out</span></div>
-                <p className="mt-2 whitespace-nowrap text-[clamp(16px,4.4vw,20px)] font-bold leading-tight tracking-[-0.2px] text-[#123524] tabular-nums">{formatRupiah(totalExpense+totalSaving)}</p>
-              </div>
-            </div>
-          </div>;
+          );
         })()}
-        <div className="grid items-start gap-3 lg:grid-cols-2">
-          <ChartCard title={id ? "Pelacak Arus Kas" : "Cashflow Tracker"} subtitle={id ? "Arus kas keluar mencakup pengeluaran dan tabungan." : "Cash out includes expenses and savings."}>
-            <ResponsiveContainer width="100%" height={250}><LineChart data={monthNames.map((month) => {
-              const rows = historyData.transactions.filter((t) => String(t.month || "").toLowerCase() === month.toLowerCase() && Number(t.year || (t.date?.split("/")?.[2] ?? selectedYear)) === selectedYear);
-              const previousRows = historyData.transactions.filter((t) => String(t.month || "").toLowerCase() === month.toLowerCase() && Number(t.year || (t.date?.split("/")?.[2] ?? 0)) === selectedYear - 1);
-              const income = rows.filter((t) => t.type === "Income").reduce((sum, t) => sum + t.amount, 0);
-              const expense = rows.filter((t) => t.type === "Expense").reduce((sum, t) => sum + t.amount, 0);
-              const saving = rows.filter((t) => t.type === "Saving").reduce((sum, t) => sum + t.amount, 0);
-              const previousIncome = previousRows.filter((t) => t.type === "Income").reduce((sum, t) => sum + t.amount, 0);
-              const previousExpense = previousRows.filter((t) => t.type === "Expense").reduce((sum, t) => sum + t.amount, 0);
-              const previousSaving = previousRows.filter((t) => t.type === "Saving").reduce((sum, t) => sum + t.amount, 0);
-              return { month: month.slice(0, 3), cashIn: income, cashOut: expense + saving, net: income - expense - saving, previousCashIn: previousIncome, previousCashOut: previousExpense + previousSaving, previousNet: previousIncome - previousExpense - previousSaving };
-            })} margin={{top:10,right:8,left:0,bottom:0}}><CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)"/><XAxis dataKey="month" tick={{fontSize:10}} axisLine={false} tickLine={false}/><YAxis width={44} tickFormatter={(v)=>formatCompact(v)} tick={{fontSize:10}} axisLine={false} tickLine={false}/><Tooltip formatter={(v:number)=>formatRupiah(v)}/><Line type="monotone" dataKey="cashIn" name={id ? "Kas masuk" : "Cash in"} stroke="#39FF88" strokeWidth={2.5} dot={{r:3}}/><Line type="monotone" dataKey="cashOut" name={id ? "Kas keluar" : "Cash out"} stroke="#FF72B6" strokeWidth={2.5} dot={{r:3}}/><Line type="monotone" dataKey="net" name={id ? "Arus kas bersih" : "Net cashflow"} stroke="#FFA24C" strokeWidth={2.5} dot={{r:3}}/><Line type="monotone" dataKey="previousCashIn" name={id ? "Kas masuk tahun lalu" : "Cash in last year"} stroke="#9D83FF" strokeWidth={2} strokeDasharray="5 4" dot={false}/><Line type="monotone" dataKey="previousCashOut" name={id ? "Kas keluar tahun lalu" : "Cash out last year"} stroke="#F59BB8" strokeWidth={2} strokeDasharray="5 4" dot={false}/><Line type="monotone" dataKey="previousNet" name={id ? "Arus kas bersih tahun lalu" : "Net cashflow last year"} stroke="#7A8794" strokeWidth={2} strokeDasharray="5 4" dot={false}/></LineChart></ResponsiveContainer>
-          </ChartCard>
-          <ChartCard title={id ? "Detail Arus Kas" : "Cashflow Details"} subtitle={id ? "Rincian sesuai periode yang dipilih." : "Category breakdown for the selected period."}>
-            <div className="mb-4">
-              <p className="mb-1.5 inline-flex items-center gap-2 text-[12px] font-semibold text-forest-800"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#DFF3E7] text-[#0B6B47]"><ArrowDownLeft size={13}/></span>{id ? "Pemasukan" : "Cash in"}</p>
-              {incomeRows.length ? incomeRows.slice(0, showAllCategories ? incomeRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalIncome} showPercentage kind="income" showBudget={false}/>) : <p className="py-2 text-[12px] text-charcoal/45">{id ? "Belum ada data pemasukan." : "No income data yet."}</p>}
-            </div>
-            <div className="my-3 h-px bg-charcoal/10"/>
-            <div className="mb-4">
-              <p className="mb-1.5 inline-flex items-center gap-2 text-[12px] font-semibold text-forest-800"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#FDE3EA] text-[#C23A5B]"><ArrowUpRight size={13}/></span>{id ? "Pengeluaran" : "Cash out"}</p>
-              {expenseRows.length ? expenseRows.slice(0, showAllCategories ? expenseRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalExpense} showPercentage kind="expense" showBudget={false}/>) : <p className="py-2 text-[12px] text-charcoal/45">{id ? "Belum ada data pengeluaran." : "No expense data yet."}</p>}
-            </div>
-            <div className="my-3 h-px bg-charcoal/10"/>
-            <div>
-              <p className="mb-1.5 inline-flex items-center gap-2 text-[12px] font-semibold text-forest-800"><span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#FFF0D9] text-[#C47A19]"><PiggyBank size={13}/></span>{id ? "Tabungan" : "Savings"}</p>
-              {savingRows.length ? savingRows.slice(0, showAllCategories ? savingRows.length : 4).map((row)=><BudgetRow key={row.category} category={row.category} allocation={row.allocation} realization={row.realization} total={totalSaving} showPercentage kind="saving" showBudget={false}/>) : <p className="py-2 text-[12px] text-charcoal/45">{id ? "Belum ada data tabungan." : "No savings data yet."}</p>}
-            </div>
-            {(incomeRows.length > 4 || expenseRows.length > 4 || savingRows.length > 4) && <div className="mt-3 flex justify-end">
-              <button type="button" onClick={() => setShowAllCategories((value) => !value)} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold text-forest-700 hover:bg-forest-50">
-                {showAllCategories ? (id ? "Tampilkan lebih sedikit" : "Show less") : (id ? "Lihat semua kategori" : "View all categories")} <ChevronRight size={14} className={showAllCategories ? "rotate-90" : ""}/>
-              </button>
-            </div>}
-          </ChartCard>
-        </div>
       </>}
       {/* Stock Net Worth hidden in Phase 1 until live market-price data is available. */}
 
