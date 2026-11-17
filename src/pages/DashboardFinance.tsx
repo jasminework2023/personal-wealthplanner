@@ -670,12 +670,12 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
                 <p className="text-[14px] font-semibold text-white/70">Net Cashflow</p>
                 <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
                   <span className="shrink-0 text-[14px] font-semibold leading-tight text-white/70">Rp</span>
-                  <span className="report-headline-amount min-w-0 overflow-hidden text-ellipsis font-extrabold leading-tight tracking-[-0.6px] tabular-nums text-white">{formatRupiah(Math.abs(totalIncome - totalExpense)).replace(/^Rp\s?/, "")}</span>
+                  <span className="report-headline-amount min-w-0 max-w-full overflow-hidden text-ellipsis font-extrabold leading-tight tracking-[-0.6px] tabular-nums text-white" style={{ fontSize: "clamp(28px, 8vw, 42px)" }}>{formatRupiah(Math.abs(totalIncome - totalExpense)).replace(/^Rp\s?/, "")}</span>
                 </div>
                 <p className={`mt-1 text-[11px] font-medium ${totalIncome - totalExpense < 0 ? "text-[#FCA5A5]" : "text-white/55"}`}>{totalIncome - totalExpense < 0 ? (id ? "Defisit pada periode terpilih" : "Deficit in selected period") : (id ? "Surplus pada periode terpilih" : "Surplus in selected period")}</p>
                 <div className="mt-[14px] grid min-w-0 grid-cols-2 gap-[10px]">
-                  <div className="min-w-0 rounded-2xl bg-white/10 p-3"><p className="text-[12px] text-white/65">Cash In</p><p className="mt-2 min-w-0 whitespace-nowrap text-[clamp(14px,4vw,21px)] font-bold leading-tight tracking-[-0.2px] text-white tabular-nums">{formatRupiah(totalIncome)}</p></div>
-                  <div className="min-w-0 rounded-2xl bg-white/10 p-3"><p className="text-[12px] text-white/65">Cash Out</p><p className="mt-2 min-w-0 whitespace-nowrap text-[clamp(14px,4vw,21px)] font-bold leading-tight tracking-[-0.2px] text-white tabular-nums">{formatRupiah(totalExpense)}</p></div>
+                  <div className="min-w-0 rounded-2xl bg-white/10 p-3"><p className="text-[12px] text-white/65">Cash In</p><p className="mt-2 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(13px,3.6vw,20px)] font-bold leading-tight tracking-[-0.2px] text-white tabular-nums">{formatRupiah(totalIncome)}</p></div>
+                  <div className="min-w-0 rounded-2xl bg-white/10 p-3"><p className="text-[12px] text-white/65">Cash Out</p><p className="mt-2 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(13px,3.6vw,20px)] font-bold leading-tight tracking-[-0.2px] text-white tabular-nums">{formatRupiah(totalExpense)}</p></div>
                 </div>
               </section>
 
