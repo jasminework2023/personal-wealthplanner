@@ -109,12 +109,13 @@ export function Home() {
   const expenseChartData = (() => {
     const total = spendingByCategory.reduce((sum, item) => sum + item.value, 0);
     if (!total) return [];
-    const top = spendingByCategory.slice(0, 4);
-    const smaller = spendingByCategory.slice(4);
+    const eligible = spendingByCategory.filter((item) => item.value / total >= 0.05);
+    const top = eligible.slice(0, 4);
+    const topNames = new Set(top.map((item) => item.name));
+    const smaller = spendingByCategory.filter((item) => !topNames.has(item.name));
     const smallerTotal = smaller.reduce((sum, item) => sum + item.value, 0);
-    const topShare = top.reduce((sum, item) => sum + item.value, 0);
-    const result = top.map((item) => ({ ...item, percentage: (item.value / total) * 100 }));
-    if (smallerTotal > 0 && (smaller.length > 0 || smaller.some((item) => item.value / total < 0.05))) {
+    const result = top.map((item) => ({ name: item.name, value: item.value, percentage: (item.value / total) * 100 }));
+    if (smallerTotal > 0) {
       result.push({ name: "Lainnya", value: smallerTotal, percentage: (smallerTotal / total) * 100 });
     }
     return result;
