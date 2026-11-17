@@ -302,7 +302,7 @@ export function Home() {
           aria-label={id ? "Ringkasan aset dan anggaran" : "Asset and budget summary"}
         >
           <div className="min-w-0 snap-start pr-0">
-            <div className="home-mobile-asset-card h-[224px] w-full min-w-0 overflow-hidden rounded-[20px] border p-4">
+            <div className="home-mobile-asset-card h-[240px] w-full min-w-0 overflow-hidden rounded-[20px] border p-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]">Asset Tracker</span>
                 <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} data-tour="home-eye-mobile" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#4B5563]">
