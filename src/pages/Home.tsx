@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Wallet, CircleDollarSign, TrendingUp, TrendingDown, PiggyBank, Plus, Sparkles,
@@ -49,6 +49,8 @@ export function Home() {
   const [extraTxs, setExtraTxs] = useState<Transaction[]>([]);
   const [assetsVisible, setAssetsVisible] = useState(true);
   const [summaryTab, setSummaryTab] = useState<"asset" | "budget">("asset");
+  const [menuExpanded, setMenuExpanded] = useState(false);
+  const summaryScrollRef = useRef<HTMLDivElement>(null);
   const [assetPeriod, setAssetPeriod] = useState<"1M" | "3M" | "6M" | "YTD" | "1Y">("YTD");
   const [assetHistory, setAssetHistory] = useState<{ date: string; value: number }[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -168,6 +170,26 @@ export function Home() {
   const chartPeriodPercent = hasChartHistory && chartHistory[0].value > 0
     ? (chartPeriodChange! / chartHistory[0].value) * 100
     : null;
+  useEffect(() => {
+    const el = summaryScrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const width = el.clientWidth || 1;
+      const index = Math.round(el.scrollLeft / width);
+      setSummaryTab(index === 1 ? "budget" : "asset");
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToSummary = (tab: "asset" | "budget") => {
+    setSummaryTab(tab);
+    const el = summaryScrollRef.current;
+    if (!el) return;
+    const index = tab === "budget" ? 1 : 0;
+    el.scrollTo({ left: el.clientWidth * index, behavior: "smooth" });
+  };
+
   const cycleAssetPeriod = (direction: number) => {
     const periods = ["1M", "3M", "6M", "YTD", "1Y"] as const;
     const index = periods.indexOf(assetPeriod);
@@ -249,110 +271,104 @@ export function Home() {
         </div>
       </div>
 
-      <div data-tour="home-assets-mobile" className="md:hidden rounded-[20px] p-3.5 text-[#03140C]"
-        style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)" }}>
-        <div className="flex items-center gap-2">
-          <div className="flex min-w-0 flex-1 rounded-full bg-[rgba(3,20,12,.12)] p-[3px]">
-            <button type="button" onClick={() => setSummaryTab("asset")}
-              className={`h-8 min-w-0 flex-1 rounded-full px-2 text-[12px] font-medium transition ${summaryTab === "asset" ? "bg-[#03140C] text-white" : "text-[#03140C]"}`}>
-              Asset
-            </button>
-            <button type="button" onClick={() => setSummaryTab("budget")}
-              className={`h-8 min-w-0 flex-1 rounded-full px-2 text-[12px] font-medium transition ${summaryTab === "budget" ? "bg-[#03140C] text-white" : "text-[#03140C]"}`}>
-              Budget
-            </button>
-          </div>
-          <button type="button"
-            onClick={() => setAssetsVisible((visible) => !visible)}
-            aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
-            data-tour="home-eye-mobile" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#03140C] transition hover:bg-black/10">
-            {assetsVisible ? <Eye size={18} strokeWidth={2}/> : <EyeOff size={18} strokeWidth={2}/>}
-          </button>
-        </div>
-
-        {summaryTab === "asset" ? (
-          <div role="button" tabIndex={0}
-            onClick={() => navigate("/finance")}
-            onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }}
-            className="mt-2 min-h-[150px] min-w-0 cursor-pointer px-0.5 pb-0.5 pt-1">
-            <p className="mt-1.5 text-[12px] font-medium text-[#03140C]/75">{id ? "Total Aset" : "Total Assets"}</p>
-            <div className="mt-0.5 min-w-0 max-w-full break-words text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums" style={{ fontSize: "30px" }}>
-              {renderMoney(integratedTotalAssets, assetsVisible, "text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 30)}
-            </div>
-            <div className="mt-2 flex items-center justify-start gap-3">
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[rgba(3,20,12,.14)] px-2.5 py-1 text-[11px] font-medium tracking-[-0.02em] text-[#03140C]">
-                <TrendingUp size={13} strokeWidth={2.5}/>{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
-              </span>
-            </div>
-            <div className="mt-2">
-              <div className="mt-2">
-                <div
-                  className="h-2.5 w-full overflow-hidden rounded-full bg-[rgba(3,20,12,.14)]"
-                  role="progressbar"
-                  aria-label={id ? "Progress aset terhadap target" : "Asset goal progress"}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.min(100, Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}
-                >
-                  <div
-                    className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
-                    style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }}
-                  />
+      <section data-tour="home-assets-mobile" className="md:hidden">
+        <div
+          ref={summaryScrollRef}
+          className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          aria-label={id ? "Ringkasan aset dan anggaran" : "Asset and budget summary"}
+        >
+          <div className="w-full shrink-0 snap-center pr-1">
+            <div className="rounded-[20px] p-4 text-[#03140C]" style={{ background: "linear-gradient(145deg, #F8FBFA 0%, #E9F2EE 52%, #D9ECE3 100%)" }}>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0B6B47]/65">{id ? "Asset Tracker" : "Asset Tracker"}</span>
+                <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} data-tour="home-eye-mobile" className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/55 text-[#0B6B47]">
+                  {assetsVisible ? <Eye size={17} /> : <EyeOff size={17} />}
+                </button>
+              </div>
+              <div role="button" tabIndex={0} onClick={() => navigate("/finance")} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }} className="mt-3 cursor-pointer">
+                <p className="text-[12px] font-medium text-[#03140C]/60">{id ? "Total Aset" : "Total Assets"}</p>
+                <div className="mt-1 min-w-0 max-w-full break-words text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums">
+                  {renderMoney(integratedTotalAssets, assetsVisible, "text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums", 31)}
+                </div>
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#0B6B47]/10 px-2.5 py-1 text-[10.5px] font-semibold text-[#0B6B47]">
+                    <TrendingUp size={13} />{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
+                  </span>
+                  <span className="text-[10.5px] font-medium text-[#0B6B47]/60">{assetsVisible ? renderMoney(assets.target, true, "text-[10.5px] font-medium text-[#0B6B47]/60", 10.5) : "Rp ••••••"}</span>
+                </div>
+                <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#0B6B47]/10">
+                  <div className="h-full rounded-full bg-[#0B6B47]" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
                 </div>
               </div>
             </div>
           </div>
-        ) : (
-          <div role="button" tabIndex={0}
-            onClick={() => navigate("/budgeting")}
-            onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }}
-            className="mt-2 min-h-[150px] min-w-0 cursor-pointer px-0.5 pb-0.5 pt-1" data-tour="home-budget-mobile">
-            <p className="mt-1.5 text-[12px] font-medium text-[#03140C]/75">{id ? "Sisa anggaran" : "Remaining budget"}</p>
-            <div className="mt-0.5 min-w-0 max-w-full break-words text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums" style={{ fontSize: "30px" }}>
-              {hasBudget ? renderMoney(remainingBudget, assetsVisible, "text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 30) : (assetsVisible ? renderMoney(0, true, "text-[30px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums", 30) : "Rp ••••••")}
-            </div>
-            {!hasBudget && <button type="button" onClick={(event) => { event.stopPropagation(); navigate("/budgeting"); }} className="mt-1 text-[11px] text-[#03140C]/55 underline underline-offset-2">Atur anggaran</button>}
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <div className="min-w-0 rounded-[12px] bg-[rgba(3,20,12,.12)] px-2.5 py-2">
-                <span className="text-[11px] font-medium text-[#03140C]/70">{id ? "Penghasilan" : "Income"}</span>
-                <p className="mt-0.5 min-w-0 truncate text-[15px] font-medium tracking-[-0.02em] tabular-nums">{assetsVisible ? formatRupiah(totalIncome) : "Rp ••••••"}</p>
+
+          <div className="w-full shrink-0 snap-center pl-1">
+            <div className="rounded-[20px] p-4 text-white" style={{ background: "linear-gradient(145deg, #34443D 0%, #1F2E27 52%, #122019 100%)" }}>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">{id ? "Budget Tracker" : "Budget Tracker"}</span>
+                <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white">
+                  {assetsVisible ? <Eye size={17} /> : <EyeOff size={17} />}
+                </button>
               </div>
-              <div className="min-w-0 rounded-[12px] bg-[rgba(3,20,12,.12)] px-2.5 py-2">
-                <span className="text-[11px] font-medium text-[#03140C]/70">{id ? "Pengeluaran" : "Expense"}</span>
-                <p className="mt-0.5 min-w-0 truncate text-[15px] font-medium tracking-[-0.02em] tabular-nums">{assetsVisible ? formatRupiah(totalExpense) : "Rp ••••••"}</p>
+              <div role="button" tabIndex={0} onClick={() => navigate("/budgeting")} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }} className="mt-3 cursor-pointer">
+                <p className="text-[12px] font-medium text-white/55">{id ? "Sisa anggaran" : "Remaining budget"}</p>
+                <div className="mt-1 min-w-0 max-w-full break-words text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums">
+                  {hasBudget ? renderMoney(remainingBudget, assetsVisible, "text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums", 31) : (assetsVisible ? renderMoney(0, true, "text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums", 31) : "Rp ••••••")}
+                </div>
+                {!hasBudget && <p className="mt-1 text-[10.5px] text-white/40">{id ? "Atur anggaran untuk melihat sisa budget" : "Set a budget to see your remaining amount"}</p>}
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <div className="rounded-[14px] bg-white/8 px-3 py-2.5">
+                    <span className="text-[10.5px] font-medium text-white/45">{id ? "Penghasilan" : "Income"}</span>
+                    <p className="mt-0.5 truncate text-[14px] font-semibold tabular-nums">{assetsVisible ? formatRupiah(totalIncome) : "Rp ••••••"}</p>
+                  </div>
+                  <div className="rounded-[14px] bg-white/8 px-3 py-2.5">
+                    <span className="text-[10.5px] font-medium text-white/45">{id ? "Pengeluaran" : "Expense"}</span>
+                    <p className="mt-0.5 truncate text-[14px] font-semibold tabular-nums">{assetsVisible ? formatRupiah(totalExpense) : "Rp ••••••"}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+        <div className="mt-2 flex items-center justify-center gap-1.5" aria-label={id ? "Pilih ringkasan" : "Select summary"}>
+          {(["asset", "budget"] as const).map((tab) => (
+            <button key={tab} type="button" onClick={() => scrollToSummary(tab)} aria-label={tab === "asset" ? "Asset Tracker" : "Budget Tracker"} className={`h-1.5 rounded-full transition-all ${summaryTab === tab ? "w-5 bg-forest-700" : "w-1.5 bg-forest-200"}`} />
+          ))}
+        </div>
+      </section>
 
-      <section data-tour="main-menu">
+      <section data-tour="main-menu" className="order-2 md:order-none">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="section-title">{id ? "Menu Utama" : "Main Menu"}</h2>
           <span className="text-[11px] text-charcoal/45">Pilih fitur</span>
         </div>
         <div className="grid grid-cols-4 gap-2 sm:gap-3">
-          {menus.map(({ label, icon: Icon, to, soon, tone }) => (
+          {menus.map(({ label, icon: Icon, to, soon, tone }, index) => (
             <button key={label} type="button" disabled={Boolean(soon)} onClick={() => to && navigate(to)}
-              className={`relative flex min-h-[68px] flex-col items-center justify-center gap-1.5 rounded-[14px] border border-forest-100/50 bg-white px-1 py-2 text-center shadow-card transition sm:min-h-[78px] ${soon ? "cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-float"}`}>
-              <span className={`flex h-8 w-8 items-center justify-center rounded-[12px] ${tone} ${soon ? "opacity-60" : ""}`}>
-                <Icon size={19} strokeWidth={2.1}/>
+              className={`relative flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-[18px] border border-forest-100/60 bg-white px-1.5 py-2 text-center shadow-card transition sm:min-h-[78px] ${index >= 4 && !menuExpanded ? "hidden" : ""} ${soon ? "cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-float"}`}>
+              <span className={`flex h-9 w-9 items-center justify-center rounded-[14px] ${tone} ${soon ? "opacity-60" : ""}`}>
+                <Icon size={18} strokeWidth={2.1}/>
               </span>
-              <span className={`text-[11px] font-semibold leading-tight text-forest-900 ${soon ? "opacity-70" : ""}`}>{label}</span>
-              {soon && <span className="absolute right-2 top-2 rounded-full bg-[#DDF7E8] px-1.5 py-0.5 text-[8.5px] font-bold leading-none text-[#0B6B47]">Soon</span>}
+              <span className={`text-[10.5px] font-semibold leading-tight text-forest-900 ${soon ? "opacity-70" : ""}`}>{label}</span>
+              {soon && <span className="absolute right-1.5 top-1.5 rounded-full bg-[#DDF7E8] px-1.5 py-0.5 text-[8px] font-bold leading-none text-[#0B6B47]">Soon</span>}
             </button>
           ))}
         </div>
+        <button type="button" onClick={() => setMenuExpanded((value) => !value)} className="mx-auto mt-2.5 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-forest-700">
+          {menuExpanded ? (id ? "Sembunyikan" : "Show less") : (id ? "Lihat semua" : "View all")}
+          <ChevronRight size={14} className={`transition-transform ${menuExpanded ? "rotate-90" : ""}`} />
+        </button>
       </section>
 
-      <div className="rounded-[14px] border border-forest-100 bg-forest-50 p-3">
+      <div className="order-7 md:order-none rounded-[14px] border border-forest-100 bg-forest-50 p-3">
         <div className="flex items-start gap-3.5">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-[20px]">💡</div>
           <div className="min-w-0"><p className="text-[14px] font-bold tracking-[-0.01em] text-forest-900">{id ? "Langkah Berikutnya" : "Next Step"}</p><p className="mt-1 text-[13px] leading-[1.55] text-charcoal/70">{nextStep}</p></div>
         </div>
       </div>
 
-      <section>
+      <section className="order-8 md:order-none">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="section-title">{id ? "Tujuan Keuangan" : "Financial Goals"}</h2>
           <button onClick={() => navigate("/goals")} className="inline-flex items-center gap-0.5 rounded-full bg-forest-50 px-3 py-1.5 text-[12px] font-semibold text-forest-700">Lihat semua <ChevronRight size={14}/></button>
@@ -376,9 +392,35 @@ export function Home() {
         })}</div> : <div className="rounded-[14px] border border-dashed border-forest-200 bg-forest-50/50 px-3 py-5 text-center"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47]"><Target size={21}/></span><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-full bg-[#123524] px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm">Buka Calculator</button></div>}
       </section>
 
-      <HomeMonthlyCalendar transactions={allTxs} userId={userId} />
+      <div className="order-3 md:order-none"><HomeMonthlyCalendar transactions={allTxs} userId={userId} /></div>
+      <section data-tour="home-wallets-mobile" className="order-4 md:hidden">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="section-title">{id ? "Wallet" : "Wallets"}</h2>
+          <button type="button" onClick={() => navigate("/wallets")} className="inline-flex items-center gap-0.5 rounded-full bg-forest-50 px-3 py-1.5 text-[11.5px] font-semibold text-forest-700">{id ? "Lihat semua" : "View all"} <ChevronRight size={14}/></button>
+        </div>
+        <div className="flex flex-col gap-2">
+          {wallets.length ? wallets.slice(0, 4).map((wallet) => (
+            <button key={wallet.id} type="button" onClick={() => navigate("/wallets")} className="flex min-h-[76px] items-center justify-between gap-3 overflow-hidden rounded-[20px] px-4 py-3 text-left shadow-[0_8px_24px_rgba(17,24,39,.08)]" style={{ background: wallet.resolvedColor || "#0E9F6E", color: "#FFFFFF" }}>
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15"><Wallet size={18}/></span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[12px] font-medium text-white/70">{wallet.type === "bank" ? "Bank" : wallet.type === "cash" ? "Cash" : wallet.type === "investment" ? "Investment" : "Wallet"}</span>
+                  <span className="mt-0.5 block truncate text-[15px] font-semibold">{wallet.name}</span>
+                </span>
+              </div>
+              <span className="shrink-0 text-[16px] font-bold tabular-nums">{assetsVisible ? formatRupiah(wallet.balance) : "Rp ••••••"}</span>
+            </button>
+          )) : (
+            <button type="button" onClick={() => navigate("/wallets")} className="rounded-[20px] border border-dashed border-forest-200 bg-forest-50/50 px-4 py-5 text-center">
+              <Wallet className="mx-auto text-forest-700" size={22}/>
+              <p className="mt-2 text-[12px] font-semibold text-forest-900">{id ? "Belum ada wallet" : "No wallets yet"}</p>
+            </button>
+          )}
+        </div>
+      </section>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+
+      <div className="order-9 md:order-none grid grid-cols-1 gap-3 lg:grid-cols-2">
         <ChartCard title={id ? "Arus Kas" : "Cashflow"} subtitle={id ? "Pemasukan, pengeluaran, dan tabungan bulan ini" : "This Month’s Income, Expenses, and Savings"}>
           <ResponsiveContainer width="100%" height={210}><BarChart data={cashFlowData}><XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false}/><YAxis tickFormatter={(v) => formatCompact(v)} tick={{ fontSize: 10, fill: "var(--chart-axis)" }} axisLine={false} tickLine={false} width={45}/><Tooltip formatter={(v: number) => formatRupiah(v)}/><Bar dataKey="value" radius={[6, 6, 0, 0]}>{cashFlowData.map((_, i) => <Cell key={i} fill={["var(--chart-income)", "var(--chart-expense)", "var(--chart-saving)"][i]}/>)}</Bar></BarChart></ResponsiveContainer>
         </ChartCard>
@@ -387,10 +429,10 @@ export function Home() {
         </ChartCard>
       </div>
 
-      <Card>
+      <div className="order-6 md:order-none"><Card>
         <div className="mb-2 flex items-center justify-between"><h2 className="section-title">{id ? "Transaksi Terbaru" : "Recent Transactions"}</h2><button onClick={() => navigate("/transaction")} className="inline-flex items-center gap-0.5 rounded-full bg-forest-50 px-3 py-1.5 text-[12px] font-semibold text-forest-700">{id ? "Semua transaksi" : "All transactions"} <ChevronRight size={14}/></button></div>
         {recent.length ? <div className="flex flex-col divide-y divide-charcoal/8">{recent.map((t, i) => <div key={t.sheetRow ?? `${t.date}-${t.description}-${i}`} className="flex items-center justify-between gap-3 py-3"><div className="flex min-w-0 items-center gap-3"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${t.type === "Income" ? "bg-[#DFF3E7] text-[#0B6B47]" : t.type === "Expense" ? "bg-[#DDF7E8] text-[#0B6B47]" : "bg-[#DDF7E8] text-[#0B6B47]"}`}>{t.type === "Income" ? <ArrowDownLeft size={19}/> : t.type === "Expense" ? <ArrowUpRight size={19}/> : <PiggyBank size={19}/>}</span><div className="min-w-0"><p className="truncate text-[13.5px] font-semibold text-forest-900">{t.description}</p><p className="mt-0.5 truncate text-[11.5px] text-charcoal/50">{t.category} · {t.date}</p></div></div><p className={`num shrink-0 text-[13.5px] font-semibold ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>{t.type === "Expense" ? "−" : "+"}{formatRupiah(t.amount)}</p></div>)}</div> : <p className="py-8 text-center text-[12px] text-charcoal/45">{id ? "Belum ada transaksi. Tekan tombol + untuk mulai mencatat." : "No transactions yet. Press + to start recording."}</p>}
-      </Card>
+      </Card></div>
 
       {quickAddOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/35 p-4 sm:items-center" onClick={() => setQuickAddOpen(false)}>
         <div className="w-full max-w-sm rounded-3xl bg-white p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
