@@ -314,7 +314,7 @@ export function Home() {
           </div>
 
           <div className="min-w-0 snap-start pr-0">
-            <div className="home-mobile-budget-card h-[184px] w-full min-w-0 overflow-hidden rounded-[20px] border p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
+            <div className="home-mobile-budget-card h-[240px] w-full min-w-0 overflow-hidden rounded-[20px] border p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">Budget Tracker</span>
                 <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white">
