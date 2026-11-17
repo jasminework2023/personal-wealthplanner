@@ -7,7 +7,7 @@ import { GuidedTour } from "./GuidedTour";
 import { Topbar } from "./Topbar";
 import { DateHeader } from "./DateHeader";
 import { ThemeToggle } from "./ThemeToggle";
-import { Home, BarChart3, Target, UserRound, Plus, Sparkles, X, HelpCircle } from "lucide-react";
+import { Home, BarChart3, Target, UserRound, Plus, Sparkles, X, HelpCircle, CircleCheck } from "lucide-react";
 
 const titles: Record<string, string> = { "/wallets": "Wallet",
   "/assets": "Assets",
@@ -50,6 +50,7 @@ export function AppShell() {
             <DateHeader />
             <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "main", route: "/" } }))} aria-label="Mulai panduan interaktif" className="flex h-9 w-9 items-center justify-center rounded-full border border-forest-100 bg-surface text-forest-800 shadow-sm"><HelpCircle size={17}/></button>
             <ThemeToggle variant="compact" />
+            <button type="button" onClick={() => navigate("/guidance")} aria-label="Buka panduan dan token aktivasi" className="flex h-9 w-9 items-center justify-center rounded-full border border-forest-100 bg-surface text-forest-800 shadow-sm"><CircleCheck size={17}/></button>
           </div>
           <Outlet />
         </main>
