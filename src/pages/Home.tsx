@@ -278,10 +278,10 @@ export function Home() {
       <section data-tour="home-assets-mobile" className="md:hidden">
         <div
           ref={summaryScrollRef}
-          className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           aria-label={id ? "Ringkasan aset dan anggaran" : "Asset and budget summary"}
         >
-          <div className="w-full shrink-0 snap-center pr-1">
+          <div className="basis-full min-w-full max-w-full shrink-0 snap-start pr-1">
             <div className="home-mobile-asset-card rounded-[20px] border p-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]">{id ? "Asset Tracker" : "Asset Tracker"}</span>
@@ -307,7 +307,7 @@ export function Home() {
             </div>
           </div>
 
-          <div className="w-full shrink-0 snap-center pl-1">
+          <div className="basis-full min-w-full max-w-full shrink-0 snap-start pl-1">
             <div className="home-mobile-budget-card rounded-[20px] border p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">{id ? "Budget Tracker" : "Budget Tracker"}</span>
