@@ -6,7 +6,7 @@ import {
   ChartNoAxesCombined, Bot, BookOpen, ChevronRight, X, Eye, EyeOff, ArrowDownLeft, ArrowUpRight,
   PieChart, CalendarDays, ClipboardCheck, Users, Settings,
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Legend } from "recharts";
+import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import { Card, ChartCard } from "../components/Card";
 import { TransactionBadge } from "../components/TransactionBadge";
 import { AddTransactionModal } from "../components/AddTransactionModal";
