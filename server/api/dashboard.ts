@@ -410,13 +410,29 @@ async function getUsdIdrRate(): Promise<number> {
   return 16300;
 }
 
-async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transactions: any[] = []) {
+function isOnOrBeforePeriod(dateValue: unknown, periodEnd: string) {
+  const raw = String(dateValue || "").trim();
+  if (!raw || !periodEnd) return true;
+  return raw.slice(0, 10) <= periodEnd;
+}
+
+function valueAtPeriodEnd(initialValue: number, annualChangePercent: number, acquisitionDate: string, periodEnd: string) {
+  if (!acquisitionDate || !periodEnd || acquisitionDate > periodEnd) return 0;
+  const start = new Date(acquisitionDate + "T00:00:00Z").getTime();
+  const end = new Date(periodEnd + "T23:59:59Z").getTime();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return 0;
+  const years = Math.max(0, (end - start) / (365.2425 * 86400000));
+  return initialValue * Math.pow(1 + annualChangePercent / 100, years);
+}
+
+async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transactions: any[] = [], periodEnd = "") {
   // Liquid Assets are the user's actual wallet balances. This keeps the
   // Asset Tracker from maintaining a second, potentially stale cash total.
   // Wallets represent cash accounts (including bank accounts/RDN); the
   // investment itself is tracked separately under Investment Assets.
   const walletSums = new Map<string, { inflow: number; outflow: number }>();
   for (const tx of transactions) {
+    if (periodEnd && !isOnOrBeforePeriod(tx.date, periodEnd)) continue;
     const type = String(tx.type || "").trim().toLowerCase();
     const amount = Number(tx.amount) || 0;
     const from = String(tx.wallet || "").trim().toLowerCase();
@@ -459,7 +475,8 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
   liquid.total = liquid.items.reduce((sum: number, item: any) => sum + item.value, 0);
 
   const legacyInvestment = parseAssetSection(rows, "Investment Assets", new Set(["saham", "stocks", "stock"]));
-  const managedInvestment = parseManagedInvestmentAssets(rows);
+  const managedInvestment = parseManagedInvestmentAssets(rows)
+    .filter((item) => !periodEnd || !item.purchaseDate || item.purchaseDate <= periodEnd);
   const investmentItems = [
     ...legacyInvestment.items,
     ...managedInvestment.map((item) => ({ name: item.name, value: item.value, sheetRow: 0 })),
@@ -469,7 +486,15 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
     total: investmentItems.reduce((sum, item) => sum + item.value, 0),
     excludedNames: legacyInvestment.excludedNames,
   };
-  const realAssets = parseRealAssets(rows);
+  const realAssets = parseRealAssets(rows)
+    .filter((item) => !periodEnd || !item.acquisitionDate || item.acquisitionDate <= periodEnd)
+    .map((item) => periodEnd
+      ? {
+          ...item,
+          currentValue: valueAtPeriodEnd(item.initialValue, item.annualChangePercent, item.acquisitionDate, periodEnd),
+          changeValue: valueAtPeriodEnd(item.initialValue, item.annualChangePercent, item.acquisitionDate, periodEnd) - item.initialValue,
+        }
+      : item);
   // The shared resolver has already selected the single authoritative stock tab.
   const stockSections = parseStockSections(rows);
   const stocksID = stockSections.id;
@@ -567,7 +592,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     let assets = null as Awaited<ReturnType<typeof getAssetTracker>> | null;
     try {
-      assets = await getAssetTracker(assetRows, walletRows, walletTransactions);
+      const periodEnd = new Date(Date.UTC(
+      requestedYear,
+      (MONTH_NUMBER[String(requestedMonth).trim().toLowerCase()] || (new Date().getMonth() + 1)),
+      0
+    )).toISOString().slice(0, 10);
+    assets = await getAssetTracker(assetRows, walletRows, walletTransactions, periodEnd);
     } catch {
       assets = null;
     }
