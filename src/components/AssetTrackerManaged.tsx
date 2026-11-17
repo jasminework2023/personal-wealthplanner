@@ -106,14 +106,15 @@ export function AssetTrackerManaged({
   }, [investmentRows, assets.stocksTotal]);
 
   const composition = [
-    { name: "Aset Likuid", value: liquidTotal, color: "rgb(var(--asset-liquid))" },
-    { name: "Obligasi", value: categoryTotals.Obligasi || 0, color: "rgb(var(--asset-bond))" },
-    { name: "Saham", value: categoryTotals.Saham || 0, color: "rgb(var(--asset-stock))" },
-    { name: "Reksadana", value: categoryTotals.Reksadana || 0, color: "rgb(var(--asset-fund))" },
-    { name: "Emas", value: categoryTotals.Emas || 0, color: "rgb(var(--asset-gold))" },
-    { name: "P2P Lending", value: categoryTotals["P2P Lending"] || 0, color: "rgb(var(--asset-p2p))" },
-    { name: "Lainnya", value: categoryTotals.Lainnya || 0, color: "rgb(var(--asset-other))" },
-    { name: "Aset Riil", value: realTotal, color: "rgb(var(--asset-real))" },
+    // Same palette as the Home expense donut.
+    { name: "Aset Likuid", value: liquidTotal, color: "#0F6E56" },
+    { name: "Obligasi", value: categoryTotals.Obligasi || 0, color: "#9AA3B2" },
+    { name: "Saham", value: categoryTotals.Saham || 0, color: "#E0B04A" },
+    { name: "Reksadana", value: categoryTotals.Reksadana || 0, color: "#9FE1CB" },
+    { name: "Emas", value: categoryTotals.Emas || 0, color: "#D4D9DF" },
+    { name: "P2P Lending", value: categoryTotals["P2P Lending"] || 0, color: "#6F8B80" },
+    { name: "Lainnya", value: categoryTotals.Lainnya || 0, color: "#D4D9DF" },
+    { name: "Aset Riil", value: realTotal, color: "#9AA3B2" },
   ].filter((x) => x.value > 0);
   const compositionTotal = composition.reduce((s, x) => s + x.value, 0);
   const pct = (v: number) => compositionTotal ? ((v / compositionTotal) * 100).toFixed(1).replace(".", ",") + "%" : "0,0%";
@@ -320,35 +321,34 @@ export function AssetTrackerManaged({
   return (
     <div className="space-y-3">
       <section
-        className="overflow-hidden rounded-[20px] p-4 text-[#062D20] sm:p-5"
-        style={{ background: "linear-gradient(118deg, #20F0A0 0%, #00C77B 55%, #009B61 100%)" }}
+        className="overflow-hidden rounded-[20px] border border-[#4B5563] bg-[#374151] p-4 text-white sm:p-5"
       >
         <div className="min-w-0">
-          <p className="text-[12px] font-medium tracking-[-0.02em] text-[#075B40]/80">Total Aset</p>
-          <p className="mt-0.5 min-w-0 break-words text-[34px] font-medium leading-[1.1] tracking-[-0.02em] tabular-nums text-black sm:text-[38px]">
+          <p className="text-[12px] font-medium tracking-[-0.02em] text-white/65">Total Aset</p>
+          <p className="mt-0.5 min-w-0 break-words text-[34px] font-semibold leading-[1.1] tracking-[-0.02em] tabular-nums text-white sm:text-[38px]">
             {assetsVisible ? formatRupiah(displayTotalAssets) : "Rp ••••••••"}
           </p>
 
           {assetChange && (
             <div className="mt-2 flex items-center gap-2 text-[11px]">
-              <span className={`font-semibold tabular-nums ${assetChange.amount >= 0 ? "text-[#064A34]" : "text-[rgb(var(--c-down))]"}`}>
+              <span className={`font-semibold tabular-nums ${assetChange.amount >= 0 ? "text-[#9FE1CB]" : "text-[#FCA5A5]"}`}>
                 {assetChange.amount >= 0 ? "↑ " : "↓ "}{assetsVisible ? formatRupiah(Math.abs(assetChange.amount)) : "Rp ••••••"}
               </span>
-              <span className="text-[#075B40]/70">({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}%)</span>
-              <span className="text-[#075B40]/70">vs bulan lalu</span>
+              <span className="text-white/60">({assetChange.amount >= 0 ? "+" : "−"}{Math.abs(assetChange.percent).toFixed(1).replace(".", ",")}%)</span>
+              <span className="text-white/60">vs bulan lalu</span>
             </div>
           )}
 
           <div className="mt-3 flex min-h-[46px] items-center justify-between gap-3">
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#008D59]/35 px-3 py-1.5 text-[11px] font-medium tracking-[-0.02em] text-[#042F21]">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-medium tracking-[-0.02em] text-white">
               {assets.target > 0 ? Math.round(Math.min(100, Math.max(0, (displayTotalAssets / assets.target) * 100))) : 0}% dari target
             </span>
 
             {isRealData && (
               <div className="flex min-w-0 items-center gap-1.5 text-right">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-medium tracking-[-0.02em] text-[#075B40]/65">Target Aset</p>
-                  <p className="truncate text-[12px] font-semibold tabular-nums text-[#075B40]/85">
+                  <p className="text-[10px] font-medium tracking-[-0.02em] text-white/55">Target Aset</p>
+                  <p className="truncate text-[12px] font-semibold tabular-nums text-white/85">
                     {assetsVisible ? formatRupiah(assets.target || 0) : "Rp ••••••"}
                   </p>
                 </div>
