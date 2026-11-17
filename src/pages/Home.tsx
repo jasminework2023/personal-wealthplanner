@@ -428,50 +428,6 @@ export function Home() {
       </section>
 
       <div className="order-3 md:order-none"><HomeMonthlyCalendar transactions={allTxs} userId={userId} /></div>
-      <section data-tour="home-wallets-mobile" className="order-4 md:hidden">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-[18px] font-bold tracking-[-0.02em] text-[#17191C] dark:text-[#F5F5F5]">{id ? "Wallet" : "Wallets"}</h2>
-          <div className="text-[14px] font-medium tabular-nums text-[#737373]">{assetsVisible ? formatRupiah(wallets.reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0)) : "Rp ••••••"}</div>
-        </div>
-        {wallets.length ? (
-          <div className="relative h-[188px]">
-            {wallets.slice(0, 2).map((wallet, index) => {
-              const isTop = index === 0;
-              return (
-                <button key={wallet.id} type="button" onClick={() => navigate("/wallets")}
-                  className={isTop ? "absolute inset-x-0 top-0 z-10 h-[102px] rounded-[22px] bg-[#202B3A] text-white shadow-[0_10px_24px_rgba(17,24,39,.12)] text-left overflow-hidden" : "absolute inset-x-0 top-[78px] z-20 h-[110px] rounded-[22px] bg-[#F1F4F8] text-[#17191C] shadow-[0_10px_28px_rgba(17,24,39,.08)] text-left overflow-hidden"}>
-                  <div className="flex items-start justify-between px-5 pt-4">
-                    <div className="min-w-0">
-                      <span className={isTop ? "block text-[11px] font-medium text-white/55" : "block text-[11px] font-medium text-[#737373]"}>
-                        {wallet.type === "bank" ? "Bank" : wallet.type === "cash" ? "Tunai" : wallet.type === "investment" ? "Investment" : "Wallet"}
-                      </span>
-                      <span className={isTop ? "mt-0.5 block truncate text-[16px] font-semibold text-white" : "mt-0.5 block truncate text-[16px] font-semibold text-[#17191C]"}>{wallet.name}</span>
-                    </div>
-                    <span className={isTop ? "shrink-0 text-[15px] font-bold tabular-nums text-white" : "shrink-0 text-[15px] font-bold tabular-nums text-[#17191C]"}>
-                      {assetsVisible ? formatRupiah(wallet.balance) : "Rp ••••••"}
-                    </span>
-                  </div>
-                  {!isTop && (
-                    <div className="px-5 pt-2">
-                      <span className="text-[24px] font-extrabold leading-none tracking-[-0.03em] tabular-nums">
-                        {assetsVisible ? formatRupiah(wallet.balance) : "Rp ••••••"}
-                      </span>
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-            {wallets.length > 2 && <button type="button" onClick={() => navigate("/wallets")} className="absolute -bottom-1 right-0 z-30 text-[11px] font-semibold text-forest-700">{id ? `+${wallets.length - 2} wallet lainnya` : `+${wallets.length - 2} more wallets`}</button>}
-          </div>
-        ) : (
-          <button type="button" onClick={() => navigate("/wallets")} className="rounded-[20px] border border-dashed border-forest-200 bg-forest-50/50 px-4 py-5 text-center">
-            <Wallet className="mx-auto text-forest-700" size={22}/>
-            <p className="mt-2 text-[12px] font-semibold text-forest-900">{id ? "Belum ada wallet" : "No wallets yet"}</p>
-          </button>
-        )}
-      </section>
-
-
       <div className="order-9 md:order-none grid grid-cols-1 gap-3 lg:grid-cols-2">
         <Card className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-none">
           <div className="mb-5">
