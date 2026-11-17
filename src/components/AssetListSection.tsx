@@ -47,7 +47,7 @@ export function AssetListSection({
 
   return (
     <section className="rounded-[24px] border border-[#E5E7EB] bg-white text-[rgb(var(--asset-primary-text))] shadow-[0_4px_16px_rgba(15,23,42,0.06)]">
-      <div className="px-5 py-5 sm:px-6 sm:py-6">
+      <div className="px-5 pt-5 pb-4 sm:px-6 sm:pt-6 sm:pb-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2.5">
@@ -75,7 +75,7 @@ export function AssetListSection({
               )}
             </div>
 
-            <div className="mt-7 flex min-w-0 items-end gap-4 sm:gap-5">
+            <div className="mt-4 flex min-w-0 items-end gap-3 sm:gap-4">
               <p className="min-w-0 truncate text-[48px] font-bold leading-[1.02] tracking-[-0.04em] tabular-nums sm:text-[56px] text-[rgb(var(--asset-primary-text))]">
                 {totalValue}
               </p>
@@ -102,7 +102,7 @@ export function AssetListSection({
         </div>
       </div>
 
-      {open && <div className="mt-3">{children}</div>}
+      {open && <div className="mt-0">{children}</div>}
     </section>
   );
 }
