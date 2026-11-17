@@ -70,7 +70,7 @@ function NumberInput({ label, value, onChange, prefix, suffix, min=0, step=1, hi
       <input id={inputId} inputMode="numeric" value={display} onChange={e=>{const d=e.target.value.replace(/[^0-9]/g,"");setRaw(d);if(d!=="")onChange(Number(d));}} onBlur={()=>{const n=raw===""||raw===null?min:Number(raw);onChange(Math.max(min,n));setRaw(null)}} style={{width:"100%",border:"1px solid rgb(var(--c-border))",borderRadius:prefix?(suffix?0:"0 14px 14px 0"):(suffix?"14px 0 0 14px":14),padding:"12px 13px",outline:"none",fontSize:13,boxSizing:"border-box",background:"rgb(var(--c-surface))",color:"rgb(var(--c-charcoal))",fontVariantNumeric:"tabular-nums"}}/>
       {suffix&&<div className="wp-calc-affix" style={{borderLeft:0,borderRadius:"0 14px 14px 0"}}>{suffix}</div>}
     </div>
-    {hint&&<div style={{fontSize:11,color:"rgb(var(--c-muted)),",marginTop:5}}>{hint}</div>}
+    {hint&&<div style={{fontSize:11,color:"rgb(var(--c-muted))",marginTop:5}}>{hint}</div>}
   </div>;
 }
 function Slider({ label,value,onChange,min,max,step=1,format }) {
@@ -1794,28 +1794,8 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
 
   return (
     <div className="wp-calc-layout">
-      <div className="wp-calc-grid" style={{display:"grid",gridTemplateColumns:"1fr",gap:16,alignItems:"start"}}>
-        <div className="wp-calc-input-column">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 16,
-              flexWrap: "wrap",
-            }}
-          >
-            <h3 style={{ margin: 0, fontSize: 18 }}>{copy.input}</h3>
-            <Tag>{copy.autoUpdate}</Tag>
-          </div>
-
-          <div style={{ display: "grid", gap: 10 }}>{inputs}</div>
-        </Card>
-
-        </div>
-
-        <div className="wp-calc-results-column" style={{minWidth:0}}>
+      <div className="wp-calc-grid">
+        <div className="wp-calc-results-column">
           {results}
           <div className="wp-calc-actions">
             <Button variant="secondary" size="sm" onClick={save} icon={saved ? <Check size={14} /> : <Plus size={14} />}>
@@ -1826,16 +1806,22 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
             </Button>
           </div>
         </div>
+
+        <Card>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:18,flexWrap:"wrap"}}>
+            <h3 style={{margin:0,fontSize:16,fontWeight:700,color:"rgb(var(--c-charcoal))"}}>{copy.input}</h3>
+            <Tag>{copy.autoUpdate}</Tag>
+          </div>
+          <div style={{display:"grid",gap:16}}>{inputs}</div>
+        </Card>
       </div>
 
       <style>{`
         .wp-calc-layout{color:rgb(var(--c-charcoal))}
         .wp-calc-grid{display:grid!important;grid-template-columns:1fr!important;gap:16px!important}
-        .wp-calc-input-column,.wp-calc-results-column{min-width:0}
+        .wp-calc-results-column,.wp-calc-input-column{min-width:0}
         .wp-calc-results-column{display:flex;flex-direction:column;gap:14px}
-        .wp-calc-input-column{display:flex;flex-direction:column;gap:14px}
-        .wp-calc-card{box-sizing:border-box}
-        .wp-calc-field{display:flex;flex-direction:column;gap:0}
+        .wp-calc-field{display:flex;flex-direction:column}
         .wp-calc-label{display:block;font-size:12px;font-weight:600;color:rgb(var(--c-forest-800));margin-bottom:7px}
         .wp-calc-affix{padding:0 11px;display:flex;align-items:center;background:rgb(var(--c-cream));border:1px solid rgb(var(--c-border));color:rgb(var(--c-muted));font-size:12px}
         .wp-calc-slider-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
@@ -1867,9 +1853,9 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
           .wp-calc-actions{gap:8px}
           .wp-calc-actions button{font-size:12px}
         }
-      `}</style>   </div>
+      `}</style>
+    </div>
   );
-}
 
 
 export function FinancialCalculator({ onOpen }: { onOpen: (id: string) => void }) {
