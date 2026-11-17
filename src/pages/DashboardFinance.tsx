@@ -13,6 +13,7 @@ import { AddItemForm } from "../components/AddItemForm";
 import { AddTransactionModal } from "../components/AddTransactionModal";
 import { AssetListSection, AssetListItem } from "../components/AssetListSection";
 import { AssetTrackerManaged } from "../components/AssetTrackerManaged";
+import { DebtTracker } from "../components/DebtTracker";
 
 
 
@@ -529,7 +530,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   const savingRows = byCategory("Saving");
   const expenseRows = byCategory("Expense");
   const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);
-  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];
+  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "debt" as const, label: "Debt Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];
   const activeTabIndex = reportTabs.findIndex((tab) => tab.id === activeReportTab);
   const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
 
@@ -540,7 +541,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
           <h1 className="text-[20px] font-semibold leading-6 text-[rgb(var(--c-charcoal))]">Asset Tracker</h1>
         ) : (
           <select aria-label="Pilih laporan" value={activeReportTab} onChange={(e) => setActiveReportTab(e.target.value as typeof activeReportTab)} className="min-w-0 flex-1 appearance-none rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 py-2.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm outline-none">
-            <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="cashflow">Cashflow Tracker</option>
+            <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="debt">Debt Tracker</option><option value="cashflow">Cashflow Tracker</option>
           </select>
         )}
         <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm">
@@ -659,6 +660,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
       )}
 
 
+      {activeReportTab === "debt" && <DebtTracker />}
       {activeReportTab === "cashflow" && <>
         {(() => {
           const cashflowMax = Math.max(totalIncome, totalExpense, totalSaving, 1);
