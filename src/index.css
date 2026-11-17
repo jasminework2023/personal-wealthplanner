@@ -1116,3 +1116,228 @@ html.dark .home-asset-summary {
     border-radius: 20px !important;
   }
 }
+
+
+/* ============================================================
+   WEALTHPLANNER REDESIGN — STAGE 3
+   Transaction / Wallet / Budget: mockup-first neutral palette.
+   ============================================================ */
+
+/* Shared inner-page surfaces */
+.transaction-page,
+.wallets-page,
+.budget-page {
+  color: #171717;
+}
+.transaction-page .section-title,
+.wallets-page h2,
+.budget-page .section-title {
+  color: #171717 !important;
+}
+html.dark .transaction-page,
+html.dark .wallets-page,
+html.dark .budget-page {
+  color: #F5F5F5;
+}
+html.dark .transaction-page .section-title,
+html.dark .wallets-page h2,
+html.dark .budget-page .section-title {
+  color: #F5F5F5 !important;
+}
+
+/* Transaction */
+.transaction-page .rounded-2xl.bg-charcoal\/\[0\.05\] {
+  background: #F0F0F0 !important;
+}
+.transaction-page .rounded-2xl.bg-charcoal\/\[0\.05\] button {
+  border-radius: 12px !important;
+}
+.transaction-page .rounded-2xl.bg-charcoal\/\[0\.05\] button.bg-white {
+  background: #FFFFFF !important;
+  color: #171717 !important;
+  box-shadow: 0 1px 3px rgba(17,24,39,.08) !important;
+}
+.transaction-page .rounded-2xl.bg-charcoal\/\[0\.05\] button.bg-\[\#123524\] {
+  background: #171717 !important;
+  color: #FFFFFF !important;
+}
+.transaction-page .border-forest-100\/70,
+.transaction-page .border-charcoal\/10 {
+  border-color: #E5E5E5 !important;
+}
+.transaction-page .bg-\[\#DDF7E8\] {
+  background: #F0F1F2 !important;
+  color: #171717 !important;
+}
+.transaction-page .text-\[\#0B6B47\],
+.transaction-page .text-forest-900 {
+  color: #171717 !important;
+}
+.transaction-page .bg-forest-50 {
+  background: #F0F1F2 !important;
+}
+.transaction-page .text-forest-800,
+.transaction-page .text-forest-700 {
+  color: #404040 !important;
+}
+.transaction-page .divide-charcoal\/8 {
+  border-color: #ECECEC !important;
+}
+.transaction-page .bg-\[\#DFF3E7\] {
+  background: #F1F3F2 !important;
+  color: #166534 !important;
+}
+.transaction-page .bg-\[\#FDE3EA\] {
+  background: #F7F1F2 !important;
+}
+.transaction-page .bg-\[\#DCEBFF\] {
+  background: #F1F3F5 !important;
+  color: #374151 !important;
+}
+.transaction-page .bg-\[\#E8DDFA\] {
+  background: #F3F1F5 !important;
+  color: #4B5563 !important;
+}
+.transaction-page .text-\[\#0B6B47\] { color: #166534 !important; }
+.transaction-page .bg-\[\#123524\] { background: #171717 !important; }
+
+/* Wallet */
+.wallets-page > section:first-child {
+  border-radius: 20px !important;
+}
+.wallets-page > section:first-child:not([style]) {
+  background: linear-gradient(135deg,#FFFFFF 0%,#F0F1F2 60%,#DCDDE0 100%) !important;
+  color: #171717 !important;
+  border: 1px solid #E5E5E5 !important;
+  box-shadow: 0 10px 30px rgba(17,24,39,.06) !important;
+}
+.wallets-page > section:first-child:not([style]) p {
+  color: #737373 !important;
+}
+.wallets-page .wallet-stack-card {
+  border: 1px solid rgba(17,24,39,.10) !important;
+  box-shadow: 0 10px 26px rgba(17,24,39,.08) !important;
+}
+.wallets-page .bg-white {
+  background: #FFFFFF !important;
+}
+.wallets-page .border-slate-100,
+.wallets-page .border-slate-200 {
+  border-color: #E7E7E7 !important;
+}
+.wallets-page .text-slate-900,
+.wallets-page .text-slate-800 {
+  color: #171717 !important;
+}
+.wallets-page .text-slate-500,
+.wallets-page .text-slate-400 {
+  color: #737373 !important;
+}
+.wallets-page .bg-slate-100 {
+  background: #F1F2F3 !important;
+}
+.wallets-page .bg-\[\#123524\] {
+  background: #171717 !important;
+}
+.wallets-page .text-\[\#0B6B47\] {
+  color: #171717 !important;
+}
+html.dark .wallets-page > section:first-child:not([style]) {
+  background: linear-gradient(135deg,#262729 0%,#1D1E20 60%,#151617 100%) !important;
+  color: #F5F5F5 !important;
+  border-color: #303235 !important;
+}
+html.dark .wallets-page .bg-white {
+  background: #171819 !important;
+}
+html.dark .wallets-page .text-slate-900,
+html.dark .wallets-page .text-slate-800 {
+  color: #F5F5F5 !important;
+}
+
+/* Budget */
+.budget-page > section[data-tour="budget-summary"] {
+  background: linear-gradient(135deg,#FFFFFF 0%,#F0F1F2 58%,#D9DBDE 100%) !important;
+  color: #171717 !important;
+  border: 1px solid #E5E5E5 !important;
+  box-shadow: 0 10px 30px rgba(17,24,39,.06) !important;
+}
+.budget-page > section[data-tour="budget-summary"] .text-white\/70,
+.budget-page > section[data-tour="budget-summary"] .text-white\/75 {
+  color: #737373 !important;
+}
+.budget-page > section[data-tour="budget-summary"] .text-white {
+  color: #171717 !important;
+}
+.budget-page > section[data-tour="budget-summary"] .border-white\/15 {
+  border-color: #E5E5E5 !important;
+}
+.budget-page > section[data-tour="budget-summary"] .bg-white\/15 {
+  background: #E5E5E5 !important;
+}
+.budget-page > section[data-tour="budget-summary"] .bg-emerald-400 {
+  background: #15803D !important;
+}
+.budget-page > section[data-tour="budget-summary"] .bg-pink-400 {
+  background: #D1D5DB !important;
+}
+.budget-page > section[data-tour="budget-summary"] .bg-\[\#A78BFA\] {
+  background: #9CA3AF !important;
+}
+.budget-page > section[data-tour="budget-summary"] .text-\[\#F9A8D4\] {
+  color: #991B1B !important;
+}
+.budget-page .border-forest-100\/50 {
+  border-color: #E7E7E5 !important;
+}
+.budget-page .bg-\[\#F59BB8\] {
+  background: #F0F1F2 !important;
+  color: #171717 !important;
+  border: 1px solid #E5E5E5;
+}
+.budget-page .bg-\[\#0B6B47\] {
+  background: #15803D !important;
+}
+.budget-page .text-forest-900 {
+  color: #171717 !important;
+}
+.budget-page .text-forest-700,
+.budget-page .text-forest-800 {
+  color: #404040 !important;
+}
+html.dark .budget-page > section[data-tour="budget-summary"] {
+  background: linear-gradient(135deg,#262729 0%,#1D1E20 58%,#151617 100%) !important;
+  color: #F5F5F5 !important;
+  border-color: #303235 !important;
+}
+html.dark .budget-page > section[data-tour="budget-summary"] .text-white,
+html.dark .budget-page > section[data-tour="budget-summary"] .text-white\/70,
+html.dark .budget-page > section[data-tour="budget-summary"] .text-white\/75 {
+  color: #F5F5F5 !important;
+}
+html.dark .budget-page .bg-\[\#F59BB8\] {
+  background: #1D1E20 !important;
+  color: #F5F5F5 !important;
+  border-color: #303235 !important;
+}
+
+/* Mobile: cards breathe like the mockup, controls stay pill-shaped. */
+@media (max-width: 1023px) {
+  .transaction-page,
+  .wallets-page,
+  .budget-page {
+    gap: 14px !important;
+  }
+  .transaction-page > *,
+  .wallets-page > *,
+  .budget-page > * {
+    border-radius: 20px;
+  }
+  .transaction-page input,
+  .transaction-page select,
+  .budget-page select,
+  .wallets-page input,
+  .wallets-page select {
+    min-height: 44px;
+  }
+}
