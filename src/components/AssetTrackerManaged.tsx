@@ -364,7 +364,7 @@ export function AssetTrackerManaged({
           <div className="mt-2.5">
             <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#006B48]/20">
               <div
-                className="h-full rounded-full bg-[#03140C] transition-[width] duration-500"
+                className="h-full rounded-full bg-[#9FE1CB] transition-[width] duration-500"
                 style={{ width: `${assets.target > 0 ? Math.min(100, Math.max(0, (displayTotalAssets / assets.target) * 100)) : 0}%` }}
               />
             </div>
