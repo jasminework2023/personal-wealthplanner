@@ -88,20 +88,55 @@ async function getSheetsClient() {
 // by roughly two thirds on every dashboard load / poll cycle.
 async function fetchAllRanges(spreadsheetId: string, transactionsOnly = false) {
   const sheets = await getSheetsClient();
-  const ranges = transactionsOnly
-    ? ["Transaction!B10:I"]
-    : ["Transaction!B10:I", "Budgeting!B1:N40", "Asset Tracker!A1:O1000"];
 
-  const res = await sheets.spreadsheets.values.batchGet({
-    spreadsheetId,
-    ranges,
-  });
-  const values = (res.data.valueRanges || []).map((r) => r.values || []);
+  // Do not let one optional tab (Budgeting / Asset Tracker) break the
+  // entire dashboard. A batchGet fails as a whole when even one requested
+  // range points to a missing/renamed tab, which previously made valid
+  // Transaction data look like "Rp0" in the UI.
+  async function readRange(range: string) {
+    try {
+      const res = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+      });
+      return { rows: res.data.values || [], error: "" };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("Google Sheets range read error:", range, message);
+      return { rows: [] as unknown[][], error: message };
+    }
+  }
+
+  const transaction = await readRange("Transaction!B10:I");
+  if (transaction.error) {
+    throw new Error(
+      `Google Sheet tidak bisa membaca tab Transaction. Pastikan spreadsheet_id benar dan service account punya akses Editor. Detail: ${transaction.error}`,
+    );
+  }
+
+  if (transactionsOnly) {
+    return {
+      transactionRows: transaction.rows,
+      budgetRows: [] as unknown[][],
+      assetRows: [] as unknown[][],
+    };
+  }
+
+  const [budget, assets] = await Promise.all([
+    readRange("Budgeting!B1:N40"),
+    readRange("Asset Tracker!A1:O1000"),
+  ]);
+
+  // Budgeting and Asset Tracker are optional for loading the core transaction
+  // data. Returning their errors in logs makes the failure visible without
+  // blanking the whole dashboard.
+  if (budget.error) console.warn("Budgeting tab unavailable:", budget.error);
+  if (assets.error) console.warn("Asset Tracker tab unavailable:", assets.error);
 
   return {
-    transactionRows: values[0] || [],
-    budgetRows: transactionsOnly ? [] : (values[1] || []),
-    assetRows: transactionsOnly ? [] : (values[2] || []),
+    transactionRows: transaction.rows,
+    budgetRows: budget.rows,
+    assetRows: assets.rows,
   };
 }
 
