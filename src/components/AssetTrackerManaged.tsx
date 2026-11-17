@@ -321,7 +321,7 @@ export function AssetTrackerManaged({
   return (
     <div className="space-y-3">
       <section
-        className="overflow-hidden rounded-[20px] border border-[#4B5563] bg-[#374151] p-4 text-white sm:p-5"
+        className="relative isolate overflow-hidden rounded-[20px] border border-[#4B5563] bg-[#374151] p-4 text-white sm:p-5 shadow-none"
       >
         <div className="min-w-0">
           <p className="text-[12px] font-medium tracking-[-0.02em] text-white/65">Total Aset</p>
