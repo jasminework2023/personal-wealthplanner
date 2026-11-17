@@ -282,7 +282,7 @@ export function Home() {
           aria-label={id ? "Ringkasan aset dan anggaran" : "Asset and budget summary"}
         >
           <div className="min-w-0 snap-start pr-0">
-            <div className="home-mobile-asset-card w-full min-w-0 overflow-hidden rounded-[20px] border p-4">
+            <div className="home-mobile-asset-card h-[184px] w-full min-w-0 overflow-hidden rounded-[20px] border p-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]">Asset Tracker</span>
                 <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} data-tour="home-eye-mobile" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#4B5563]">
@@ -314,7 +314,7 @@ export function Home() {
           </div>
 
           <div className="min-w-0 snap-start pr-0">
-            <div className="home-mobile-budget-card w-full min-w-0 overflow-hidden rounded-[20px] border p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
+            <div className="home-mobile-budget-card h-[184px] w-full min-w-0 overflow-hidden rounded-[20px] border p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">Budget Tracker</span>
                 <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white">
@@ -415,28 +415,45 @@ export function Home() {
       <div className="order-3 md:order-none"><HomeMonthlyCalendar transactions={allTxs} userId={userId} /></div>
       <section data-tour="home-wallets-mobile" className="order-4 md:hidden">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="section-title">{id ? "Wallet" : "Wallets"}</h2>
-          <button type="button" onClick={() => navigate("/wallets")} className="inline-flex items-center gap-0.5 rounded-full bg-forest-50 px-3 py-1.5 text-[11.5px] font-semibold text-forest-700">{id ? "Lihat semua" : "View all"} <ChevronRight size={14}/></button>
+          <h2 className="text-[18px] font-bold tracking-[-0.02em] text-[#17191C] dark:text-[#F5F5F5]">{id ? "Wallet" : "Wallets"}</h2>
+          <div className="text-[14px] font-medium tabular-nums text-[#737373]">{assetsVisible ? formatRupiah(wallets.reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0)) : "Rp ••••••"}</div>
         </div>
-        <div className="flex flex-col gap-2">
-          {wallets.length ? wallets.slice(0, 4).map((wallet) => (
-            <button key={wallet.id} type="button" onClick={() => navigate("/wallets")} className="flex min-h-[76px] items-center justify-between gap-3 overflow-hidden rounded-[20px] px-4 py-3 text-left shadow-[0_8px_24px_rgba(17,24,39,.08)]" style={{ background: wallet.resolvedColor || "#0E9F6E", color: "#FFFFFF" }}>
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15"><Wallet size={18}/></span>
-                <span className="min-w-0">
-                  <span className="block truncate text-[12px] font-medium text-white/70">{wallet.type === "bank" ? "Bank" : wallet.type === "cash" ? "Cash" : wallet.type === "investment" ? "Investment" : "Wallet"}</span>
-                  <span className="mt-0.5 block truncate text-[15px] font-semibold">{wallet.name}</span>
-                </span>
-              </div>
-              <span className="shrink-0 text-[16px] font-bold tabular-nums">{assetsVisible ? formatRupiah(wallet.balance) : "Rp ••••••"}</span>
-            </button>
-          )) : (
-            <button type="button" onClick={() => navigate("/wallets")} className="rounded-[20px] border border-dashed border-forest-200 bg-forest-50/50 px-4 py-5 text-center">
-              <Wallet className="mx-auto text-forest-700" size={22}/>
-              <p className="mt-2 text-[12px] font-semibold text-forest-900">{id ? "Belum ada wallet" : "No wallets yet"}</p>
-            </button>
-          )}
-        </div>
+        {wallets.length ? (
+          <div className="relative h-[188px]">
+            {wallets.slice(0, 2).map((wallet, index) => {
+              const isTop = index === 0;
+              return (
+                <button key={wallet.id} type="button" onClick={() => navigate("/wallets")}
+                  className={isTop ? "absolute inset-x-0 top-0 z-10 h-[102px] rounded-[22px] bg-[#202B3A] text-white shadow-[0_10px_24px_rgba(17,24,39,.12)] text-left overflow-hidden" : "absolute inset-x-0 top-[78px] z-20 h-[110px] rounded-[22px] bg-[#F1F4F8] text-[#17191C] shadow-[0_10px_28px_rgba(17,24,39,.08)] text-left overflow-hidden"}>
+                  <div className="flex items-start justify-between px-5 pt-4">
+                    <div className="min-w-0">
+                      <span className={isTop ? "block text-[11px] font-medium text-white/55" : "block text-[11px] font-medium text-[#737373]"}>
+                        {wallet.type === "bank" ? "Bank" : wallet.type === "cash" ? "Tunai" : wallet.type === "investment" ? "Investment" : "Wallet"}
+                      </span>
+                      <span className={isTop ? "mt-0.5 block truncate text-[16px] font-semibold text-white" : "mt-0.5 block truncate text-[16px] font-semibold text-[#17191C]"}>{wallet.name}</span>
+                    </div>
+                    <span className={isTop ? "shrink-0 text-[15px] font-bold tabular-nums text-white" : "shrink-0 text-[15px] font-bold tabular-nums text-[#17191C]"}>
+                      {assetsVisible ? formatRupiah(wallet.balance) : "Rp ••••••"}
+                    </span>
+                  </div>
+                  {!isTop && (
+                    <div className="px-5 pt-2">
+                      <span className="text-[24px] font-extrabold leading-none tracking-[-0.03em] tabular-nums">
+                        {assetsVisible ? formatRupiah(wallet.balance) : "Rp ••••••"}
+                      </span>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+            {wallets.length > 2 && <button type="button" onClick={() => navigate("/wallets")} className="absolute -bottom-1 right-0 z-30 text-[11px] font-semibold text-forest-700">{id ? `+${wallets.length - 2} wallet lainnya` : `+${wallets.length - 2} more wallets`}</button>}
+          </div>
+        ) : (
+          <button type="button" onClick={() => navigate("/wallets")} className="rounded-[20px] border border-dashed border-forest-200 bg-forest-50/50 px-4 py-5 text-center">
+            <Wallet className="mx-auto text-forest-700" size={22}/>
+            <p className="mt-2 text-[12px] font-semibold text-forest-900">{id ? "Belum ada wallet" : "No wallets yet"}</p>
+          </button>
+        )}
       </section>
 
 
@@ -451,7 +468,7 @@ export function Home() {
 
       <div className="order-6 md:order-none"><Card>
         <div className="mb-2 flex items-center justify-between"><h2 className="section-title">{id ? "Transaksi Terbaru" : "Recent Transactions"}</h2><button onClick={() => navigate("/transaction")} className="inline-flex items-center gap-0.5 rounded-full bg-forest-50 px-3 py-1.5 text-[12px] font-semibold text-forest-700">{id ? "Semua transaksi" : "All transactions"} <ChevronRight size={14}/></button></div>
-        {recent.length ? <div className="flex flex-col divide-y divide-charcoal/8">{recent.map((t, i) => <div key={t.sheetRow ?? `${t.date}-${t.description}-${i}`} className="flex items-center justify-between gap-3 py-3"><div className="flex min-w-0 items-center gap-3"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${t.type === "Income" ? "bg-[#DFF3E7] text-[#0B6B47]" : t.type === "Expense" ? "bg-[#DDF7E8] text-[#0B6B47]" : "bg-[#DDF7E8] text-[#0B6B47]"}`}>{t.type === "Income" ? <ArrowDownLeft size={19}/> : t.type === "Expense" ? <ArrowUpRight size={19}/> : <PiggyBank size={19}/>}</span><div className="min-w-0"><p className="truncate text-[13.5px] font-semibold text-forest-900">{t.description}</p><p className="mt-0.5 truncate text-[11.5px] text-charcoal/50">{t.category} · {t.date}</p></div></div><p className={`num shrink-0 text-[13.5px] font-semibold ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>{t.type === "Expense" ? "−" : "+"}{formatRupiah(t.amount)}</p></div>)}</div> : <p className="py-8 text-center text-[12px] text-charcoal/45">{id ? "Belum ada transaksi. Tekan tombol + untuk mulai mencatat." : "No transactions yet. Press + to start recording."}</p>}
+        {recent.length ? <div className="flex flex-col divide-y divide-charcoal/8">{recent.map((t, i) => <div key={t.sheetRow ?? `${t.date}-${t.description}-${i}`} className="flex items-center justify-between gap-3 py-3"><div className="flex min-w-0 items-center gap-3"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${t.type === "Income" ? "bg-[#EEF0F2] text-[#15803D]" : t.type === "Expense" ? "bg-[#EEF0F2] text-[#15803D]" : "bg-[#EEF0F2] text-[#15803D]"}`}>{t.type === "Income" ? <ArrowDownLeft size={19}/> : t.type === "Expense" ? <ArrowUpRight size={19}/> : <PiggyBank size={19}/>}</span><div className="min-w-0"><p className="truncate text-[13.5px] font-semibold text-forest-900">{t.description}</p><p className="mt-0.5 truncate text-[11.5px] text-charcoal/50">{t.category} · {t.date}</p></div></div><p className={`num shrink-0 text-[13.5px] font-semibold ${t.type === "Expense" ? "text-rose-600" : "text-forest-700"}`}>{t.type === "Expense" ? "−" : "+"}{formatRupiah(t.amount)}</p></div>)}</div> : <p className="py-8 text-center text-[12px] text-charcoal/45">{id ? "Belum ada transaksi. Tekan tombol + untuk mulai mencatat." : "No transactions yet. Press + to start recording."}</p>}
       </Card></div>
 
       {quickAddOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/35 p-4 sm:items-center" onClick={() => setQuickAddOpen(false)}>
