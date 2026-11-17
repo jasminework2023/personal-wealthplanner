@@ -66,7 +66,7 @@ export function AppShell() {
                 <span className={`text-[10px] font-semibold ${active ? "text-accent-text" : "text-muted"}`}>{label}</span>
               </button>;
             })}
-            <button data-tour="home-fab" onClick={() => setQuickAddOpen(true)} aria-label={language === "id" ? "Tambah transaksi" : "Add transaction"} className="wp-nav-fab relative mx-auto flex h-[52px] w-[52px] items-center justify-center rounded-full bg-accent text-accent-ink shadow-pop ring-[5px] ring-[rgb(var(--c-cream))]"><Plus size={28} strokeWidth={2.6}/></button>
+            <button data-tour="home-fab" onClick={() => setQuickAddOpen(true)} aria-label={language === "id" ? "Tambah transaksi" : "Add transaction"} className="wp-nav-fab relative mx-auto flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#374151] text-white shadow-pop ring-[5px] ring-[rgb(var(--c-cream))]"><Plus size={28} strokeWidth={2.6}/></button>
             {([
               { to: "/goals", label: navLabels.goals, Icon: Target, tour: false },
               { to: "/settings", label: language === "id" ? "Profil" : "Profile", Icon: UserRound, tour: true },
