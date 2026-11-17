@@ -4,7 +4,7 @@ import {
   Wallet, CircleDollarSign, TrendingUp, TrendingDown, PiggyBank, Plus, Sparkles,
   ArrowLeftRight, Landmark, Calculator, Target, ShieldCheck,
   ChartNoAxesCombined, Bot, BookOpen, ChevronRight, X, Eye, EyeOff, ArrowDownLeft, ArrowUpRight,
-  PieChart,
+  PieChart, CalendarDays, ClipboardCheck, Users, Settings,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Legend } from "recharts";
 import { Card, ChartCard } from "../components/Card";
@@ -31,6 +31,10 @@ const menus = [
   { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true, tone: "bg-[#F1F2F4] text-[#17191C]" },
   { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant", tone: "bg-[#F1F2F4] text-[#17191C]" },
   { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "calendar", label: "Calendar", icon: CalendarDays, to: "/calendar", tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "checkup", label: "Checkup", icon: ClipboardCheck, to: "/checkup", tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "spouse", label: "Spouse", icon: Users, to: "/spouse-sharing", tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "settings", label: "Settings", icon: Settings, to: "/settings", tone: "bg-[#F1F2F4] text-[#17191C]" },
 ];
 
 export function Home() {
@@ -278,33 +282,33 @@ export function Home() {
           aria-label={id ? "Ringkasan aset dan anggaran" : "Asset and budget summary"}
         >
           <div className="w-full shrink-0 snap-center pr-1">
-            <div className="rounded-[20px] p-4 text-[#03140C]" style={{ background: "linear-gradient(145deg, #F8FBFA 0%, #E9F2EE 52%, #D9ECE3 100%)" }}>
+            <div className="home-mobile-asset-card rounded-[20px] border p-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0B6B47]/65">{id ? "Asset Tracker" : "Asset Tracker"}</span>
-                <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} data-tour="home-eye-mobile" className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/55 text-[#0B6B47]">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]">{id ? "Asset Tracker" : "Asset Tracker"}</span>
+                <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} data-tour="home-eye-mobile" className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#4B5563]">
                   {assetsVisible ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </div>
               <div role="button" tabIndex={0} onClick={() => navigate("/finance")} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }} className="mt-3 cursor-pointer">
-                <p className="text-[12px] font-medium text-[#03140C]/60">{id ? "Total Aset" : "Total Assets"}</p>
+                <p className="text-[12px] font-medium text-[#6B7280]">{id ? "Total Aset" : "Total Assets"}</p>
                 <div className="mt-1 min-w-0 max-w-full break-words text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums">
                   {renderMoney(integratedTotalAssets, assetsVisible, "text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums", 31)}
                 </div>
                 <div className="mt-4 flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#0B6B47]/10 px-2.5 py-1 text-[10.5px] font-semibold text-[#0B6B47]">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#E5E7EB] px-2.5 py-1 text-[10.5px] font-semibold text-[#374151]">
                     <TrendingUp size={13} />{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}% {id ? "dari target" : "of goal"}
                   </span>
-                  <span className="text-[10.5px] font-medium text-[#0B6B47]/60">{assetsVisible ? renderMoney(assets.target, true, "text-[10.5px] font-medium text-[#0B6B47]/60", 10.5) : "Rp ••••••"}</span>
+                  <span className="text-[10.5px] font-medium text-[#6B7280]">{assetsVisible ? renderMoney(assets.target, true, "text-[10.5px] font-medium text-[#0B6B47]/60", 10.5) : "Rp ••••••"}</span>
                 </div>
-                <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#0B6B47]/10">
-                  <div className="h-full rounded-full bg-[#0B6B47]" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
+                <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-[#E5E7EB]">
+                  <div className="h-full rounded-full bg-[#15803D]" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
                 </div>
               </div>
             </div>
           </div>
 
           <div className="w-full shrink-0 snap-center pl-1">
-            <div className="rounded-[20px] p-4 text-white" style={{ background: "linear-gradient(145deg, #34443D 0%, #1F2E27 52%, #122019 100%)" }}>
+            <div className="home-mobile-budget-card rounded-[20px] border p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">{id ? "Budget Tracker" : "Budget Tracker"}</span>
                 <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white">
@@ -313,12 +317,19 @@ export function Home() {
               </div>
               <div role="button" tabIndex={0} onClick={() => navigate("/budgeting")} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/budgeting"); } }} className="mt-3 cursor-pointer">
                 <p className="text-[12px] font-medium text-white/55">{id ? "Sisa anggaran" : "Remaining budget"}</p>
-                <div className="mt-1 min-w-0 max-w-full break-words text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums">
-                  {hasBudget ? renderMoney(remainingBudget, assetsVisible, "text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums", 31) : (assetsVisible ? renderMoney(0, true, "text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums", 31) : "Rp ••••••")}
+                <div className="mt-1 flex items-center justify-between gap-4">
+                  <div className="min-w-0 max-w-full break-words text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums">
+                    {hasBudget ? renderMoney(remainingBudget, assetsVisible, "text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums", 31) : (assetsVisible ? renderMoney(0, true, "text-[31px] font-extrabold leading-[1.05] tracking-[-0.035em] tabular-nums", 31) : "Rp ••••••")}
+                  </div>
+                  <div className="home-budget-donut relative h-[76px] w-[76px] shrink-0 rounded-full" style={{ background: `conic-gradient(#34D399 ${Math.min(100, Math.max(0, hasBudget && expenseBudget > 0 ? (totalExpense / expenseBudget) * 100 : 0))}%, #D1D5DB 0)` }}>
+                    <div className="home-budget-donut-inner absolute inset-[10px] flex items-center justify-center rounded-full">
+                      <span className="text-[15px] font-extrabold tabular-nums text-white">{hasBudget && expenseBudget > 0 ? Math.round(Math.min(100, (totalExpense / expenseBudget) * 100)) : 0}%</span>
+                    </div>
+                  </div>
                 </div>
                 {!hasBudget && <p className="mt-1 text-[10.5px] text-white/40">{id ? "Atur anggaran untuk melihat sisa budget" : "Set a budget to see your remaining amount"}</p>}
                 <div className="mt-4 grid grid-cols-2 gap-2">
-                  <div className="rounded-[14px] bg-white/8 px-3 py-2.5">
+                  <div className="rounded-[14px] bg-white/10 px-3 py-2.5">
                     <span className="text-[10.5px] font-medium text-white/45">{id ? "Penghasilan" : "Income"}</span>
                     <p className="mt-0.5 truncate text-[14px] font-semibold tabular-nums">{assetsVisible ? formatRupiah(totalIncome) : "Rp ••••••"}</p>
                   </div>
@@ -339,9 +350,11 @@ export function Home() {
       </section>
 
       <section data-tour="main-menu" className="order-2 md:order-none">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="section-title">{id ? "Menu Utama" : "Main Menu"}</h2>
-          <span className="text-[11px] text-charcoal/45">Pilih fitur</span>
+        <div className="mb-2 flex items-center">
+          <button type="button" onClick={() => setMenuExpanded((value) => !value)} aria-expanded={menuExpanded} className="flex items-center gap-1.5 rounded-full px-0.5 py-1 text-[16px] font-bold tracking-[-0.02em] text-[#17191C] dark:text-[#F5F5F5]">
+            <span>{id ? "Menu Utama" : "Main Menu"}</span>
+            <ChevronRight size={17} className={menuExpanded ? "-rotate-90" : "rotate-90"} />
+          </button>
         </div>
         <div className="grid grid-cols-4 gap-2 sm:gap-3">
           {menus.map(({ label, icon: Icon, to, soon, tone }, index) => (
@@ -355,13 +368,9 @@ export function Home() {
             </button>
           ))}
         </div>
-        <button type="button" onClick={() => setMenuExpanded((value) => !value)} className="mx-auto mt-2.5 flex items-center gap-1 rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-forest-700 md:hidden">
-          {menuExpanded ? (id ? "Sembunyikan" : "Show less") : (id ? "Lihat semua" : "View all")}
-          <ChevronRight size={14} className={`transition-transform ${menuExpanded ? "rotate-90" : ""}`} />
-        </button>
       </section>
 
-      <div className="order-7 md:order-none rounded-[14px] border border-forest-100 bg-forest-50 p-3">
+      <div className="order-7 md:order-none rounded-[20px] border border-[#E7E7E5] bg-white p-3 dark:border-[#303235] dark:bg-[#171819]">
         <div className="flex items-start gap-3.5">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-[20px]">💡</div>
           <div className="min-w-0"><p className="text-[14px] font-bold tracking-[-0.01em] text-forest-900">{id ? "Langkah Berikutnya" : "Next Step"}</p><p className="mt-1 text-[13px] leading-[1.55] text-charcoal/70">{nextStep}</p></div>
