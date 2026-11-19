@@ -247,7 +247,7 @@ export function Goals() {
                 </div>
                 <span className="shrink-0 rounded-full bg-[#ECEEF2] px-2.5 py-1 text-[12px] font-bold tabular-nums text-[#111827] dark:bg-[#1D2027] dark:text-[#F3F4F6]">{Math.round(progress)}%</span>
               </div>
-              <div className="goal-progress-track mt-4 h-2 overflow-hidden rounded-full bg-[#ECEEF2] dark:bg-[#24272F]" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)} aria-label={"Progress " + (settings.names[plan.id] || plan.name)}>
+              <div className="goal-progress-track mt-4 h-2 overflow-hidden rounded-full bg-[#DDE1E6] dark:bg-[#24272F]" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)} aria-label={"Progress " + (settings.names[plan.id] || plan.name)}>
                 <div className="goal-progress-fill h-full rounded-full transition-all" style={{ width: progress + "%" }} />
               </div>
               <p className="mt-2 text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">{progress >= 100 ? (id ? "Target tercapai" : "Goal reached") : (id ? "Lanjutkan alokasi dana untuk mencapai target." : "Keep allocating funds to reach your goal.")}</p>
