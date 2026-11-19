@@ -61,6 +61,17 @@
   --c-up: 0 122 74;
   --c-down: 214 51 79;
   --c-warn: 242 169 0;
+
+  /* Goals / Target design tokens */
+  --goal-page-bg: 244 245 247;
+  --goal-card-bg: 255 255 255;
+  --goal-border: 229 231 235;
+  --goal-surface: 236 238 242;
+  --goal-text: 17 24 39;
+  --goal-muted: 107 114 128;
+  --goal-progress-start: 74 222 159;
+  --goal-progress-end: 14 159 110;
+  --goal-positive: 14 159 110;
   /* Asset composition chart categories — never green/red because those are reserved for up/down. */
   --asset-liquid: 37 99 235;
   --asset-bond: 124 58 237;
@@ -130,6 +141,16 @@ html.dark {
   --wp-accent: 185 189 195;
   --wp-negative: 217 149 138;
   --wp-positive: 157 184 168;
+
+  --goal-page-bg: 10 11 14;
+  --goal-card-bg: 20 22 27;
+  --goal-border: 36 39 47;
+  --goal-surface: 29 32 39;
+  --goal-text: 243 244 246;
+  --goal-muted: 156 163 175;
+  --goal-progress-start: 110 231 183;
+  --goal-progress-end: 52 211 153;
+  --goal-positive: 52 211 153;
 
   /* Existing semantic tokens now point to the dark theme tokens. */
   --c-forest-50: var(--wp-card-elevated);
@@ -1960,3 +1981,11 @@ html.dark .home-page [data-tour="main-menu"] > div.grid button:not([aria-expande
 html.dark .home-page [data-tour="main-menu"] > div.grid button:not([aria-expanded]) > span:not(.bg-\\[\\#DDF7E8\\]) {
   color: rgb(var(--wp-text-primary)) !important;
 }
+
+/* Goals / Target surfaces */
+.goals-page { background: rgb(var(--goal-page-bg)); color: rgb(var(--goal-text)); }
+.goals-page .goal-card { background: rgb(var(--goal-card-bg)) !important; border-color: rgb(var(--goal-border)) !important; }
+.goals-page .goal-progress-track { background: rgb(var(--goal-surface)); }
+.goals-page .goal-progress-fill { background: linear-gradient(90deg, rgb(var(--goal-progress-start)), rgb(var(--goal-progress-end))); }
+.goals-page .goal-allocation-sheet { background: rgb(var(--goal-card-bg)); color: rgb(var(--goal-text)); }
+.goals-page .goal-allocation-sheet input { background: rgb(var(--goal-surface)); color: rgb(var(--goal-text)); border-color: rgb(var(--goal-border)); }
