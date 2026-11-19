@@ -303,17 +303,17 @@ export function Home() {
                 </div>
 
                 <div className="mt-3.5">
-                  <div className="flex items-center justify-between text-[10px] font-medium text-[#6B7280]">
+                  <div className="flex items-center justify-between text-[10px] font-medium text-white">
                     <span>Progress target</span>
-                    <span className="font-semibold tabular-nums text-[#374151]">{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}%</span>
+                    <span className="font-semibold tabular-nums text-white">{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}%</span>
                   </div>
                   <div className="relative mt-1.5 h-[22px] w-full" aria-label="Progress target aset">
                     <div className="absolute left-0 right-0 top-[10px] h-[2px] rounded-full bg-[#E5E7EB]" />
-                    <div className="absolute left-0 top-[10px] h-[2px] rounded-full bg-[#111827] transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
-                    <div className="absolute top-[6px] h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-[#111827]" style={{ left: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
+                    <div className="absolute left-0 top-[10px] h-[2px] rounded-full bg-[#9FE1CB] transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
+                    <div className="absolute top-[6px] h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-[#9FE1CB]" style={{ left: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
                   </div>
-                  <div className="mt-1.5 text-right text-[10.5px] font-medium text-[#6B7280] tabular-nums">
-                    Target {assetsVisible ? renderMoney(assets.target, true, "text-[10.5px] font-medium text-[#6B7280] tabular-nums", 10.5) : "Rp ••••••"}
+                  <div className="mt-1.5 text-right text-[10.5px] font-medium text-white tabular-nums">
+                    Target {assetsVisible ? renderMoney(assets.target, true, "text-[10.5px] font-medium text-white tabular-nums", 10.5) : "Rp ••••••"}
                   </div>
                 </div>
               </div>
