@@ -27,12 +27,12 @@ const menus = [
   { key: "asset", label: "Asset", icon: TrendingUp, to: "/assets" },
   { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator" },
   { key: "goals", label: "Goals", icon: Target, to: "/goals" },
-  { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection" },
   { key: "report", label: "Report", icon: Landmark, to: "/finance" },
-  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true },
-  { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant" },
-  { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance" },
   { key: "debt", label: "Debt", icon: Landmark, to: "/debt" },
+  { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection" },
+  { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant" },
+  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true },
+  { key: "settings", label: "Settings", icon: Settings, to: "/settings" },
 ];
 
 export function Home() {
