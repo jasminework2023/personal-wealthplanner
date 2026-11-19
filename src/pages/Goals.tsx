@@ -250,10 +250,12 @@ export function Goals() {
               <div className="goal-progress-track mt-4 h-2 overflow-hidden rounded-full bg-[#DDE1E6] dark:bg-[#24272F]" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)} aria-label={"Progress " + (settings.names[plan.id] || plan.name)}>
                 <div className="goal-progress-fill h-full rounded-full transition-all" style={{ width: progress + "%" }} />
               </div>
-              <p className="mt-2 text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">{progress >= 100 ? (id ? "Target tercapai" : "Goal reached") : (id ? "Lanjutkan alokasi dana untuk mencapai target." : "Keep allocating funds to reach your goal.")}</p>
             </div>
 
-            <button onClick={() => { setAllocatingId(plan.id); setAmount(""); setSelectedAsset(""); }} className="mt-4 inline-flex h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-br from-[#374151] to-[#111827] text-[14px] font-bold text-white dark:from-[#FFFFFF] dark:to-[#C9CED8] dark:text-[#111827]" aria-label="Alokasikan dana"><Plus size={17}/>Alokasikan Dana</button>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button onClick={() => { setAllocatingId(plan.id); setAmount(""); setSelectedAsset(""); }} className="inline-flex h-[46px] items-center justify-center gap-2 rounded-[14px] bg-gradient-to-br from-[#374151] to-[#111827] px-3 text-[13px] font-bold text-white dark:from-[#FFFFFF] dark:to-[#C9CED8] dark:text-[#111827]" aria-label="Alokasikan dana"><Plus size={16}/>Alokasikan Dana</button>
+              <button onClick={() => navigate("/calculator/" + getCalculatorRouteId(plan))} className="inline-flex h-[46px] items-center justify-center rounded-[14px] border border-[#374151] bg-transparent px-3 text-[13px] font-bold text-[#374151] dark:border-[#B9BDC3] dark:text-[#D5D8DC]">Lihat Simulasi</button>
+            </div>
           </div>
           </div>
         );
