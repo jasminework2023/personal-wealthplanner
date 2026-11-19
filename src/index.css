@@ -1674,3 +1674,268 @@ html.dark .home-page .home-mobile-asset-card .bg-\[\#E5E7EB\] {
   background: #303236 !important;
 }
 
+
+
+/* ============================================================
+   DARK THEME — OLD MONEY / CHARCOAL + SILVER
+   Final semantic layer. Light theme is intentionally untouched.
+   ============================================================ */
+html.dark,
+html.dark body,
+html.dark #root {
+  background: rgb(var(--wp-bg)) !important;
+  color: rgb(var(--wp-text-primary)) !important;
+}
+
+html.dark .bg-cream,
+html.dark [class*="bg-cream/"] { background: rgb(var(--wp-bg)) !important; }
+
+html.dark .bg-white,
+html.dark .bg-white\/70,
+html.dark .bg-white\/90,
+html.dark [class*="bg-white"][class*="rounded-"] {
+  background: rgb(var(--wp-card)) !important;
+  border-color: rgb(var(--wp-border)) !important;
+}
+
+html.dark .border-forest-100,
+html.dark .border-forest-200,
+html.dark [class*="border-[#E5E7EB]"],
+html.dark [class*="border-[#E7E7E5]"] {
+  border-color: rgb(var(--wp-border)) !important;
+}
+
+html.dark [class*="text-forest-900"],
+html.dark [class*="text-forest-800"],
+html.dark [class*="text-[#17191C]"],
+html.dark [class*="text-[#111827]"],
+html.dark [class*="text-[#172033]"],
+html.dark [class*="text-[#062D20]"],
+html.dark .text-black {
+  color: rgb(var(--wp-text-primary)) !important;
+}
+
+html.dark [class*="text-forest-700"],
+html.dark [class*="text-forest-600"],
+html.dark [class*="text-[#6B7280]"],
+html.dark [class*="text-[#7B8492]"],
+html.dark [class*="text-[#4B5563]"],
+html.dark [class*="text-[#9CA3AF]"],
+html.dark [class*="text-charcoal/"] {
+  color: rgb(var(--wp-text-secondary)) !important;
+}
+
+html.dark [class*="text-rose-"],
+html.dark [class*="text-[#D6334F]"],
+html.dark [class*="text-[#FF5C7A]"] {
+  color: rgb(var(--wp-negative)) !important;
+}
+
+html.dark [class*="text-green-"],
+html.dark [class*="text-[#15803D]"],
+html.dark [class*="text-[#166534]"],
+html.dark [class*="text-[#0B6B47]"] {
+  color: rgb(var(--wp-positive)) !important;
+}
+
+html.dark [class*="bg-forest-50"],
+html.dark [class*="bg-forest-100"],
+html.dark [class*="bg-forest-200"],
+html.dark [class*="bg-[#DDF7E8]"],
+html.dark [class*="bg-[#DDF2DE]"],
+html.dark [class*="bg-[#EEF0F2]"] {
+  background: rgb(var(--wp-card-elevated)) !important;
+}
+
+html.dark [class*="bg-rose-50"],
+html.dark [class*="bg-rose-100"] {
+  background: rgb(var(--wp-card-elevated)) !important;
+}
+
+html.dark [class*="bg-yellow-"],
+html.dark [class*="bg-orange-"] {
+  background: rgb(var(--wp-card-elevated)) !important;
+}
+
+html.dark [class*="bg-charcoal/"] {
+  background: rgb(var(--wp-card-elevated) / 0.8) !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea,
+html.dark option {
+  background: rgb(var(--wp-card)) !important;
+  color: rgb(var(--wp-text-primary)) !important;
+  border-color: rgb(var(--wp-border)) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder,
+html.dark ::placeholder {
+  color: rgb(var(--wp-text-secondary)) !important;
+}
+
+html.dark button.bg-accent,
+html.dark a.bg-accent,
+html.dark [class*="bg-accent"] {
+  background: rgb(var(--wp-text-primary)) !important;
+  color: rgb(var(--wp-bg)) !important;
+}
+
+html.dark button[class*="border-"],
+html.dark a[class*="border-"] {
+  border-color: rgb(var(--wp-border));
+}
+
+html.dark .shadow-card,
+html.dark .shadow-pop,
+html.dark .shadow-nav,
+html.dark [class*="shadow-"] {
+  box-shadow: none !important;
+}
+
+html.dark .wp-nav,
+html.dark .wp-sheet,
+html.dark .desktop-sidebar,
+html.dark .mobile-sidebar,
+html.dark .topbar {
+  background: rgb(var(--wp-sidebar)) !important;
+  border-color: rgb(var(--wp-border)) !important;
+}
+
+html.dark .desktop-sidebar .sidebar-item-active,
+html.dark .sidebar-item-active {
+  background: rgb(var(--wp-card-elevated)) !important;
+  color: rgb(var(--wp-text-primary)) !important;
+  border-left: 2px solid rgb(var(--wp-accent)) !important;
+}
+
+html.dark .desktop-sidebar .sidebar-item-active svg,
+html.dark .sidebar-item-active svg {
+  color: rgb(var(--wp-accent)) !important;
+}
+
+html.dark .home-page,
+html.dark .transaction-page,
+html.dark .wallets-page,
+html.dark .budget-page,
+html.dark .wp-calculator {
+  background: rgb(var(--wp-bg)) !important;
+  color: rgb(var(--wp-text-primary)) !important;
+}
+
+html.dark .home-page .home-mobile-asset-card,
+html.dark .home-page .home-mobile-budget-card,
+html.dark .home-page .home-asset-summary,
+html.dark .home-page .hero-neutral,
+html.dark .wallets-page > section:first-child:not([style]),
+html.dark .budget-page > section[data-tour="budget-summary"] {
+  background: rgb(var(--wp-card)) !important;
+  border-color: rgb(var(--wp-border)) !important;
+  color: rgb(var(--wp-text-primary)) !important;
+  box-shadow: none !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] > div.grid {
+  background: rgb(var(--wp-card)) !important;
+  border-color: rgb(var(--wp-border)) !important;
+  box-shadow: none !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] button:hover {
+  background: rgb(var(--wp-card-elevated)) !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] button svg,
+html.dark .home-page [data-tour="main-menu"] button span {
+  color: rgb(var(--wp-text-primary)) !important;
+}
+
+html.dark .home-page .home-mobile-asset-card .bg-white\/70,
+html.dark .home-page .home-mobile-budget-card .bg-white\/10 {
+  background: rgb(var(--wp-card-elevated)) !important;
+}
+
+html.dark .home-page [class*="bg-[#E5E7EB]"],
+html.dark .home-page [class*="bg-[#111827]"] {
+  background: rgb(var(--wp-border)) !important;
+}
+
+html.dark .home-page [class*="bg-[#9FE1CB]"],
+html.dark .home-page [class*="bg-[#34D399]"] {
+  background: rgb(var(--wp-accent)) !important;
+}
+
+html.dark .hero-neon,
+html.dark .hero-emerald,
+html.dark .hero-forest,
+html.dark .hero-mint,
+html.dark .hero-butter,
+html.dark .hero-neutral {
+  background: rgb(var(--wp-card)) !important;
+  color: rgb(var(--wp-text-primary)) !important;
+  border-color: rgb(var(--wp-border)) !important;
+  box-shadow: none !important;
+}
+
+html.dark .recharts-text,
+html.dark .recharts-text tspan,
+html.dark .recharts-cartesian-axis-tick-value,
+html.dark .recharts-label,
+html.dark .recharts-pie-label-text,
+html.dark .recharts-legend-item-text {
+  fill: rgb(var(--wp-text-secondary)) !important;
+  color: rgb(var(--wp-text-secondary)) !important;
+}
+
+html.dark .recharts-cartesian-axis-line,
+html.dark .recharts-cartesian-axis-tick-line {
+  stroke: rgb(var(--wp-border)) !important;
+}
+
+html.dark .recharts-tooltip-wrapper .recharts-default-tooltip,
+html.dark .recharts-default-tooltip {
+  background: rgb(var(--wp-card-elevated)) !important;
+  border-color: rgb(var(--wp-border)) !important;
+  color: rgb(var(--wp-text-primary)) !important;
+}
+
+html.dark .wp-calculator .wp-calc-card,
+html.dark .wp-calculator .card {
+  background: rgb(var(--wp-card)) !important;
+  color: rgb(var(--wp-text-primary)) !important;
+  border-color: rgb(var(--wp-border)) !important;
+}
+
+html.dark .wp-calculator button[style*="background: white"] {
+  background: rgb(var(--wp-text-primary)) !important;
+  color: rgb(var(--wp-bg)) !important;
+}
+
+html.dark .wp-calculator svg text {
+  fill: rgb(var(--wp-text-primary)) !important;
+}
+
+html.dark .wp-backdrop {
+  background: rgb(var(--wp-bg) / 0.72) !important;
+}
+
+html.dark .home-page .home-mobile-asset-card,
+html.dark .home-page .home-mobile-budget-card {
+  box-shadow: none !important;
+}
+
+/* Explicit financial semantics */
+html.dark .text-accent-text,
+html.dark .text-accent {
+  color: rgb(var(--wp-accent)) !important;
+}
+html.dark .text-up,
+html.dark .text-positive {
+  color: rgb(var(--wp-positive)) !important;
+}
+html.dark .text-down,
+html.dark .text-negative {
+  color: rgb(var(--wp-negative)) !important;
+}
