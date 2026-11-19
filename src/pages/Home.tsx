@@ -409,17 +409,16 @@ export function Home() {
           const allocated = Object.values(goalSettings.allocations?.[plan.id] || {}).reduce((sum, value) => sum + Number(value || 0), 0);
           const progress = target > 0 ? Math.min(100, Math.max(0, allocated / target * 100)) : 0;
           const goalName = goalSettings.names?.[plan.id] || plan.name;
-          return <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-[20px] border border-[#E5E7EB] bg-white p-[18px] text-left shadow-[0_2px_10px_rgba(17,24,39,.04)] transition hover:shadow-sm dark:border-[#24272F] dark:bg-[#14161B]">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0"><p className="text-[16px] font-bold text-[#111827] dark:text-[#F3F4F6]">{goalName}</p><p className="mt-1 text-[12px] text-[#6B7280] dark:text-[#9CA3AF]">{id ? "Goal" : "Goal"}</p></div>
-              <span className="shrink-0 rounded-full bg-[#ECEEF2] px-2.5 py-1 text-[12px] font-bold tabular-nums text-[#111827] dark:bg-[#1D2027] dark:text-[#F3F4F6]">{Math.round(progress)}%</span>
+          return <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-[14px] border border-[#E5E7EB] bg-white p-3 text-left shadow-[0_2px_10px_rgba(17,24,39,.04)] transition hover:shadow-sm dark:border-[#24272F] dark:bg-[#14161B]">
+            <div className="flex items-center gap-3">
+              <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full" style={{ background: "conic-gradient(rgb(var(--wp-accent)) " + progress + "%, rgb(var(--wp-card-elevated)) " + progress + "%)" }}>
+                <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-white dark:bg-[#13271D]"><span className="text-[15px] font-bold tabular-nums text-[#0B6B47] dark:text-[#9DB8A8]">{Math.round(progress)}%</span></div>
+              </div>
+              <div className="min-w-0 flex-1"><p className="text-[13px] font-semibold text-[#111827] dark:text-[#F3F4F6]">{goalName}</p><p className="mt-1 text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">{id ? "Terkumpul" : "Collected"}</p><p className="text-[12px] font-semibold text-[#0B6B47] dark:text-[#9DB8A8]">{formatRupiah(allocated)} <span className="font-normal text-[#6B7280] dark:text-[#9CA3AF]">{id ? "dari" : "of"} {formatRupiah(target)}</span></p></div>
             </div>
-            <p className="num mt-4 text-[20px] font-bold tabular-nums text-[#111827] dark:text-[#F3F4F6]">{formatRupiah(allocated)}</p>
-            <p className="mt-1 text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">dari target <span className="num">{formatRupiah(target)}</span></p>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#ECEEF2] dark:bg-[#24272F]"><div className="h-full rounded-full bg-gradient-to-r from-[#4ADE9F] to-[#0E9F6E] transition-all" style={{ width: progress + "%" }}/></div>
-            <p className="mt-2 text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">{progress >= 100 ? "Target tercapai" : "Lanjutkan alokasi dana untuk mencapai target."}</p>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#DDE1E6] dark:bg-[#24272F]"><div className="h-full rounded-full bg-gradient-to-r from-[#4ADE9F] to-[#0E9F6E] transition-all" style={{ width: progress + "%" }}/></div>
           </button>;
-        })}</div> : <div className="rounded-[20px] border border-dashed border-[#E5E7EB] bg-white px-4 py-6 text-center dark:border-[#24272F] dark:bg-[#14161B]"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#ECEEF2] text-[#6B7280]"><Target size={21}/></span><p className="mt-2 text-[13px] font-semibold text-[#111827] dark:text-[#F3F4F6]">Belum ada goals</p><p className="mt-1 text-[12px] text-[#6B7280] dark:text-[#9CA3AF]">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-[14px] bg-gradient-to-br from-[#374151] to-[#111827] px-5 py-2.5 text-[12.5px] font-semibold text-white">Buka Calculator</button></div>}
+        })}</div> : <div className="rounded-[14px] border border-dashed border-[#E5E7EB] bg-white px-3 py-5 text-center dark:border-[#24272F] dark:bg-[#14161B]"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-[#ECEEF2] text-[#6B7280]"><Target size={21}/></span><p className="mt-2 text-[13px] font-semibold text-[#111827] dark:text-[#F3F4F6]">Belum ada goals</p><p className="mt-1 text-[12px] text-[#6B7280] dark:text-[#9CA3AF]">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-full bg-[#123524] px-5 py-2.5 text-[12.5px] font-semibold text-white">Buka Calculator</button></div>}
       </section>
 
       <div className="order-3 md:order-none"><HomeMonthlyCalendar transactions={allTxs} userId={userId} /></div>
