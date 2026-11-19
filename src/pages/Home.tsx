@@ -20,18 +20,18 @@ import { HomeMonthlyCalendar } from "../components/HomeMonthlyCalendar";
 
 const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 const menus = [
-  { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction", tone: "bg-[#F1F2F4] text-[#17191C]" },
-  { key: "wallets", label: "Wallet", icon: Wallet, to: "/wallets", tone: "bg-[#E7E8EB] text-[#17191C]" },
-  { key: "budget", label: "Budget", icon: PieChart, to: "/budgeting", tone: "bg-[#E7E8EB] text-[#17191C]" },
-  { key: "asset", label: "Asset", icon: TrendingUp, to: "/assets", tone: "bg-[#E7E8EB] text-[#17191C]" },
-  { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator", tone: "bg-[#F1F2F4] text-[#17191C]" },
-  { key: "goals", label: "Goals", icon: Target, to: "/goals", tone: "bg-[#F1F2F4] text-[#17191C]" },
-  { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection", tone: "bg-[#E7E8EB] text-[#17191C]" },
-  { key: "report", label: "Report", icon: Landmark, to: "/finance", tone: "bg-[#F1F2F4] text-[#17191C]" },
-  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true, tone: "bg-[#F1F2F4] text-[#17191C]" },
-  { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant", tone: "bg-[#F1F2F4] text-[#17191C]" },
-  { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance", tone: "bg-[#F1F2F4] text-[#17191C]" },
-  { key: "debt", label: "Debt", icon: Landmark, to: "/debt", tone: "bg-[#F1F2F4] text-[#17191C]" },
+  { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction" },
+  { key: "wallets", label: "Wallet", icon: Wallet, to: "/wallets" },
+  { key: "budget", label: "Budget", icon: PieChart, to: "/budgeting" },
+  { key: "asset", label: "Asset", icon: TrendingUp, to: "/assets" },
+  { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator" },
+  { key: "goals", label: "Goals", icon: Target, to: "/goals" },
+  { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection" },
+  { key: "report", label: "Report", icon: Landmark, to: "/finance" },
+  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true },
+  { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant" },
+  { key: "guide", label: "Guide", icon: BookOpen, to: "/guidance" },
+  { key: "debt", label: "Debt", icon: Landmark, to: "/debt" },
 ];
 
 export function Home() {
