@@ -119,93 +119,109 @@
 
 /* Theme tokens — Dark */
 html.dark {
-  --c-forest-50: 10 33 23;
-  --c-forest-100: 11 54 37;
-  --c-forest-200: 12 85 58;
-  --c-forest-300: 0 154 92;
-  --c-forest-400: 0 194 122;
-  --c-forest-500: 0 224 138;
-  --c-forest-600: 0 224 138;
-  --c-forest-700: 92 240 176;
-  --c-forest-800: 184 245 216;
-  --c-forest-900: 242 242 244;
+  /* Old Money — Charcoal & Silver */
+  --wp-bg: 11 12 13;
+  --wp-sidebar: 16 17 18;
+  --wp-card: 20 21 22;
+  --wp-card-elevated: 27 28 30;
+  --wp-border: 43 45 48;
+  --wp-text-primary: 213 216 220;
+  --wp-text-secondary: 141 146 152;
+  --wp-accent: 185 189 195;
+  --wp-negative: 217 149 138;
+  --wp-positive: 157 184 168;
 
-  /* Semantic red remains red in Dark mode. */
-  --c-rose-50: 53 23 29;
-  --c-rose-100: 75 28 38;
-  --c-rose-200: 122 36 52;
-  --c-rose-300: 255 92 122;
-  --c-rose-400: 255 92 122;
-  --c-rose-500: 255 92 122;
-  --c-rose-600: 255 92 122;
-  --c-rose-700: 255 92 122;
+  /* Existing semantic tokens now point to the dark theme tokens. */
+  --c-forest-50: var(--wp-card-elevated);
+  --c-forest-100: var(--wp-border);
+  --c-forest-200: var(--wp-border);
+  --c-forest-300: var(--wp-text-secondary);
+  --c-forest-400: var(--wp-accent);
+  --c-forest-500: var(--wp-accent);
+  --c-forest-600: var(--wp-accent);
+  --c-forest-700: var(--wp-accent);
+  --c-forest-800: var(--wp-text-primary);
+  --c-forest-900: var(--wp-text-primary);
 
-  --c-lilac-50: 16 39 29;
-  --c-lilac-100: 23 61 44;
-  --c-lilac-400: 110 231 183;
-  --c-lilac-600: 92 240 176;
-  --c-lilac-700: 184 245 216;
+  --c-rose-50: 38 29 27;
+  --c-rose-100: 55 35 32;
+  --c-rose-200: 86 53 48;
+  --c-rose-300: var(--wp-negative);
+  --c-rose-400: var(--wp-negative);
+  --c-rose-500: var(--wp-negative);
+  --c-rose-600: var(--wp-negative);
+  --c-rose-700: var(--wp-negative);
 
-  --c-yellow-50: 61 49 9;
-  --c-yellow-100: 87 67 11;
-  --c-yellow-500: 255 200 21;
-  --c-yellow-700: 255 200 21;
+  --c-lilac-50: var(--wp-card-elevated);
+  --c-lilac-100: var(--wp-card-elevated);
+  --c-lilac-400: var(--wp-accent);
+  --c-lilac-600: var(--wp-accent);
+  --c-lilac-700: var(--wp-text-primary);
 
-  --c-orange-50: 19 19 22;
-  --c-orange-100: 37 37 44;
-  --c-orange-500: 255 200 21;
+  --c-yellow-50: var(--wp-card-elevated);
+  --c-yellow-100: var(--wp-card-elevated);
+  --c-yellow-500: var(--wp-accent);
+  --c-yellow-700: var(--wp-text-primary);
 
-  --c-cream: 10 10 12;
-  --c-surface: 19 19 22;
-  --c-border: 37 37 44;
-  --c-charcoal: 242 242 244;
-  --c-muted: 154 154 165;
+  --c-orange-50: var(--wp-card-elevated);
+  --c-orange-100: var(--wp-border);
+  --c-orange-500: var(--wp-accent);
+
+  --c-cream: var(--wp-bg);
+  --c-surface: var(--wp-card);
+  --c-border: var(--wp-border);
+  --c-charcoal: var(--wp-text-primary);
+  --c-muted: var(--wp-text-secondary);
   --c-shadow: 0 0 0;
-  --c-accent: 0 224 138;
-  --c-accent-ink: 4 19 12;
-  --c-accent-text: 92 240 176;
-  --c-up: 0 224 138;
-  --c-down: 255 92 122;
-  --c-warn: 255 200 21;
-  /* Asset composition chart categories — tuned for dark-mode readability. */
-  --asset-liquid: 96 165 250;
-  --asset-bond: 167 139 250;
-  --asset-stock: 56 189 248;
-  --asset-fund: 251 191 36;
-  --asset-gold: 251 146 60;
-  --asset-p2p: 148 163 184;
-  --asset-other: 203 213 225;
-    --asset-real: 34 211 238;
-  --shadow-pop: 0 0 24px rgba(0, 224, 138, 0.7);
-  --shadow-nav: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --c-accent: var(--wp-accent);
+  --c-accent-ink: var(--wp-bg);
+  --c-accent-text: var(--wp-accent);
+  --c-up: var(--wp-positive);
+  --c-down: var(--wp-negative);
+  --c-warn: var(--wp-accent);
 
-  --chart-axis: #9A9AA5;
-  --chart-grid: rgba(255, 255, 255, 0.12);
-  --chart-1: #0F9D6B;
-  --chart-2: #FFC815;
-  --chart-3: #6EE7B7;
-  --chart-4: #9CA3AF;
-  --chart-5: #4B5563;
-  --chart-6: #5CF0B0;
-  --chart-7: #FF5C7A;
-  --chart-8: #00E08A;
-  --chart-income: #00C27A;
-  --chart-expense: #FF5C7A;
-  --chart-saving: #F2A900;
+  /* Asset/chart colors are neutralized for dark mode. */
+  --asset-liquid: var(--wp-accent);
+  --asset-bond: var(--wp-text-secondary);
+  --asset-stock: var(--wp-text-primary);
+  --asset-fund: var(--wp-accent);
+  --asset-gold: var(--wp-text-secondary);
+  --asset-p2p: var(--wp-text-secondary);
+  --asset-other: var(--wp-border);
+  --asset-real: var(--wp-text-primary);
 
+  --asset-page-bg: var(--wp-bg);
+  --asset-card-bg: var(--wp-card);
+  --asset-primary-text: var(--wp-text-primary);
+  --asset-secondary-text: var(--wp-text-secondary);
+  --asset-primary-green: var(--wp-accent);
+  --asset-profit-bg: var(--wp-card-elevated);
+  --asset-chart-green: var(--wp-accent);
+  --asset-chart-blue: var(--wp-text-primary);
+  --asset-chart-mint: var(--wp-accent);
+  --asset-chart-gray: var(--wp-text-secondary);
+  --asset-chart-slate: var(--wp-border);
+  --asset-loss: var(--wp-negative);
+  --asset-loss-bg: var(--wp-card-elevated);
+  --asset-nav-dark: var(--wp-sidebar);
 
+  --shadow-pop: none;
+  --shadow-nav: none;
 
-
-
-
-
-
-
-
-
-
+  --chart-axis: #8D9298;
+  --chart-grid: rgba(185, 189, 195, 0.18);
+  --chart-1: #B9BDC3;
+  --chart-2: #8D9298;
+  --chart-3: #D5D8DC;
+  --chart-4: #8D9298;
+  --chart-5: #2B2D30;
+  --chart-6: #B9BDC3;
+  --chart-7: #D9958A;
+  --chart-8: #9DB8A8;
+  --chart-income: #9DB8A8;
+  --chart-expense: #D9958A;
+  --chart-saving: #B9BDC3;
 }
-
 html,
 body {
   font-family: "Inter", system-ui, sans-serif;
