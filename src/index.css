@@ -1523,3 +1523,138 @@ html.dark .home-budget-donut-inner { background:#303237 !important; }
   [data-tour="home-assets-mobile"]>div{display:flex!important;gap:0!important;overflow-x:auto!important;scroll-snap-type:x mandatory!important;width:100%!important;min-width:0!important}
   [data-tour="home-assets-mobile"]>div>div{flex:0 0 100%!important;width:100%!important;min-width:100%!important;max-width:100%!important;scroll-snap-align:start!important}
 }
+
+/* HOME DARK MODE — BLACK / WHITE / GRAY DOMINANT */
+html.dark .home-page {
+  background: #101112 !important;
+  color: #F5F5F5 !important;
+}
+
+html.dark .home-page .text-\[\#17191C\],
+html.dark .home-page .text-\[\#111827\],
+html.dark .home-page .text-black {
+  color: #F5F5F5 !important;
+}
+
+html.dark .home-page .text-\[\#6B7280\],
+html.dark .home-page .text-\[\#4B5563\],
+html.dark .home-page .text-charcoal\/50,
+html.dark .home-page .text-charcoal\/60 {
+  color: #A3A3A3 !important;
+}
+
+html.dark .home-page .text-\[\#374151\] {
+  color: #D4D4D4 !important;
+}
+
+html.dark .home-page .bg-white {
+  background: #171819 !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] > div.grid {
+  background: #171819 !important;
+  border-color: #292B2D !important;
+  box-shadow: none !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] button {
+  color: #F5F5F5 !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] button:hover {
+  background: #222325 !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] button svg {
+  color: #E5E5E5 !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] button span {
+  color: #F5F5F5 !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] button span.bg-\[\#DDF7E8\] {
+  background: #1F3328 !important;
+  color: #86EFAC !important;
+}
+
+html.dark .home-page .home-mobile-asset-card {
+  background: #171819 !important;
+  border-color: #292B2D !important;
+  color: #F5F5F5 !important;
+  box-shadow: none !important;
+}
+
+html.dark .home-page .home-mobile-asset-card .text-\[\#6B7280\] {
+  color: #A3A3A3 !important;
+}
+
+html.dark .home-page .home-mobile-asset-card .text-\[\#374151\] {
+  color: #D4D4D4 !important;
+}
+
+html.dark .home-page .home-mobile-asset-card button {
+  background: #222325 !important;
+  border-color: #383A3D !important;
+  color: #F5F5F5 !important;
+}
+
+html.dark .home-page .home-mobile-budget-card {
+  background: #222325 !important;
+  border-color: #383A3D !important;
+  box-shadow: none !important;
+}
+
+html.dark .home-page .home-mobile-budget-card .text-white\/55 {
+  color: #A3A3A3 !important;
+}
+
+html.dark .home-page .home-mobile-budget-card .bg-white\/10 {
+  background: #303236 !important;
+}
+
+html.dark .home-page .home-mobile-budget-card .text-white {
+  color: #F5F5F5 !important;
+}
+
+html.dark .home-page .home-asset-summary,
+html.dark .home-page .hero-neutral {
+  background: #171819 !important;
+  border-color: #292B2D !important;
+  color: #F5F5F5 !important;
+  box-shadow: none !important;
+}
+
+html.dark .home-page .home-asset-summary .bg-\[\#E5E7EB\],
+html.dark .home-page .home-asset-summary .bg-\[\#111827\] {
+  background: #E5E7EB !important;
+}
+
+html.dark .home-page .home-asset-summary .bg-\[\#111827\] {
+  background: #F5F5F5 !important;
+}
+
+html.dark .home-page .home-asset-summary button {
+  color: #E5E5E5 !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] {
+  color: #F5F5F5 !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] > div:first-child button {
+  color: #F5F5F5 !important;
+}
+
+html.dark .home-page .home-mobile-asset-card .border-black\/10 {
+  border-color: #383A3D !important;
+}
+
+html.dark .home-page .home-mobile-asset-card .bg-white\/70 {
+  background: #222325 !important;
+}
+
+html.dark .home-page .home-mobile-asset-card .bg-\[\#E5E7EB\] {
+  background: #303236 !important;
+}
+
