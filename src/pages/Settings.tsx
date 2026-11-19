@@ -285,6 +285,18 @@ export function Settings() {
         <p className="mt-3 text-[10.5px] leading-relaxed text-charcoal/45">Pembayaran melalui Xendit. Perpanjangan dilakukan manual dan tidak menggunakan auto-debit.</p>
         <button onClick={loadMembership} className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-charcoal/55 hover:text-forest-700"><RotateCcw size={12}/> Perbarui status</button>
       </Card>
+
+      <Card className="!p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-[16px] font-semibold text-forest-900">Our Website</h3>
+            <p className="mt-1 text-[12px] text-charcoal/55">Pelajari layanan dan informasi Wealthplanner lebih lanjut.</p>
+          </div>
+          <a href="https://www.wealthplanner.id" target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-forest-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-forest-700 hover:bg-forest-50">
+            Visit Wealthplanner.id <ExternalLink size={14}/>
+          </a>
+        </div>
+      </Card>
     </div>
   );
 }
