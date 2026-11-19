@@ -408,7 +408,7 @@ export function Home() {
           const goalName = goalSettings.names?.[plan.id] || plan.name;
           return <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-[14px] border border-forest-100/50 bg-white p-3 text-left shadow-card transition hover:shadow-float">
             <div className="flex items-center gap-3">
-              <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full" style={{ background: "conic-gradient(#0B6B47 " + progress + "%, #DDF7E8 " + progress + "%)" }}>
+              <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full" style={{ background: "conic-gradient(rgb(var(--wp-accent)) " + progress + "%, rgb(var(--wp-card-elevated)) " + progress + "%)" }}>
                 <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-white dark:bg-[#13271D]"><span className="text-[15px] font-bold tabular-nums text-forest-800">{Math.round(progress)}%</span></div>
               </div>
               <div className="min-w-0 flex-1"><p className="text-[13px] font-semibold text-forest-900">{goalName}</p><p className="mt-1 text-[11px] text-charcoal/55">{id ? "Terkumpul" : "Collected"}</p><p className="text-[12px] font-semibold text-forest-800">{formatRupiah(allocated)} <span className="font-normal text-charcoal/45">{id ? "dari" : "of"} {formatRupiah(target)}</span></p></div>
