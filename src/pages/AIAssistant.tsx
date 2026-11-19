@@ -80,8 +80,8 @@ export function AIAssistant() {
         {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-xs text-red-700">{error}</p>}
       </div>
     </section>
-    <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="fixed inset-x-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 mx-auto flex max-w-3xl items-end gap-2 rounded-2xl border border-forest-100 bg-white p-2 shadow-lg lg:sticky lg:bottom-0 lg:mt-3 lg:w-full">
-      <textarea disabled={aiAccess !== "active"} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder="Tanya Wealth Planner AI" rows={1} className="max-h-32 min-h-11 flex-1 resize-y bg-transparent px-3 py-3 text-sm outline-none"/>
+    <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2 items-end gap-2 rounded-2xl border border-forest-100 bg-white p-2 shadow-lg lg:sticky lg:bottom-0 lg:left-auto lg:w-full lg:translate-x-0 lg:mt-3">
+      <textarea disabled={aiAccess !== "active"} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder="Tanya Wealth Planner AI" rows={1} className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-3 py-3 text-sm outline-none"/>
       <button type="button" onClick={() => setHistoryOpen(true)} aria-label="Riwayat pesan" title="Riwayat pesan" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[#0B6B47] hover:bg-[#E8F5ED]"><History size={19}/></button>
       <button disabled={!draft.trim() || loading || !token || aiAccess !== "active"} aria-label="Kirim pesan" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0B6B47] text-white disabled:opacity-40"><Send size={18}/></button>
     </form>
