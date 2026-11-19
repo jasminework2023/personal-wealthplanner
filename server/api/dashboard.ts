@@ -443,8 +443,8 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
       current[field] += amount;
       walletSums.set(key, current);
     };
-    if (type === "income") add(from, "inflow");
-    if (type === "expense") add(from, "outflow");
+    if (type === "income" || type === "debtreceived") add(from, "inflow");
+    if (type === "expense" || type === "debtpayment" || type === "debtcardpayment") add(from, "outflow");
     if (type === "transfer") {
       add(from, "outflow");
       add(to, "inflow");
@@ -592,11 +592,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     let assets = null as Awaited<ReturnType<typeof getAssetTracker>> | null;
     try {
-      const periodEnd = new Date(Date.UTC(
-      requestedYear,
-      (MONTH_NUMBER[String(requestedMonth).trim().toLowerCase()] || (new Date().getMonth() + 1)),
-      0
-    )).toISOString().slice(0, 10);
+      const now = new Date();
+    const requestedMonthNumber = MONTH_NUMBER[String(requestedMonth).trim().toLowerCase()] || (now.getMonth() + 1);
+    const isCurrentPeriod = requestedYear === now.getFullYear() && requestedMonthNumber === now.getMonth() + 1;
+    // For the current dashboard period, Asset Tracker must show the current
+    // balance of every wallet, exactly like the Wallet page. Historical
+    // report periods can still use periodEnd so past snapshots remain stable.
+    const periodEnd = isCurrentPeriod
+      ? ""
+      : new Date(Date.UTC(requestedYear, requestedMonthNumber, 0)).toISOString().slice(0, 10);
     assets = await getAssetTracker(assetRows, walletRows, walletTransactions, periodEnd);
     } catch {
       assets = null;
