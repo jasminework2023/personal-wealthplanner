@@ -247,12 +247,12 @@ export function Home() {
           <div className="mt-4">
             <div className="flex items-center justify-between gap-2 text-[10.5px] font-medium text-[#6B7280]">
               <span>{id ? "Progress target" : "Goal progress"}</span>
-              <span className="tabular-nums font-semibold text-[#374151]">{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}%</span>
+              <span className="tabular-nums font-semibold text-white">{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}%</span>
             </div>
             <div className="relative mt-1.5 h-[28px] w-full" aria-label={id ? "Progress target aset" : "Asset goal progress"}>
-              <div className="absolute left-0 right-0 top-[13px] h-[2px] rounded-full bg-[#E5E7EB]" />
-              <div className="absolute left-0 top-[13px] h-[2px] rounded-full bg-[#111827] transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
-              <div className="absolute left-0 top-[9px] h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-[#111827]" style={{ left: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
+              <div className="absolute left-0 right-0 top-[13px] h-[2px] rounded-full bg-white/20" />
+              <div className="absolute left-0 top-[13px] h-[2px] rounded-full bg-[#9FE1CB] transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
+              <div className="absolute left-0 top-[9px] h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-[#9FE1CB]" style={{ left: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
             </div>
           </div>            <div className="mt-1.5 text-right text-[11px] font-medium text-[#6B7280] tabular-nums">
               Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium text-[#6B7280] tabular-nums", 11) : "Rp ••••••"}
@@ -291,14 +291,14 @@ export function Home() {
           <div className="min-w-0 snap-start pr-0">
             <div className="home-mobile-asset-card h-[240px] w-full min-w-0 overflow-hidden rounded-[20px] border border-[#3A3B3D] bg-[#292A2D] p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]">Asset Tracker</span>
-                <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} data-tour="home-eye-mobile" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#4B5563]">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">Asset Tracker</span>
+                <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} data-tour="home-eye-mobile" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white">
                   {assetsVisible ? <Eye size={17} /> : <EyeOff size={17} />}
                 </button>
               </div>
 
               <div role="button" tabIndex={0} onClick={() => navigate("/finance")} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }} className="mt-3 cursor-pointer">
-                <p className="text-[12px] font-medium text-[#6B7280]">Total Aset</p>
+                <p className="text-[12px] font-medium text-white/55">Total Aset</p>
                 <div className="mt-1 min-w-0 truncate text-[34px] font-extrabold leading-none tracking-[-0.04em] tabular-nums">
                   {renderMoney(integratedTotalAssets, assetsVisible, "text-[34px] font-extrabold leading-none tracking-[-0.04em] tabular-nums", 34)}
                 </div>
@@ -322,7 +322,7 @@ export function Home() {
           </div>
 
           <div className="min-w-0 snap-start pr-0">
-            <div className="home-mobile-budget-card h-[240px] w-full min-w-0 overflow-hidden rounded-[20px] border p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
+            <div className="home-mobile-budget-card h-[240px] w-full min-w-0 overflow-hidden rounded-[20px] border border-[#3A3B3D] bg-[#292A2D] p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/55">Budget Tracker</span>
                 <button type="button" onClick={() => setAssetsVisible((visible) => !visible)} aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white">
