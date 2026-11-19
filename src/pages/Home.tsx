@@ -230,22 +230,21 @@ export function Home() {
         <div role="button" tabIndex={0}
           onClick={() => navigate("/finance")}
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }}
-          data-tour="home-assets-desktop" className="home-asset-summary h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] border-0 p-4 text-[#17191C] shadow-[0_12px_36px_rgba(17,24,39,0.08)]"
-          style={{ background: "linear-gradient(135deg, #FFFFFF 0%, #F0F1F3 55%, #D9DCE1 100%)" }}>
+          data-tour="home-assets-desktop" className="home-asset-summary hero-neutral h-full min-w-0 cursor-pointer overflow-hidden rounded-[20px] p-4 text-white transition hover:-translate-y-0.5">
           <div className="relative">
             <button type="button"
               onClick={(event) => { event.stopPropagation(); setAssetsVisible((visible) => !visible); }}
               aria-label={assetsVisible ? "Sembunyikan saldo" : "Tampilkan saldo"}
-              data-tour="home-eye-desktop" className="absolute -right-1 -top-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#4B5563] transition hover:bg-[#006B48]/15">
+              data-tour="home-eye-desktop" className="absolute -right-1 -top-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10">
               {assetsVisible ? <Eye size={19} strokeWidth={2}/> : <EyeOff size={19} strokeWidth={2}/>}
             </button>
           </div>
-          <p className="text-[12px] font-medium tracking-[-0.02em] text-[#6B7280]">{id ? "Total Aset" : "Total Assets"}</p>
-          <div className="mt-1 min-w-0 break-words text-[44px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-black">
-            {renderMoney(integratedTotalAssets, assetsVisible, "text-[44px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-black", 44)}
+          <p className="text-[12px] font-medium tracking-[-0.02em] text-white/70">{id ? "Total Aset" : "Total Assets"}</p>
+          <div className="mt-1 min-w-0 break-words text-[44px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-white">
+            {renderMoney(integratedTotalAssets, assetsVisible, "text-[44px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-white", 44)}
           </div>
           <div className="mt-4">
-            <div className="flex items-center justify-between gap-2 text-[10.5px] font-medium text-[#6B7280]">
+            <div className="flex items-center justify-between gap-2 text-[10.5px] font-medium text-white/70">
               <span>{id ? "Progress target" : "Goal progress"}</span>
               <span className="tabular-nums font-semibold text-white">{Math.round(assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0)}%</span>
             </div>
@@ -254,8 +253,8 @@ export function Home() {
               <div className="absolute left-0 top-[13px] h-[2px] rounded-full bg-[#9FE1CB] transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
               <div className="absolute left-0 top-[9px] h-[10px] w-[10px] -translate-x-1/2 rounded-full bg-[#9FE1CB]" style={{ left: `${Math.min(100, Math.max(0, assets.target > 0 ? (integratedTotalAssets / assets.target) * 100 : 0))}%` }} />
             </div>
-          </div>            <div className="mt-1.5 text-right text-[11px] font-medium text-[#6B7280] tabular-nums">
-              Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium text-[#6B7280] tabular-nums", 11) : "Rp ••••••"}
+          </div>            <div className="mt-1.5 text-right text-[11px] font-medium text-white/70 tabular-nums">
+              Target {assetsVisible ? renderMoney(assets.target, true, "text-[11px] font-medium text-white/70 tabular-nums", 11) : "Rp ••••••"}
             </div>
 
         </div>
