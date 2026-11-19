@@ -395,9 +395,12 @@ export function Home() {
       </div>
 
       <section className="order-8 md:order-none">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="section-title">{id ? "Tujuan Keuangan" : "Financial Goals"}</h2>
-          <button onClick={() => navigate("/goals")} className="inline-flex items-center gap-0.5 rounded-full bg-forest-50 px-3 py-1.5 text-[12px] font-semibold text-forest-700">Lihat semua <ChevronRight size={14}/></button>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <h2 className="text-[17px] font-bold tracking-[-0.02em] text-[#111827] dark:text-[#F3F4F6]">Goals</h2>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate("/goals")} className="min-h-8 rounded-full bg-transparent px-0.5 text-[12px] font-semibold text-[#6B7280] dark:text-[#9CA3AF]">Lihat semua</button>
+            <button onClick={() => navigate("/goals")} aria-label="Tambah goal" className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[#111827] dark:border-[#24272F] dark:bg-[#14161B] dark:text-[#F3F4F6]"><Plus size={16}/></button>
+          </div>
         </div>
         {plans.length ? <div className="grid gap-3 sm:grid-cols-2">{plans.slice(0, 2).map((plan) => {
           let goalSettings: { names?: Record<string, string>; allocations?: Record<string, Record<string, number>> } = {};
@@ -406,16 +409,17 @@ export function Home() {
           const allocated = Object.values(goalSettings.allocations?.[plan.id] || {}).reduce((sum, value) => sum + Number(value || 0), 0);
           const progress = target > 0 ? Math.min(100, Math.max(0, allocated / target * 100)) : 0;
           const goalName = goalSettings.names?.[plan.id] || plan.name;
-          return <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-[14px] border border-forest-100/50 bg-white p-3 text-left shadow-card transition hover:shadow-float">
-            <div className="flex items-center gap-3">
-              <div className="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full" style={{ background: "conic-gradient(rgb(var(--wp-accent)) " + progress + "%, rgb(var(--wp-card-elevated)) " + progress + "%)" }}>
-                <div className="flex h-[54px] w-[54px] items-center justify-center rounded-full bg-white dark:bg-[#13271D]"><span className="text-[15px] font-bold tabular-nums text-forest-800">{Math.round(progress)}%</span></div>
-              </div>
-              <div className="min-w-0 flex-1"><p className="text-[13px] font-semibold text-forest-900">{goalName}</p><p className="mt-1 text-[11px] text-charcoal/55">{id ? "Terkumpul" : "Collected"}</p><p className="text-[12px] font-semibold text-forest-800">{formatRupiah(allocated)} <span className="font-normal text-charcoal/45">{id ? "dari" : "of"} {formatRupiah(target)}</span></p></div>
+          return <button key={plan.id} onClick={() => navigate("/goals")} className="rounded-[20px] border border-[#E5E7EB] bg-white p-[18px] text-left shadow-[0_2px_10px_rgba(17,24,39,.04)] transition hover:shadow-sm dark:border-[#24272F] dark:bg-[#14161B]">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0"><p className="text-[16px] font-bold text-[#111827] dark:text-[#F3F4F6]">{goalName}</p><p className="mt-1 text-[12px] text-[#6B7280] dark:text-[#9CA3AF]">{id ? "Goal" : "Goal"}</p></div>
+              <span className="shrink-0 rounded-full bg-[#ECEEF2] px-2.5 py-1 text-[12px] font-bold tabular-nums text-[#111827] dark:bg-[#1D2027] dark:text-[#F3F4F6]">{Math.round(progress)}%</span>
             </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-forest-100"><div className="h-full rounded-full bg-forest-600 transition-all" style={{ width: progress + "%" }}/></div>
+            <p className="num mt-4 text-[20px] font-bold tabular-nums text-[#111827] dark:text-[#F3F4F6]">{formatRupiah(allocated)}</p>
+            <p className="mt-1 text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">dari target <span className="num">{formatRupiah(target)}</span></p>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#ECEEF2] dark:bg-[#24272F]"><div className="h-full rounded-full bg-gradient-to-r from-[#4ADE9F] to-[#0E9F6E] transition-all" style={{ width: progress + "%" }}/></div>
+            <p className="mt-2 text-[11px] text-[#6B7280] dark:text-[#9CA3AF]">{progress >= 100 ? "Target tercapai" : "Lanjutkan alokasi dana untuk mencapai target."}</p>
           </button>;
-        })}</div> : <div className="rounded-[14px] border border-dashed border-forest-200 bg-forest-50/50 px-3 py-5 text-center"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47]"><Target size={21}/></span><p className="mt-2 text-[13px] font-semibold text-forest-900">Belum ada tujuan keuangan</p><p className="mt-1 text-[12px] text-charcoal/55">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-full bg-[#123524] px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm">Buka Calculator</button></div>}
+        })}</div> : <div className="rounded-[20px] border border-dashed border-[#E5E7EB] bg-white px-4 py-6 text-center dark:border-[#24272F] dark:bg-[#14161B]"><span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#ECEEF2] text-[#6B7280]"><Target size={21}/></span><p className="mt-2 text-[13px] font-semibold text-[#111827] dark:text-[#F3F4F6]">Belum ada goals</p><p className="mt-1 text-[12px] text-[#6B7280] dark:text-[#9CA3AF]">Mulai dari kalkulator, lalu simpan hasil perencanaanmu.</p><button onClick={() => navigate("/calculator")} className="mt-4 rounded-[14px] bg-gradient-to-br from-[#374151] to-[#111827] px-5 py-2.5 text-[12.5px] font-semibold text-white">Buka Calculator</button></div>}
       </section>
 
       <div className="order-3 md:order-none"><HomeMonthlyCalendar transactions={allTxs} userId={userId} /></div>
