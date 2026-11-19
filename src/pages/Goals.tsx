@@ -254,7 +254,10 @@ export function Goals() {
             </div>
 
             <button onClick={() => { setAllocatingId(plan.id); setAmount(""); setSelectedAsset(""); }} className="mt-4 inline-flex h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-br from-[#374151] to-[#111827] text-[14px] font-bold text-white dark:from-[#FFFFFF] dark:to-[#C9CED8] dark:text-[#111827]" aria-label="Alokasikan dana"><Plus size={17}/>Alokasikan Dana</button>
-          </div> : <Card className="border border-dashed border-rose-200 bg-rose-50/40 py-10 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#FBD3E0] text-[#B83A62]"><Target size={26}/></span><h2 className="mt-4 text-[16px] font-bold tracking-[-0.02em] text-forest-900">Belum ada goal tersimpan</h2><p className="mx-auto mt-1 max-w-sm text-[12px] leading-5 text-charcoal/55">Mulai dari Calculator, pilih simulasi yang kamu butuhkan, lalu simpan hasilnya sebagai rencana keuangan.</p><button onClick={() => navigate("/calculator")} className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#123524] px-5 py-3 text-[12.5px] font-semibold text-white shadow-sm"><Calculator size={15}/> Buka Calculator</button></Card>}
+          </div>
+          </div>
+        );
+      })}</div> : <Card className="border border-dashed border-rose-200 bg-rose-50/40 py-10 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#FBD3E0] text-[#B83A62]"><Target size={26}/></span><h2 className="mt-4 text-[16px] font-bold tracking-[-0.02em] text-forest-900">Belum ada goal tersimpan</h2><p className="mx-auto mt-1 max-w-sm text-[12px] leading-5 text-charcoal/55">Mulai dari Calculator, pilih simulasi yang kamu butuhkan, lalu simpan hasilnya sebagai rencana keuangan.</p><button onClick={() => navigate("/calculator")} className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#123524] px-5 py-3 text-[12.5px] font-semibold text-white shadow-sm"><Calculator size={15}/> Buka Calculator</button></Card>}
 
       {allocatingId && (() => {
         const plan = plans.find((item) => item.id === allocatingId);
