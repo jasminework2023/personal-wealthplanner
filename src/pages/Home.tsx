@@ -4,8 +4,9 @@ import {
   Wallet, CircleDollarSign, TrendingUp, TrendingDown, PiggyBank, Plus, Sparkles,
   ArrowLeftRight, Landmark, Calculator, Target, ShieldCheck,
   ChartNoAxesCombined, Bot, BookOpen, ChevronRight, X, Eye, EyeOff, ArrowDownLeft, ArrowUpRight,
-  PieChart, CalendarDays,
+  PieChart, CalendarDays, HelpCircle, CircleCheck,
 } from "lucide-react";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import { Card, ChartCard } from "../components/Card";
 import { TransactionBadge } from "../components/TransactionBadge";
@@ -220,7 +221,7 @@ export function Home() {
   return (
     <div className="home-page flex flex-col gap-3 bg-[#F4F5F7] pb-4" data-tour-loading={loading ? "true" : "false"}>
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/50">{today}</p>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div>
+        <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/50">{today}</p><div className="flex items-center gap-2"><button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "main", route: "/" } }))} aria-label="Mulai panduan interaktif" className="flex h-9 w-9 items-center justify-center rounded-full border border-forest-100 bg-surface text-forest-800 shadow-sm dark:border-[#2B2D30] dark:bg-[#141516] dark:text-[#B9BDC3]"><HelpCircle size={17}/></button><ThemeToggle variant="compact" /><button type="button" onClick={() => navigate("/guidance")} aria-label="Buka panduan dan token aktivasi" className="flex h-9 w-9 items-center justify-center rounded-full border border-forest-100 bg-surface text-forest-800 shadow-sm dark:border-[#2B2D30] dark:bg-[#141516] dark:text-[#B9BDC3]"><CircleCheck size={17}/></button>{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div></div>
         <h1 className="font-display font-normal text-[26px] leading-[1.1] tracking-[-0.02em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
         <p className="text-[13.5px] text-charcoal/60">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
 
