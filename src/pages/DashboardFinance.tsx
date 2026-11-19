@@ -535,7 +535,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex w-full min-w-0 max-w-full flex-col gap-3 overflow-x-clip">
       <div className="flex items-center justify-between gap-3">
         <select aria-label="Pilih laporan" value={activeReportTab} onChange={(e) => setActiveReportTab(e.target.value as typeof activeReportTab)} className="min-w-0 flex-1 appearance-none rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 py-2.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm outline-none">
           <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="debt">Debt Tracker</option><option value="cashflow">Cashflow Tracker</option>
@@ -666,7 +666,7 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
           const pieColors = ["#0F7A5C", "#9CA7B7", "#E3B341", "#9ADBC7", "#D4D9DF", "#6F8B80"];
           return (
             <div className="grid gap-3">
-              <section className="rounded-[14px] bg-gradient-to-br from-[#374151] via-[#1F2937] to-[#111827] p-4 text-white shadow-float sm:p-5">
+              <section className="w-full min-w-0 max-w-full overflow-hidden rounded-[14px] bg-gradient-to-br from-[#374151] via-[#1F2937] to-[#111827] p-4 text-white shadow-float sm:p-5">
                 <p className="text-[14px] font-semibold text-white/70">Net Cashflow</p>
                 <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
                   <span className="shrink-0 text-[14px] font-semibold leading-tight text-white/70">Rp</span>
@@ -679,8 +679,8 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
                 </div>
               </section>
 
-              <Card>
-                <div className="p-4 sm:p-5">
+              <Card className="w-full min-w-0 max-w-full overflow-hidden">
+                <div className="min-w-0 p-4 sm:p-5">
                   <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-[rgb(var(--c-charcoal))]">{id ? "Pengeluaran per Kategori" : "Expenses by Category"}</h2>
                   <p className="mt-1 text-[13px] text-charcoal/60">{id ? "Distribusi pengeluaran yang tercatat" : "Distribution of recorded expenses"}</p>
 
