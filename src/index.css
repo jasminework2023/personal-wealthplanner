@@ -1939,3 +1939,24 @@ html.dark .text-down,
 html.dark .text-negative {
   color: rgb(var(--wp-negative)) !important;
 }
+/* MAIN MENU — DARK OLD MONEY: remove green tint from menu tiles */
+html.dark .home-page [data-tour="main-menu"] > div.grid {
+  background: rgb(var(--wp-bg)) !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] > div.grid button:not([aria-expanded]) {
+  background: rgb(var(--wp-card)) !important;
+  color: rgb(var(--wp-text-primary)) !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] > div.grid button:not([aria-expanded]):hover {
+  background: rgb(var(--wp-card-elevated)) !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] > div.grid button:not([aria-expanded]) svg {
+  color: rgb(var(--wp-accent)) !important;
+}
+
+html.dark .home-page [data-tour="main-menu"] > div.grid button:not([aria-expanded]) > span:not(.bg-\\[\\#DDF7E8\\]) {
+  color: rgb(var(--wp-text-primary)) !important;
+}
