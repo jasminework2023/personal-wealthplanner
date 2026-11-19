@@ -17,7 +17,8 @@ export const mainTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="desktop-sidebar"]',
     selectorMobile: '[data-tour="mobile-menu-button"]',
     title: "1. Kenali Navigasi",
-    description: "Gunakan sidebar di desktop atau tombol ☰ di mobile untuk berpindah halaman dan membuka Profil.",
+    description: "Gunakan sidebar untuk berpindah halaman dan membuka Profil.",
+    desktopOnly: true,
   },
   {
     id: "theme",
