@@ -22,24 +22,6 @@ const protectionCards = [
   { type: "Sakit kritis", icon: HeartPulse, text: "Santunan tunai saat didiagnosis penyakit berat, untuk biaya dan masa pemulihan." },
 ];
 
-type InsurancePolicy = { id: string; name: string; type: "Jiwa" | "Kesehatan" | "Sakit kritis"; sumAssured: number };
-const POLICY_KEY = "wealthplanner_existing_insurance_policies_v1";
-
-function loadPolicies(): InsurancePolicy[] {
-  try {
-    const raw = localStorage.getItem(POLICY_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function savePolicies(policies: InsurancePolicy[]) {
-  localStorage.setItem(POLICY_KEY, JSON.stringify(policies));
-}
-
 function CurrencyInput({ value, onChange, placeholder = "0" }: { value: number; onChange: (v: number) => void; placeholder?: string }) {
   return <div className="relative"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-charcoal/45">Rp</span><input inputMode="numeric" value={value ? value.toLocaleString("id-ID") : ""} placeholder={placeholder} onChange={(e) => onChange(Number(e.target.value.replace(/[^0-9]/g, "")) || 0)} className="w-full rounded-lg border border-charcoal/12 bg-white py-2.5 pl-9 pr-3 text-[13px] text-charcoal outline-none focus:border-forest-400 dark:bg-[rgb(var(--c-surface))] dark:text-[rgb(var(--c-charcoal))]" /></div>;
 }
@@ -56,13 +38,6 @@ export function FinancialProtection() {
   const [existing, setExisting] = useState(0);
   const [timeframe, setTimeframe] = useState(10);
   const [quick, setQuick] = useState<{ id: string; existing: number; prepared: number } | null>(null);
-  const [policies, setPolicies] = useState<InsurancePolicy[]>(() => loadPolicies());
-  const [policiesOpen, setPoliciesOpen] = useState(false);
-  const [policyFormOpen, setPolicyFormOpen] = useState(false);
-  const [policyName, setPolicyName] = useState("");
-  const [policyType, setPolicyType] = useState<InsurancePolicy["type"]>("Jiwa");
-  const [policySum, setPolicySum] = useState(0);
-  const [policyError, setPolicyError] = useState("");
   const [openPlanId, setOpenPlanId] = useState<string | null>(() => loadFinancialPlans()[0]?.id || null);
   const [openProtection, setOpenProtection] = useState<string | null>(null);
   const [hintOpen, setHintOpen] = useState<string | null>(null);
@@ -77,7 +52,7 @@ export function FinancialProtection() {
 
   const totalProtectionNeed = useMemo(() => plans.reduce((sum, p) => { const base = p.type === "home" ? (p.obligationAmount || p.targetAmount || 0) : (p.targetAmount || p.obligationAmount || 0); return sum + Math.max(base - (p.preparedAssets || 0), 0); }, 0), [plans]);
   const legacyExisting = useMemo(() => plans.reduce((sum, p) => sum + (p.existingProtection || 0), 0), [plans]);
-  const totalExisting = useMemo(() => policies.length ? policies.reduce((sum, p) => sum + p.sumAssured, 0) : legacyExisting, [policies, legacyExisting]);
+  const totalExisting = legacyExisting;
   const totalNeed = Math.max(totalProtectionNeed - totalExisting, 0);
   const protectedPct = totalProtectionNeed > 0 ? Math.min(100, Math.round((totalExisting / totalProtectionNeed) * 100)) : 0;
 
@@ -104,18 +79,11 @@ export function FinancialProtection() {
     }
     const params = new URLSearchParams(); if (p.type === "home" && p.kprMode === "existing") params.set("mode", "existing"); params.set("planId", p.id); navigate(`/calculator/${encodeURIComponent(p.calculatorId)}?${params.toString()}`);
   }
-  function addPolicy() {
-    if (!policyName.trim()) { setPolicyError("Nama polis wajib diisi."); return; }
-    if (!(policySum > 0)) { setPolicyError("Uang pertanggungan harus lebih dari 0."); return; }
-    const next = [...policies, { id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, name: policyName.trim(), type: policyType, sumAssured: policySum }];
-    setPolicies(next); savePolicies(next); setPolicyName(""); setPolicySum(0); setPolicyError(""); setPolicyFormOpen(false);
-  }
-  function removePolicy(id: string) { const next = policies.filter((p) => p.id !== id); setPolicies(next); savePolicies(next); }
 
   const hintText: Record<string, string> = {
     need: "Total dana perlindungan yang dibutuhkan keluarga jika terjadi risiko, dihitung dari semua rencanamu.",
-    existing: "Uang pertanggungan dari polis yang sudah kamu miliki.",
-    gap: "Selisih antara kebutuhan dan asuransi existing. Ini bagian yang belum terlindungi.",
+    existing: "Total proteksi yang sudah kamu miliki dan sudah dialokasikan ke rencanamu.",
+    gap: "Selisih antara kebutuhan proteksi dan proteksi yang sudah dimiliki. Ini bagian yang belum terlindungi.",
   };
   const toggleHint = (key: string) => setHintOpen((prev) => prev === key ? null : key);
 
@@ -130,19 +98,12 @@ export function FinancialProtection() {
 
         <div className="flex items-center justify-between gap-3 border-b border-charcoal/8 py-3">
           <div className="flex min-w-0 items-center gap-2 text-[13px] text-charcoal/55">
-            <span>Asuransi existing</span>
-            <button type="button" onClick={() => toggleHint("existing")} aria-label="Info asuransi existing" aria-expanded={hintOpen === "existing"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-charcoal/50"><Info size={11}/></button>
-            <span className="shrink-0 text-[11px] text-charcoal/45">{policies.length} polis</span>
-            <button type="button" onClick={() => setPoliciesOpen((v) => !v)} aria-label={policiesOpen ? "Tutup daftar polis" : "Buka daftar polis"} aria-expanded={policiesOpen} className={`flex h-6 w-6 items-center justify-center text-charcoal/45 transition-transform ${policiesOpen ? "rotate-180" : ""}`}><ChevronDown size={17}/></button>
+            <span>Proteksi yang sudah dimiliki</span>
+            <button type="button" onClick={() => toggleHint("existing")} aria-label="Info proteksi yang sudah dimiliki" aria-expanded={hintOpen === "existing"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-charcoal/50"><Info size={11}/></button>
           </div>
           <p className="shrink-0 text-right text-[14px] font-semibold tabular-nums text-charcoal">{formatRupiah(totalExisting)}</p>
         </div>
         {hintOpen === "existing" && <div className="rounded-[10px] bg-forest-50 px-3 py-2.5 text-[12px] leading-[1.5] text-charcoal/60">{hintText.existing}</div>}
-        {policiesOpen && <div className="pb-1">
-          {policies.length === 0 ? <p className="py-2.5 text-[12.5px] text-charcoal/50">Belum ada polis</p> : <div className="divide-y divide-charcoal/8">{policies.map((p) => <div key={p.id} className="flex items-center gap-2.5 py-2.5"><div className="min-w-0 flex-1"><p className="truncate text-[13px] font-medium text-charcoal">{p.name}</p><p className="text-[11.5px] text-charcoal/50">{p.type}</p></div><span className="shrink-0 text-[13px] font-semibold tabular-nums text-charcoal">{formatRupiah(p.sumAssured)}</span><button type="button" onClick={() => removePolicy(p.id)} aria-label={`Hapus polis ${p.name}`} className="flex h-7 w-7 shrink-0 items-center justify-center text-charcoal/45"><X size={17}/></button></div>)}</div>}
-          <button type="button" onClick={() => { setPolicyFormOpen((v) => !v); setPolicyError(""); }} className="mt-2 flex w-full items-center justify-center gap-1 rounded-[12px] bg-forest-50 py-2.5 text-[12.5px] font-semibold text-forest-700"><Plus size={14}/> Tambah polis</button>
-          {policyFormOpen && <div className="mt-2 flex flex-col gap-2.5 rounded-[14px] bg-charcoal/[0.03] p-3"><input value={policyName} onChange={(e) => setPolicyName(e.target.value)} placeholder="Nama polis" aria-label="Nama polis" className="w-full rounded-[10px] border border-charcoal/12 bg-white px-3 py-2.5 text-[13px] text-charcoal outline-none dark:bg-[rgb(var(--c-surface))] dark:text-[rgb(var(--c-charcoal))]"/><select value={policyType} onChange={(e) => setPolicyType(e.target.value as InsurancePolicy["type"])} aria-label="Jenis polis" className="w-full rounded-[10px] border border-charcoal/12 bg-white px-3 py-2.5 text-[13px] text-charcoal outline-none dark:bg-[rgb(var(--c-surface))] dark:text-[rgb(var(--c-charcoal))]"><option>Jiwa</option><option>Kesehatan</option><option>Sakit kritis</option></select><CurrencyInput value={policySum} onChange={setPolicySum} placeholder="Uang pertanggungan (Rp)"/>{policyError && <p role="alert" className="text-[11.5px] text-rose-700">{policyError}</p>}<div className="flex gap-2"><button type="button" onClick={() => { setPolicyFormOpen(false); setPolicyError(""); }} className="flex-1 rounded-[10px] border border-charcoal/10 bg-white px-3 py-2.5 text-[12.5px] font-semibold text-charcoal dark:bg-[rgb(var(--c-surface))]">Batal</button><button type="button" onClick={addPolicy} className="flex-1 rounded-[10px] bg-charcoal px-3 py-2.5 text-[12.5px] font-semibold text-white dark:bg-[rgb(var(--c-charcoal))] dark:text-[rgb(var(--c-cream))]">Simpan</button></div></div>}
-        </div>}
 
         <div className="py-4">
           <div className="flex items-start justify-between gap-3">
