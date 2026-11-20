@@ -88,30 +88,30 @@ export function FinancialProtection() {
   const toggleHint = (key: string) => setHintOpen((prev) => prev === key ? null : key);
 
   return <div className="financial-protection-page flex flex-col gap-3">
-    <Card className="overflow-hidden !p-4">
+    <Card className="overflow-hidden !p-4 bg-[#292A2D] text-white dark:bg-[rgb(var(--c-surface))] dark:text-[rgb(var(--c-charcoal))]">
       <div className="flex flex-col gap-0">
         <div className="flex items-center justify-between gap-3 border-b border-charcoal/8 py-3">
-          <div className="flex min-w-0 items-center gap-2 text-[13px] text-charcoal/55"><span>Kebutuhan asuransi</span><button type="button" onClick={() => toggleHint("need")} aria-label="Info kebutuhan asuransi" aria-expanded={hintOpen === "need"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-charcoal/50"><Info size={11}/></button></div>
-          <p className="shrink-0 text-right text-[14px] font-semibold tabular-nums text-charcoal">{formatRupiah(totalProtectionNeed)}</p>
+          <div className="flex min-w-0 items-center gap-2 text-[13px] text-white/70 dark:text-[rgb(var(--c-charcoal))]/55"><span>Kebutuhan asuransi</span><button type="button" onClick={() => toggleHint("need")} aria-label="Info kebutuhan asuransi" aria-expanded={hintOpen === "need"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-white/60 dark:text-[rgb(var(--c-charcoal))]/50"><Info size={11}/></button></div>
+          <p className="shrink-0 text-right text-[14px] font-semibold tabular-nums text-white dark:text-[rgb(var(--c-charcoal))]">{formatRupiah(totalProtectionNeed)}</p>
         </div>
-        {hintOpen === "need" && <div className="rounded-[10px] bg-forest-50 px-3 py-2.5 text-[12px] leading-[1.5] text-charcoal/60">{hintText.need}</div>}
+        {hintOpen === "need" && <div className="rounded-[10px] bg-white/10 dark:bg-forest-50 px-3 py-2.5 text-[12px] leading-[1.5] text-white/70 dark:text-[rgb(var(--c-charcoal))]/60">{hintText.need}</div>}
 
         <div className="flex items-center justify-between gap-3 border-b border-charcoal/8 py-3">
-          <div className="flex min-w-0 items-center gap-2 text-[13px] text-charcoal/55">
+          <div className="flex min-w-0 items-center gap-2 text-[13px] text-white/70 dark:text-[rgb(var(--c-charcoal))]/55">
             <span>Proteksi yang sudah dimiliki</span>
-            <button type="button" onClick={() => toggleHint("existing")} aria-label="Info proteksi yang sudah dimiliki" aria-expanded={hintOpen === "existing"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-charcoal/50"><Info size={11}/></button>
+            <button type="button" onClick={() => toggleHint("existing")} aria-label="Info proteksi yang sudah dimiliki" aria-expanded={hintOpen === "existing"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-white/60 dark:text-[rgb(var(--c-charcoal))]/50"><Info size={11}/></button>
           </div>
-          <p className="shrink-0 text-right text-[14px] font-semibold tabular-nums text-charcoal">{formatRupiah(totalExisting)}</p>
+          <p className="shrink-0 text-right text-[14px] font-semibold tabular-nums text-white dark:text-[rgb(var(--c-charcoal))]">{formatRupiah(totalExisting)}</p>
         </div>
-        {hintOpen === "existing" && <div className="rounded-[10px] bg-forest-50 px-3 py-2.5 text-[12px] leading-[1.5] text-charcoal/60">{hintText.existing}</div>}
+        {hintOpen === "existing" && <div className="rounded-[10px] bg-white/10 dark:bg-forest-50 px-3 py-2.5 text-[12px] leading-[1.5] text-white/70 dark:text-[rgb(var(--c-charcoal))]/60">{hintText.existing}</div>}
 
         <div className="py-4">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2 pt-1 text-[12.5px] text-charcoal/55"><span>Gap kebutuhan</span><button type="button" onClick={() => toggleHint("gap")} aria-label="Info gap kebutuhan" aria-expanded={hintOpen === "gap"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-charcoal/50"><Info size={11}/></button></div>
-            <div className={`shrink-0 text-right text-[28px] font-bold tracking-[-0.02em] tabular-nums ${totalNeed > 0 ? "text-rose-700" : "text-forest-700"}`}>{formatRupiah(totalNeed)}</div>
+            <div className="flex min-w-0 items-center gap-2 pt-1 text-[12.5px] text-white/70 dark:text-[rgb(var(--c-charcoal))]/55"><span>Gap kebutuhan</span><button type="button" onClick={() => toggleHint("gap")} aria-label="Info gap kebutuhan" aria-expanded={hintOpen === "gap"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-white/60 dark:text-[rgb(var(--c-charcoal))]/50"><Info size={11}/></button></div>
+            <div className={`shrink-0 text-right text-[28px] font-bold tracking-[-0.02em] tabular-nums ${totalNeed > 0 ? "text-rose-300 dark:text-rose-700" : "text-emerald-300 dark:text-forest-700"}`}>{formatRupiah(totalNeed)}</div>
           </div>
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-charcoal/10"><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${protectedPct}%` }}/></div>
-          <div className="mt-2 flex justify-between text-[11.5px] text-charcoal/50"><span>Terlindungi {protectedPct}%</span><span>Target 100%</span></div>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15 dark:bg-charcoal/10"><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${protectedPct}%` }}/></div>
+          <div className="mt-2 flex justify-between text-[11.5px] text-white/60 dark:text-[rgb(var(--c-charcoal))]/50"><span>Terlindungi {protectedPct}%</span><span>Target 100%</span></div>
         </div>
         <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noreferrer" className="inline-flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-[rgb(var(--c-charcoal))] px-5 text-[14px] font-semibold text-[rgb(var(--c-cream))]">Konsultasi asuransi <ArrowRight size={14}/></a>
       </div>
