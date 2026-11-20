@@ -123,18 +123,19 @@ export function FinancialProtection() {
     <Card className="overflow-hidden !p-4">
       <div className="flex flex-col gap-0">
         <div className="flex items-center justify-between gap-3 border-b border-charcoal/8 py-3">
+          <div className="flex min-w-0 items-center gap-2 text-[13px] text-charcoal/55"><span>Kebutuhan asuransi</span><button type="button" onClick={() => toggleHint("need")} aria-label="Info kebutuhan asuransi" aria-expanded={hintOpen === "need"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-charcoal/50"><Info size={11}/></button></div>
           <p className="shrink-0 text-right text-[14px] font-semibold tabular-nums text-charcoal">{formatRupiah(totalProtectionNeed)}</p>
-          <div className="flex min-w-0 items-center justify-end gap-2 text-[13px] text-charcoal/55"><span>Kebutuhan asuransi</span><button type="button" onClick={() => toggleHint("need")} aria-label="Info kebutuhan asuransi" aria-expanded={hintOpen === "need"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-charcoal/50"><Info size={11}/></button></div>
         </div>
         {hintOpen === "need" && <div className="rounded-[10px] bg-forest-50 px-3 py-2.5 text-[12px] leading-[1.5] text-charcoal/60">{hintText.need}</div>}
 
         <div className="flex items-center justify-between gap-3 border-b border-charcoal/8 py-3">
-          <p className="shrink-0 text-right text-[14px] font-semibold tabular-nums text-charcoal">{formatRupiah(totalExisting)}</p>
-          <div className="flex min-w-0 items-center justify-end gap-2">
-            <div className="flex min-w-0 items-center gap-2 text-[13px] text-charcoal/55"><span>Asuransi existing</span><button type="button" onClick={() => toggleHint("existing")} aria-label="Info asuransi existing" aria-expanded={hintOpen === "existing"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-charcoal/50"><Info size={11}/></button></div>
-            <span className="text-[11px] text-charcoal/45">{policies.length} polis</span>
+          <div className="flex min-w-0 items-center gap-2 text-[13px] text-charcoal/55">
+            <span>Asuransi existing</span>
+            <button type="button" onClick={() => toggleHint("existing")} aria-label="Info asuransi existing" aria-expanded={hintOpen === "existing"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-charcoal/50"><Info size={11}/></button>
+            <span className="shrink-0 text-[11px] text-charcoal/45">{policies.length} polis</span>
             <button type="button" onClick={() => setPoliciesOpen((v) => !v)} aria-label={policiesOpen ? "Tutup daftar polis" : "Buka daftar polis"} aria-expanded={policiesOpen} className={`flex h-6 w-6 items-center justify-center text-charcoal/45 transition-transform ${policiesOpen ? "rotate-180" : ""}`}><ChevronDown size={17}/></button>
           </div>
+          <p className="shrink-0 text-right text-[14px] font-semibold tabular-nums text-charcoal">{formatRupiah(totalExisting)}</p>
         </div>
         {hintOpen === "existing" && <div className="rounded-[10px] bg-forest-50 px-3 py-2.5 text-[12px] leading-[1.5] text-charcoal/60">{hintText.existing}</div>}
         {policiesOpen && <div className="pb-1">
@@ -145,8 +146,8 @@ export function FinancialProtection() {
 
         <div className="py-4">
           <div className="flex items-start justify-between gap-3">
-            <div className={`text-[28px] font-bold tracking-[-0.02em] tabular-nums ${totalNeed > 0 ? "text-rose-700" : "text-forest-700"}`}>{formatRupiah(totalNeed)}</div>
-            <div className="flex min-w-0 items-center justify-end gap-2 pt-1 text-[12.5px] text-charcoal/55"><span>Gap kebutuhan</span><button type="button" onClick={() => toggleHint("gap")} aria-label="Info gap kebutuhan" aria-expanded={hintOpen === "gap"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-charcoal/50"><Info size={11}/></button></div>
+            <div className="flex min-w-0 items-center gap-2 pt-1 text-[12.5px] text-charcoal/55"><span>Gap kebutuhan</span><button type="button" onClick={() => toggleHint("gap")} aria-label="Info gap kebutuhan" aria-expanded={hintOpen === "gap"} className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-charcoal/15 text-[10px] font-semibold text-charcoal/50"><Info size={11}/></button></div>
+            <div className={`shrink-0 text-right text-[28px] font-bold tracking-[-0.02em] tabular-nums ${totalNeed > 0 ? "text-rose-700" : "text-forest-700"}`}>{formatRupiah(totalNeed)}</div>
           </div>
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-charcoal/10"><div className="h-full rounded-full bg-accent transition-all" style={{ width: `${protectedPct}%` }}/></div>
           <div className="mt-2 flex justify-between text-[11.5px] text-charcoal/50"><span>Terlindungi {protectedPct}%</span><span>Target 100%</span></div>
