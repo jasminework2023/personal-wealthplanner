@@ -459,9 +459,12 @@ async function getAssetTracker(rows: unknown[][], walletRows: any[] = [], transa
     items: walletRows
       .filter((wallet: any) => {
         const name = String(wallet.name || "");
-        const normalized = name.trim().toLowerCase().replace(/\s+/g, " ");
-        const isInvestmentWallet = /saham|stock|reksa|invest|obligasi|emas|crypto|gotrade|go trade/.test(normalized);
-        return !isCreditCardWallet(name) && !isInvestmentWallet;
+        // Every non-credit wallet is an asset. Investment/stock wallets can
+        // still contain cash (RDN, broker cash, etc.), so excluding them here
+        // makes Total Assets smaller than the real Wallet total.
+        // The actual securities are counted separately from Stock/Investment
+        // Assets, so keeping the wallet balance here does not duplicate them.
+        return !isCreditCardWallet(name);
       })
       .map((wallet: any) => {
         const key = String(wallet.name_key || wallet.name || "").trim().toLowerCase();
