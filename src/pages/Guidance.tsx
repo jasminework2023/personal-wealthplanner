@@ -241,6 +241,10 @@ export function Guidance() {
               "Simpan Wallet.",
               "Kalau uang berpindah antar-Wallet, gunakan Transfer supaya saldo kedua Wallet ikut menyesuaikan dan tidak dianggap sebagai pemasukan baru.",
             ]} />
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+              <p className="text-[12px] font-semibold text-amber-900">Catatan penting: kartu kredit</p>
+              <p className="mt-1 text-[11px] leading-5 text-amber-800">Jangan masukkan limit kartu kredit sebagai saldo Wallet atau aset. Limit adalah fasilitas pinjaman, bukan uang milikmu. Jika ingin memantau kartu kredit, catat tagihannya sebagai kewajiban/utang.</p>
+            </div>
             <div className="mt-3"><FeatureButton to="/wallets">Buka Wallet</FeatureButton></div>
           </GuideCard>
 
@@ -272,14 +276,25 @@ export function Guidance() {
           </GuideCard>
 
           <GuideCard icon={Receipt} tone="bg-forest-50 text-forest-700" title="6. Mulai mencatat — Transaction">
-            <p>Setelah Wallet dan kategori siap, mulai catat semua pemasukan, pengeluaran, dan tabungan supaya data keuanganmu terus ter-update.</p>
+            <p>Setelah Wallet dan kategori siap, langsung praktik mencatat transaksi sehari-hari. Prinsipnya: catat apa yang terjadi, berapa nominalnya, dan uang berasal dari atau dibayarkan melalui rekening mana.</p>
+            <div className="mt-3 rounded-xl border border-forest-100 bg-forest-50/60 p-3">
+              <p className="text-[12px] font-semibold text-forest-900">Contoh menulis dengan AI</p>
+              <div className="mt-2 space-y-2 text-[11px] leading-5 text-charcoal/70">
+                <p className="rounded-lg bg-white px-3 py-2">“Tadi makan siang Rp35.000 pakai BCA.”</p>
+                <p className="rounded-lg bg-white px-3 py-2">“Gaji masuk Rp8.000.000 ke BCA.”</p>
+                <p className="rounded-lg bg-white px-3 py-2">“Bayar listrik Rp450.000 dari Mandiri.”</p>
+                <p className="rounded-lg bg-white px-3 py-2">“Pindah uang Rp1.000.000 dari BCA ke BSI.”</p>
+              </div>
+              <p className="mt-2 text-[10px] leading-4 text-forest-700">Semakin lengkap keterangan nominal, aktivitas, dan rekening, semakin mudah hasilnya kamu periksa.</p>
+            </div>
             <StepList steps={[
-              "Buka Transaction.",
-              "Pilih pencatatan manual atau gunakan fitur AI.",
-              "Untuk manual, isi informasi transaksi seperti tanggal, nominal, kategori, dan Wallet yang digunakan.",
-              "Untuk AI, masukkan informasi transaksi sesuai format yang diminta lalu periksa hasil pembacaan AI.",
-              "Pastikan tanggal, nominal, kategori, dan Wallet sudah benar sebelum menyimpan.",
-              "Simpan transaksi dan cek apakah transaksi sudah muncul di daftar.",
+              "Buka Transaction lalu ketuk Tambah Transaksi.",
+              "Pilih AI jika ingin menulis seperti chat, atau Manual jika ingin mengisi satu per satu.",
+              "Untuk AI, tulis aktivitas + nominal + metode pembayaran/rekening. Contoh: “Beli bensin Rp100.000 pakai BCA.”",
+              "Tekan Proses teks dengan AI, lalu periksa tipe transaksi, tanggal, kategori, deskripsi, dan nominal.",
+              "Untuk Manual, pilih tipe (Income, Expense, Saving, atau Transfer), isi wallet, kategori, deskripsi, dan nominal.",
+              "Pastikan transfer antar-wallet menggunakan tipe Transfer, bukan Expense, agar tidak terhitung sebagai pengeluaran.",
+              "Konfirmasi dan simpan. Setelah itu cek daftar transaksi dan Report untuk memastikan pencatatannya benar.",
               "Setiap 1 penggunaan AI = 1 kredit.",
             ]} />
             <div className="mt-3"><FeatureButton to="/transaction">Buka Transaction</FeatureButton></div>
