@@ -162,17 +162,16 @@ export function GuidedTour() {
       // user's actual click on that highlighted control.
       const targetMayBeOnCurrentRoute = step.advanceOnTargetClick || routeMatches;
       const element = targetMayBeOnCurrentRoute
-        ? document.querySelector(selectorFor(step)) as HTMLElement | null
+        ? Array.from(document.querySelectorAll(selectorFor(step))).find((candidate) => {
+            const node = candidate as HTMLElement;
+            const bounds = node.getBoundingClientRect();
+            const style = window.getComputedStyle(node);
+            return bounds.width > 0 && bounds.height > 0 &&
+              style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
+          }) as HTMLElement | undefined || null
         : null;
       const elementRect = element?.getBoundingClientRect();
-      const styles = element ? window.getComputedStyle(element) : null;
-      const elementVisible = !!element &&
-        !!elementRect &&
-        elementRect.width > 0 &&
-        elementRect.height > 0 &&
-        styles?.display !== "none" &&
-        styles?.visibility !== "hidden" &&
-        styles?.opacity !== "0";
+      const elementVisible = !!element && !!elementRect && elementRect.width > 0 && elementRect.height > 0;
 
       // Only block the tour when a real, visible modal is open. Hidden dialogs
       // mounted elsewhere in the app must not prevent spotlight detection.
