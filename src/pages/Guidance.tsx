@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Target,
   TrendingUp,
+  Users,
   WalletCards,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
