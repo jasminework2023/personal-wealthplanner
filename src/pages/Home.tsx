@@ -344,7 +344,7 @@ export function Home() {
         </div>
         <div className="grid grid-cols-4 gap-x-1 gap-y-3 rounded-[22px] border border-[#E5E7EB] bg-white px-3 pt-2.5 pb-3 shadow-[0_8px_24px_rgba(17,24,39,.06)]">
           {menus.map(({ label, icon: Icon, to }, index) => (
-            <button key={label} type="button" disabled={Boolean(soon)} onClick={() => to && navigate(to)}
+            <button key={label} type="button" onClick={() => to && navigate(to)}
               className={`relative flex min-h-[68px] flex-col items-center justify-center gap-2 rounded-xl bg-transparent px-1 py-1.5 text-center transition ${index >= 4 && !menuExpanded ? "hidden md:flex" : ""} hover:bg-[#F8F9FA]`}>
               <Icon size={21} strokeWidth={1.9} className="text-[#111827]" />
               <span className="text-[11px] font-medium leading-tight text-[#111827]">{label}</span>
