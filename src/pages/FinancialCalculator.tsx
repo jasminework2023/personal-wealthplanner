@@ -48,15 +48,15 @@ function Button({ children, variant="primary", size, onClick, icon, iconRight, s
     display:"inline-flex", alignItems:"center", justifyContent:"center", gap:7,
     minHeight: size==="sm" ? 46 : 46, flex: size==="sm" ? "1 1 0" : undefined,
     borderRadius:14,
-    border:variant==="outline" || variant==="secondary" ? "1px solid rgb(var(--c-border))" : "1px solid transparent",
-    padding:"0 15px", fontSize:13, fontWeight:600, cursor:"pointer",
+    border:variant==="outline" || variant==="secondary" ? "1px solid var(--calc-border)" : "1px solid transparent",
+    padding:"0 15px", fontSize:13, fontWeight:800, cursor:"pointer",
     background:variant==="primary" ? "var(--calc-primary)" : "var(--calc-card)",
-    color:var(--calc-text),
+    color:"var(--calc-text)",
     ...style
   }}>{icon}{children}{iconRight}</button>;
 }
 function Tag({ children, variant="default" }) {
-  return <span style={{display:"inline-flex",alignItems:"center",borderRadius:999,padding:"5px 9px",minHeight:28,fontSize:10,fontWeight:700,letterSpacing:".04em",background:variant==="accent"?"rgb(var(--c-forest-50))":"rgb(var(--c-cream))",color:"rgb(var(--c-forest-800))",border:"1px solid rgb(var(--c-border))"}}>{children}</span>;
+  return <span style={{display:"inline-flex",alignItems:"center",borderRadius:999,padding:"5px 9px",minHeight:28,fontSize:10,fontWeight:700,letterSpacing:".04em",background:"var(--calc-surface)",color:"var(--calc-text)",border:"1px solid var(--calc-border)"}}>{children}</span>;
 }
 function Section({ children, style }) { return <section style={style}><div style={{maxWidth:1200,margin:"0 auto"}}>{children}</div></section>; }
 function NumberInput({ label, value, onChange, prefix, suffix, min=0, step=1, hint }) {
@@ -94,7 +94,7 @@ function ScoreRow({ label, value, status, target }) {
     <div style={{display:"flex",alignItems:"center",gap:12}}><span className="mono" style={{fontWeight:600,color:"rgb(var(--c-charcoal))"}}>{value}</span><span style={{width:10,height:10,borderRadius:999,background:color,display:"inline-block"}}/></div>
   </div>;
 }
-function Card({children,style}) { return <div className="wp-calc-card" style={{background:"rgb(var(--c-surface))",border:"1px solid rgb(var(--c-border))",borderRadius:20,padding:"18px 20px",overflow:"hidden",boxShadow:"none",backgroundClip:"padding-box",...style}}>{children}</div>; }
+function Card({children,style}) { return <div className="wp-calc-card" style={{background:"var(--calc-card)",border:"1px solid var(--calc-border)",borderRadius:20,padding:"18px",overflow:"hidden",boxShadow:"none",backgroundClip:"padding-box",...style}}>{children}</div>; }
 
 function CalculatorBody({ id, onSaveResult, onNavigate }) {
   switch (id) {
@@ -1830,8 +1830,12 @@ function CalcLayout({ inputs, results, primaryResults = [], onSave, onNavigate, 
             <h3 style={{margin:0,fontSize:16,fontWeight:700,color:"rgb(var(--c-charcoal))"}}>{copy.input}</h3>
             <Tag>{copy.autoUpdate}</Tag>
           </div>
-          <div style={{display:"grid",gap:16}}>{inputs}</div>
+          <div className="wp-calc-input-body">{inputs}</div>
         </Card>
+      </div>
+      <div className="wp-calc-output-card">
+        <h3>Output Detail</h3>
+        <div className="wp-calc-output-detail">{results}</div>
       </div>
 
       <style>{`
