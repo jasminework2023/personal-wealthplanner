@@ -442,57 +442,41 @@ export function GuidedTour() {
 
   const cardWidth = Math.min(300, viewportW - 24);
   const cardHeightEstimate = 190;
-  const gap = 14;
-  const actionStep = !!step.advanceOnTargetClick;
-  let cardLeft = highlight ? highlight.left + highlight.width / 2 - cardWidth / 2 : (viewportW - cardWidth) / 2;
-  let cardTop = highlight ? highlight.top + highlight.height + gap : 80;
+  const gap = 16;
+  const clampLeft = (value: number) => Math.max(12, Math.min(value, viewportW - cardWidth - 12));
+  const clampTop = (value: number) => Math.max(12, Math.min(value, viewportH - cardHeightEstimate - 12));
+  let cardLeft = (viewportW - cardWidth) / 2;
+  let cardTop = 80;
 
-  // Keep every guidance card visually attached to the highlighted UI.
-  // Small controls (theme/profile/menu buttons) get a side-mounted card;
-  // wide sections (Menu Utama/setup panels) get a card below/above them.
-  if (highlight && highlight.width < cardWidth * 1.35) {
-    const spaceRight = viewportW - (highlight.left + highlight.width);
-    const spaceLeft = highlight.left;
-    const spaceBelow = viewportH - (highlight.top + highlight.height);
-    const spaceAbove = highlight.top;
-    const isMobile = viewportW < 768;
-
-    // On mobile, bottom-nav targets (especially Profil) sit near the
-    // bottom edge. A card placed "below" them gets clamped back over the
-    // target and blocks the tap. Put the guidance card above the target
-    // whenever there is enough room, keeping the spotlight itself tappable.
-    if (isMobile && spaceAbove >= cardHeightEstimate + gap) {
-      cardLeft = highlight.left + highlight.width / 2 - cardWidth / 2;
-      cardTop = highlight.top - cardHeightEstimate - gap;
-    } else if (spaceRight >= cardWidth + gap) {
-      cardLeft = highlight.left + highlight.width + gap;
-      cardTop = highlight.top + highlight.height / 2 - cardHeightEstimate / 2;
-    } else if (spaceLeft >= cardWidth + gap) {
-      cardLeft = highlight.left - cardWidth - gap;
-      cardTop = highlight.top + highlight.height / 2 - cardHeightEstimate / 2;
-    } else if (isMobile && spaceBelow >= cardHeightEstimate + gap) {
-      cardLeft = highlight.left + highlight.width / 2 - cardWidth / 2;
-      cardTop = highlight.top + highlight.height + gap;
+  if (highlight) {
+    const candidates = [
+      { left: highlight.left + highlight.width / 2 - cardWidth / 2, top: highlight.top - cardHeightEstimate - gap, fits: highlight.top >= cardHeightEstimate + gap + 12, rank: 0 },
+      { left: highlight.left + highlight.width / 2 - cardWidth / 2, top: highlight.top + highlight.height + gap, fits: viewportH - (highlight.top + highlight.height) >= cardHeightEstimate + gap + 12, rank: 1 },
+      { left: highlight.left - cardWidth - gap, top: highlight.top + highlight.height / 2 - cardHeightEstimate / 2, fits: highlight.left >= cardWidth + gap + 12, rank: 2 },
+      { left: highlight.left + highlight.width + gap, top: highlight.top + highlight.height / 2 - cardHeightEstimate / 2, fits: viewportW - (highlight.left + highlight.width) >= cardWidth + gap + 12, rank: 3 },
+    ];
+    // Prefer the side with the most room; never clamp a card across the
+    // spotlight when a fully separate position is available.
+    const available = candidates.filter((candidate) => candidate.fits);
+    const chosen = available.sort((a, b) => {
+      const aArea = a.rank < 2 ? viewportW : viewportH;
+      const bArea = b.rank < 2 ? viewportW : viewportH;
+      return bArea - aArea || a.rank - b.rank;
+    })[0];
+    if (chosen) {
+      cardLeft = clampLeft(chosen.left);
+      cardTop = clampTop(chosen.top);
+    } else {
+      // Tight mobile layouts: place the prompt at the screen edge with the
+      // greatest separation from the target. The user can still drag it.
+      const topRoom = highlight.top;
+      const bottomRoom = viewportH - highlight.top - highlight.height;
+      cardLeft = clampLeft(highlight.left + highlight.width / 2 - cardWidth / 2);
+      cardTop = topRoom >= bottomRoom
+        ? 12
+        : clampTop(viewportH - cardHeightEstimate - 12);
     }
   }
-
-  // Keep the explanation card completely outside the spotlight target.
-  // Prefer below the target, otherwise place it above. On mobile, if neither
-  // side has enough room, use the side with more available space.
-  if (highlight && highlight.width >= cardWidth * 1.35) {
-    const spaceBelow = viewportH - (highlight.top + highlight.height);
-    const spaceAbove = highlight.top;
-    if (spaceBelow < cardHeightEstimate + gap && spaceAbove >= cardHeightEstimate + gap) {
-      cardTop = highlight.top - cardHeightEstimate - gap;
-    } else if (spaceBelow < cardHeightEstimate + gap && spaceAbove < cardHeightEstimate + gap) {
-      cardTop = spaceBelow >= spaceAbove
-        ? Math.max(12, viewportH - cardHeightEstimate - 12)
-        : Math.max(12, highlight.top - cardHeightEstimate - gap);
-    }
-  }
-
-  cardLeft = Math.max(12, Math.min(cardLeft, viewportW - cardWidth - 12));
-  cardTop = Math.max(12, Math.min(cardTop, viewportH - 12 - cardHeightEstimate));
 
   // Directional pointer between the guidance card and the highlighted control.
   let pointerLeft = highlight ? highlight.left + highlight.width / 2 - 14 : 0;
@@ -532,12 +516,15 @@ export function GuidedTour() {
           .wp-tour-fade,.wp-tour-pulse,.wp-tour-arrow{animation:none!important}
         }
       `}</style>
-      {!highlight && !waiting && (
-        <div className="absolute inset-0 z-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />
-      )}
+      {!waiting && (highlight ? <>
+        <div className="absolute z-0 bg-black/58 wp-tour-fade" style={{ left: 0, top: 0, width: viewportW, height: highlight.top }} />
+        <div className="absolute z-0 bg-black/58 wp-tour-fade" style={{ left: 0, top: highlight.top, width: highlight.left, height: highlight.height }} />
+        <div className="absolute z-0 bg-black/58 wp-tour-fade" style={{ left: highlight.left + highlight.width, top: highlight.top, width: Math.max(0, viewportW - highlight.left - highlight.width), height: highlight.height }} />
+        <div className="absolute z-0 bg-black/58 wp-tour-fade" style={{ left: 0, top: highlight.top + highlight.height, width: viewportW, height: Math.max(0, viewportH - highlight.top - highlight.height) }} />
+      </> : <div className="absolute inset-0 z-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />)}
       {highlight && <div
-        className="absolute z-10 rounded-[14px] border-2 border-[#6EE7A8] wp-tour-pulse"
-        style={{ left: highlight.left, top: highlight.top, width: highlight.width, height: highlight.height, animation: "wp-tour-pulse 1.6s ease-in-out infinite" }}
+        className="absolute z-10 rounded-[12px] border-[3px] border-[#32D583]"
+        style={{ left: highlight.left, top: highlight.top, width: highlight.width, height: highlight.height, boxShadow: "0 0 0 2px rgba(50,213,131,.28), 0 0 22px rgba(50,213,131,.58)" }}
       />}
       {highlight && (
         <div
