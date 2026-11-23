@@ -31,7 +31,7 @@ const menus = [
   { key: "report", label: "Report", icon: Landmark, to: "/finance" },
   { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection" },
   { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant" },
-  { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true },
+  { key: "community", label: "Community", icon: ChartNoAxesCombined, to: "/community" },
   { key: "settings", label: "Settings", icon: Settings, to: "/settings" },
 ];
 
@@ -345,10 +345,9 @@ export function Home() {
         <div className="grid grid-cols-4 gap-x-1 gap-y-3 rounded-[22px] border border-[#E5E7EB] bg-white px-3 pt-2.5 pb-3 shadow-[0_8px_24px_rgba(17,24,39,.06)]">
           {menus.map(({ label, icon: Icon, to, soon }, index) => (
             <button key={label} type="button" disabled={Boolean(soon)} onClick={() => to && navigate(to)}
-              className={`relative flex min-h-[68px] flex-col items-center justify-center gap-2 rounded-xl bg-transparent px-1 py-1.5 text-center transition ${index >= 4 && !menuExpanded ? "hidden md:flex" : ""} ${soon ? "cursor-not-allowed" : "hover:bg-[#F8F9FA]"}`}>
-              <Icon size={21} strokeWidth={1.9} className={soon ? "text-[#9CA3AF]" : "text-[#111827]"} />
-              <span className={`text-[11px] font-medium leading-tight text-[#111827] ${soon ? "text-[#9CA3AF]" : ""}`}>{label}</span>
-              {soon && <span className="absolute right-0.5 top-0.5 rounded-full bg-[#DDF7E8] px-1.5 py-0.5 text-[8px] font-bold leading-none text-[#0B6B47]">Soon</span>}
+              className={`relative flex min-h-[68px] flex-col items-center justify-center gap-2 rounded-xl bg-transparent px-1 py-1.5 text-center transition ${index >= 4 && !menuExpanded ? "hidden md:flex" : ""} hover:bg-[#F8F9FA]`}>
+              <Icon size={21} strokeWidth={1.9} className="text-[#111827]" />
+              <span className="text-[11px] font-medium leading-tight text-[#111827]">{label}</span>
             </button>
           ))}
         </div>
