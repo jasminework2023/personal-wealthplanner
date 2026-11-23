@@ -1,7 +1,7 @@
 /* Real calculator engine ported from wealthplanner.id public calculator. */
 // @ts-nocheck
 import React from "react";
-import { ArrowRight, Check, Plus, Activity, TrendingUp, Shield, Home, GraduationCap, Clock, CreditCard, CircleArrowUp, Scale, ChevronRight } from "lucide-react";
+import { ArrowRight, Check, Plus, Activity, TrendingUp, Shield, Home, GraduationCap, Clock, CreditCard, CircleArrowUp, Scale, ChevronRight, Info } from "lucide-react";
 import { useFinanceData } from "../lib/useFinanceData";
 import { loadFinancialPlans } from "../lib/financialPlans";
 import { getAppLanguage } from "../lib/format";
@@ -1910,20 +1910,22 @@ export function FinancialCalculator({ onOpen }: { onOpen: (id: string) => void }
 
 export function CalculatorDetail({ id, onBack, onSaveResult, onNavigate }) {
   const [language, setLanguage] = React.useState(getAppLanguage());
+  const [showHint, setShowHint] = React.useState(false);
   React.useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const isId = language === "id";
   const meta=CALCULATOR_META.find(x=>x.id===id)||CALCULATOR_META[0];
-  return <div className="wp-calculator" style={{display:"grid",gap:14}}>
+  return <div className="wp-calculator" style={{display:"grid",gap:8}}>
     <style>{`
-      .wp-calculator .calc-detail-top{display:flex;align-items:center;gap:10px}
-      .wp-calculator .calc-back{min-height:44px;border:0;background:transparent;color:var(--calc-text);font-size:15px;font-weight:700;padding:0;text-align:left}
-      .wp-calculator .calc-detail-title{font-size:26px;line-height:1.1;font-weight:800;letter-spacing:-.03em;color:var(--calc-text);margin:0}
-      .wp-calculator .calc-detail-subtitle{margin:2px 0 0;font-size:13px;color:var(--calc-muted)}
+      .wp-calculator .calc-detail-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+      .wp-calculator .calc-back{min-height:38px;border:0;background:transparent;color:var(--calc-text);font-size:15px;font-weight:700;padding:0;text-align:left}
+      .wp-calculator .calc-hint-button{width:30px;height:30px;flex:0 0 30px;border:1px solid var(--calc-border);border-radius:50%;background:var(--calc-card);color:var(--calc-muted);display:flex;align-items:center;justify-content:center}
+      .wp-calculator .calc-detail-subtitle{margin:0;padding:9px 11px;border:1px solid var(--calc-border);border-radius:12px;background:var(--calc-card);font-size:12px;line-height:1.45;color:var(--calc-muted)}
     `}</style>
     <div className="calc-detail-top">
       <button type="button" className="calc-back" onClick={onBack}>{isId ? `← ${id === "rumah" ? "KPR/KPA" : meta.title}` : `← ${id === "rumah" ? "Mortgage" : (meta.titleEn || meta.title)}`}</button>
+      <button type="button" className="calc-hint-button" onClick={() => setShowHint(v => !v)} aria-label={isId ? "Info kalkulator" : "Calculator information"} aria-expanded={showHint}><Info size={17} strokeWidth={2.2}/></button>
     </div>
-    <div><p className="calc-detail-subtitle">{!isId && meta.descEn ? meta.descEn : meta.desc}</p></div>
+    {showHint && <p className="calc-detail-subtitle">{!isId && meta.descEn ? meta.descEn : meta.desc}</p>}
     <CalculatorBody id={id} onSaveResult={onSaveResult} onNavigate={onNavigate}/>
   </div>;
 }
