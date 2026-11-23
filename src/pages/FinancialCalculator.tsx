@@ -81,7 +81,7 @@ function Slider({ label,value,onChange,min,max,step=1,format }) {
   </div>;
 }
 function ResultTile({ label,value,sub }) {
-  return <div className="wp-calc-result-tile">
+  return <div className="wp-calc-result-tile wp-calc-legacy-result">
     <div className="wp-calc-result-label">{label}</div>
     <div className="wp-calc-result-value">{value}</div>
     {sub&&<div className="wp-calc-result-sub">{sub}</div>}
@@ -223,7 +223,8 @@ function CheckupCalc({ onSaveResult, onNavigate }) {
     <div style={{ border: "1px solid rgb(var(--c-border))", borderRadius: 18, padding: 16 }}><h4 style={{ margin: "0 0 14px", color: "rgb(var(--c-charcoal))" }}>{isId ? "Rincian skor" : "Score breakdown"}</h4><div style={{ display: "grid", gap: 15 }}>{rows.map((row) => <div key={row.key}><div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "baseline" }}><span style={{ fontSize: 12, fontWeight: 700, color: "rgb(var(--c-charcoal))" }}>{row.label}</span><span style={{ fontSize: 12, fontWeight: 800, color: "rgb(var(--c-accent-text))", whiteSpace: "nowrap" }}>{row.value} · {row.points}/20</span></div><div style={{ height: 7, borderRadius: 99, background: "rgb(var(--c-border))", marginTop: 7, overflow: "hidden" }}><div style={{ height: "100%", width: (row.points / 20 * 100) + "%", background: row.points / 20 >= .8 ? "rgb(var(--c-accent))" : row.points / 20 >= .5 ? "rgb(var(--c-muted))" : "rgb(var(--c-down))", borderRadius: 99 }}/></div><div style={{ marginTop: 4, fontSize: 10, color: "rgb(var(--c-muted))" }}>{row.hint}</div></div>)}</div></div>
     <div style={{ padding: 15, borderRadius: 14, background: "rgb(var(--c-cream))", border: "1px solid rgb(var(--c-border))", fontSize: 12, lineHeight: 1.6, color: "rgb(var(--c-charcoal))" }}><strong>{isId ? "Tahukah kamu?" : "Did you know?"}</strong><div style={{ marginTop: 5 }}>{isId ? "Kesehatan finansial bukan hanya soal besarnya penghasilan, tetapi juga kemampuan mengelola cicilan, menyiapkan dana darurat, dan menjaga proteksi." : "Financial health is not just about income; it also depends on managing debt, building an emergency fund, and maintaining protection."}</div></div>
     <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "14px 16px", borderRadius: 14, background: "rgb(var(--c-forest-800))", color: "#fff", fontWeight: 700, textDecoration: "none" }}>{isId ? "Diskusikan rencana keuanganmu" : "Discuss your financial plan"} →</a>
-  </div>} onSave={() => onSaveResult({ id: "checkup", title: isId ? "Pemeriksaan Kesehatan Keuangan" : "Financial Check-Up", value: isId ? "Skor " + score + "/100 · " + grade : "Score " + score + "/100 · " + grade, plan: { type: "cashflow", targetAmount: 0, monthlyAmount: income, preparedAssets: cash + investments, timeframe: 1 } })} onNavigate={onNavigate} calcId="checkup" relatedId="checkup"/>;
+  </div>} onSave={() => onSaveResult({ id: "checkup", title: isId ? "Pemeriksaan Kesehatan Keuangan" : "Financial Check-Up", value: isId ? "Skor " + score + "/100 · " + grade : "Score " + score + "/100 · " + grade, plan: { type: "cashflow", targetAmount: 0, monthlyAmount: income, preparedAssets: cash + investments, timeframe: 1 } })} onNavigate={onNavigate} primaryResults={[{label:isId?"SKOR KESEHATAN KEUANGAN":"FINANCIAL HEALTH SCORE",value:score+"/100",sub:"Grade "+grade+" · "+gradeName},{label:isId?"DANA DARURAT":"EMERGENCY FUND",value:decimal(emergencyMonths)+(isId?" bulan":" months"),sub:isId?"Cakupan pengeluaran bulanan":"Monthly expense coverage"}]}
+      calcId="checkup" relatedId="checkup"/>;
 }
 
 // ============================================================
@@ -357,7 +358,8 @@ function RumahCalc({ onSaveResult, onNavigate }) {
     <div style={{marginTop:16,padding:"12px 16px",background:"rgb(var(--c-cream))",borderRadius:14,fontSize:11,color:"rgb(var(--c-muted))",lineHeight:1.55}}> {isId?"Disclaimer: hasil adalah simulasi/estimasi edukatif, bukan penawaran pembiayaan. Biaya provisi, administrasi, asuransi, pajak, notaris, dan biaya lain belum diperhitungkan.":"Disclaimer: this is an educational estimate, not a financing offer. Provision, administration, insurance, tax, notary, and other costs are excluded."}</div>
     <div style={{marginTop:14,padding:12,borderRadius:14,background:"rgb(var(--c-forest-50))",color:"rgb(var(--c-forest-800))",fontSize:12,lineHeight:1.55}}><strong style={{display:"block",marginBottom:5}}>{isId?"Tahukah kamu?":"Did you know?"}</strong>{isId?"Pelunasan KPR tidak selalu otomatis menyelesaikan seluruh kewajiban ketika pencari nafkah meninggal. Siapkan strategi pelunasan KPR dan proteksi jiwa agar keluarga tetap punya pilihan untuk mempertahankan rumahnya.":"Paying off a mortgage is not always automatic when the primary earner dies. Plan for mortgage repayment and life protection so your family can retain the option to keep their home."}</div>
     <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:12,minHeight:46,padding:"12px 16px",borderRadius:12,background:"rgb(var(--c-forest-800))",color:"white",fontSize:13,fontWeight:800,textDecoration:"none"}}>{isId?"Konsultasikan Rencana":"Discuss Your Plan"} <ArrowRight size={16}/></a>
-  </>} onSave={()=>onSaveResult({id:"rumah",title:"KPR",value:`Rp ${formatIDR(Math.round(safeLoan))} · Rp ${formatIDR(Math.round(monthlyPayment))}/bln`,plan:{type:"home",targetAmount:kprMode==="existing"?safeLoan:homePrice,obligationAmount:safeLoan,monthlyAmount:monthlyPayment,timeframe:effectiveTenor,preparedAssets:kprMode==="new"?downPayment:0,financingType,kprMode,homePrice,downPayment,loanAmount,outstanding,remainingYears,currentRate,currentInstallment,fixedRate,fixedYears,floatingRate,tenor,syariahMargin,rentalPrice,annualRentIncrease,investmentReturn,annualHomeAppreciation}})} onNavigate={onNavigate} calcId="rumah" relatedId="kpr"/>;
+  </>} onSave={()=>onSaveResult({id:"rumah",title:"KPR",value:`Rp ${formatIDR(Math.round(safeLoan))} · Rp ${formatIDR(Math.round(monthlyPayment))}/bln`,plan:{type:"home",targetAmount:kprMode==="existing"?safeLoan:homePrice,obligationAmount:safeLoan,monthlyAmount:monthlyPayment,timeframe:effectiveTenor,preparedAssets:kprMode==="new"?downPayment:0,financingType,kprMode,homePrice,downPayment,loanAmount,outstanding,remainingYears,currentRate,currentInstallment,fixedRate,fixedYears,floatingRate,tenor,syariahMargin,rentalPrice,annualRentIncrease,investmentReturn,annualHomeAppreciation}})} onNavigate={onNavigate} primaryResults={[{label:isId?"TOTAL PEMBIAYAAN / PINJAMAN":"TOTAL LOAN / FINANCING",value:"Rp "+formatIDR(Math.round(safeLoan)),sub:kprMode==="existing"?(isId?"Pinjaman tersisa":"Outstanding loan"):(isId?"Pokok pembiayaan":"Financing principal")},{label:isId?"CICILAN BULANAN":"MONTHLY PAYMENT",value:"Rp "+formatIDR(Math.round(monthlyPayment)),sub:isId?"Cicilan awal / fixed":"Initial / fixed payment"}]}
+      calcId="rumah" relatedId="kpr"/>;
 }
 
 // ============================================================
@@ -566,6 +568,7 @@ function InvestCalc({ onSaveResult, onNavigate }) {
         plan: { type: "investment", targetAmount: finalValue, monthlyAmount: safeMonthly, timeframe: safeYears, preparedAssets: safeStarting },
       })}
       onNavigate={onNavigate}
+      primaryResults={[{label:isId?"ESTIMASI NILAI INVESTASI":"ESTIMATED INVESTMENT VALUE",value:formatIDR(Math.round(finalValue)),sub:(isId?"Dalam ":"In ")+safeYears+(isId?" tahun":" years")},{label:isId?"SETORAN BULANAN":"MONTHLY CONTRIBUTION",value:formatIDR(Math.round(safeMonthly)),sub:(isId?"Total setoran ":"Total contributions ")+formatIDR(Math.round(totalContributed))}]}
       calcId="invest"
       relatedId="invest"
     />
@@ -689,7 +692,8 @@ function InsuranceCalc({ onSaveResult, onNavigate }) {
       <a href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noopener" style={{ display: "block", width: "100%", boxSizing: "border-box", background: "rgb(var(--c-accent))", color: "rgb(var(--c-accent-ink))", borderRadius: 10, padding: "12px 14px", fontSize: 13, fontWeight: 700, textAlign: "center", textDecoration: "none" }}>{isId ? "Konsultasikan Rencana" : "Consult Your Plan"}</a>
     </div>}
     onSave={() => onSaveResult({ id: "insurance", title: isId ? "Kebutuhan Asuransi" : "Insurance Needs", value: fmtShort(gapTotal) + " gap", plan: { type: "income_protection", targetAmount: gapTotal, income: nIncome, timeframe: 5, preparedAssets: nLife + nCritical } })}
-    onNavigate={onNavigate} calcId="insurance" relatedId="insurance"
+    onNavigate={onNavigate} primaryResults={[{label:isId?"TOTAL UANG PERTANGGUNGAN IDEAL":"IDEAL LIFE COVERAGE",value:fmtShort(needLife),sub:isId?"Kebutuhan proteksi jiwa":"Life protection need"},{label:isId?"PREMI PER BULAN":"PREMIUM PER MONTH",value:fmtShort(nPremium),sub:nIncome>0?(isId?premiumPct.toLocaleString("id-ID",{maximumFractionDigits:1})+"% dari income":premiumPct.toLocaleString("en-US",{maximumFractionDigits:1})+"% of income"):"-"}]}
+      calcId="insurance" relatedId="insurance"
   />;
 }
 
@@ -961,7 +965,8 @@ function EduCalc({ onSaveResult, onNavigate }) {
       },
     })}
     onNavigate={onNavigate}
-    calcId="edu"
+    primaryResults={[{label:isId?"TOTAL BIAYA PENDIDIKAN":"TOTAL EDUCATION COST",value:rupiah(totalEducationNeed),sub:isId?"Gabungan rencana pendidikan":"Combined education plans"},{label:isId?"TABUNGAN BULANAN":"MONTHLY SAVING",value:rupiah(Math.round(nearestStage?.monthlySaving ?? 0)),sub:isId?"Untuk simulasi jenjang aktif":"For the active education stage"}]}
+      calcId="edu"
     relatedId="edu"
   />;
 }
@@ -1046,6 +1051,7 @@ function PensionCalc({ onSaveResult, onNavigate }) {
       }
       onSave={() => onSaveResult({ id: "pension", title: isId ? "Dana Pensiun" : "Retirement Fund", value: money(Math.round(monthlyPayment)) + (isId ? "/bln" : "/mo"), plan: { type: "retirement", targetAmount: totalNeed, monthlyAmount: monthlyPayment, timeframe: yearsToRetirement } })}
       onNavigate={onNavigate}
+      primaryResults={[{label:isId?"TOTAL KEBUTUHAN DANA PENSIUN":"TOTAL RETIREMENT FUND NEEDED",value:money(Math.round(totalNeed)),sub:isId?"Untuk seluruh masa pensiun":"For the full retirement period"},{label:isId?"TABUNGAN BULANAN":"MONTHLY SAVING",value:money(Math.round(monthlyPayment)),sub:isId?"Mulai sekarang hingga usia pensiun":"From now until retirement"}]}
       calcId="pension"
       relatedId="pension"
     />
@@ -1200,6 +1206,7 @@ function HajiCalc({ onSaveResult, onNavigate }) {
         plan: { type: "hajj", targetAmount: estimasiBiayaJemaah, monthlyAmount: budgetBulanan, timeframe: tahunMenuju, preparedAssets: dp, targetYear: targetBerangkat },
       })}
       onNavigate={onNavigate}
+      primaryResults={[{label:isId?"TOTAL BIAYA HAJI (SETELAH INFLASI)":"TOTAL HAJJ COST (AFTER INFLATION)",value:formatIDR(Math.round(totalBiayaDenganInflasi)),sub:isId?"Sebelum bantuan / subsidi":"Before assistance / subsidy"},{label:isId?"TABUNGAN BULANAN":"MONTHLY SAVING",value:formatIDR(Math.round(budgetBulanan)),sub:isId?"Budget hingga tahun keberangkatan":"Budget until departure year"}]}
       calcId="haji"
       relatedId={null}
     />
@@ -1426,6 +1433,7 @@ function WarisanCalc({ onSaveResult, onNavigate }) {
 
   return (
     <CalcLayout
+      primaryResults={[{label:isId?"TOTAL HARTA YANG DIBAGI":"TOTAL ESTATE TO DISTRIBUTE",value:formatIDR(Math.round(Math.max(0,hartaBersih))),sub:"Aset "+formatIDR(totalAset)+" − Hutang "+formatIDR(hutang)+" − Pemakaman "+formatIDR(biayaPemakaman)}]}
       calcId="warisan"
       onNavigate={onNavigate}
       onSave={() => onSaveResult({
@@ -1734,13 +1742,25 @@ function ZakatCalc({ onSaveResult, onNavigate }) {
     </div>}
     onSave={() => onSaveResult({ id: "zakat", title: isId ? "Zakat dan Wakaf" : "Zakat and Waqf", value: saveValue, plan: null })}
     onNavigate={onNavigate}
-    calcId="zakat"
+    primaryResults={tab==="income"?([{label:isId?"ZAKAT PER TAHUN":"ANNUAL INCOME ZAKAT",value:fmt(annualZakat),sub:incomeBasis>=monthlyNisab?(isId?"Sudah mencapai nisab":"Above nisab"):(isId?"Belum mencapai nisab":"Below nisab")},{label:isId?"ZAKAT PER BULAN":"MONTHLY INCOME ZAKAT",value:fmt(monthlyZakat),sub:isId?"Dasar perhitungan penghasilan":"Based on income"}]):tab==="maal"?([{label:isId?"ZAKAT MAAL":"WEALTH ZAKAT",value:fmt(maalZakat),sub:netWealth>=maalNisab?(isId?"Sudah mencapai nisab":"Above nisab"):(isId?"Belum mencapai nisab":"Below nisab")},{label:isId?"SETARA PER BULAN":"MONTHLY EQUIVALENT",value:fmt(maalZakat/12),sub:isId?"Zakat maal dibayar setahun sekali":"Wealth zakat is paid annually"}]):([{label:isId?"TARGET WAKAF":"WAQF TARGET",value:fmt(waqfTarget),sub:waqfMonths?(waqfMonths+(isId?" bulan cicilan":" months of installments")):(isId?"Isi target dan cicilan":"Enter target and installment")},{label:isId?"CICILAN PER BULAN":"MONTHLY INSTALLMENT",value:fmt(waqfInstallment),sub:isId?"Wakaf rutin":"Planned waqf installment"}])}
+      calcId="zakat"
     relatedId={null}
   />;
 }
 
 
-function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
+function PrimaryResultCard({ slides = [] }) {
+  const [active, setActive] = React.useState(0);
+  const ref = React.useRef(null);
+  React.useEffect(() => { const el = ref.current; if (!el) return; el.scrollLeft = 0; setActive(0); }, [slides.length, slides.map((s) => s.label).join("|")]);
+  const onScroll = (event) => { const el = event.currentTarget; const step = el.clientWidth + 12; setActive(Math.max(0, Math.min(slides.length - 1, Math.round(el.scrollLeft / step)))); };
+  if (!slides.length) return null;
+  return <div className="wp-calc-primary-wrap"><div ref={ref} className="wp-calc-primary-scroller" onScroll={onScroll} aria-label="Hasil utama">
+    {slides.map((slide,index)=><div className="wp-calc-primary-slide" key={index}><div className="wp-calc-primary-head"><span>{slide.label}</span>{slides.length>1&&<span>{index+1}/{slides.length}</span>}</div><div className="wp-calc-primary-value">{slide.value}</div>{slide.sub&&<div className="wp-calc-primary-sub">{slide.sub}</div>}</div>)}
+  </div>{slides.length>1&&<div className="wp-calc-primary-dots" aria-hidden="true">{slides.map((_,index)=><span key={index} className={index===active?"on":""}/>)}</div>}</div>;
+}
+
+function CalcLayout({ inputs, results, primaryResults = [], onSave, onNavigate, calcId }) {
   const [saved, setSaved] = React.useState(false);
   const [language, setLanguage] = React.useState(getAppLanguage());
 
@@ -1796,14 +1816,12 @@ function CalcLayout({ inputs, results, onSave, onNavigate, calcId }) {
     <div className="wp-calc-layout">
       <div className="wp-calc-grid">
         <div className="wp-calc-results-column">
-          {results}
+          <PrimaryResultCard slides={primaryResults} />
           <div className="wp-calc-actions">
             <Button variant="secondary" size="sm" onClick={save} icon={saved ? <Check size={14} /> : <Plus size={14} />}>
               {saved ? copy.saved : copy.save}
             </Button>
-            <Button variant="primary" size="sm" onClick={goProtection} iconRight={<ArrowRight size={14} />}>
-              {copy.protect}
-            </Button>
+            {calcId !== "insurance" && <Button variant="primary" size="sm" onClick={goProtection} iconRight={<ArrowRight size={14} />}>{copy.protect} →</Button>}
           </div>
         </div>
 
