@@ -150,23 +150,15 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="menu-wallet"]',
     selectorMobile: '[data-tour="menu-wallet"]',
     title: "9. Wallet",
-    description: "Pusat untuk melihat dan mengelola saldo rekening, kas, serta akun investasi.",
+    description: "Lihat total saldo seluruh wallet aktif, lalu kelola rekening, kas, dan akun investasimu dari satu tempat.",
     advanceOnTargetClick: true
-  },
-  {
-    id: "usage-wallet-total",
-    route: "/wallets",
-    selectorDesktop: '[data-tour="wallet-summary"]',
-    selectorMobile: '[data-tour="wallet-summary"]',
-    title: "10. Total Saldo Wallet",
-    description: "Bagian ini menjumlahkan saldo seluruh wallet aktif. Nilainya mengikuti saldo awal serta transaksi masuk, keluar, dan transfer yang tercatat.",
   },
   {
     id: "usage-wallet-add",
     route: "/wallets",
     selectorDesktop: '[data-tour="wallet-add"]',
     selectorMobile: '[data-tour="wallet-add"]',
-    title: "11. Tambah Wallet",
+    title: "10. Tambah Wallet",
     description: "Tekan + Tambah untuk mengatur rekening atau dompet baru melalui Pengaturan. Setelah disimpan, wallet akan muncul di daftar ini.",
   },
   {
@@ -174,7 +166,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/wallets",
     selectorDesktop: '[data-tour="wallet-list-heading"]',
     selectorMobile: '[data-tour="wallet-list-heading"]',
-    title: "12. Daftar Wallet",
+    title: "11. Daftar Wallet",
     description: "Setiap kartu menunjukkan saldo dan ringkasan transaksi wallet. Ketuk kartu untuk membuka detail dan riwayatnya. Gulir halaman untuk melihat wallet lain; kartu petunjuk ini juga bisa digeser agar tidak menutupi tampilan.",
   },
   {
@@ -182,7 +174,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/wallets",
     selectorDesktop: '[data-tour="wallet-transfer"]',
     selectorMobile: '[data-tour="wallet-transfer"]',
-    title: "13. Transfer Antar-Wallet",
+    title: "12. Transfer Antar-Wallet",
     description: "Gunakan Transfer untuk memindahkan saldo dari satu wallet ke wallet lain. Transfer tidak dihitung sebagai pengeluaran baru.",
   },
   {
@@ -190,7 +182,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/assets",
     selectorDesktop: '[data-tour="menu-asset"]',
     selectorMobile: '[data-tour="menu-asset"]',
-    title: "14. Asset",
+    title: "13. Asset",
     description: "Pantau nilai aset, target aset, dan posisi investasimu dalam satu tampilan.",
     advanceOnTargetClick: true
   },
@@ -199,7 +191,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/budgeting",
     selectorDesktop: '[data-tour="menu-budget"]',
     selectorMobile: '[data-tour="menu-budget"]',
-    title: "15. Budget",
+    title: "14. Budget",
     description: "Atur anggaran dan bandingkan rencana dengan realisasi pengeluaran.",
     advanceOnTargetClick: true
   },
@@ -208,7 +200,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/transaction",
     selectorDesktop: '[data-tour="menu-transaction"]',
     selectorMobile: '[data-tour="menu-transaction"]',
-    title: "16. Transaksi",
+    title: "15. Transaksi",
     description: "Catat pemasukan, pengeluaran, tabungan, pembelian saham, dan transfer.",
     advanceOnTargetClick: true
   },
@@ -217,7 +209,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/calculator",
     selectorDesktop: '[data-tour="menu-calculator"]',
     selectorMobile: '[data-tour="menu-calculator"]',
-    title: "17. Kalkulator",
+    title: "16. Kalkulator",
     description: "Simulasikan kebutuhan pendidikan, Haji, KPR, pensiun, dan tujuan finansial lainnya.",
     advanceOnTargetClick: true
   },
@@ -226,7 +218,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/finance",
     selectorDesktop: '[data-tour="menu-report"]',
     selectorMobile: '[data-tour="menu-report"]',
-    title: "18. Report",
+    title: "17. Report",
     description: "Evaluasi pemasukan, pengeluaran, aset, dan arus kas melalui ringkasan laporan.",
     advanceOnTargetClick: true
   },
@@ -235,7 +227,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/goals",
     selectorDesktop: '[data-tour="menu-goals"]',
     selectorMobile: '[data-tour="menu-goals"]',
-    title: "19. Goals",
+    title: "18. Goals",
     description: "Susun target keuangan dan pantau progres pencapaiannya.",
     advanceOnTargetClick: true
   },
@@ -244,7 +236,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/protection",
     selectorDesktop: '[data-tour="menu-protection"]',
     selectorMobile: '[data-tour="menu-protection"]',
-    title: "20. Protection",
+    title: "19. Protection",
     description: "Petakan kebutuhan perlindungan finansial dan lihat potensi gap proteksi.",
     advanceOnTargetClick: true
   },
@@ -253,7 +245,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/ai-assistant",
     selectorDesktop: '[data-tour="menu-ai-assistant"]',
     selectorMobile: '[data-tour="menu-ai-assistant"]',
-    title: "21. AI Assistant",
+    title: "20. AI Assistant",
     description: "Tanyakan kondisi keuanganmu dan dapatkan analisis berdasarkan data Wealthplanner.",
     advanceOnTargetClick: true
   },
