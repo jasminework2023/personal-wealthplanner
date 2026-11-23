@@ -150,7 +150,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="menu-wallet"]',
     selectorMobile: '[data-tour="menu-wallet"]',
     title: "9. Wallet",
-    description: "Klik Wallet untuk membuka dan mengelola saldo rekening, kas, dan akun investasi.",
+    description: "Pusat untuk melihat dan mengelola saldo rekening, kas, serta akun investasi.",
     advanceOnTargetClick: true
   },
   {
@@ -191,7 +191,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="menu-asset"]',
     selectorMobile: '[data-tour="menu-asset"]',
     title: "14. Asset",
-    description: "Klik Asset untuk melihat aset, target aset, dan posisi investasi yang kamu miliki.",
+    description: "Pantau nilai aset, target aset, dan posisi investasimu dalam satu tampilan.",
     advanceOnTargetClick: true
   },
   {
@@ -200,7 +200,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="menu-budget"]',
     selectorMobile: '[data-tour="menu-budget"]',
     title: "15. Budget",
-    description: "Klik Budget untuk mengatur anggaran dan membandingkannya dengan realisasi pengeluaran.",
+    description: "Atur anggaran dan bandingkan rencana dengan realisasi pengeluaran.",
     advanceOnTargetClick: true
   },
   {
@@ -209,7 +209,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="menu-transaction"]',
     selectorMobile: '[data-tour="menu-transaction"]',
     title: "16. Transaksi",
-    description: "Klik Transaction untuk mencatat pemasukan, pengeluaran, tabungan, pembelian saham, atau transfer.",
+    description: "Catat pemasukan, pengeluaran, tabungan, pembelian saham, dan transfer.",
     advanceOnTargetClick: true
   },
   {
@@ -218,7 +218,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="menu-calculator"]',
     selectorMobile: '[data-tour="menu-calculator"]',
     title: "17. Kalkulator",
-    description: "Klik Financial Calculator untuk menghitung kebutuhan pendidikan, Haji, KPR, pensiun, dan lainnya.",
+    description: "Simulasikan kebutuhan pendidikan, Haji, KPR, pensiun, dan tujuan finansial lainnya.",
     advanceOnTargetClick: true
   },
   {
@@ -227,7 +227,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="menu-report"]',
     selectorMobile: '[data-tour="menu-report"]',
     title: "18. Report",
-    description: "Klik Report untuk mengevaluasi pemasukan, pengeluaran, aset, dan arus kas.",
+    description: "Evaluasi pemasukan, pengeluaran, aset, dan arus kas melalui ringkasan laporan.",
     advanceOnTargetClick: true
   },
   {
@@ -236,7 +236,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="menu-goals"]',
     selectorMobile: '[data-tour="menu-goals"]',
     title: "19. Goals",
-    description: "Klik Goals untuk membuat dan memantau target keuanganmu.",
+    description: "Susun target keuangan dan pantau progres pencapaiannya.",
     advanceOnTargetClick: true
   },
   {
@@ -245,7 +245,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="menu-protection"]',
     selectorMobile: '[data-tour="menu-protection"]',
     title: "20. Protection",
-    description: "Klik Protection untuk melihat kebutuhan perlindungan finansial dan gap proteksimu.",
+    description: "Petakan kebutuhan perlindungan finansial dan lihat potensi gap proteksi.",
     advanceOnTargetClick: true
   },
   {
@@ -254,7 +254,7 @@ export const usageTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="menu-ai-assistant"]',
     selectorMobile: '[data-tour="menu-ai-assistant"]',
     title: "21. AI Assistant",
-    description: "Klik AI Assistant untuk bertanya dan menganalisis kondisi keuangan berdasarkan data Wealthplanner.",
+    description: "Tanyakan kondisi keuanganmu dan dapatkan analisis berdasarkan data Wealthplanner.",
     advanceOnTargetClick: true
   },
 ];
