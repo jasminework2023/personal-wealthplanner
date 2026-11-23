@@ -336,13 +336,13 @@ export function Home() {
       </section>
 
       <section data-tour="main-menu" className="order-2 md:order-none -mt-4 -mb-1">
-        <div className="mb-1 flex items-center">
-          <button type="button" onClick={() => setMenuExpanded((value) => !value)} aria-expanded={menuExpanded} className="flex items-center gap-1.5 rounded-full px-0.5 py-0.5 text-[16px] font-bold tracking-[-0.02em] text-[#17191C] dark:text-[#F5F5F5]">
+        <div className="mb-0 flex items-center">
+          <button type="button" onClick={() => setMenuExpanded((value) => !value)} aria-expanded={menuExpanded} className="flex items-center gap-1.5 rounded-full px-0.5 py-0 text-[16px] font-bold tracking-[-0.02em] text-[#17191C] dark:text-[#F5F5F5]">
             <span>{id ? "Menu Utama" : "Main Menu"}</span>
             <ChevronRight size={17} className={menuExpanded ? "-rotate-90" : "rotate-90"} />
           </button>
         </div>
-        <div className="grid grid-cols-4 gap-x-1 gap-y-3 rounded-[22px] border border-[#E5E7EB] bg-white px-3 py-4 shadow-[0_8px_24px_rgba(17,24,39,.06)]">
+        <div className="grid grid-cols-4 gap-x-1 gap-y-3 rounded-[22px] border border-[#E5E7EB] bg-white px-3 pt-2.5 pb-3 shadow-[0_8px_24px_rgba(17,24,39,.06)]">
           {menus.map(({ label, icon: Icon, to, soon }, index) => (
             <button key={label} type="button" disabled={Boolean(soon)} onClick={() => to && navigate(to)}
               className={`relative flex min-h-[68px] flex-col items-center justify-center gap-2 rounded-xl bg-transparent px-1 py-1.5 text-center transition ${index >= 4 && !menuExpanded ? "hidden md:flex" : ""} ${soon ? "cursor-not-allowed" : "hover:bg-[#F8F9FA]"}`}>
