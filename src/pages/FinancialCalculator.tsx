@@ -1821,7 +1821,7 @@ function CalcLayout({ inputs, results, primaryResults = [], onSave, onNavigate, 
             <Button variant="secondary" size="sm" onClick={save} icon={saved ? <Check size={14} /> : <Plus size={14} />}>
               {saved ? copy.saved : copy.save}
             </Button>
-            {calcId !== "insurance" && <Button variant="primary" size="sm" onClick={goProtection} iconRight={<ArrowRight size={14} />}>{copy.protect} →</Button>}
+            {calcId !== "insurance" && <Button variant="primary" size="sm" onClick={goProtection} iconRight={<ArrowRight size={14} />}>{copy.protect}</Button>}
           </div>
         </div>
 
@@ -1923,7 +1923,7 @@ export function CalculatorDetail({ id, onBack, onSaveResult, onNavigate }) {
     <div className="calc-detail-top">
       <button type="button" className="calc-back" onClick={onBack}>{isId ? `← ${id === "rumah" ? "KPR/KPA" : meta.title}` : `← ${id === "rumah" ? "Mortgage" : (meta.titleEn || meta.title)}`}</button>
     </div>
-    <div><h1 className="calc-detail-title">{!isId && meta.titleEn ? meta.titleEn : meta.title}</h1><p className="calc-detail-subtitle">{!isId && meta.descEn ? meta.descEn : meta.desc}</p></div>
+    <div><p className="calc-detail-subtitle">{!isId && meta.descEn ? meta.descEn : meta.desc}</p></div>
     <CalculatorBody id={id} onSaveResult={onSaveResult} onNavigate={onNavigate}/>
   </div>;
 }
