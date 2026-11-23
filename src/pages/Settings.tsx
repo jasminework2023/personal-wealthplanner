@@ -232,8 +232,8 @@ export function Settings() {
 
       <div data-tour="spouse-sharing"><SpouseSharing /></div>
 
-      <div data-tour="ai-membership" className="max-w-2xl"><Card className="max-w-2xl">
-        <div className="flex items-center gap-3 mb-4">
+      <Card className="max-w-2xl">
+        <div data-tour="ai-membership" className="flex items-center gap-3 mb-4">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E9E2FF] text-[#6845A5]"><Crown size={19}/></span>
           <div><h3 className="text-[15px] font-semibold text-forest-900">AI Membership</h3><p className="text-[12px] text-charcoal/50 mt-0.5">Kelola akses AI Financial Assistant dan AI Scan Struk.</p></div>
         </div>
@@ -284,7 +284,7 @@ export function Settings() {
         </div>
         <p className="mt-3 text-[10.5px] leading-relaxed text-charcoal/45">Pembayaran melalui Xendit. Perpanjangan dilakukan manual dan tidak menggunakan auto-debit.</p>
         <button onClick={loadMembership} className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-charcoal/55 hover:text-forest-700"><RotateCcw size={12}/> Perbarui status</button>
-      </Card></div>
+      </Card>
 
       <Card className="!p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
