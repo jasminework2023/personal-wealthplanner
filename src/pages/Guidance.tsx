@@ -147,7 +147,7 @@ export function Guidance() {
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-charcoal/40">Alur Wealthplanner</p>
             <p className="mt-1 text-[15px] font-semibold text-forest-900">
-              Profile → Baseline keuangan → Saldo Wallet → Transaction → Budget → Asset Tracker
+              Profile → Baseline → Saldo Wallet → Transaction → Budget → Aset → Utang → Calculator → Goals → Report → Protection → AI → Community → Settings
             </p>
             <p className="mt-2 text-[12px] leading-5 text-charcoal/55">
               Ikuti urutan ini agar saldo awal, transaksi, anggaran, dan aset tercatat dengan rapi sejak awal.
@@ -201,8 +201,8 @@ export function Guidance() {
       <section>
         <SectionTitle
           number="02"
-          title="Setup awal: ikuti 6 langkah ini"
-          subtitle="Mulai dari profil, siapkan rekening dan saldo awal, lalu catat transaksi dan aset. Ikuti urutan ini agar laporanmu terbentuk dengan benar."
+          title="Journey Wealthplanner: ikuti 14 langkah"
+          subtitle="Ikuti urutan dari menyiapkan profil sampai memahami seluruh fitur. Selesaikan data dasar lebih dulu agar hasil transaksi, budget, aset, utang, dan laporan saling terhubung."
         />
 
         <div className="grid gap-4">
@@ -302,6 +302,138 @@ export function Guidance() {
               <p className="mt-1 text-[11px] leading-5 text-charcoal/65">Punya 10 lot saham BBCA, 5 gram emas, deposito Rp20 juta, dan mobil? Masukkan posisi kepemilikan dan estimasi nilai saat ini ke bagian yang sesuai. Tidak perlu membuat transaksi pembelian lama satu per satu hanya untuk membentuk saldo aset awal.</p>
             </div>
             <div className="mt-3"><FeatureButton to="/assets">Buka Asset Tracker</FeatureButton></div>
+          </GuideCard>
+
+          <GuideCard icon={CircleDollarSign} tone="bg-rose-50 text-rose-700" title="7. Catat utang yang masih berjalan">
+            <p>Catat kewajiban yang masih harus kamu lunasi supaya gambaran kekayaan bersih tidak hanya melihat aset. Utang bukan pengeluaran baru saat kamu memasukkan saldo awalnya; ini adalah posisi kewajiban saat ini.</p>
+            <StepList steps={[
+              "Buka menu Report/Finance lalu pilih tab Debt Tracker, atau gunakan pintasan Debt Tracker jika tersedia.",
+              "Tambahkan setiap kewajiban yang masih berjalan, misalnya KPR, kendaraan, pinjaman pribadi, paylater, atau kartu kredit.",
+              "Masukkan nama utang, sisa pokok/tagihan saat ini, dan informasi cicilan sesuai kolom yang tersedia.",
+              "Gunakan sisa pokok yang belum dibayar, bukan total pinjaman awal jika sebagian sudah dilunasi.",
+              "Perbarui nilainya setelah melakukan pembayaran pokok atau ketika tagihan kartu kredit berubah.",
+              "Jangan masukkan limit kartu kredit sebagai aset. Yang dicatat sebagai kewajiban adalah tagihan/pemakaian yang harus dibayar."
+            ]} />
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+              <p className="text-[12px] font-semibold text-amber-900">Contoh</p>
+              <p className="mt-1 text-[11px] leading-5 text-amber-800">Sisa pokok KPR Rp350 juta dan tagihan kartu kredit Rp2 juta: catat sebagai kewajiban masing-masing. Limit kartu kredit Rp20 juta tidak dicatat sebagai aset maupun utang.</p>
+            </div>
+            <div className="mt-3"><FeatureButton to="/debt">Buka Debt Tracker</FeatureButton></div>
+          </GuideCard>
+
+          <GuideCard icon={Calculator} tone="bg-forest-50 text-forest-700" title="8. Gunakan Financial Calculator">
+            <p>Calculator membantu mengubah tujuan atau pertanyaan keuangan menjadi simulasi angka. Isi asumsi yang diminta, baca hasilnya, lalu simpan simulasi yang ingin kamu tindak lanjuti.</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {[
+                ["Financial Check-Up", "Menilai cashflow, utang, dana darurat, dan likuiditas."],
+                ["KPR", "Membandingkan simulasi pembiayaan rumah konvensional atau syariah."],
+                ["Dana Pendidikan", "Memproyeksikan biaya pendidikan dan kebutuhan menabung."],
+                ["Dana Pensiun", "Mengestimasi kebutuhan masa pensiun dan setoran rutin."],
+                ["Perencanaan Warisan", "Membuat simulasi pembagian aset berdasarkan ahli waris."],
+                ["Haji & Umroh", "Menghitung target biaya dan rencana pelunasan."],
+                ["Zakat dan Wakaf", "Membantu simulasi zakat penghasilan, zakat maal, dan wakaf."],
+                ["Investasi", "Memproyeksikan pertumbuhan investasi dan kebutuhan setoran."],
+                ["Kebutuhan Asuransi", "Mengestimasi kebutuhan uang pertanggungan berdasarkan penghasilan."]
+              ].map(([name, desc]) => <div key={name} className="rounded-xl border border-charcoal/8 bg-charcoal/[0.02] p-3"><p className="text-[12px] font-semibold text-forest-900">{name}</p><p className="mt-1 text-[11px] leading-5 text-charcoal/55">{desc}</p></div>)}
+            </div>
+            <StepList steps={[
+              "Pilih jenis kalkulator yang sesuai dengan pertanyaanmu.",
+              "Isi nominal dan asumsi berdasarkan kondisi nyata. Jika belum tahu, gunakan asumsi sementara dan tandai untuk ditinjau kembali.",
+              "Perhatikan satuan, jangka waktu, inflasi, dan tingkat imbal hasil/bunga yang diminta.",
+              "Baca ringkasan dan hasil simulasi. Ubah asumsi untuk membandingkan beberapa skenario.",
+              "Simpan hasil yang relevan agar bisa dilanjutkan sebagai Goals."
+            ]} />
+            <p className="mt-2 text-[11px] text-charcoal/55">Hasil merupakan simulasi berdasarkan input dan asumsi, bukan janji hasil atau rekomendasi investasi personal.</p>
+            <div className="mt-3"><FeatureButton to="/calculator">Buka Calculator</FeatureButton></div>
+          </GuideCard>
+
+          <GuideCard icon={Target} tone="bg-forest-50 text-forest-700" title="9. Buat Goals dari rencana keuangan">
+            <p>Goals digunakan untuk mengubah hasil perhitungan atau keinginan finansial menjadi target yang bisa dipantau progresnya—misalnya dana darurat, pendidikan, rumah, haji, pensiun, atau investasi.</p>
+            <StepList steps={[
+              "Buat simulasi lebih dulu di Calculator, lalu pilih simpan hasil jika ingin menjadikannya rencana.",
+              "Buka Goals untuk melihat target yang tersimpan. Kamu juga bisa menambahkan target manual.",
+              "Periksa nama target, kategori, nominal target, dan saran setoran dari simulasi.",
+              "Gunakan Alokasikan Dana untuk menghubungkan aset yang sudah dimiliki dengan tujuan. Ini menandai alokasi, bukan memindahkan uang secara fisik.",
+              "Pantau persentase progres dan perbarui alokasi ketika kondisi berubah."
+            ]} />
+            <div className="mt-3"><FeatureButton to="/goals">Buka Goals</FeatureButton></div>
+          </GuideCard>
+
+          <GuideCard icon={ChartNoAxesCombined} tone="bg-forest-50 text-forest-700" title="10. Baca Report untuk evaluasi">
+            <p>Report/Finance merangkum data yang sudah kamu masukkan. Gunakan untuk melihat apa yang terjadi, bukan sekadar mengumpulkan angka.</p>
+            <div className="mt-3 space-y-2">
+              {[
+                ["Income Statement", "Melihat pemasukan, pengeluaran, surplus/defisit, tren bulanan, dan rincian kategori."],
+                ["Asset Tracker", "Melihat aset likuid, investasi, portofolio saham, aset riil, alokasi, dan perkembangan target aset."],
+                ["Debt Tracker", "Memantau sisa kewajiban dan utang yang masih berjalan."],
+                ["Cashflow Tracker", "Melihat arus uang masuk dan keluar serta pengeluaran berdasarkan kategori."]
+              ].map(([name, desc]) => <div key={name} className="rounded-xl border border-charcoal/8 p-3"><p className="text-[12px] font-semibold text-forest-900">{name}</p><p className="mt-1 text-[11px] leading-5 text-charcoal/55">{desc}</p></div>)}
+            </div>
+            <StepList steps={[
+              "Buka Report/Finance dan pilih periode bulan atau tahun yang ingin diperiksa.",
+              "Pilih tab laporan yang ingin dibaca.",
+              "Bandingkan rencana dengan realisasi, perhatikan kategori yang paling besar, dan cari perubahan dari bulan sebelumnya.",
+              "Jika angka tidak sesuai, periksa kembali transaksi, saldo Wallet, aset, dan utang sumbernya."
+            ]} />
+            <div className="mt-3"><FeatureButton to="/finance">Buka Report</FeatureButton></div>
+          </GuideCard>
+
+          <GuideCard icon={ShieldCheck} tone="bg-forest-50 text-forest-700" title="11. Pahami Protection">
+            <p>Protection membantu memetakan risiko finansial yang bisa mengganggu rencana, seperti kehilangan penghasilan, biaya kesehatan, atau kewajiban keluarga. Tujuannya memahami kebutuhan dan gap proteksi, bukan langsung membeli produk.</p>
+            <StepList steps={[
+              "Buka Protection dan pilih atau buat rencana yang ingin dianalisis.",
+              "Masukkan kebutuhan/target kewajiban, misalnya kebutuhan keluarga, pendidikan, pembiayaan, atau tujuan lain yang relevan.",
+              "Isi dana atau aset yang sudah disiapkan dan manfaat proteksi yang sudah dimiliki jika ada.",
+              "Periksa estimasi gap antara kebutuhan dan sumber daya/proteksi yang tersedia.",
+              "Gunakan hasilnya sebagai bahan evaluasi; cek kembali syarat, pengecualian, masa tunggu, dan kemampuan membayar sebelum memilih perlindungan."
+            ]} />
+            <div className="mt-3"><FeatureButton to="/protection">Buka Protection</FeatureButton></div>
+          </GuideCard>
+
+          <GuideCard icon={MessageCircle} tone="bg-forest-50 text-forest-700" title="12. Gunakan AI Assistant sebagai tutor keuangan">
+            <p>AI Assistant bisa membantu memahami data dashboard yang terhubung, membaca pola pengeluaran, dan memberi ide evaluasi. Anggap sebagai teman diskusi dan tutor, bukan pengganti keputusanmu.</p>
+            <div className="mt-3 rounded-xl border border-forest-100 bg-forest-50/60 p-3">
+              <p className="text-[12px] font-semibold text-forest-900">Contoh pertanyaan yang bisa dicoba</p>
+              <div className="mt-2 space-y-2 text-[11px] leading-5 text-charcoal/70">
+                <p className="rounded-lg bg-white px-3 py-2">“Tolong jelaskan kondisi cashflow-ku bulan ini.”</p>
+                <p className="rounded-lg bg-white px-3 py-2">“Kategori pengeluaran terbesarku apa?”</p>
+                <p className="rounded-lg bg-white px-3 py-2">“Apa yang bisa aku evaluasi dari budget bulan ini?”</p>
+                <p className="rounded-lg bg-white px-3 py-2">“Bantu aku memahami perbedaan aset dan utang.”</p>
+              </div>
+            </div>
+            <StepList steps={[
+              "Pastikan transaksi, Wallet, budget, aset, dan utang sudah diisi agar analisis punya konteks.",
+              "Buka AI Assistant dan pilih contoh pertanyaan atau ketik pertanyaanmu sendiri.",
+              "Minta penjelasan langkah demi langkah jika ada istilah yang belum dipahami.",
+              "Periksa kembali angka penting dengan Report dan data sumber di aplikasi.",
+              "Gunakan tombol riwayat untuk melanjutkan percakapan sebelumnya."
+            ]} />
+            <p className="mt-2 text-[11px] text-charcoal/55">Ketersediaan chat mengikuti akses dan kredit AI pada akunmu. Hindari memasukkan password, PIN, atau data rahasia.</p>
+            <div className="mt-3"><FeatureButton to="/ai-assistant">Buka AI Assistant</FeatureButton></div>
+          </GuideCard>
+
+          <GuideCard icon={Users} tone="bg-forest-50 text-forest-700" title="13. Bergabung dengan Community">
+            <p>Community adalah ruang untuk belajar, berbagi insight, dan berdiskusi tentang perjalanan finansial bersama pengguna lain.</p>
+            <StepList steps={[
+              "Buka menu Community.",
+              "Baca tujuan dan aturan dasar komunitas.",
+              "Pilih Gabung Community WhatsApp jika ingin ikut berdiskusi.",
+              "Jaga privasi: jangan membagikan nomor rekening, detail saldo, password, atau dokumen pribadi di ruang publik."
+            ]} />
+            <div className="mt-3"><FeatureButton to="/community">Buka Community</FeatureButton></div>
+          </GuideCard>
+
+          <GuideCard icon={Settings2} tone="bg-forest-50 text-forest-700" title="14. Kembali ke Settings untuk mengelola aplikasi">
+            <p>Settings adalah pusat pengaturan profil dan preferensi. Kamu bisa kembali ke sini kapan pun untuk memperbarui data dasar dan pengaturan akun.</p>
+            <StepList steps={[
+              "Periksa dan ubah nama/profil yang ditampilkan jika diperlukan.",
+              "Atur bahasa aplikasi dan preferensi tampilan yang tersedia.",
+              "Kelola Pengaturan Baseline Keuangan: sumber pemasukan, kategori pengeluaran, tabungan/investasi, dan rekening.",
+              "Periksa pengaturan integrasi spreadsheet atau fitur berbagi jika digunakan.",
+              "Cek status akses AI PRO+ dan masa aktifnya jika fitur membership tersedia di akunmu."
+            ]} />
+            <p className="mt-2 text-[11px] text-charcoal/55">Langkah 1 dan 2 sama-sama menggunakan area Settings: lengkapi profil terlebih dahulu, lalu atur baseline keuangan sebelum menambahkan saldo Wallet.</p>
+            <div className="mt-3"><FeatureButton to="/settings">Buka Settings</FeatureButton></div>
           </GuideCard>
         </div>
       </section>
