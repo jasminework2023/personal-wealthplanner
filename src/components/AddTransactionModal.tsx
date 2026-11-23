@@ -753,8 +753,17 @@ export function AddTransactionModal({
               <option key={c}>{c}</option>
             ))}
           </select>}
+          <div className="rounded-xl border border-forest-100 bg-forest-50/60 p-3">
+            <p className="text-[12px] font-semibold text-forest-900">Apa yang perlu ditulis?</p>
+            <p className="mt-1 text-[11px] leading-5 text-charcoal/60">
+              {form.type === "Income" ? "Tulis sumber pemasukan, misalnya gaji, komisi, atau hasil usaha." : form.type === "Saving" ? "Tulis tujuan menyisihkan uang atau aset yang dibeli, misalnya menabung dana darurat atau beli reksa dana." : form.type === "Transfer" ? "Pilih wallet asal dan tujuan, lalu tulis keterangan perpindahan uang. Transfer bukan pengeluaran." : "Tulis barang/jasa yang dibeli atau tagihan yang dibayar. Contoh: makan siang, bensin, atau listrik."}
+            </p>
+            <p className="mt-1 text-[10px] font-medium text-forest-700">
+              {form.type === "Income" ? "Contoh: Gaji November" : form.type === "Saving" ? "Contoh: Top up reksa dana pasar uang" : form.type === "Transfer" ? "Contoh: Pindah dana BCA ke BSI" : "Contoh: Makan siang bersama teman"}
+            </p>
+          </div>
           <input
-            placeholder="Deskripsi (misal: Makan siang)"
+            placeholder={form.type === "Income" ? "Contoh: Gaji November" : form.type === "Saving" ? "Contoh: Menabung dana darurat" : form.type === "Transfer" ? "Contoh: Pindah dana antar rekening" : "Contoh: Makan siang"}
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             className="w-full border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px]"
@@ -797,11 +806,21 @@ export function AddTransactionModal({
           <p className="text-[13px] text-charcoal/60">
             Ketik transaksimu dalam bahasa sehari-hari, sama seperti ngobrol ke bot Telegram.
           </p>
-          <input
-            placeholder="Tadi beli makan 35 ribu"
+          <div className="rounded-xl border border-forest-100 bg-forest-50/60 p-3">
+            <p className="text-[12px] font-semibold text-forest-900">Cara menulis transaksi</p>
+            <p className="mt-1 text-[11px] leading-5 text-charcoal/60">Tulis seperti sedang bercerita. Sebutkan kegiatan, nominal, dan metode pembayaran atau rekening jika ingin dicatat lebih lengkap.</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {["Makan siang Rp35.000 pakai BCA","Gaji masuk Rp8.000.000 ke BCA","Bayar listrik Rp450.000 dari Mandiri"].map((example) => (
+                <button key={example} type="button" onClick={() => setAiText(example)} className="rounded-full border border-forest-100 bg-white px-2.5 py-1.5 text-left text-[10px] font-medium text-forest-700 hover:bg-forest-100">{example}</button>
+              ))}
+            </div>
+          </div>
+          <textarea
+            rows={2}
+            placeholder="Contoh: Tadi beli makan siang Rp35.000 pakai BCA"
             value={aiText}
             onChange={(e) => setAiText(e.target.value)}
-            className="w-full border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px]"
+            className="w-full resize-none border border-charcoal/15 rounded-xl px-3.5 py-3 text-[14px]"
           />
           <div className="rounded-xl border border-dashed border-rose-200 bg-rose-50/40 p-3">
             <div className="flex items-center justify-between gap-2"><div><p className="text-[13px] font-semibold text-rose-700">Foto struk dengan AI</p><p className="text-[11px] text-charcoal/55 mt-0.5">Upload/foto struk, review hasilnya, lalu simpan.</p></div><Camera size={18} className="text-rose-600"/></div>
