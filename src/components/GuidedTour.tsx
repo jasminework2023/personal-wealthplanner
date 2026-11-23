@@ -450,8 +450,10 @@ export function GuidedTour() {
 
   if (highlight) {
     const candidates = [
-      { left: highlight.left + highlight.width / 2 - cardWidth / 2, top: highlight.top - cardHeightEstimate - gap, fits: highlight.top >= cardHeightEstimate + gap + 12, rank: 0 },
-      { left: highlight.left + highlight.width / 2 - cardWidth / 2, top: highlight.top + highlight.height + gap, fits: viewportH - (highlight.top + highlight.height) >= cardHeightEstimate + gap + 12, rank: 1 },
+      // Prefer placing the guidance directly below the highlighted card so
+      // it never covers the primary value being explained.
+      { left: highlight.left + highlight.width / 2 - cardWidth / 2, top: highlight.top + highlight.height + gap, fits: viewportH - (highlight.top + highlight.height) >= cardHeightEstimate + gap + 12, rank: 0 },
+      { left: highlight.left + highlight.width / 2 - cardWidth / 2, top: highlight.top - cardHeightEstimate - gap, fits: highlight.top >= cardHeightEstimate + gap + 12, rank: 1 },
       { left: highlight.left - cardWidth - gap, top: highlight.top + highlight.height / 2 - cardHeightEstimate / 2, fits: highlight.left >= cardWidth + gap + 12, rank: 2 },
       { left: highlight.left + highlight.width + gap, top: highlight.top + highlight.height / 2 - cardHeightEstimate / 2, fits: viewportW - (highlight.left + highlight.width) >= cardWidth + gap + 12, rank: 3 },
     ];
