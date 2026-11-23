@@ -12,13 +12,12 @@ export type TourStep = {
 
 export const mainTourSteps: TourStep[] = [
   {
-    id: "navigation",
+    id: "connection-status",
     route: "/",
-    selectorDesktop: '[data-tour="desktop-sidebar"]',
-    selectorMobile: '[data-tour="mobile-menu-button"]',
-    title: "1. Kenali Navigasi",
-    description: "Gunakan sidebar untuk berpindah halaman dan membuka Profil.",
-    desktopOnly: true,
+    selectorDesktop: '[data-tour="connection-status"]',
+    selectorMobile: '[data-tour="connection-status"]',
+    title: "1. Status Koneksi & Token",
+    description: "Tanda ceklis hijau berarti dashboard berhasil terhubung dan token akses aktif, sehingga data keuanganmu dapat dimuat. Jika tanda ini belum muncul, periksa koneksi dashboard terlebih dahulu.",
   },
   {
     id: "theme",
@@ -26,7 +25,7 @@ export const mainTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="theme-toggle"]',
     selectorMobile: '[data-tour="theme-toggle"]',
     title: "2. Atur Tampilan",
-    description: "Ganti Mode Gelap atau Mode Terang kapan saja sesuai kenyamananmu.",
+    description: "Ketuk ikon matahari atau bulan di kanan atas untuk berganti Mode Terang dan Mode Gelap. Pengaturan ini hanya mengubah tampilan, bukan data keuanganmu.",
     advanceOnTargetClick: false,
   },
   {
@@ -40,10 +39,10 @@ export const mainTourSteps: TourStep[] = [
   {
     id: "main-menu",
     route: "/",
-    selectorDesktop: '[data-tour="main-menu"]',
-    selectorMobile: '[data-tour="main-menu"]',
+    selectorDesktop: '[data-tour="main-menu-heading"]',
+    selectorMobile: '[data-tour="main-menu-heading"]',
     title: "4. Menu Utama",
-    description: "Semua fitur utama ada di sini: Transaction, Wallet, Budget, Asset, Calculator, Goals, Protection, Report, Community, AI Assistant, dan Guide.",
+    description: "Ketuk judul Menu Utama untuk membuka atau menyembunyikan daftar fitur. Geser halaman seperti biasa untuk melihat bagian lain—petunjuk ini tidak mengunci navigasi.",
   },
   {
     id: "navigation",
@@ -51,7 +50,7 @@ export const mainTourSteps: TourStep[] = [
     selectorDesktop: '[data-tour="desktop-sidebar"]',
     selectorMobile: '[data-tour="mobile-bottom-nav"]',
     title: "5. Navigasi",
-    description: "Gunakan navigasi utama untuk berpindah halaman dengan cepat. Di mobile, gunakan bar navigasi di bagian bawah.",
+    description: "Di desktop, gunakan sidebar di sebelah kiri. Di ponsel, gunakan navigasi bawah atau buka menu dari tombol ☰. Kamu tetap bisa menggulir halaman saat tur berjalan.",
     advanceOnTargetClick: false,
   },
 ];
