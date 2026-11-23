@@ -6,6 +6,7 @@ import { getTourSteps } from "../lib/tourSteps";
 type StartDetail = { type?: "main" | "page" | "usage"; route?: string };
 
 const DONE_KEY = "wp_tour_done_v4";
+const WELCOME_SEEN_KEY = "wp_welcome_seen_v1";
 const ACTIVE_TOUR_KEY = "wp_active_tour_v1";
 
 function storageDone() {
@@ -14,6 +15,14 @@ function storageDone() {
 
 function storageSetDone() {
   try { localStorage.setItem(DONE_KEY, "1"); } catch {}
+}
+
+function storageWelcomeSeen() {
+  try { return localStorage.getItem(WELCOME_SEEN_KEY) === "1"; } catch { return true; }
+}
+
+function storageSetWelcomeSeen() {
+  try { localStorage.setItem(WELCOME_SEEN_KEY, "1"); } catch {}
 }
 
 function selectorFor(step: TourStep) {
@@ -58,14 +67,27 @@ export function GuidedTour() {
     try {
       sessionStorage.setItem(ACTIVE_TOUR_KEY, JSON.stringify({ type: nextType, route: nextRoute, index: 0 }));
     } catch {}
-    if (nextType === "usage" && location.pathname !== nextRoute) {
+    if (nextType !== "page" && location.pathname !== nextRoute) {
       navigate(nextRoute);
     }
   };
 
   useEffect(() => {
+    if (!storageDone() && !storageWelcomeSeen()) {
+      setWelcomePrompt(true);
+    }
+  }, []);
+
+  useEffect(() => {
     const handler = (event: Event) => {
       const detail = (event as CustomEvent<StartDetail>).detail || { type: "main" };
+      if ((detail.type as string) === "welcome") {
+        setWelcomePrompt(true);
+        setUsagePrompt(false);
+        setCompletionPrompt(false);
+        setTour1CompletePrompt(false);
+        return;
+      }
       if (detail.type === "main") {
         setUsagePrompt(false);
         setCompletionPrompt(false);
@@ -361,11 +383,11 @@ export function GuidedTour() {
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 px-4">
         <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-[18px] bg-white p-5 shadow-[0_18px_60px_rgba(0,0,0,.2)] text-forest-900 dark:bg-[rgb(var(--c-surface))] dark:text-white">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#DDF7E8] text-[#0B6B47] text-xl">👋</div>
-          <h2 className="mt-3 text-[16px] font-bold">Selamat datang di Tour 1, Pengenalan Aplikasi</h2>
-          <p className="mt-1.5 text-[13px] leading-5 text-charcoal/65 dark:text-white/65">Kita kenalan dulu dengan navigasi dan bagian utama Wealthplanner. Setelah ini selesai, kamu akan ditawarkan Tour 2 untuk belajar cara menggunakan aplikasinya dari awal.</p>
+          <h2 className="mt-3 text-[18px] font-bold">Selamat datang di Wealthplanner!</h2>
+          <p className="mt-1.5 text-[13px] leading-5 text-charcoal/65 dark:text-white/65">Yuk, kenali bagian utama aplikasi melalui tur singkat. Petunjuk akan menyorot bagian yang sedang dijelaskan, sementara halaman tetap bisa kamu geser dan gulir.</p>
           <div className="mt-4 flex gap-2">
-            <button type="button" onClick={() => { storageSetDone(); setWelcomePrompt(false); }} className="flex-1 min-h-10 rounded-xl border border-charcoal/10 px-3 text-[12px] font-semibold text-charcoal/65 dark:border-white/10 dark:text-white/70">Nanti</button>
-            <button type="button" onClick={() => { setWelcomePrompt(false); start({ type: "main", route: "/" }); }} className="flex-1 min-h-10 rounded-xl bg-[#0B6B47] px-3 text-[12px] font-semibold text-white">Mulai Tour 1</button>
+            <button type="button" onClick={() => { storageSetWelcomeSeen(); setWelcomePrompt(false); }} className="flex-1 min-h-10 rounded-xl border border-charcoal/10 px-3 text-[12px] font-semibold text-charcoal/65 dark:border-white/10 dark:text-white/70">Nanti</button>
+            <button type="button" onClick={() => { storageSetWelcomeSeen(); setWelcomePrompt(false); start({ type: "main", route: "/" }); }} className="flex-1 min-h-10 rounded-xl bg-[#0B6B47] px-3 text-[12px] font-semibold text-white">Mulai Tur</button>
           </div>
         </div>
       </div>
