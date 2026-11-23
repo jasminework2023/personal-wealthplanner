@@ -21,14 +21,14 @@ import { HomeMonthlyCalendar } from "../components/HomeMonthlyCalendar";
 
 const PIE_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)"];
 const menus = [
-  { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction" },
   { key: "wallets", label: "Wallet", icon: Wallet, to: "/wallets" },
+  { key: "transaction", label: "Transaction", icon: ArrowLeftRight, to: "/transaction" },
   { key: "budget", label: "Budget", icon: PieChart, to: "/budgeting" },
   { key: "asset", label: "Asset", icon: TrendingUp, to: "/assets" },
+  { key: "debt", label: "Debt", icon: Landmark, to: "/debt" },
   { key: "calculator", label: "Calculator", icon: Calculator, to: "/calculator" },
   { key: "goals", label: "Goals", icon: Target, to: "/goals" },
   { key: "report", label: "Report", icon: Landmark, to: "/finance" },
-  { key: "debt", label: "Debt", icon: Landmark, to: "/debt" },
   { key: "protection", label: "Protection", icon: ShieldCheck, to: "/protection" },
   { key: "ai", label: "AI Assistant", icon: Bot, to: "/ai-assistant" },
   { key: "community", label: "Community", icon: ChartNoAxesCombined, soon: true },
