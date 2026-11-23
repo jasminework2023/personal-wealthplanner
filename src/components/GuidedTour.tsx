@@ -185,16 +185,34 @@ export function GuidedTour() {
       if (elementVisible && !modalOpen) {
         setTarget(element);
         window.setTimeout(() => {
-          element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+          // Align the target near the top so the guidance card has room below it.
+          // Centering a large card can leave no usable space and force the prompt
+          // to overlap the very content it is explaining.
+          element.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
           window.setTimeout(() => {
-            const nextRect = element.getBoundingClientRect();
+            let nextRect = element.getBoundingClientRect();
+            const guideSpace = 210;
+            const bottomOverflow = nextRect.bottom + guideSpace - window.innerHeight;
+            if (bottomOverflow > 0) {
+              window.scrollBy({ top: bottomOverflow + 16, behavior: "smooth" });
+              window.setTimeout(() => {
+                nextRect = element.getBoundingClientRect();
+                if (nextRect.width > 0 && nextRect.height > 0) {
+                  setWaiting(false);
+                  setRect(nextRect);
+                } else {
+                  find();
+                }
+              }, 320);
+              return;
+            }
             if (nextRect.width > 0 && nextRect.height > 0) {
               setWaiting(false);
               setRect(nextRect);
             } else {
               find();
             }
-          }, 260);
+          }, 320);
         }, 20);
         return;
       }
