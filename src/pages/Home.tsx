@@ -226,7 +226,7 @@ export function Home() {
 
       </div>
 
-      <div className="hidden md:grid md:grid-cols-2 gap-3 items-stretch">
+      <div data-tour="home-assets-budget-desktop" className="hidden md:grid md:grid-cols-2 gap-3 items-stretch">
         <div role="button" tabIndex={0}
           onClick={() => navigate("/finance")}
           onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); navigate("/finance"); } }}
@@ -282,7 +282,7 @@ export function Home() {
       </div>
 
       <section className="md:hidden order-1">
-        <div ref={summaryScrollRef} className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div ref={summaryScrollRef} data-tour="home-assets-budget-mobile" className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="w-full min-w-full snap-start pr-0">
             <div className="home-mobile-asset-card h-[240px] w-full min-w-0 overflow-hidden rounded-[20px] border border-[#3A3B3D] bg-[#292A2D] p-4 text-[#F5F5F5] shadow-[0_12px_36px_rgba(17,24,39,.10)]">
               <div className="flex items-center justify-between gap-3">
