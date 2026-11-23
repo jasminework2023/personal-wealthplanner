@@ -51,7 +51,7 @@ function Button({ children, variant="primary", size, onClick, icon, iconRight, s
     border:variant==="outline" || variant==="secondary" ? "1px solid var(--calc-border)" : "1px solid transparent",
     padding:"0 15px", fontSize:13, fontWeight:800, cursor:"pointer",
     background:variant==="primary" ? "var(--calc-primary)" : "var(--calc-card)",
-    color:"var(--calc-text)",
+    color:variant==="primary" ? "var(--calc-primary-ink)" : "var(--calc-text)",
     ...style
   }}>{icon}{children}{iconRight}</button>;
 }
@@ -1839,10 +1839,10 @@ function CalcLayout({ inputs, results, primaryResults = [], onSave, onNavigate, 
       </div>
 
       <style>{`
-.wp-calculator{--calc-bg:#F4F5F7;--calc-card:#FFFFFF;--calc-border:#E5E7EB;--calc-surface:#ECEEF2;--calc-text:#111827;--calc-muted:#6B7280;--calc-emerald:#0E9F6E;--calc-blue:#2563EB;--calc-positive:#047857;--calc-warning:#B45309;--calc-danger:#DC2626;--calc-result:linear-gradient(150deg,#FFFFFF 0%,#EEF2F7 55%,#DCEFE6 100%);--calc-primary:linear-gradient(145deg,#374151,#111827);--calc-progress:linear-gradient(90deg,#4ADE9F,#0E9F6E);color:var(--calc-text);font-family:Inter,system-ui,sans-serif}
-@media(prefers-color-scheme:dark){.wp-calculator{--calc-bg:#0A0B0E;--calc-card:#14161B;--calc-border:#24272F;--calc-surface:#1D2027;--calc-text:#F3F4F6;--calc-muted:#9CA3AF;--calc-emerald:#34D399;--calc-blue:#60A5FA;--calc-positive:#34D399;--calc-warning:#FBBF24;--calc-danger:#F87171;--calc-result:linear-gradient(150deg,#1A1D24 0%,#14161B 55%,#0F2219 100%);--calc-primary:linear-gradient(145deg,#FFFFFF,#C9CED8);--calc-progress:linear-gradient(90deg,#6EE7B7,#34D399)}}
-:root[data-theme="light"] .wp-calculator{--calc-bg:#F4F5F7;--calc-card:#FFFFFF;--calc-border:#E5E7EB;--calc-surface:#ECEEF2;--calc-text:#111827;--calc-muted:#6B7280;--calc-emerald:#0E9F6E;--calc-blue:#2563EB;--calc-positive:#047857;--calc-warning:#B45309;--calc-danger:#DC2626;--calc-result:linear-gradient(150deg,#FFFFFF 0%,#EEF2F7 55%,#DCEFE6 100%);--calc-primary:linear-gradient(145deg,#374151,#111827);--calc-progress:linear-gradient(90deg,#4ADE9F,#0E9F6E)}
-:root[data-theme="dark"] .wp-calculator{--calc-bg:#0A0B0E;--calc-card:#14161B;--calc-border:#24272F;--calc-surface:#1D2027;--calc-text:#F3F4F6;--calc-muted:#9CA3AF;--calc-emerald:#34D399;--calc-blue:#60A5FA;--calc-positive:#34D399;--calc-warning:#FBBF24;--calc-danger:#F87171;--calc-result:linear-gradient(150deg,#1A1D24 0%,#14161B 55%,#0F2219 100%);--calc-primary:linear-gradient(145deg,#FFFFFF,#C9CED8);--calc-progress:linear-gradient(90deg,#6EE7B7,#34D399)}
+.wp-calculator{--calc-bg:#F4F5F7;--calc-card:#FFFFFF;--calc-border:#E5E7EB;--calc-surface:#ECEEF2;--calc-text:#111827;--calc-muted:#6B7280;--calc-emerald:#0E9F6E;--calc-blue:#2563EB;--calc-positive:#047857;--calc-warning:#B45309;--calc-danger:#DC2626;--calc-result:linear-gradient(150deg,#FFFFFF 0%,#EEF2F7 55%,#DCEFE6 100%);--calc-primary:linear-gradient(145deg,#374151,#111827);--calc-primary-ink:#FFFFFF;--calc-progress:linear-gradient(90deg,#4ADE9F,#0E9F6E);color:var(--calc-text);font-family:Inter,system-ui,sans-serif}
+@media(prefers-color-scheme:dark){.wp-calculator{--calc-bg:#0A0B0E;--calc-card:#14161B;--calc-border:#24272F;--calc-surface:#1D2027;--calc-text:#F3F4F6;--calc-muted:#9CA3AF;--calc-emerald:#34D399;--calc-blue:#60A5FA;--calc-positive:#34D399;--calc-warning:#FBBF24;--calc-danger:#F87171;--calc-result:linear-gradient(150deg,#1A1D24 0%,#14161B 55%,#0F2219 100%);--calc-primary:linear-gradient(145deg,#FFFFFF,#C9CED8);--calc-primary-ink:#111827;--calc-progress:linear-gradient(90deg,#6EE7B7,#34D399)}}
+:root[data-theme="light"] .wp-calculator{--calc-bg:#F4F5F7;--calc-card:#FFFFFF;--calc-border:#E5E7EB;--calc-surface:#ECEEF2;--calc-text:#111827;--calc-muted:#6B7280;--calc-emerald:#0E9F6E;--calc-blue:#2563EB;--calc-positive:#047857;--calc-warning:#B45309;--calc-danger:#DC2626;--calc-result:linear-gradient(150deg,#FFFFFF 0%,#EEF2F7 55%,#DCEFE6 100%);--calc-primary:linear-gradient(145deg,#374151,#111827);--calc-primary-ink:#FFFFFF;--calc-progress:linear-gradient(90deg,#4ADE9F,#0E9F6E)}
+:root[data-theme="dark"] .wp-calculator{--calc-bg:#0A0B0E;--calc-card:#14161B;--calc-border:#24272F;--calc-surface:#1D2027;--calc-text:#F3F4F6;--calc-muted:#9CA3AF;--calc-emerald:#34D399;--calc-blue:#60A5FA;--calc-positive:#34D399;--calc-warning:#FBBF24;--calc-danger:#F87171;--calc-result:linear-gradient(150deg,#1A1D24 0%,#14161B 55%,#0F2219 100%);--calc-primary:linear-gradient(145deg,#FFFFFF,#C9CED8);--calc-primary-ink:#111827;--calc-progress:linear-gradient(90deg,#6EE7B7,#34D399)}
 .wp-calc-grid{display:grid!important;grid-template-columns:1fr!important;gap:14px!important}.wp-calc-results-column{display:flex;flex-direction:column;gap:12px;min-width:0}.wp-calc-field{display:flex;flex-direction:column}
 .wp-calc-label{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--calc-muted);margin-bottom:7px}.wp-calc-affix{height:46px;padding:0 11px;display:flex;align-items:center;background:var(--calc-surface);border:1px solid var(--calc-border);color:var(--calc-muted);font-size:12px}
 .wp-calc-slider-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}.wp-calc-slider-head label{font-size:12px;font-weight:600;color:var(--calc-text)}.wp-calc-slider-head span{font-size:12px;font-weight:800;color:var(--calc-text);font-variant-numeric:tabular-nums}.wp-calc-range{width:100%;height:6px;accent-color:var(--calc-emerald);margin:4px 0 10px}
@@ -1915,15 +1915,13 @@ export function CalculatorDetail({ id, onBack, onSaveResult, onNavigate }) {
   const meta=CALCULATOR_META.find(x=>x.id===id)||CALCULATOR_META[0];
   return <div className="wp-calculator" style={{display:"grid",gap:14}}>
     <style>{`
-      .wp-calculator .calc-detail-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-      .wp-calculator .calc-back{min-height:44px;border:0;background:transparent;color:var(--calc-muted);font-size:14px;padding:0;text-align:left}
-      .wp-calculator .calc-theme{width:44px;height:44px;border-radius:50%;border:1px solid var(--calc-border);background:var(--calc-card);color:var(--calc-text);display:flex;align-items:center;justify-content:center}
+      .wp-calculator .calc-detail-top{display:flex;align-items:center;gap:10px}
+      .wp-calculator .calc-back{min-height:44px;border:0;background:transparent;color:var(--calc-text);font-size:15px;font-weight:700;padding:0;text-align:left}
       .wp-calculator .calc-detail-title{font-size:26px;line-height:1.1;font-weight:800;letter-spacing:-.03em;color:var(--calc-text);margin:0}
       .wp-calculator .calc-detail-subtitle{margin:2px 0 0;font-size:13px;color:var(--calc-muted)}
     `}</style>
     <div className="calc-detail-top">
-      <button type="button" className="calc-back" onClick={onBack}>{isId ? "← Semua kalkulator" : "← All calculators"}</button>
-      <button type="button" className="calc-theme" onClick={() => { const current=document.documentElement.dataset.theme || (window.matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light"); document.documentElement.dataset.theme=current==="dark"?"light":"dark"; window.dispatchEvent(new Event("wealthplanner:theme-changed")); }} aria-label="Ganti tema">☾</button>
+      <button type="button" className="calc-back" onClick={onBack}>{isId ? `← ${id === "rumah" ? "KPR/KPA" : meta.title}` : `← ${id === "rumah" ? "Mortgage" : (meta.titleEn || meta.title)}`}</button>
     </div>
     <div><h1 className="calc-detail-title">{!isId && meta.titleEn ? meta.titleEn : meta.title}</h1><p className="calc-detail-subtitle">{!isId && meta.descEn ? meta.descEn : meta.desc}</p></div>
     <CalculatorBody id={id} onSaveResult={onSaveResult} onNavigate={onNavigate}/>
