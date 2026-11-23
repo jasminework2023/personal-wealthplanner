@@ -317,6 +317,7 @@ export function AssetTrackerManaged({
   return (
     <div className="space-y-3">
       <section
+        data-tour="asset-total"
         className="relative isolate overflow-hidden rounded-[14px] bg-gradient-to-br from-[#374151] via-[#1F2937] to-[#111827] p-4 text-white shadow-float sm:p-5"
       >
         <div className="min-w-0">
