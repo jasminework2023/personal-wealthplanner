@@ -87,7 +87,7 @@ export function FinancialProtection() {
   };
   const toggleHint = (key: string) => setHintOpen((prev) => prev === key ? null : key);
 
-  return <div className="financial-protection-page flex flex-col gap-3">
+  return <div data-tour="protection-page" className="financial-protection-page flex flex-col gap-3">
     <Card className="overflow-hidden !p-4 bg-[#292A2D] text-white dark:bg-[rgb(var(--c-surface))] dark:text-[rgb(var(--c-charcoal))]">
       <div className="flex flex-col gap-0">
         <div className="flex items-center justify-between gap-3 border-b border-charcoal/8 py-3">
