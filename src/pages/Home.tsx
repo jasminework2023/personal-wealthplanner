@@ -220,7 +220,7 @@ export function Home() {
   return (
     <div className="home-page flex flex-col gap-3 bg-[#F4F5F7] pb-4" data-tour-loading={loading ? "true" : "false"}>
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/50">{today}</p><div className="flex items-center gap-2 md:hidden"><button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "main", route: "/" } }))} aria-label="Mulai panduan interaktif" className="flex h-8 w-8 items-center justify-center rounded-full border border-forest-100 bg-surface text-forest-800 shadow-sm dark:border-[#2B2D30] dark:bg-[#141516] dark:text-[#B9BDC3]"><HelpCircle size={15}/></button><ThemeToggle variant="compact" />{isRealData && !error && <span title="Data tersambung" aria-label="Data tersambung" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div></div>
+        <div className="flex items-center justify-between gap-2"><p className="text-[12px] font-medium text-charcoal/50">{today}</p><div className="flex items-center gap-2 md:hidden"><button type="button" onClick={() => window.dispatchEvent(new CustomEvent("wealthplanner:start-tour", { detail: { type: "main", route: "/" } }))} aria-label="Mulai panduan interaktif" className="flex h-8 w-8 items-center justify-center rounded-full border border-forest-100 bg-surface text-forest-800 shadow-sm dark:border-[#2B2D30] dark:bg-[#141516] dark:text-[#B9BDC3]"><HelpCircle size={15}/></button><ThemeToggle variant="compact" />{isRealData && !error && <span data-tour="connection-status" title="Data tersambung — token aktif" aria-label="Data tersambung — token aktif" className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#6EE7A8]/20 text-forest-700"><span className="text-[12px] font-bold">✓</span></span>}</div></div>
         <h1 className="font-display font-normal text-[26px] leading-[1.1] tracking-[-0.02em] text-forest-900">{(id ? greetingWord() : (new Date().getHours() < 11 ? "Good Morning" : new Date().getHours() < 15 ? "Good Afternoon" : new Date().getHours() < 18 ? "Good Afternoon" : "Good Evening"))}{displayName ? `, ${displayName}` : ""} <span aria-hidden>👋</span></h1>
         <p className="text-[13.5px] text-charcoal/60">{id ? `Ringkasan keuanganmu untuk ${monthLabel} ${currentYear}.` : `Your Financial Summary for ${monthLabel} ${currentYear}.`}</p>
 
@@ -337,7 +337,7 @@ export function Home() {
 
       <section data-tour="main-menu" className="order-2 md:order-none -mt-4 -mb-1">
         <div className="mb-0 flex items-center">
-          <button type="button" onClick={() => setMenuExpanded((value) => !value)} aria-expanded={menuExpanded} className="flex items-center gap-1.5 rounded-full px-0.5 py-0 text-[16px] font-bold tracking-[-0.02em] text-[#17191C] dark:text-[#F5F5F5]">
+          <button data-tour="main-menu-heading" type="button" onClick={() => setMenuExpanded((value) => !value)} aria-expanded={menuExpanded} className="flex items-center gap-1.5 rounded-full px-0.5 py-0 text-[16px] font-bold tracking-[-0.02em] text-[#17191C] dark:text-[#F5F5F5]">
             <span>{id ? "Menu Utama" : "Main Menu"}</span>
             <ChevronRight size={17} className={menuExpanded ? "-rotate-90" : "rotate-90"} />
           </button>
