@@ -1788,7 +1788,7 @@ function CalcLayout({ inputs, results, primaryResults = [], onSave, onNavigate, 
         results: "Hasil Perhitungan",
         save: "Simpan Hasil",
         saved: "Tersimpan",
-        protect: "Lindungi rencana ini",
+        protect: "Lindungi Rencana",
       }
     : {
         input: "Input",
@@ -1796,7 +1796,7 @@ function CalcLayout({ inputs, results, primaryResults = [], onSave, onNavigate, 
         results: "Calculation Results",
         save: "Save Result",
         saved: "Saved",
-        protect: "Protect this plan",
+        protect: "Protect Plan",
       };
 
   const save = () => {
