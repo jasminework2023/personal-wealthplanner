@@ -73,6 +73,7 @@ export function ThemeToggle({ variant = "bar" }: { variant?: "bar" | "compact" }
       onClick={toggle}
       aria-label={label}
       title={label}
+      data-tour="theme-toggle"
       className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[14px] text-white hover:bg-white/10 transition-all"
     >
       {isDark ? <Sun size={18} /> : <Moon size={18} />}
