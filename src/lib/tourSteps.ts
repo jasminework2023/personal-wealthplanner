@@ -184,7 +184,6 @@ export const usageTourSteps: TourStep[] = [
     selectorMobile: '[data-tour="asset-total"]',
     title: "13. Asset",
     description: "Pantau nilai aset, target aset, dan posisi investasimu dalam satu tampilan.",
-    advanceOnTargetClick: true
   },
   {
     id: "usage-budget",
@@ -193,7 +192,6 @@ export const usageTourSteps: TourStep[] = [
     selectorMobile: '[data-tour="budget-summary"]',
     title: "14. Budget",
     description: "Atur anggaran dan bandingkan rencana dengan realisasi pengeluaran.",
-    advanceOnTargetClick: true
   },
   {
     id: "usage-transaction",
@@ -202,7 +200,6 @@ export const usageTourSteps: TourStep[] = [
     selectorMobile: '[data-tour="transaction-add"]',
     title: "15. Transaksi",
     description: "Catat pemasukan, pengeluaran, tabungan, pembelian saham, dan transfer.",
-    advanceOnTargetClick: true
   },
   {
     id: "usage-calculator",
@@ -211,7 +208,6 @@ export const usageTourSteps: TourStep[] = [
     selectorMobile: '[data-tour="calculator-header"]',
     title: "16. Kalkulator",
     description: "Simulasikan kebutuhan pendidikan, Haji, KPR, pensiun, dan tujuan finansial lainnya.",
-    advanceOnTargetClick: true
   },
   {
     id: "usage-report",
@@ -220,7 +216,6 @@ export const usageTourSteps: TourStep[] = [
     selectorMobile: '[data-tour="report-summary"]',
     title: "17. Report",
     description: "Evaluasi pemasukan, pengeluaran, aset, dan arus kas melalui ringkasan laporan.",
-    advanceOnTargetClick: true
   },
   {
     id: "usage-goals",
@@ -229,7 +224,6 @@ export const usageTourSteps: TourStep[] = [
     selectorMobile: '[data-tour="goals-page"]',
     title: "18. Goals",
     description: "Susun target keuangan dan pantau progres pencapaiannya.",
-    advanceOnTargetClick: true
   },
   {
     id: "usage-protection",
@@ -238,7 +232,6 @@ export const usageTourSteps: TourStep[] = [
     selectorMobile: '[data-tour="protection-page"]',
     title: "19. Protection",
     description: "Petakan kebutuhan perlindungan finansial dan lihat potensi gap proteksi.",
-    advanceOnTargetClick: true
   },
   {
     id: "usage-ai-assistant",
@@ -247,7 +240,6 @@ export const usageTourSteps: TourStep[] = [
     selectorMobile: '[data-tour="ai-assistant-page"]',
     title: "20. AI Assistant",
     description: "Tanyakan kondisi keuanganmu dan dapatkan analisis berdasarkan data Wealthplanner.",
-    advanceOnTargetClick: true
   },
 ];
 export function getTourSteps(type: "main" | "page" | "usage", route: string): TourStep[] {
