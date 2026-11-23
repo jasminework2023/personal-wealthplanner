@@ -147,10 +147,10 @@ export function Guidance() {
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-charcoal/40">Alur Wealthplanner</p>
             <p className="mt-1 text-[15px] font-semibold text-forest-900">
-              Setup → Input kondisi saat ini → Catat → Hitung → Rencanakan → Monitor → Lindungi
+              Profile → Baseline keuangan → Saldo Wallet → Transaction → Budget → Asset Tracker
             </p>
             <p className="mt-2 text-[12px] leading-5 text-charcoal/55">
-              Ikuti urutan ini supaya data yang kamu masukkan saling terhubung dan hasil perencanaan menjadi lebih relevan.
+              Ikuti urutan ini agar saldo awal, transaksi, anggaran, dan aset tercatat dengan rapi sejak awal.
             </p>
           </div>
         </div>
@@ -201,155 +201,108 @@ export function Guidance() {
       <section>
         <SectionTitle
           number="02"
-          title="Sekarang, saatnya mulai menggunakan App!"
-          subtitle="Ikuti urutannya dari Setup sampai monitoring supaya Wealthplanner benar-benar bekerja berdasarkan kondisi keuanganmu."
+          title="Setup awal: ikuti 6 langkah ini"
+          subtitle="Mulai dari profil, siapkan rekening dan saldo awal, lalu catat transaksi dan aset. Ikuti urutan ini agar laporanmu terbentuk dengan benar."
         />
 
         <div className="grid gap-4">
-          <GuideCard icon={Settings2} tone="bg-forest-50 text-forest-700" title="1. Mulai dari Profile">
-            <p>Profile adalah titik awal untuk menyiapkan identitas dan preferensi aplikasi.</p>
+          <GuideCard icon={Settings2} tone="bg-forest-50 text-forest-700" title="1. Bereskan Profile">
+            <p>Lengkapi profil lebih dulu supaya aplikasi mengenali preferensi dan pengaturan dasarmu.</p>
             <StepList steps={[
-              "Buka Sidebar (☰), lalu pilih Profile.",
-              "Scroll ke bagian bawah halaman.",
-              "Isi nama dan pilih bahasa yang ingin digunakan.",
-              "Simpan perubahan jika tombol simpan tersedia.",
+              "Buka Sidebar (☰), lalu pilih Profile atau Settings.",
+              "Lengkapi nama dan informasi profil yang tersedia.",
+              "Pilih bahasa aplikasi yang nyaman digunakan.",
+              "Periksa kembali pengaturan dan simpan perubahan jika diminta.",
             ]} />
-            <div className="mt-3"><FeatureButton to="/settings">Buka Profile</FeatureButton></div>
+            <div className="mt-3"><FeatureButton to="/settings">Buka Profile & Settings</FeatureButton></div>
           </GuideCard>
 
-          <GuideCard icon={CircleDollarSign} tone="bg-forest-50 text-forest-700" title="2. Setup Mesin Keuangan">
-            <p>Setup ini menentukan kategori yang akan dipakai saat kamu mencatat pemasukan, pengeluaran, dan tabungan.</p>
+          <GuideCard icon={CircleDollarSign} tone="bg-forest-50 text-forest-700" title="2. Atur baseline keuangan dan rekening">
+            <p>Sebelum membuat Wallet, tentukan dulu sumber pemasukan, kategori pengeluaran, tabungan/investasi, serta akun bank yang akan kamu gunakan. Pengaturannya ada di <strong className="text-forest-800">Settings → Pengaturan Baseline Keuangan</strong>.</p>
             <StepList steps={[
-              "Masuk ke Profile → Setup Mesin Keuangan.",
-              "Pilih bagian Pemasukan, Pengeluaran, atau Tabungan.",
-              "Ketuk + Add Category untuk menambah kategori yang belum tersedia.",
-              "Centang kategori yang benar-benar ingin kamu gunakan.",
-              "Nonaktifkan/hapus kategori yang tidak relevan agar pencatatan tetap rapi.",
-              "Setelah setup selesai, kategori tersebut akan menjadi pilihan saat kamu mencatat transaksi dan membuat Budget.",
-            ]} />
-            <p className="mt-3">AI Membership juga dikelola dari area ini. Setelah pembayaran, akses AI gratis diberikan sesuai periode yang berlaku. Untuk penggunaan AI lebih banyak, gunakan AI PRO+.</p>
-            <div className="mt-3"><FeatureButton to="/settings">Buka Profile & Setup</FeatureButton></div>
-          </GuideCard>
-
-          <GuideCard icon={WalletCards} tone="bg-forest-50 text-forest-700" title="3. Isi kondisi uangmu — Wallet">
-            <p>Wallet dipakai untuk mencatat <strong>tempat uang disimpan</strong>, misalnya cash, rekening bank, atau wallet lain.</p>
-            <StepList steps={[
-              "Buka Wallet dari Menu Utama.",
-              "Ketuk Tambah Wallet.",
-              "Pilih/isi nama Wallet dan jenisnya sesuai kebutuhan.",
-              "Masukkan saldo awal agar posisi uangmu mulai dari angka yang benar.",
-              "Simpan Wallet.",
-              "Kalau uang berpindah antar-Wallet, gunakan Transfer supaya saldo kedua Wallet ikut menyesuaikan dan tidak dianggap sebagai pemasukan baru.",
+              "Buka Settings, lalu cari bagian Pengaturan Baseline Keuangan.",
+              "Atur bagian Pemasukan: pilih sumber pemasukan yang sesuai, misalnya gaji, bonus, komisi, atau usaha.",
+              "Atur bagian Pengeluaran: pilih kategori yang memang kamu gunakan, misalnya makan, transportasi, tempat tinggal, dan tagihan.",
+              "Atur bagian Tabungan & Investasi: pilih kategori yang relevan dengan kebiasaan menyisihkan atau mengembangkan dana.",
+              "Atur bagian Akun Bank/rekening yang akan digunakan untuk pencatatan.",
+              "Tambahkan kategori sendiri dengan tombol + jika belum tersedia. Pilih yang benar-benar dipakai agar daftar tetap rapi.",
+              "Simpan perubahan. Kategori ini akan menjadi pilihan saat mencatat transaksi dan menyusun budget.",
             ]} />
             <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
-              <p className="text-[12px] font-semibold text-amber-900">Catatan penting: kartu kredit</p>
-              <p className="mt-1 text-[11px] leading-5 text-amber-800">Jangan masukkan limit kartu kredit sebagai saldo Wallet atau aset. Limit adalah fasilitas pinjaman, bukan uang milikmu. Jika ingin memantau kartu kredit, catat tagihannya sebagai kewajiban/utang.</p>
+              <p className="text-[12px] font-semibold text-amber-900">Ingat</p>
+              <p className="mt-1 text-[11px] leading-5 text-amber-800">Limit kartu kredit bukan saldo rekening dan bukan aset. Jangan masukkan limit kartu kredit sebagai saldo Wallet.</p>
             </div>
+            <div className="mt-3"><FeatureButton to="/settings">Buka Settings</FeatureButton></div>
+          </GuideCard>
+
+          <GuideCard icon={WalletCards} tone="bg-forest-50 text-forest-700" title="3. Isi saldo saat ini di setiap Wallet">
+            <p>Setelah rekening disiapkan, masukkan saldo yang benar-benar kamu miliki sekarang. Ini adalah <strong className="text-forest-800">saldo awal/existing balance</strong>, bukan total pemasukan sepanjang bulan.</p>
+            <StepList steps={[
+              "Buka menu Wallet. Rekening yang sudah disiapkan dari Settings akan muncul di sini.",
+              "Buka satu Wallet, lalu pilih Atur wallet atau pengaturan saldo awal.",
+              "Isi saldo aktual rekening tersebut hari ini. Contoh: saldo BCA Rp4.500.000, saldo BSI Rp2.000.000, dan tunai Rp500.000.",
+              "Simpan, lalu ulangi untuk setiap Wallet yang kamu miliki.",
+              "Periksa Total Saldo Wallet dan pastikan sesuai dengan saldo rekening/kas sebenarnya.",
+              "Jika ada rekening yang belum tersedia, kembali ke Settings untuk melengkapi pengaturan baseline.",
+            ]} />
+            <p className="mt-2">Saldo awal menjadi titik mulai perhitungan. Transaksi yang dicatat setelahnya akan menambah atau mengurangi saldo Wallet secara otomatis.</p>
             <div className="mt-3"><FeatureButton to="/wallets">Buka Wallet</FeatureButton></div>
           </GuideCard>
 
-          <GuideCard icon={TrendingUp} tone="bg-forest-50 text-forest-700" title="4. Isi kondisi kekayaanmu — Asset">
-            <p>Asset dipakai untuk mencatat kekayaan yang kamu punya di luar saldo Wallet, dengan pengelompokan berdasarkan jenis aset.</p>
-            <StepList steps={[
-              "Buka Asset.",
-              "Pilih jenis aset: Liquid Asset, Fixed Asset, atau Variable Asset.",
-              "Liquid Asset: masukkan aset yang relatif mudah dicairkan dan pastikan tidak menduplikasi saldo yang sudah tercatat di Wallet.",
-              "Fixed Asset: masukkan aset tetap seperti rumah atau kendaraan beserta nilainya.",
-              "Variable Asset: masukkan aset yang nilainya berubah, seperti saham/investasi.",
-              "Untuk saham, masukkan ticker, jumlah saham, harga beli/rata-rata, dan data harga saat ini jika tersedia.",
-              "Simpan lalu cek kembali total Asset agar tidak ada aset yang tercatat dua kali.",
-            ]} />
-            <div className="mt-3"><FeatureButton to="/assets">Buka Asset</FeatureButton></div>
-          </GuideCard>
-
-          <GuideCard icon={PiggyBank} tone="bg-forest-50 text-forest-700" title="5. Atur batas pengeluaran — Budget">
-            <p>Budget dipakai untuk menentukan target pengeluaran dan membandingkannya dengan realisasi.</p>
-            <StepList steps={[
-              "Buka Budget.",
-              "Pilih periode Bulanan atau Tahunan.",
-              "Pilih kategori yang ingin diberi target.",
-              "Masukkan nominal target untuk setiap kategori.",
-              "Gunakan kategori yang sudah diaktifkan di Setup Mesin Keuangan.",
-              "Simpan budget, lalu pantau realisasinya dari waktu ke waktu.",
-            ]} />
-            <div className="mt-3"><FeatureButton to="/budgeting">Buka Budget</FeatureButton></div>
-          </GuideCard>
-
-          <GuideCard icon={Receipt} tone="bg-forest-50 text-forest-700" title="6. Mulai mencatat — Transaction">
-            <p>Setelah Wallet dan kategori siap, langsung praktik mencatat transaksi sehari-hari. Prinsipnya: catat apa yang terjadi, berapa nominalnya, dan uang berasal dari atau dibayarkan melalui rekening mana.</p>
+          <GuideCard icon={Receipt} tone="bg-forest-50 text-forest-700" title="4. Mulai catat transaksi">
+            <p>Setelah saldo awal benar, mulai catat aktivitas keuangan sejak tanggal kamu mulai menggunakan aplikasi. Pilih AI untuk menulis seperti chat atau Manual untuk mengisi satu per satu.</p>
             <div className="mt-3 rounded-xl border border-forest-100 bg-forest-50/60 p-3">
               <p className="text-[12px] font-semibold text-forest-900">Contoh menulis dengan AI</p>
               <div className="mt-2 space-y-2 text-[11px] leading-5 text-charcoal/70">
-                <p className="rounded-lg bg-white px-3 py-2">“Tadi makan siang Rp35.000 pakai BCA.”</p>
                 <p className="rounded-lg bg-white px-3 py-2">“Gaji masuk Rp8.000.000 ke BCA.”</p>
+                <p className="rounded-lg bg-white px-3 py-2">“Tadi makan siang Rp35.000 pakai BCA.”</p>
                 <p className="rounded-lg bg-white px-3 py-2">“Bayar listrik Rp450.000 dari Mandiri.”</p>
                 <p className="rounded-lg bg-white px-3 py-2">“Pindah uang Rp1.000.000 dari BCA ke BSI.”</p>
               </div>
-              <p className="mt-2 text-[10px] leading-4 text-forest-700">Semakin lengkap keterangan nominal, aktivitas, dan rekening, semakin mudah hasilnya kamu periksa.</p>
+              <p className="mt-2 text-[10px] leading-4 text-forest-700">Tulis aktivitas + nominal + rekening/metode pembayaran. Pilih contoh untuk mengisi kolom, lalu sesuaikan dengan transaksi kamu.</p>
             </div>
             <StepList steps={[
-              "Buka Transaction lalu ketuk Tambah Transaksi.",
-              "Pilih AI jika ingin menulis seperti chat, atau Manual jika ingin mengisi satu per satu.",
-              "Untuk AI, tulis aktivitas + nominal + metode pembayaran/rekening. Contoh: “Beli bensin Rp100.000 pakai BCA.”",
-              "Tekan Proses teks dengan AI, lalu periksa tipe transaksi, tanggal, kategori, deskripsi, dan nominal.",
-              "Untuk Manual, pilih tipe (Income, Expense, Saving, atau Transfer), isi wallet, kategori, deskripsi, dan nominal.",
-              "Pastikan transfer antar-wallet menggunakan tipe Transfer, bukan Expense, agar tidak terhitung sebagai pengeluaran.",
-              "Konfirmasi dan simpan. Setelah itu cek daftar transaksi dan Report untuk memastikan pencatatannya benar.",
-              "Setiap 1 penggunaan AI = 1 kredit.",
+              "Buka Transaction lalu pilih Tambah Transaksi.",
+              "Pilih AI atau Manual.",
+              "Untuk AI, tulis apa yang terjadi, nominal, dan Wallet yang digunakan. Proses teks dengan AI.",
+              "Periksa tipe transaksi, tanggal, kategori, deskripsi, nominal, dan Wallet hasil pembacaan AI sebelum menyimpan.",
+              "Untuk Manual, pilih Income, Expense, Saving, atau Transfer, lalu isi kolom yang diminta.",
+              "Jika memindahkan uang antar-rekening sendiri, gunakan Transfer, bukan Expense atau Income.",
+              "Simpan transaksi, lalu cek apakah transaksi muncul di daftar dan saldo Wallet berubah sesuai.",
             ]} />
             <div className="mt-3"><FeatureButton to="/transaction">Buka Transaction</FeatureButton></div>
           </GuideCard>
 
-          <GuideCard icon={Calculator} tone="bg-forest-50 text-forest-700" title="7. Hitung kebutuhanmu — Calculator">
-            <p>Calculator dipakai untuk mengubah tujuan finansial menjadi angka perencanaan.</p>
+          <GuideCard icon={PiggyBank} tone="bg-forest-50 text-forest-700" title="5. Atur Budget bulanan">
+            <p>Setelah kategori dan transaksi mulai tersedia, buat batas pengeluaran bulanan agar kamu bisa membandingkan rencana dengan realisasi.</p>
             <StepList steps={[
-              "Buka Calculator.",
-              "Pilih jenis kebutuhan yang ingin dihitung, misalnya Pendidikan, Haji, KPR, atau Pensiun.",
-              "Isi angka yang diminta sesuai kondisi dan targetmu.",
-              "Jalankan perhitungan untuk melihat estimasi kebutuhan dan rencana dana.",
-              "Gunakan hasilnya sebagai angka acuan untuk menentukan target di Goals.",
+              "Buka menu Budget.",
+              "Pilih periode bulanan dan bulan yang ingin diatur.",
+              "Pilih kategori pengeluaran yang ingin diberi batas, misalnya makan, transportasi, belanja, dan tagihan.",
+              "Masukkan nominal maksimal yang realistis untuk setiap kategori.",
+              "Simpan budget. Gunakan kategori yang sudah kamu aktifkan di baseline keuangan.",
+              "Pantau realisasi secara berkala. Jika pengeluaran mendekati batas, evaluasi sisa budget sebelum berbelanja lagi.",
             ]} />
-            <div className="mt-3"><FeatureButton to="/calculator">Buka Calculator</FeatureButton></div>
+            <div className="mt-3"><FeatureButton to="/budgeting">Buka Budget</FeatureButton></div>
           </GuideCard>
 
-          <GuideCard icon={Target} tone="bg-forest-50 text-forest-700" title="8. Buat tujuan — Goals">
-            <p>Goals menghubungkan hasil perencanaan dari Calculator dengan kondisi keuanganmu saat ini.</p>
+          <GuideCard icon={TrendingUp} tone="bg-forest-50 text-forest-700" title="6. Catat aset yang sudah kamu miliki">
+            <p>Masukkan posisi kekayaanmu saat ini agar Asset Tracker menampilkan gambaran aset dan komposisi portofolio. Catat nilai aset yang sudah dimiliki sekarang, bukan hanya transaksi pembeliannya.</p>
             <StepList steps={[
-              "Buka Goals.",
-              "Pilih atau buat tujuan finansial yang ingin dicapai.",
-              "Masukkan target sesuai hasil perhitungan atau target yang kamu tentukan.",
-              "Tentukan sumber dana yang akan dialokasikan, misalnya dari tabungan atau dana lain yang tersedia.",
-              "Pantau progres Goal dan sesuaikan alokasi jika kondisi keuangan berubah.",
+              "Buka Asset Tracker dari menu Asset atau Home.",
+              "Liquid Assets: periksa saldo kas dan rekening. Bagian ini terhubung dengan Wallet, jadi jangan input ulang saldo rekening yang sudah tercatat agar tidak double counting.",
+              "Investment Assets/Portfolio: tambahkan investasi yang sudah dimiliki seperti obligasi, emas, reksa dana, P2P lending, atau investasi lainnya. Isi nama/kategori dan nilai saat ini sesuai kolom yang tersedia.",
+              "Portfolio Saham/Stock Tracker: catat saham yang dimiliki dengan kode saham (ticker), jumlah lembar/lot, harga beli atau rata-rata pembelian, dan harga pasar saat ini jika diminta.",
+              "Real Assets/Aset Riil: tambahkan aset seperti rumah, tanah, kendaraan, atau aset berharga lainnya, lalu masukkan estimasi nilai saat ini.",
+              "Periksa Portfolio Allocation untuk melihat komposisi aset berdasarkan jenisnya.",
+              "Simpan dan cek total Asset Tracker. Pastikan saldo Wallet tidak tercatat dua kali sebagai aset tambahan.",
             ]} />
-            <div className="mt-3"><FeatureButton to="/goals">Buka Goals</FeatureButton></div>
+            <div className="mt-3 rounded-xl border border-forest-100 bg-forest-50/60 p-3">
+              <p className="text-[12px] font-semibold text-forest-900">Contoh data existing</p>
+              <p className="mt-1 text-[11px] leading-5 text-charcoal/65">Punya 10 lot saham BBCA, 5 gram emas, deposito Rp20 juta, dan mobil? Masukkan posisi kepemilikan dan estimasi nilai saat ini ke bagian yang sesuai. Tidak perlu membuat transaksi pembelian lama satu per satu hanya untuk membentuk saldo aset awal.</p>
+            </div>
+            <div className="mt-3"><FeatureButton to="/assets">Buka Asset Tracker</FeatureButton></div>
           </GuideCard>
-
-          <GuideCard icon={ChartNoAxesCombined} tone="bg-forest-50 text-forest-700" title="9. Cek kesehatan keuangan — Report">
-            <p>Report dipakai untuk membaca kondisi keuangan dari data yang sudah kamu masukkan.</p>
-            <StepList steps={[
-              "Buka Report.",
-              "Lihat laporan Income Statement untuk memahami pemasukan dan pengeluaran.",
-              "Lihat Cashflow untuk melihat arus uang.",
-              "Lihat Asset untuk melihat posisi kekayaanmu.",
-              "Gunakan hasil Report untuk menemukan bagian yang perlu diperbaiki atau diperbarui.",
-            ]} />
-            <div className="mt-3"><FeatureButton to="/finance">Buka Report</FeatureButton></div>
-          </GuideCard>
-
-          <GuideCard icon={ShieldCheck} tone="bg-rose-50 text-rose-700" title="10. Lengkapi perlindungan & konsultasi — Protection + AI Assistant">
-            <p>Protection membantu kamu mengecek kebutuhan perlindungan finansial dan berkonsultasi dengan konsultan asuransi manusia.</p>
-            <StepList steps={[
-              "Buka Protection.",
-              "Lihat kebutuhan perlindungan yang ingin kamu evaluasi.",
-              "Isi informasi yang diperlukan sesuai kondisi keuanganmu.",
-              "Gunakan hasilnya sebagai bahan diskusi.",
-              "Jika membutuhkan penjelasan atau rekomendasi produk, lanjutkan konsultasi dengan konsultan asuransi manusia.",
-              "Untuk konsultasi keuangan umum, buka AI Assistant dan tulis kondisi atau pertanyaanmu. Setiap penggunaan AI mengonsumsi 1 kredit selama akses AI-mu aktif.",
-            ]} />
-            <div className="mt-3"><FeatureButton to="/protection">Buka Protection</FeatureButton></div>
-          </GuideCard>
-
-
         </div>
       </section>
 
