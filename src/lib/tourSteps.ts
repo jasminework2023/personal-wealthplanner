@@ -154,6 +154,38 @@ export const usageTourSteps: TourStep[] = [
     advanceOnTargetClick: true
   },
   {
+    id: "usage-wallet-total",
+    route: "/wallets",
+    selectorDesktop: '[data-tour="wallet-summary"]',
+    selectorMobile: '[data-tour="wallet-summary"]',
+    title: "10. Total Saldo Wallet",
+    description: "Bagian ini menjumlahkan saldo seluruh wallet aktif. Nilainya mengikuti saldo awal serta transaksi masuk, keluar, dan transfer yang tercatat.",
+  },
+  {
+    id: "usage-wallet-add",
+    route: "/wallets",
+    selectorDesktop: '[data-tour="wallet-add"]',
+    selectorMobile: '[data-tour="wallet-add"]',
+    title: "11. Tambah Wallet",
+    description: "Tekan + Tambah untuk mengatur rekening atau dompet baru melalui Pengaturan. Setelah disimpan, wallet akan muncul di daftar ini.",
+  },
+  {
+    id: "usage-wallet-cards",
+    route: "/wallets",
+    selectorDesktop: '[data-tour="wallet-list-heading"]',
+    selectorMobile: '[data-tour="wallet-list-heading"]',
+    title: "12. Daftar Wallet",
+    description: "Setiap kartu menunjukkan saldo dan ringkasan transaksi wallet. Ketuk kartu untuk membuka detail dan riwayatnya. Gulir halaman untuk melihat wallet lain; kartu petunjuk ini juga bisa digeser agar tidak menutupi tampilan.",
+  },
+  {
+    id: "usage-wallet-transfer",
+    route: "/wallets",
+    selectorDesktop: '[data-tour="wallet-transfer"]',
+    selectorMobile: '[data-tour="wallet-transfer"]',
+    title: "13. Transfer Antar-Wallet",
+    description: "Gunakan Transfer untuk memindahkan saldo dari satu wallet ke wallet lain. Transfer tidak dihitung sebagai pengeluaran baru.",
+  },
+  {
     id: "usage-asset",
     route: "/assets",
     selectorDesktop: '[data-tour="menu-asset"]',
