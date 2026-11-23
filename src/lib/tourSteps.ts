@@ -190,7 +190,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/assets",
     selectorDesktop: '[data-tour="menu-asset"]',
     selectorMobile: '[data-tour="menu-asset"]',
-    title: "10. Asset",
+    title: "14. Asset",
     description: "Klik Asset untuk melihat aset, target aset, dan posisi investasi yang kamu miliki.",
     advanceOnTargetClick: true
   },
@@ -199,7 +199,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/budgeting",
     selectorDesktop: '[data-tour="menu-budget"]',
     selectorMobile: '[data-tour="menu-budget"]',
-    title: "11. Budget",
+    title: "15. Budget",
     description: "Klik Budget untuk mengatur anggaran dan membandingkannya dengan realisasi pengeluaran.",
     advanceOnTargetClick: true
   },
@@ -208,7 +208,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/transaction",
     selectorDesktop: '[data-tour="menu-transaction"]',
     selectorMobile: '[data-tour="menu-transaction"]',
-    title: "12. Transaksi",
+    title: "16. Transaksi",
     description: "Klik Transaction untuk mencatat pemasukan, pengeluaran, tabungan, pembelian saham, atau transfer.",
     advanceOnTargetClick: true
   },
@@ -217,7 +217,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/calculator",
     selectorDesktop: '[data-tour="menu-calculator"]',
     selectorMobile: '[data-tour="menu-calculator"]',
-    title: "13. Kalkulator",
+    title: "17. Kalkulator",
     description: "Klik Financial Calculator untuk menghitung kebutuhan pendidikan, Haji, KPR, pensiun, dan lainnya.",
     advanceOnTargetClick: true
   },
@@ -226,7 +226,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/finance",
     selectorDesktop: '[data-tour="menu-report"]',
     selectorMobile: '[data-tour="menu-report"]',
-    title: "14. Report",
+    title: "18. Report",
     description: "Klik Report untuk mengevaluasi pemasukan, pengeluaran, aset, dan arus kas.",
     advanceOnTargetClick: true
   },
@@ -235,7 +235,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/goals",
     selectorDesktop: '[data-tour="menu-goals"]',
     selectorMobile: '[data-tour="menu-goals"]',
-    title: "15. Goals",
+    title: "19. Goals",
     description: "Klik Goals untuk membuat dan memantau target keuanganmu.",
     advanceOnTargetClick: true
   },
@@ -244,7 +244,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/protection",
     selectorDesktop: '[data-tour="menu-protection"]',
     selectorMobile: '[data-tour="menu-protection"]',
-    title: "16. Protection",
+    title: "20. Protection",
     description: "Klik Protection untuk melihat kebutuhan perlindungan finansial dan gap proteksimu.",
     advanceOnTargetClick: true
   },
@@ -253,7 +253,7 @@ export const usageTourSteps: TourStep[] = [
     route: "/ai-assistant",
     selectorDesktop: '[data-tour="menu-ai-assistant"]',
     selectorMobile: '[data-tour="menu-ai-assistant"]',
-    title: "17. AI Assistant",
+    title: "21. AI Assistant",
     description: "Klik AI Assistant untuk bertanya dan menganalisis kondisi keuangan berdasarkan data Wealthplanner.",
     advanceOnTargetClick: true
   },
