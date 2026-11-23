@@ -537,11 +537,11 @@ export function GuidedTour() {
         }
       `}</style>
       {!waiting && (highlight ? <>
-        <div className="absolute z-0 bg-black/58 wp-tour-fade" style={{ left: 0, top: 0, width: viewportW, height: highlight.top }} />
-        <div className="absolute z-0 bg-black/58 wp-tour-fade" style={{ left: 0, top: highlight.top, width: highlight.left, height: highlight.height }} />
-        <div className="absolute z-0 bg-black/58 wp-tour-fade" style={{ left: highlight.left + highlight.width, top: highlight.top, width: Math.max(0, viewportW - highlight.left - highlight.width), height: highlight.height }} />
-        <div className="absolute z-0 bg-black/58 wp-tour-fade" style={{ left: 0, top: highlight.top + highlight.height, width: viewportW, height: Math.max(0, viewportH - highlight.top - highlight.height) }} />
-      </> : <div className="absolute inset-0 z-0 bg-black/55 wp-tour-fade" style={{ animation: "wp-tour-fade 180ms ease-out" }} />)}
+        <div className="absolute z-0 wp-tour-fade" style={{ left: 0, top: 0, width: viewportW, height: highlight.top, backgroundColor: "rgba(0,0,0,0.62)" }} />
+        <div className="absolute z-0 wp-tour-fade" style={{ left: 0, top: highlight.top, width: highlight.left, height: highlight.height, backgroundColor: "rgba(0,0,0,0.62)" }} />
+        <div className="absolute z-0 wp-tour-fade" style={{ left: highlight.left + highlight.width, top: highlight.top, width: Math.max(0, viewportW - highlight.left - highlight.width), height: highlight.height, backgroundColor: "rgba(0,0,0,0.62)" }} />
+        <div className="absolute z-0 wp-tour-fade" style={{ left: 0, top: highlight.top + highlight.height, width: viewportW, height: Math.max(0, viewportH - highlight.top - highlight.height), backgroundColor: "rgba(0,0,0,0.62)" }} />
+      </> : <div className="absolute inset-0 z-0 wp-tour-fade" style={{ backgroundColor: "rgba(0,0,0,0.62)", animation: "wp-tour-fade 180ms ease-out" }} />)}
       {highlight && <div
         className="absolute z-10 rounded-[12px] border-[3px] border-[#32D583]"
         style={{ left: highlight.left, top: highlight.top, width: highlight.width, height: highlight.height, boxShadow: "0 0 0 2px rgba(50,213,131,.28), 0 0 22px rgba(50,213,131,.58)" }}
