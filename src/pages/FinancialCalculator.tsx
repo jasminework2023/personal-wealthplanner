@@ -50,8 +50,8 @@ function Button({ children, variant="primary", size, onClick, icon, iconRight, s
     borderRadius:14,
     border:variant==="outline" || variant==="secondary" ? "1px solid rgb(var(--c-border))" : "1px solid transparent",
     padding:"0 15px", fontSize:13, fontWeight:600, cursor:"pointer",
-    background:variant==="primary" ? "linear-gradient(145deg,#374151,#111827)" : "#FFFFFF",
-    color:variant==="primary" ? "#FFFFFF" : "rgb(var(--c-charcoal))",
+    background:variant==="primary" ? "var(--calc-primary)" : "var(--calc-card)",
+    color:var(--calc-text),
     ...style
   }}>{icon}{children}{iconRight}</button>;
 }
@@ -1835,42 +1835,21 @@ function CalcLayout({ inputs, results, primaryResults = [], onSave, onNavigate, 
       </div>
 
       <style>{`
-        .wp-calc-layout{color:rgb(var(--c-charcoal))}
-        .wp-calc-grid{display:grid!important;grid-template-columns:1fr!important;gap:16px!important}
-        .wp-calc-results-column,.wp-calc-input-column{min-width:0}
-        .wp-calc-results-column{display:flex;flex-direction:column;gap:14px}
-        .wp-calc-field{display:flex;flex-direction:column}
-        .wp-calc-label{display:block;font-size:12px;font-weight:600;color:rgb(var(--c-forest-800));margin-bottom:7px}
-        .wp-calc-affix{padding:0 11px;display:flex;align-items:center;background:rgb(var(--c-cream));border:1px solid rgb(var(--c-border));color:rgb(var(--c-muted));font-size:12px}
-        .wp-calc-slider-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
-        .wp-calc-slider-head label{font-size:12px;font-weight:600;color:rgb(var(--c-forest-800))}
-        .wp-calc-slider-head span{font-size:12px;font-weight:700;color:rgb(var(--c-charcoal));font-variant-numeric:tabular-nums}
-        .wp-calc-range{width:100%;height:6px;accent-color:#0E9F6E}
-        .wp-calc-result-tile{background:rgb(var(--c-surface));border:1px solid rgb(var(--c-border));border-radius:20px;padding:18px 20px;overflow:hidden;box-shadow:none;background-clip:padding-box}
-        .wp-calc-result-label{font-size:12px;font-weight:700;letter-spacing:.08em;color:rgb(var(--c-muted));text-transform:uppercase}
-        .wp-calc-result-value{font-size:32px;line-height:1.08;font-weight:800;color:rgb(var(--c-charcoal));margin-top:8px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-        .wp-calc-result-sub{font-size:12px;color:rgb(var(--c-muted));margin-top:8px;line-height:1.45}
-        .wp-calc-actions{display:flex;gap:10px}
-        .wp-calc-actions>button{flex:1 1 0;min-width:0}
-        .wp-calculator .card{background:rgb(var(--c-surface));border:1px solid rgb(var(--c-border));border-radius:20px;padding:18px 20px}
-        .wp-calculator .card-tight{padding:12px 14px}
-        .wp-calculator .row{display:flex;align-items:center}
-        .wp-calculator .row-between{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px 12px}
-        .wp-calculator .row-between>*{min-width:0}
-        .wp-calculator .row-between>*:last-child{margin-left:auto;text-align:right;overflow-wrap:anywhere;word-break:break-word}
-        .wp-calculator .stack{display:flex;flex-direction:column}
-        .wp-calculator .muted{color:rgb(var(--c-muted))}
-        .wp-calculator .ink-2{color:rgb(var(--c-forest-800))}
-        .wp-calculator .mono{font-variant-numeric:tabular-nums}
-        .wp-calculator .divider{height:1px;background:rgb(var(--c-border))}
-        @media(min-width:1181px){
-          .wp-calculator .wp-calc-grid{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)!important;gap:20px!important}
-        }
-        @media(max-width:420px){
-          .wp-calculator [style*="1.1fr"]{grid-template-columns:1fr!important}
-          .wp-calc-actions{gap:8px}
-          .wp-calc-actions button{font-size:12px}
-        }
+.wp-calculator{--calc-bg:#F4F5F7;--calc-card:#FFFFFF;--calc-border:#E5E7EB;--calc-surface:#ECEEF2;--calc-text:#111827;--calc-muted:#6B7280;--calc-emerald:#0E9F6E;--calc-blue:#2563EB;--calc-positive:#047857;--calc-warning:#B45309;--calc-danger:#DC2626;--calc-result:linear-gradient(150deg,#FFFFFF 0%,#EEF2F7 55%,#DCEFE6 100%);--calc-primary:linear-gradient(145deg,#374151,#111827);--calc-progress:linear-gradient(90deg,#4ADE9F,#0E9F6E);color:var(--calc-text);font-family:Inter,system-ui,sans-serif}
+@media(prefers-color-scheme:dark){.wp-calculator{--calc-bg:#0A0B0E;--calc-card:#14161B;--calc-border:#24272F;--calc-surface:#1D2027;--calc-text:#F3F4F6;--calc-muted:#9CA3AF;--calc-emerald:#34D399;--calc-blue:#60A5FA;--calc-positive:#34D399;--calc-warning:#FBBF24;--calc-danger:#F87171;--calc-result:linear-gradient(150deg,#1A1D24 0%,#14161B 55%,#0F2219 100%);--calc-primary:linear-gradient(145deg,#FFFFFF,#C9CED8);--calc-progress:linear-gradient(90deg,#6EE7B7,#34D399)}}
+:root[data-theme="light"] .wp-calculator{--calc-bg:#F4F5F7;--calc-card:#FFFFFF;--calc-border:#E5E7EB;--calc-surface:#ECEEF2;--calc-text:#111827;--calc-muted:#6B7280;--calc-emerald:#0E9F6E;--calc-blue:#2563EB;--calc-positive:#047857;--calc-warning:#B45309;--calc-danger:#DC2626;--calc-result:linear-gradient(150deg,#FFFFFF 0%,#EEF2F7 55%,#DCEFE6 100%);--calc-primary:linear-gradient(145deg,#374151,#111827);--calc-progress:linear-gradient(90deg,#4ADE9F,#0E9F6E)}
+:root[data-theme="dark"] .wp-calculator{--calc-bg:#0A0B0E;--calc-card:#14161B;--calc-border:#24272F;--calc-surface:#1D2027;--calc-text:#F3F4F6;--calc-muted:#9CA3AF;--calc-emerald:#34D399;--calc-blue:#60A5FA;--calc-positive:#34D399;--calc-warning:#FBBF24;--calc-danger:#F87171;--calc-result:linear-gradient(150deg,#1A1D24 0%,#14161B 55%,#0F2219 100%);--calc-primary:linear-gradient(145deg,#FFFFFF,#C9CED8);--calc-progress:linear-gradient(90deg,#6EE7B7,#34D399)}
+.wp-calc-grid{display:grid!important;grid-template-columns:1fr!important;gap:14px!important}.wp-calc-results-column{display:flex;flex-direction:column;gap:12px;min-width:0}.wp-calc-field{display:flex;flex-direction:column}
+.wp-calc-label{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--calc-muted);margin-bottom:7px}.wp-calc-affix{height:46px;padding:0 11px;display:flex;align-items:center;background:var(--calc-surface);border:1px solid var(--calc-border);color:var(--calc-muted);font-size:12px}
+.wp-calc-slider-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}.wp-calc-slider-head label{font-size:12px;font-weight:600;color:var(--calc-text)}.wp-calc-slider-head span{font-size:12px;font-weight:800;color:var(--calc-text);font-variant-numeric:tabular-nums}.wp-calc-range{width:100%;height:6px;accent-color:var(--calc-emerald);margin:4px 0 10px}
+.wp-calc-range::-webkit-slider-thumb{appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--calc-emerald)}.wp-calc-range::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--calc-emerald)}
+.wp-calc-primary-scroller{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;border-radius:20px}.wp-calc-primary-scroller::-webkit-scrollbar{display:none}.wp-calc-primary-slide{flex:0 0 100%;min-width:0;scroll-snap-align:start;background:var(--calc-result);border:1px solid var(--calc-border);border-radius:20px;padding:20px}
+.wp-calc-primary-head{display:flex;justify-content:space-between;gap:12px;color:var(--calc-muted);font-size:12px;font-weight:700;letter-spacing:.06em}.wp-calc-primary-value{margin-top:10px;font-size:34px;line-height:1.05;font-weight:800;letter-spacing:-.03em;color:var(--calc-text);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.wp-calc-primary-sub{margin-top:7px;font-size:12px;line-height:1.45;color:var(--calc-muted)}
+.wp-calc-primary-dots{display:flex;justify-content:center;gap:6px;margin-top:9px;height:6px}.wp-calc-primary-dots span{width:6px;height:6px;border-radius:999px;background:var(--calc-border)}.wp-calc-primary-dots span.on{width:18px;background:var(--calc-text)}
+.wp-calc-actions{display:flex;gap:10px}.wp-calc-actions>button{flex:1 1 0;min-width:0}.wp-calc-input-body{display:grid;gap:16px}.wp-calc-output-card{background:var(--calc-card);border:1px solid var(--calc-border);border-radius:20px;padding:18px;color:var(--calc-text)}.wp-calc-output-card>h3{font-size:16px;font-weight:700;margin:0 0 12px}.wp-calc-output-detail{min-width:0}.wp-calc-output-detail .wp-calc-legacy-result{display:none}
+.wp-calculator .card{background:var(--calc-card);border:1px solid var(--calc-border);border-radius:20px;padding:18px}.wp-calculator .card-tight{padding:12px 14px}.wp-calculator .row{display:flex;align-items:center}.wp-calculator .row-between{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px 12px}.wp-calculator .row-between>*{min-width:0}.wp-calculator .row-between>*:last-child{margin-left:auto;text-align:right;overflow-wrap:anywhere;word-break:break-word}.wp-calculator .stack{display:flex;flex-direction:column}.wp-calculator .muted{color:var(--calc-muted)}.wp-calculator .mono{font-variant-numeric:tabular-nums}.wp-calculator .divider{height:1px;background:var(--calc-border)}
+.wp-calculator input[type="text"],.wp-calculator input[inputmode],.wp-calculator input[type="number"]{min-height:46px;border-radius:14px;border:1px solid var(--calc-border);background:var(--calc-bg);color:var(--calc-text);font-family:Inter,system-ui,sans-serif}.wp-calculator .wp-calc-field input[inputmode="numeric"]{height:46px;font-size:15px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+@media(min-width:1181px){.wp-calculator .wp-calc-grid{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)!important;gap:20px!important}}@media(max-width:420px){.wp-calc-actions{gap:8px}.wp-calc-actions button{font-size:12px}.wp-calc-primary-value{font-size:32px}}
       `}</style>
     </div>
   );
@@ -1930,23 +1909,19 @@ export function CalculatorDetail({ id, onBack, onSaveResult, onNavigate }) {
   React.useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const isId = language === "id";
   const meta=CALCULATOR_META.find(x=>x.id===id)||CALCULATOR_META[0];
-  return <div className="wp-calculator" style={{display:"grid",gap:20}}><style>{`
-      
-      .wp-calculator .card{background:rgb(var(--c-surface));border:1px solid rgb(var(--c-border));border-radius:16px;padding:18px}
-      .wp-calculator .card-tight{padding:12px 14px}
-      .wp-calculator .row{display:flex;align-items:center}.wp-calculator .row-between{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:4px 12px}
-      .wp-calculator .row-between > *{min-width:0}
-      .wp-calculator .row-between > *:last-child{margin-left:auto;text-align:right;overflow-wrap:anywhere;word-break:break-word}
-      .wp-calculator .stack{display:flex;flex-direction:column}.wp-calculator .muted{color:rgb(var(--c-muted))}.wp-calculator .ink-2{color:rgb(var(--c-forest-800))}.wp-calculator .mono{font-variant-numeric:tabular-nums}.wp-calculator .divider{height:1px;background:rgb(var(--c-border))}
-      /* Any two-column inline grid (e.g. Komponen biaya rows) stacks to one
-         column on narrow screens instead of clipping the value inside a
-         too-narrow input. */
-      @media (max-width: 420px) {
-        .wp-calculator [style*="1.1fr"]{grid-template-columns:1fr !important}
-      }
+  return <div className="wp-calculator" style={{display:"grid",gap:14}}>
+    <style>{`
+      .wp-calculator .calc-detail-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+      .wp-calculator .calc-back{min-height:44px;border:0;background:transparent;color:var(--calc-muted);font-size:14px;padding:0;text-align:left}
+      .wp-calculator .calc-theme{width:44px;height:44px;border-radius:50%;border:1px solid var(--calc-border);background:var(--calc-card);color:var(--calc-text);display:flex;align-items:center;justify-content:center}
+      .wp-calculator .calc-detail-title{font-size:26px;line-height:1.1;font-weight:800;letter-spacing:-.03em;color:var(--calc-text);margin:0}
+      .wp-calculator .calc-detail-subtitle{margin:2px 0 0;font-size:13px;color:var(--calc-muted)}
     `}</style>
-    <button type="button" onClick={onBack} style={{width:"fit-content",border:0,background:"transparent",color:"rgb(var(--c-forest-800))",fontSize:13,cursor:"pointer",padding:0}}>{isId ? "← Semua kalkulator" : "← All calculators"}</button>
-    <div><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgb(var(--c-muted))"}}>FINANCIAL CALCULATOR</div><h1 style={{fontSize:26,lineHeight:1.1,color:"rgb(var(--c-charcoal))",margin:"7px 0 6px"}}>{!isId && meta.titleEn ? meta.titleEn : meta.title}</h1><p style={{margin:0,fontSize:13,color:"rgb(var(--c-forest-800))"}}>{!isId && meta.descEn ? meta.descEn : meta.desc}</p></div>
+    <div className="calc-detail-top">
+      <button type="button" className="calc-back" onClick={onBack}>{isId ? "← Semua kalkulator" : "← All calculators"}</button>
+      <button type="button" className="calc-theme" onClick={() => { const current=document.documentElement.dataset.theme || (window.matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light"); document.documentElement.dataset.theme=current==="dark"?"light":"dark"; window.dispatchEvent(new Event("wealthplanner:theme-changed")); }} aria-label="Ganti tema">☾</button>
+    </div>
+    <div><h1 className="calc-detail-title">{!isId && meta.titleEn ? meta.titleEn : meta.title}</h1><p className="calc-detail-subtitle">{!isId && meta.descEn ? meta.descEn : meta.desc}</p></div>
     <CalculatorBody id={id} onSaveResult={onSaveResult} onNavigate={onNavigate}/>
   </div>;
 }
