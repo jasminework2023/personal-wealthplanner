@@ -31,10 +31,10 @@ export const mainTourSteps: TourStep[] = [
   {
     id: "asset-budget",
     route: "/",
-    selectorDesktop: '[data-tour="home-assets-desktop"]',
-    selectorMobile: '[data-tour="home-assets-mobile"]',
+    selectorDesktop: '[data-tour="home-assets-budget-desktop"]',
+    selectorMobile: '[data-tour="home-assets-budget-mobile"]',
     title: "3. Asset & Budget Tracker",
-    description: "Geser kartu di mobile untuk melihat Asset atau Budget. Di sini kamu bisa memantau kondisi aset dan sisa anggaran.",
+    description: "Di desktop, lihat dua kartu yang disorot: Total Aset di kiri dan Sisa Anggaran di kanan. Di HP, geser kartu ke samping untuk berpindah dari Asset Tracker ke Budget Tracker. Ketuk kartu untuk membuka detailnya.",
   },
   {
     id: "main-menu",
