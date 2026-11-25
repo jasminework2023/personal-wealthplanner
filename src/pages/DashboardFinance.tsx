@@ -658,7 +658,7 @@ export function DashboardFinance({ initialTab = "networth" }: { initialTab?: "ne
                 <p className="text-[13px] font-semibold text-white/65">{id ? "Net Worth" : "Net Worth"}</p>
                 <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
                   <span className="shrink-0 text-[14px] font-semibold text-white/65">{totalNetWorth < 0 ? "−Rp" : "Rp"}</span>
-                  <span className="report-headline-amount min-w-0 font-extrabold leading-tight tracking-[-0.7px] tabular-nums text-white">{formatRupiah(Math.abs(totalNetWorth)).replace(/^Rp\\s?/, "")}</span>
+                  <span className="report-headline-amount min-w-0 font-extrabold leading-tight tracking-[-0.7px] tabular-nums text-white">{formatRupiah(Math.abs(totalNetWorth)).replace(/^Rp\s?/, "")}</span>
                 </div>
                 {totalNetWorth < 0 && <p className="mt-1 text-[11px] font-medium text-rose-200">{id ? "Kewajiban melebihi total aset" : "Liabilities exceed total assets"}</p>}
               </div>
