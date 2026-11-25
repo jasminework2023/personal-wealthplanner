@@ -625,7 +625,7 @@ export function DashboardFinance({ initialTab = "networth" }: { initialTab?: "ne
 
 
       {activeReportTab === "networth" && <>
-        <section data-tour="report-net-worth" className="w-full min-w-0 overflow-hidden rounded-[16px] bg-gradient-to-br from-[#123B2C] via-[#0F2F24] to-[#0B211A] p-4 text-white shadow-float sm:p-5">
+        <section data-tour="report-net-worth" className="w-full min-w-0 overflow-hidden rounded-[16px] bg-gradient-to-br from-[#374151] via-[#1F2937] to-[#111827] p-4 text-white shadow-float sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[13px] font-semibold text-white/65">{id ? "Total Kekayaan Bersih" : "Total Net Worth"}</p>
