@@ -12,7 +12,7 @@ import { Home, BarChart3, Target, UserRound, Plus, Sparkles, X, HelpCircle, Circ
 const titles: Record<string, string> = { "/wallets": "Wallet",
   "/assets": "Assets",
   "/": "Home",
-  "/finance": "Finance Report",
+  "/finance": "Net Worth Report",
   "/transactions": "Community",
   "/transaction": "Transaction",
   "/budgeting": "Budgeting & Realization",
@@ -36,7 +36,7 @@ export function AppShell() {
   const navLabels = language === "id" ? { home: "Beranda", goals: "Target", close: "Tutup", quickAdd: "Tulis transaksi atau unggah foto struk" } : { home: "Home", goals: "Goals", close: "Close", quickAdd: "Enter a transaction or upload a receipt photo" };
   const location = useLocation();
   const navigate = useNavigate();
-  const titleId: Record<string, string> = { "/wallets": "Dompet", "/assets": "Aset", "/": "Home", "/finance": "Finance Report", "/transactions": "Komunitas", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/goals": "Target", "/ai-assistant": "Asisten AI", "/guidance": "Panduan", "/checkup": "Checkup", "/calendar": "Kalender Keuangan" };
+  const titleId: Record<string, string> = { "/wallets": "Dompet", "/assets": "Aset", "/": "Home", "/finance": "Net Worth Report", "/transactions": "Komunitas", "/transaction": "Transaksi", "/budgeting": "Anggaran Bulanan", "/calculator": "Kalkulator Keuangan", "/protection": "Proteksi Finansial", "/settings": "Profil & Pengaturan", "/goals": "Target", "/ai-assistant": "Asisten AI", "/guidance": "Panduan", "/checkup": "Checkup", "/calendar": "Kalender Keuangan" };
   const title = language === "en" ? (location.pathname.startsWith("/calculator/") ? "Financial Calculator" : (titles[location.pathname] ?? "Wealthplanner")) : (location.pathname.startsWith("/calculator/") ? "Kalkulator Keuangan" : (titleId[location.pathname] ?? "Wealthplanner"));
 
   return (

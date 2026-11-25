@@ -1,4 +1,4 @@
-import { BarChart, Bar, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, LineChart, Line, AreaChart, Area, ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 const API_BASE = "/api";
 import { AlertTriangle, TrendingUp, TrendingDown, PiggyBank, Landmark, Check, Pencil, Loader2, Trash2, ChevronLeft, ChevronRight, CalendarDays, X, Eye, EyeOff, Wallet, CircleDollarSign, ArrowDownLeft, ArrowUpRight, RefreshCw, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -455,7 +455,7 @@ function StockTracker({
     </AssetListSection>
   );
 }
-export function DashboardFinance({ initialTab = "income" }: { initialTab?: "income" | "assets" | "cashflow" | "debt" }) {
+export function DashboardFinance({ initialTab = "networth" }: { initialTab?: "networth" | "income" | "assets" | "cashflow" | "debt" }) {
   const [language, setLanguage] = useState(getAppLanguage());
   useEffect(() => { const update = () => setLanguage(getAppLanguage()); window.addEventListener("wealthplanner:language-changed", update); return () => window.removeEventListener("wealthplanner:language-changed", update); }, []);
   const id = language === "id";
@@ -470,7 +470,12 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   const { loading, error, isRealData, username, userId, totalIncome, totalExpense, totalSaving, byCategory, assets } = useFinanceData(selectedMonth, false, selectedYear);
   const { wallets } = useWallets();
   const historyData = useFinanceData(selectedMonth, true, selectedYear);
-  const [activeReportTab, setActiveReportTab] = useState<"income" | "assets" | "cashflow" | "debt">(initialTab);
+  const [activeReportTab, setActiveReportTab] = useState<"networth" | "income" | "assets" | "cashflow" | "debt">(initialTab);
+  const [netWorthDebts, setNetWorthDebts] = useState<any[]>([]);
+  const [netWorthHistory, setNetWorthHistory] = useState<{ period: string; totalAssets: number; totalLiabilities: number; netWorth: number }[]>([]);
+  const [netWorthLoading, setNetWorthLoading] = useState(true);
+  const [netWorthError, setNetWorthError] = useState("");
+  const [netWorthRange, setNetWorthRange] = useState<"1D" | "1M" | "3M" | "YTD" | "All">("1M");
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllAssets, setShowAllAssets] = useState(false);
   const [editingAssetTarget, setEditingAssetTarget] = useState<AssetTarget | null>(null);
@@ -526,23 +531,75 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
   ];
   const assetCompositionTotal = assetChartData.reduce((sum, item) => sum + Math.max(0, Number(item.value) || 0), 0);
 
+  useEffect(() => {
+    if (!isRealData || loading || activeReportTab !== "networth") return;
+    let cancelled = false;
+    async function loadNetWorth() {
+      const token = getStoredToken();
+      if (!token) return;
+      setNetWorthLoading(true);
+      setNetWorthError("");
+      try {
+        const debtResponse = await fetch("/api/debt-tracker?token=" + encodeURIComponent(token), { cache: "no-store" });
+        const debtPayload = await debtResponse.json().catch(() => ({}));
+        if (!debtResponse.ok) throw new Error(debtPayload.error || "Gagal memuat data utang");
+        const debts = Array.isArray(debtPayload.debts) ? debtPayload.debts : [];
+        const liabilities = debts.filter((debt: any) => debt.active && Number(debt.remainingPrincipal) > 0)
+          .reduce((sum: number, debt: any) => sum + (Number(debt.remainingPrincipal) || 0), 0);
+        if (cancelled) return;
+        setNetWorthDebts(debts);
+        const historyResponse = await fetch("/api/net-worth-history", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token, totalAssets: Number(assets.totalAssets) || 0, totalLiabilities: liabilities }),
+        });
+        const historyPayload = await historyResponse.json().catch(() => ({}));
+        if (!historyResponse.ok) throw new Error(historyPayload.error || "Gagal menyimpan riwayat Net Worth");
+        if (!cancelled) setNetWorthHistory(Array.isArray(historyPayload.history) ? historyPayload.history : []);
+      } catch (error) {
+        if (!cancelled) setNetWorthError(error instanceof Error ? error.message : "Gagal memuat Net Worth");
+      } finally {
+        if (!cancelled) setNetWorthLoading(false);
+      }
+    }
+    void loadNetWorth();
+    return () => { cancelled = true; };
+  }, [isRealData, loading, activeReportTab, assets.totalAssets]);
+
+
+  const activeNetWorthDebts = netWorthDebts.filter((debt) => debt.active && Number(debt.remainingPrincipal) > 0);
+  const totalLiabilities = activeNetWorthDebts.reduce((sum, debt) => sum + (Number(debt.remainingPrincipal) || 0), 0);
+  const totalNetWorth = integratedTotalAssets - totalLiabilities;
+  const liquidTotalForNetWorth = liquidAssetsFromDashboard.reduce((sum, item) => sum + item.value, 0);
+  const investmentTotalForNetWorth = assets.investmentAssets.reduce((sum, item) => sum + (Number(item.value) || 0), 0) + stockIDTotal + stockUSTotalIDR;
+  const otherAssetsForNetWorth = Math.max(0, integratedTotalAssets - liquidTotalForNetWorth - investmentTotalForNetWorth);
+  const netWorthAssetRows = [
+    { label: id ? "Kas & setara kas" : "Cash & equivalents", value: liquidTotalForNetWorth },
+    { label: id ? "Investasi" : "Investments", value: investmentTotalForNetWorth },
+    { label: id ? "Aset lainnya" : "Other assets", value: otherAssetsForNetWorth },
+  ].filter((item) => item.value > 0);
+  const debtTypeLabels: Record<string, string> = { credit_card: "Kartu Kredit", installment: "Cicilan", paylater: "Paylater", personal_loan: "Pinjaman Pribadi", mortgage: "KPR", other: "Lainnya" };
+  const netWorthDebtRows = Object.entries(activeNetWorthDebts.reduce((map: Record<string, number>, debt) => {
+    const key = String(debt.type || "other"); map[key] = (map[key] || 0) + (Number(debt.remainingPrincipal) || 0); return map;
+  }, {})).map(([type, value]) => ({ label: debtTypeLabels[type] || type, value })).sort((a, b) => b.value - a.value);
+
   const incomeRows = byCategory("Income");
   const savingRows = byCategory("Saving");
   const expenseRows = byCategory("Expense");
   const budgetExpensePlan = expenseRows.reduce((s, c) => s + c.allocation, 0);
-  const reportTabs = [{ id: "income" as const, label: "Income Statement" }, { id: "assets" as const, label: "Asset Tracker" }, { id: "debt" as const, label: "Debt Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];
+  const reportTabs = [{ id: "networth" as const, label: "Net Worth" }, { id: "income" as const, label: "Income Statement" }, { id: "debt" as const, label: "Debt Tracker" }, { id: "cashflow" as const, label: "Cashflow Tracker" }];
   const activeTabIndex = reportTabs.findIndex((tab) => tab.id === activeReportTab);
   const selectReportTab = (index: number) => setActiveReportTab(reportTabs[(index + reportTabs.length) % reportTabs.length].id);
 
   return (
     <div className="flex w-full min-w-0 max-w-full flex-col gap-3 overflow-x-clip">
       <div className="flex items-center justify-between gap-3">
-        <select aria-label="Pilih laporan" value={activeReportTab} onChange={(e) => setActiveReportTab(e.target.value as typeof activeReportTab)} className="min-w-0 flex-1 appearance-none rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 py-2.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm outline-none">
-          <option value="income">Income Statement</option><option value="assets">Asset Tracker</option><option value="debt">Debt Tracker</option><option value="cashflow">Cashflow Tracker</option>
-        </select>
-        <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm">
+        {activeReportTab !== "assets" ? <select aria-label="Pilih laporan" value={activeReportTab} onChange={(e) => setActiveReportTab(e.target.value as typeof activeReportTab)} className="min-w-0 flex-1 appearance-none rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 py-2.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm outline-none">
+          <option value="networth">Net Worth</option><option value="income">Income Statement</option><option value="debt">Debt Tracker</option><option value="cashflow">Cashflow Tracker</option>
+        </select> : <div className="min-w-0 flex-1 text-[13px] font-semibold text-[rgb(var(--c-charcoal))]">Asset Management</div>}
+        {activeReportTab !== "networth" && <button type="button" onClick={() => { setDraftMonth(selectedMonth); setDraftYear(selectedYear); setPeriodOpen(true); }} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] px-3.5 text-[12.5px] font-semibold text-[rgb(var(--c-charcoal))] shadow-sm">
           <CalendarDays size={15} className="shrink-0 text-[rgb(var(--c-up))]" /><span>{monthNames[monthNames.indexOf(selectedMonth)] || selectedMonth} {selectedYear}</span><ChevronRight size={14} className="rotate-90 text-[rgb(var(--c-muted))]" />
-        </button>
+        </button>}
       </div>
       {periodOpen && <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/35 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setPeriodOpen(false); }}>
         <div role="dialog" aria-modal="true" aria-labelledby="finance-period-title" className="w-full max-w-md rounded-t-3xl bg-[rgb(var(--c-surface))] p-4 shadow-2xl sm:rounded-3xl">
@@ -567,6 +624,112 @@ export function DashboardFinance({ initialTab = "income" }: { initialTab?: "inco
       </div>}
 
 
+
+      {activeReportTab === "networth" && <>
+        {(() => {
+          const today = new Date();
+          const normalizePeriod = (period: string) => /^\d{4}-\d{2}$/.test(period) ? period + "-01" : period;
+          const history = netWorthHistory
+            .map((item) => ({ ...item, date: normalizePeriod(item.period) }))
+            .filter((item) => /^\d{4}-\d{2}-\d{2}$/.test(item.date))
+            .sort((a, b) => a.date.localeCompare(b.date));
+          const startDate = new Date(today);
+          if (netWorthRange === "1D") startDate.setDate(startDate.getDate() - 1);
+          if (netWorthRange === "1M") startDate.setDate(startDate.getDate() - 30);
+          if (netWorthRange === "3M") startDate.setDate(startDate.getDate() - 90);
+          if (netWorthRange === "YTD") startDate.setMonth(0, 1);
+          const filteredHistory = netWorthRange === "All"
+            ? history
+            : history.filter((item) => new Date(item.date + "T00:00:00") >= new Date(startDate.toDateString()));
+          const chartData = filteredHistory.map((item) => ({
+            ...item,
+            label: new Date(item.date + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short" }),
+          }));
+          const rangeLabels = [
+            { id: "1D" as const, label: "1D" },
+            { id: "1M" as const, label: "1M" },
+            { id: "3M" as const, label: "3M" },
+            { id: "YTD" as const, label: "YTD" },
+            { id: "All" as const, label: "All" },
+          ];
+          return <>
+            <section data-tour="report-net-worth" className="w-full min-w-0 overflow-hidden rounded-[16px] bg-gradient-to-br from-[#374151] via-[#1F2937] to-[#111827] p-4 text-white shadow-float sm:p-5">
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold text-white/65">{id ? "Net Worth" : "Net Worth"}</p>
+                <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
+                  <span className="shrink-0 text-[14px] font-semibold text-white/65">{totalNetWorth < 0 ? "−Rp" : "Rp"}</span>
+                  <span className="report-headline-amount min-w-0 font-extrabold leading-tight tracking-[-0.7px] tabular-nums text-white">{formatRupiah(Math.abs(totalNetWorth)).replace(/^Rp\s?/, "")}</span>
+                </div>
+                {totalNetWorth < 0 && <p className="mt-1 text-[11px] font-medium text-rose-200">{id ? "Kewajiban melebihi total aset" : "Liabilities exceed total assets"}</p>}
+              </div>
+
+              <div className="mt-5">
+                {chartData.length > 0 ? <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={chartData} margin={{ top: 12, right: 6, left: 0, bottom: 0 }}>
+                    <defs><linearGradient id="netWorthMovementFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#A7AAB0" stopOpacity={0.38}/><stop offset="100%" stopColor="#A7AAB0" stopOpacity={0.04}/></linearGradient></defs>
+                    <CartesianGrid stroke="rgba(255,255,255,0.10)" strokeDasharray="3 4" vertical={false}/>
+                    <XAxis dataKey="label" tick={{ fill: "rgba(255,255,255,0.48)", fontSize: 10 }} axisLine={false} tickLine={false} minTickGap={20}/>
+                    <YAxis hide domain={["auto", "auto"]}/>
+                    <Tooltip contentStyle={{ background: "#1F2937", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 12, color: "#fff", fontSize: 11 }} labelFormatter={(value) => String(value)} formatter={(value: number) => [formatRupiah(value), "Net Worth"]}/>
+                    <Area type="monotone" dataKey="netWorth" stroke="#FFFFFF" strokeWidth={2.5} fill="url(#netWorthMovementFill)" dot={{ r: 3, fill: "#FFFFFF", strokeWidth: 0 }} activeDot={{ r: 5, fill: "#FFFFFF", stroke: "#FFFFFF", strokeWidth: 2 }}/>
+                  </AreaChart>
+                </ResponsiveContainer> : <div className="flex h-[220px] items-center justify-center rounded-xl border border-dashed border-white/15 px-4 text-center text-[11px] leading-5 text-white/55">{netWorthLoading ? (id ? "Memuat riwayat..." : "Loading history...") : (id ? "Riwayat Net Worth akan terbentuk setiap hari saat kamu membuka halaman ini." : "Net Worth history will build daily as you open this page.")}</div>}
+                {netWorthError && <p className="mt-2 text-[10px] text-rose-200">{netWorthError}</p>}
+              </div>
+
+              <div className="mt-3 grid grid-cols-5 gap-1.5">
+                {rangeLabels.map((item) => <button key={item.id} type="button" onClick={() => setNetWorthRange(item.id)} className={`min-h-10 rounded-full px-2 text-[12px] font-bold transition ${netWorthRange === item.id ? "bg-white text-[#0B6B47] shadow-sm" : "text-white/75 hover:bg-white/8"}`}>{item.label}</button>)}
+              </div>
+            </section>
+
+            <section className="mt-3 rounded-[16px] border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4 shadow-sm sm:p-5">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-[14px] font-bold text-forest-900">{id ? "Pergerakan Aset & Utang" : "Asset & Debt Movement"}</h2>
+                  <p className="mt-0.5 text-[11px] text-charcoal/50">{id ? "Total Aset dan Total Utang dari waktu ke waktu" : "Total Assets and Total Debt over time"}</p>
+                </div>
+                <span className="shrink-0 rounded-full bg-charcoal/[0.05] px-2.5 py-1.5 text-[10px] font-semibold text-charcoal/55">{netWorthRange}</span>
+              </div>
+              {chartData.length > 0 ? <ResponsiveContainer width="100%" height={230}>
+                <ComposedChart data={chartData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+                  <CartesianGrid stroke="rgba(39,50,68,0.10)" strokeDasharray="3 4" vertical={false}/>
+                  <XAxis dataKey="label" tick={{ fill: "#7B8492", fontSize: 10 }} axisLine={false} tickLine={false} minTickGap={20}/>
+                  <YAxis hide domain={[0, "auto"]}/>
+                  <Tooltip contentStyle={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 12, color: "#172033", fontSize: 11 }} labelFormatter={(value) => String(value)} formatter={(value: number, name: string) => [formatRupiah(value), name === "totalAssets" ? "Total Aset" : name === "totalLiabilities" ? "Total Utang" : "Net Worth"]}/>
+                  <Legend verticalAlign="top" align="left" iconType="circle" wrapperStyle={{ fontSize: 10, paddingBottom: 10 }} formatter={(value) => value === "totalAssets" ? "Total Aset" : value === "totalLiabilities" ? "Total Utang" : "Net Worth"}/>
+                  <Bar dataKey="totalAssets" name="totalAssets" fill="#374151" radius={[4,4,0,0]} barSize={12}/>
+                  <Bar dataKey="totalLiabilities" name="totalLiabilities" fill="#C23A5B" radius={[4,4,0,0]} barSize={12}/>
+                  <Line type="monotone" dataKey="netWorth" name="netWorth" stroke="#0B6B47" strokeWidth={2} dot={false}/>
+                </ComposedChart>
+              </ResponsiveContainer> : <div className="flex h-[230px] items-center justify-center rounded-xl border border-dashed border-[rgb(var(--c-border))] px-4 text-center text-[11px] leading-5 text-charcoal/45">{id ? "Belum ada riwayat untuk ditampilkan." : "No history available yet."}</div>}
+            </section>
+
+            <div className="mt-3 grid gap-3 lg:grid-cols-2">
+              <section className="rounded-[16px] border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div><h2 className="text-[14px] font-bold text-forest-900">{id ? "Rincian Aset" : "Asset Breakdown"}</h2><p className="text-[11px] text-charcoal/50">{id ? "Diambil dari menu Asset" : "Synced from Asset menu"}</p></div>
+                  <span className="shrink-0 text-[12px] font-bold tabular-nums text-forest-800">{formatRupiah(integratedTotalAssets)}</span>
+                </div>
+                {assetChartData.length ? assetChartData.map((row) => <div key={row.name} className="flex items-center justify-between gap-3 border-t border-[rgb(var(--c-border))] py-2.5 first:border-0">
+                  <span className="flex min-w-0 items-center gap-2 text-[12px] text-charcoal/70"><span className="h-2 w-2 shrink-0 rounded-full bg-[#374151]"/><span className="truncate">{row.name}</span></span>
+                  <span className="shrink-0 text-[12px] font-semibold tabular-nums text-forest-900">{formatRupiah(row.value)}</span>
+                </div>) : <p className="py-3 text-[12px] text-charcoal/45">{id ? "Belum ada data aset." : "No asset data yet."}</p>}
+              </section>
+
+              <section className="rounded-[16px] border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div><h2 className="text-[14px] font-bold text-forest-900">{id ? "Rincian Utang" : "Debt Breakdown"}</h2><p className="text-[11px] text-charcoal/50">{id ? "Diambil dari menu Debt" : "Synced from Debt menu"}</p></div>
+                  <span className="shrink-0 text-[12px] font-bold tabular-nums text-charcoal">{formatRupiah(totalLiabilities)}</span>
+                </div>
+                {netWorthDebtRows.length ? netWorthDebtRows.map((row) => <div key={row.label} className="flex items-center justify-between gap-3 border-t border-[rgb(var(--c-border))] py-2.5 first:border-0">
+                  <span className="text-[12px] text-charcoal/70">{row.label}</span>
+                  <span className="shrink-0 text-[12px] font-semibold tabular-nums text-charcoal">{formatRupiah(row.value)}</span>
+                </div>) : <p className="py-3 text-[12px] text-charcoal/45">{id ? "Belum ada utang aktif." : "No active debt."}</p>}
+              </section>
+            </div>
+          </>;
+        })()}
+      </>}
 
       {activeReportTab === "income" && (() => {
         const monthIndex = monthNames.indexOf(selectedMonth);
