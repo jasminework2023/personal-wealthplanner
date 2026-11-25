@@ -704,29 +704,6 @@ export function DashboardFinance({ initialTab = "networth" }: { initialTab?: "ne
               </ResponsiveContainer> : <div className="flex h-[230px] items-center justify-center rounded-xl border border-dashed border-[rgb(var(--c-border))] px-4 text-center text-[11px] leading-5 text-charcoal/45">{id ? "Belum ada riwayat untuk ditampilkan." : "No history available yet."}</div>}
             </section>
 
-            <div className="mt-3 grid gap-3 lg:grid-cols-2">
-              <section className="rounded-[16px] border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div><h2 className="text-[14px] font-bold text-forest-900">{id ? "Rincian Aset" : "Asset Breakdown"}</h2><p className="text-[11px] text-charcoal/50">{id ? "Diambil dari menu Asset" : "Synced from Asset menu"}</p></div>
-                  <span className="shrink-0 text-[12px] font-bold tabular-nums text-forest-800">{formatRupiah(integratedTotalAssets)}</span>
-                </div>
-                {assetChartData.length ? assetChartData.map((row) => <div key={row.name} className="flex items-center justify-between gap-3 border-t border-[rgb(var(--c-border))] py-2.5 first:border-0">
-                  <span className="flex min-w-0 items-center gap-2 text-[12px] text-charcoal/70"><span className="h-2 w-2 shrink-0 rounded-full bg-[#374151]"/><span className="truncate">{row.name}</span></span>
-                  <span className="shrink-0 text-[12px] font-semibold tabular-nums text-forest-900">{formatRupiah(row.value)}</span>
-                </div>) : <p className="py-3 text-[12px] text-charcoal/45">{id ? "Belum ada data aset." : "No asset data yet."}</p>}
-              </section>
-
-              <section className="rounded-[16px] border border-[rgb(var(--c-border))] bg-[rgb(var(--c-surface))] p-4">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div><h2 className="text-[14px] font-bold text-forest-900">{id ? "Rincian Utang" : "Debt Breakdown"}</h2><p className="text-[11px] text-charcoal/50">{id ? "Diambil dari menu Debt" : "Synced from Debt menu"}</p></div>
-                  <span className="shrink-0 text-[12px] font-bold tabular-nums text-charcoal">{formatRupiah(totalLiabilities)}</span>
-                </div>
-                {netWorthDebtRows.length ? netWorthDebtRows.map((row) => <div key={row.label} className="flex items-center justify-between gap-3 border-t border-[rgb(var(--c-border))] py-2.5 first:border-0">
-                  <span className="text-[12px] text-charcoal/70">{row.label}</span>
-                  <span className="shrink-0 text-[12px] font-semibold tabular-nums text-charcoal">{formatRupiah(row.value)}</span>
-                </div>) : <p className="py-3 text-[12px] text-charcoal/45">{id ? "Belum ada utang aktif." : "No active debt."}</p>}
-              </section>
-            </div>
           </>;
         })()}
       </>}
