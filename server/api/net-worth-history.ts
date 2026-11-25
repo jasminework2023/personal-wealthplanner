@@ -48,7 +48,7 @@ async function readHistory(sheets: any, spreadsheetId: string) {
     netWorth: money(row[3]),
     updatedAt: String(row[4] || ""),
     sheetRow: index + 2,
-  })).filter((item: any) => /^\d{4}-\d{2}$/.test(item.period)).sort((a: any, b: any) => a.period.localeCompare(b.period));
+  })).filter((item: any) => /^\d{4}-\d{2}(?:-\d{2})?$/.test(item.period)).sort((a: any, b: any) => a.period.localeCompare(b.period));
 }
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const token = String(req.method === "GET" ? req.query.token || "" : req.body?.token || "").trim();
@@ -63,7 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const totalLiabilities = money(req.body?.totalLiabilities);
       if (totalAssets < 0 || totalLiabilities < 0) return res.status(400).json({ error: "Nilai aset dan kewajiban tidak valid" });
       const now = new Date();
-      const period = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+      const period = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
       const history = await readHistory(sheets, user.spreadsheet_id);
       const existing = history.find((item: any) => item.period === period);
       const row = [period, totalAssets, totalLiabilities, totalAssets - totalLiabilities, now.toISOString()];
