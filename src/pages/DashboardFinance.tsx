@@ -473,7 +473,7 @@ export function DashboardFinance({ initialTab = "networth" }: { initialTab?: "ne
   const [activeReportTab, setActiveReportTab] = useState<"networth" | "income" | "assets" | "cashflow" | "debt">(initialTab);
   const [netWorthDebts, setNetWorthDebts] = useState<any[]>([]);
   const [netWorthHistory, setNetWorthHistory] = useState<{ period: string; totalAssets: number; totalLiabilities: number; netWorth: number }[]>([]);
-  const [netWorthLoading, setNetWorthLoading] = useState(false);
+  const [netWorthLoading, setNetWorthLoading] = useState(true);
   const [netWorthError, setNetWorthError] = useState("");
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllAssets, setShowAllAssets] = useState(false);
@@ -630,7 +630,7 @@ export function DashboardFinance({ initialTab = "networth" }: { initialTab?: "ne
             <div className="min-w-0">
               <p className="text-[13px] font-semibold text-white/65">{id ? "Total Kekayaan Bersih" : "Total Net Worth"}</p>
               <div className="mt-1 flex min-w-0 items-baseline gap-1 whitespace-nowrap">
-                <span className="shrink-0 text-[14px] font-semibold text-white/65">Rp</span>
+                <span className="shrink-0 text-[14px] font-semibold text-white/65">{totalNetWorth < 0 ? "−Rp" : "Rp"}</span>
                 <span className="report-headline-amount min-w-0 font-extrabold leading-tight tracking-[-0.7px] tabular-nums text-white">{formatRupiah(Math.abs(totalNetWorth)).replace(/^Rp\\s?/, "")}</span>
               </div>
               {totalNetWorth < 0 && <p className="mt-1 text-[11px] font-medium text-rose-200">{id ? "Kewajiban melebihi total aset" : "Liabilities exceed total assets"}</p>}
@@ -659,7 +659,7 @@ export function DashboardFinance({ initialTab = "networth" }: { initialTab?: "ne
               <AreaChart data={netWorthHistory} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
                 <defs><linearGradient id="netWorthFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#6EE7A8" stopOpacity={0.35}/><stop offset="100%" stopColor="#6EE7A8" stopOpacity={0.02}/></linearGradient></defs>
                 <CartesianGrid stroke="rgba(255,255,255,0.12)" strokeDasharray="3 4" vertical={false}/>
-                <XAxis dataKey="period" tickFormatter={(value) => { const [year, month] = String(value).split("-"); return new Date(Number(year), Number(month) - 1, 1).toLocaleDateString("id-ID", { month: "short" }); }} tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 10 }} axisLine={false} tickLine={false}/>
+                <XAxis dataKey="period" tickFormatter={(value) => { const [year, month] = String(value).split("-"); return new Date(Number(year), Number(month) - 1, 1).toLocaleDateString("id-ID", { month: "short", year: "2-digit" }); }} tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 10 }} axisLine={false} tickLine={false}/>
                 <YAxis hide domain={["auto", "auto"]}/>
                 <Tooltip contentStyle={{ background: "#102B21", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, color: "#fff", fontSize: 11 }} labelFormatter={(value) => String(value)} formatter={(value: number) => [formatRupiah(value), "Net Worth"]}/>
                 <Area type="monotone" dataKey="netWorth" stroke="#6EE7A8" strokeWidth={2.5} fill="url(#netWorthFill)" dot={{ r: 3, fill: "#6EE7A8", strokeWidth: 0 }} activeDot={{ r: 5, fill: "#FFFFFF", stroke: "#6EE7A8", strokeWidth: 2 }}/>
@@ -685,10 +685,10 @@ export function DashboardFinance({ initialTab = "networth" }: { initialTab?: "ne
           <div className="grid grid-cols-2 gap-2.5">
             {[
               { label: "Debt to Asset", value: integratedTotalAssets > 0 ? totalLiabilities / integratedTotalAssets * 100 : 0, description: id ? "Proporsi aset yang dibiayai utang" : "Assets financed by debt" },
-              { label: "Debt to Equity", value: totalNetWorth > 0 ? totalLiabilities / totalNetWorth * 100 : 0, description: id ? "Utang dibanding kekayaan bersih" : "Debt relative to net worth" },
+              { label: "Debt to Equity", value: totalNetWorth > 0 ? totalLiabilities / totalNetWorth * 100 : null, description: id ? "Utang dibanding kekayaan bersih" : "Debt relative to net worth" },
               { label: "Liquid Asset Ratio", value: integratedTotalAssets > 0 ? liquidTotalForNetWorth / integratedTotalAssets * 100 : 0, description: id ? "Porsi aset yang likuid" : "Share of liquid assets" },
               { label: "Solvency Ratio", value: integratedTotalAssets > 0 ? totalNetWorth / integratedTotalAssets * 100 : 0, description: id ? "Porsi aset bersih setelah utang" : "Net assets as a share of assets" },
-            ].map((ratio) => <div key={ratio.label} className="rounded-xl bg-[rgb(var(--c-cream))] p-3"><p className="text-[11px] font-semibold text-charcoal/60">{ratio.label}</p><p className="mt-1 text-[20px] font-bold tabular-nums text-forest-900">{ratio.value.toFixed(1)}%</p><p className="mt-1 text-[10px] leading-4 text-charcoal/45">{ratio.description}</p></div>)}
+            ].map((ratio) => <div key={ratio.label} className="rounded-xl bg-[rgb(var(--c-cream))] p-3"><p className="text-[11px] font-semibold text-charcoal/60">{ratio.label}</p><p className="mt-1 text-[20px] font-bold tabular-nums text-forest-900">{ratio.value === null ? "—" : ratio.value.toFixed(1) + "%"}</p><p className="mt-1 text-[10px] leading-4 text-charcoal/45">{ratio.description}</p></div>)}
           </div>
         </section>
       </>}
